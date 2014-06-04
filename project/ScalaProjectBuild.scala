@@ -1,13 +1,14 @@
 import sbt._
 import sbt.Keys._
+import scala.Some
 
 object ScalaProjectBuild extends Build {
 
   lazy val scalaProject = Project(
-    id = "client",
+    id = "mwbot",
     base = file("."),
     settings = Project.defaultSettings ++ Seq(
-      name := "client",
+      name := "mwbot",
       organization := "org.intracer",
       version := "0.1",
       scalaVersion := "2.10.3",
@@ -23,9 +24,12 @@ object ScalaProjectBuild extends Build {
           "com.typesafe.akka"   %%  "akka-actor"    % akkaV,
           "org.specs2" %% "specs2" % "2.3.12" % "test"
         )
-      }
+      },
+//      publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
+        publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.ivy2/local")))
     )
   )
+
 
   scalacOptions in Test ++= Seq("-Yrangepos")
 }

@@ -38,8 +38,6 @@ class MwBotSpec extends Specification {
     }
   }
 
-
-
   "get no embedded in" should {
     "return empty seq" in {
       val queryType = "embeddedin"
@@ -116,13 +114,38 @@ class MwBotSpec extends Specification {
     }
   }
 
+  "get category members with continue" should {
+    "return category members in" in {
+      val queryType = "categorymembers"
+
+      //      val resonse = {"query-continue":{"embeddedin":{"eicontinue":"10|Stub|6674690"}},"query":{"embeddedin":[{"pageid":569559,"ns":1,"title":"Talk:Welfare reform"},{"pageid":2581310,"ns":2,"title":"User:Rpyle731/sandbox/archive1"},{"pageid":3954860,"ns":3,"title":"User talk:PBS/Archive 6"},{"pageid":4571809,"ns":2,"title":"User:Formator"},{"pageid":5024711,"ns":3,"title":"User talk:Rauterkus"}]}}
+
+      val response1 = """{"query":{"categorymembers":[{"pageid":569559,"ns":1,"title":"Talk:Welfare reform"}]}, "continue":{"continue":"-||","cmcontinue":"10|Stub|6674690"}}"""
+      val response2 = """{"limits": {"categorymembers": 500}, "query":{"categorymembers":[ {"pageid":4571809,"ns":2,"title":"User:Formator"}]}}"""
+
+      val commands = Seq(
+        new Command(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max", "cmtitle" -> "Category:SomeCategory", "continue" -> ""), response1),
+        new Command(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max", "cmtitle" -> "Category:SomeCategory", "continue" -> "-||", "cmcontinue" -> "10|Stub|6674690"), response2)
+      )
+
+      val bot = getBot(commands:_*)
+
+      val future = bot.categoryMembers(PageQuery.byTitle("Category:SomeCategory"))
+      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+      result must have size(2)
+      result(0) === Page(569559, 1, "Talk:Welfare reform")
+      result(1) === Page(4571809, 2, "User:Formator")
+    }
+  }
+
+
   "get revisions text" should {
     "return a page text" in {
       val pageText1 = "some vandalism"
       val pageText2 = "more vandalism"
 
       val response =
-        s"""{"limits": {"embeddedin": 500}, "query":{"pages":{
+        s"""{"query":{"pages":{
           |"569559":{"pageid":569559,"ns":1,"title":"Talk:Welfare reform", "revisions": [{"user": "u1", "timestamp" : "t1", "comment":"c1", "*":"$pageText1"}]},
           |"4571809":{"pageid":4571809,"ns":2,"title":"User:Formator", "revisions": [{"user": "u2", "timestamp" : "t2", "comment":"c2","*":"$pageText2"}]} }}}""".stripMargin
 
@@ -142,6 +165,22 @@ class MwBotSpec extends Specification {
     }
   }
 
+//  "login" should {
+//    "login" in {
+//      val user = "userName"
+//      val password = "secret"
+//
+//      val response1 = """{"login":{"result":"NeedToken","token":"a504e9507bb8e8d7d3bf839ef096f8f7","cookieprefix":"ukwiki","sessionid":"37b1d67422436e253f5554de23ae0064"}}"""
+//
+//
+//      val bot = getBot(new Command(Map("action" -> "login", "lgname" -> user, "lgpassword" -> password), response1))
+//
+//      val future = bot.login(user, password)
+//      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+//      result === pageText  TODO
+//    }
+//  }
+
   // {"login":{"result":"NeedToken","token":"a504e9507bb8e8d7d3bf839ef096f8f7","cookieprefix":"ukwiki","sessionid":"37b1d67422436e253f5554de23ae0064"}}
 
 
@@ -149,7 +188,6 @@ class MwBotSpec extends Specification {
     val http = new TestHttpClient(host, mutable.Queue(commands:_*))
 
     new MwBot(http, system, host)
-
   }
 }
 

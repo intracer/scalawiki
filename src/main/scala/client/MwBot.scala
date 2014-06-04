@@ -4,7 +4,7 @@ import spray.http._
 import scala.concurrent.{ExecutionContext, Await, Future}
 import spray.http.HttpResponse
 import scala.concurrent.duration._
-import client.dto.{SinglePageQuery, PageQuery, Page}
+import client.dto.{Namespace, SinglePageQuery, PageQuery, Page}
 
 import play.api.libs.json._
 import client.json.MwReads._
@@ -37,12 +37,17 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
       http.setCookies(cb.cookies)
       val json = Json.parse(cb.body)
       json.validate(loginResponseReads).fold({ err =>
-        log.error("Could not fucking login" + err)
+        log.error("Could not login" + err)
+        err.toString()
       }, { resp =>
-        http.post(getUri("action" -> "login", "lgname" -> user, "lgpassword" -> password, "lgtoken" -> resp.token)) map cookiesAndBody map { cb=>
+        Await.result(http.post(getUri("action" -> "login", "lgname" -> user, "lgpassword" -> password, "lgtoken" -> resp.token)) map cookiesAndBody map { cb=>
+          http.setCookies(cb.cookies)
           val json = Json.parse(cb.body)
           val l = json.validate(loginResponseReads)  // {"login":{"result":"NotExists"}}
-        }
+          l.fold(err=> err.toString(),
+            success => success.result
+          )
+        }, http.timeout)
       })
     }
   }
@@ -66,17 +71,35 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
     http.get(url) map getBody
   }
 
-  def whatTranscludesHere(pageQuery: SinglePageQuery, namespaces: Set[Int] = Set.empty, continueParam: Option[String] = None): Future[Seq[Page]] = {
+  def whatTranscludesHere(pageQuery: SinglePageQuery, namespaces: Set[Int] = Set.empty, continueParam: Option[(String, String)] = None): Future[Seq[Page]] = {
     queryList(pageQuery, namespaces, continueParam, "embeddedin", "ei")
   }
 
-  def categoryMembers(pageQuery: SinglePageQuery, namespaces: Set[Int] = Set.empty, continueParam: Option[String] = None): Future[Seq[Page]] = {
+  def categoryMembers(pageQuery: SinglePageQuery, namespaces: Set[Int] = Set.empty, continueParam: Option[(String, String)] = None): Future[Seq[Page]] = {
     queryList(pageQuery, namespaces, continueParam, "categorymembers", "cm")
   }
 
-  def revisions(pageQuery: PageQuery, namespaces: Set[Int] = Set.empty, props: Set[String] = Set.empty, continueParam: Option[String] = None) = {
+  def revisions(pageQuery: PageQuery, namespaces: Set[Int] = Set.empty, props: Set[String] = Set.empty, continueParam: Option[(String, String)] = None) = {
     queryProps(pageQuery, namespaces, props, continueParam, "revisions", "rv") /*Set("content")*/
   }
+
+  def imageInfoByGenerator(
+                            generator: String, generatorPrefix: String,
+                            query: SinglePageQuery,
+                            namespaces: Set[Int] = Set(Namespace.FILE_NAMESPACE),
+                            props: Set[String] = Set("timestamp", "user", "url", "size"),
+                            continueParam: Option[(String, String)] = None) = {
+    queryByGenerator(generator, generatorPrefix, query, namespaces, props, continueParam, "imageinfo", "ii")
+  }
+
+  def revisionsByGenerator(
+                            generator: String, generatorPrefix: String,
+                            query: SinglePageQuery, namespaces: Set[Int] = Set.empty, props: Set[String] = Set.empty,
+                            continueParam: Option[(String, String)] = None) = {
+    queryByGenerator(generator, generatorPrefix, query, namespaces, props, continueParam, "revisions", "rv")
+  }
+
+
 
   def getIndexUri(params: (String, String)*) =
     Uri(indexUrl) withQuery (params ++ Seq("format" -> "json"): _*)
@@ -87,7 +110,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
   def getUri(params: Map[String, String]) =
     Uri(apiUrl) withQuery (params ++ Map("format" -> "json"))
 
-  def queryList(pageQuery: PageQuery, namespaces: Set[Int] = Set.empty, continueParam: Option[String], queryType: String, queryPrefix: String) = {
+  def queryList(pageQuery: PageQuery, namespaces: Set[Int] = Set.empty, continueParam: Option[(String, String)], queryType: String, queryPrefix: String) = {
     query(pageQuery, namespaces, continueParam, "list", queryType, queryPrefix)
   }
 
@@ -95,45 +118,35 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
                   pageQuery: PageQuery,
                   namespaces: Set[Int] = Set.empty,
                   props: Set[String] = Set.empty,
-                  continueParam: Option[String],
+                  continueParam: Option[(String, String)],
                   queryType: String,
                   queryPrefix: String) = {
     val extraParams: Map[String, String] = if (props.isEmpty) Map.empty else Map(queryPrefix + "prop" -> props.mkString("|"))
     query(pageQuery, namespaces, continueParam, "prop", queryType, queryPrefix, extraParams)
   }
 
+  def queryByGenerator(generator: String, generatorPrefix: String,
+                       pageQuery: PageQuery,
+                  namespaces: Set[Int] = Set.empty,
+                  props: Set[String] = Set.empty,
+                  continueParam: Option[(String, String)],
+                  queryType: String,
+                  queryPrefix: String) = {
+    val extraParams: Map[String, String] = if (props.isEmpty) Map.empty else Map(queryPrefix + "prop" -> props.mkString("|"))
+    query(pageQuery, namespaces, continueParam, "prop", queryType, queryPrefix, extraParams, Some(generator), Some(generatorPrefix))
+  }
+
   def query(
              pageQuery: PageQuery,
              namespaces: Set[Int] = Set.empty,
-             continueParam: Option[String],
+             continueParam: Option[(String, String)],
              module: String,
              queryType: String,
              queryPrefix: String,
-             extraParams: Map[String, String] = Map.empty): Future[Seq[Page]] = {
-    val querySuffix = module match {
-      case "list" => ""
-      case "prop" => "s"
-    }
-    val queryParamNames = module match {
-      case "list" => (queryPrefix + "pageid" + querySuffix, queryPrefix + "title" + querySuffix)
-      case "prop" => ("pageid" + querySuffix, "title" + querySuffix)
-    }
-
-    val limits = module match {
-      case "list" => Map(queryPrefix + "limit" -> "max")
-      case "prop" => Map.empty
-    }
-
-    val params = Map("action" -> "query",
-      module -> queryType) ++
-      limits ++
-      pageQuery.toMap(queryParamNames) ++
-      (if (!namespaces.isEmpty) Map(queryPrefix + "namespace" -> namespaces.mkString("|")) else Map.empty) ++
-      extraParams ++
-      continueParam.fold(
-        Map("continue" -> "")) {
-        c => Map("continue" -> "-||", (queryPrefix + "continue") -> c)
-      }
+             extraParams: Map[String, String] = Map.empty,
+             generator: Option[String] = None,
+             generatorPrefix: Option[String] = None): Future[Seq[Page]] = {
+    val params = makeParams(pageQuery, namespaces, continueParam, module, queryType, queryPrefix, extraParams, generator, generatorPrefix)
 
     val url = getUri(params)
 
@@ -154,12 +167,58 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
           case _ => Seq.empty
         }
 
-        val continue = json.validate(continueReads(queryPrefix + "continue")).asOpt.flatten
+
+        val continueParamName  = generatorPrefix.fold(queryPrefix)(s => "g" + s) + "continue"
+        val continue = json.validate(continueReads(continueParamName)).asOpt
+
+        system.log.info(s"pages: ${pages.size}, $continueParamName: $continue")
 
         continue.fold(pages) { c =>
-          pages ++ Await.result(query(pageQuery, namespaces, continue, module, queryType, queryPrefix), http.timeout);
+          pages ++ Await.result(query(pageQuery, namespaces, Some(c.continue.get, c.prefixed.get), module, queryType, queryPrefix, extraParams, generator, generatorPrefix), http.timeout);
         }
     }
+  }
+
+  def makeParams(
+                  pageQuery: PageQuery,
+                  namespaces: Set[Int],
+                  continueParam: Option[(String, String)],
+                  module: String,
+                  queryType: String,
+                  queryPrefix: String,
+                  extraParams: Map[String, String],
+                  generator: Option[String] = None,
+                  generatorPrefix: Option[String] = None): Map[String, String] = {
+    val querySuffix = module match {
+      case "list" => ""
+      case "prop" => generator.fold("s")(s => "")
+    }
+    val queryPrefixWithGen = generatorPrefix.fold(queryPrefix)(s => "g" + s )
+
+    val queryParamNames = module match {
+      case "list" => (queryPrefixWithGen + "pageid" + querySuffix, queryPrefixWithGen + "title" + querySuffix)
+      case "prop" => (
+        generatorPrefix.fold("pageid" + querySuffix)("g" + _  + "pageid"),
+        generatorPrefix.fold("title" + querySuffix)("g" + _  + "title"))
+    }
+
+    val limits = module match {
+      case "list" => Map(queryPrefix + "limit" -> "max")
+      case "prop" => generatorPrefix.fold(Map.empty[String, String])(s => Map(queryPrefixWithGen + "limit" -> "max"))
+    }
+
+    val params = Map("action" -> "query",
+      module -> queryType) ++
+      limits ++
+      generator.fold(Map.empty[String, String])(s => Map("generator" -> s)) ++
+      pageQuery.toMap(queryParamNames) ++
+      (if (!namespaces.isEmpty) Map(queryPrefixWithGen + "namespace" -> namespaces.mkString("|")) else Map.empty) ++
+      extraParams ++
+      continueParam.fold(
+        Map("continue" -> "")) {
+        case (c1,c2) => Map("continue" -> c1, (queryPrefixWithGen + "continue") -> c2)
+      }
+    params
   }
 
   def shutdown(): Unit = {
@@ -176,13 +235,50 @@ object MwBot {
 
     import system.dispatcher
 
-    val ukWiki = new MwBot(http, system, "uk.wikipedia.org")
+//    val ukWiki = new MwBot(http, system, "uk.wikipedia.org")
+//
+//    Await.result(ukWiki.login(args(0), args(1)), http.timeout)
+//    listsNew(system, http, ukWiki)
 
-    Await.result(ukWiki.login(args(0), args(1)), http.timeout)
-    //    val commons = new MwBot(http, system, "commons.wikimedia.org")
+    val commons = new MwBot(http, system, "commons.wikimedia.org")
+    val result = Await.result(commons.login(args(0), args(1)), http.timeout)
+//    images(system, http, commons)
+//    imagesText(system, http, commons)
+    imagesInfo(system, http, commons)
 
-    listsNew(system, http, ukWiki)
+
   }
+
+  def images(system: ActorSystem, http: HttpClientImpl, commons: MwBot)(implicit dispatcher: ExecutionContext) {
+    commons.categoryMembers(PageQuery.byTitle("Category:Images from Wiki Loves Earth 2014 in Ukraine")) map {
+      pages =>
+        system.log.info("pages:" + pages.size)
+
+        commons.shutdown()
+    }
+  }
+
+    def imagesText(system: ActorSystem, http: HttpClientImpl, commons: MwBot)(implicit dispatcher: ExecutionContext) {
+      commons.revisionsByGenerator("categorymembers", "cm", PageQuery.byTitle("Category:Images from Wiki Loves Earth 2014 in Ukraine"),
+        Set.empty, Set("content", "timestamp", "user", "comment")) map {
+        pages =>
+          system.log.info("pages:" + pages.size)
+
+          commons.shutdown()
+      }
+  }
+
+  def imagesInfo(system: ActorSystem, http: HttpClientImpl, commons: MwBot)(implicit dispatcher: ExecutionContext) {
+    commons.imageInfoByGenerator("categorymembers", "cm", PageQuery.byTitle("Category:Images from Wiki Loves Earth 2014 in Ukraine")) map {
+      pages =>
+        system.log.info("pages:" + pages.size)
+
+        commons.shutdown()
+    }
+  }
+
+
+
 
   def listsOld(system: ActorSystem, http: HttpClientImpl, ukWiki: MwBot)(implicit dispatcher: ExecutionContext) {
     ukWiki.whatTranscludesHere(PageQuery.byTitle("Template:ВЛЗ-рядок")) flatMap {
@@ -195,20 +291,14 @@ object MwBot {
           val text: String = page.text.getOrElse("")
           val monuments = "\\{\\{ВЛЗ-рядок".r.findAllMatchIn(text).size
           println(s"${page.title} - $monuments monuments")
-
-          val commons = new MwBot(http, system, "commons.wikimedia.org")
         }
+
         ukWiki.shutdown()
-      // commons.shutdown()
     }
   }
 
   def listsNew(system: ActorSystem, http: HttpClientImpl, ukWiki: MwBot)(implicit dispatcher: ExecutionContext) {
-    ukWiki.whatTranscludesHere(PageQuery.byTitle("Template:ВЛП-рядок")) flatMap {
-      pages =>
-        system.log.info("pages:" + pages.size)
-        ukWiki.revisions(PageQuery.byIds(pages.map(_.pageid.toInt).toSet), Set.empty, Set("content", "timestamp", "user", "comment"))
-    } map {
+        ukWiki.revisionsByGenerator("embeddedin", "ei", PageQuery.byTitle("Template:ВЛП-рядок"), Set.empty, Set("content", "timestamp", "user", "comment")) map {
       pages =>
         system.log.info("pages2:" + pages.size)
         for (page <- pages) {

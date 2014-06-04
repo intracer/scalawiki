@@ -70,8 +70,9 @@ class PlayJsonSpec extends Specification {
     }
 
     "have continue" in {
-      val qc = json.validate[Option[String]](continueReads(queryContinue)).asOpt.flatten
-      qc must beSome("qcValue")
+      val qc = json.validate(continueReads(queryContinue)).asOpt.get
+      qc.continue must be("-||")
+      qc.prefixed must be("qcValue")
     }
   }
 

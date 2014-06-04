@@ -1,6 +1,6 @@
 package client.json
 
-import client.dto.{LoginResponse, Revision, Page}
+import client.dto.{Continue, LoginResponse, Revision, Page}
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
@@ -21,7 +21,11 @@ object MwReads {
 
   def pagesReads(queryType: String): Reads[Seq[Page]] = (__ \ "query" \ queryType).read[Seq[Page]]
 
-  def continueReads(continue: String): Reads[Option[String]] = (__ \ "continue" \ continue).readNullable[String]
+  def continueReads(continue: String): Reads[Continue] = (
+    (__ \ "continue" \ "continue").readNullable[String] and
+      (__ \ "continue" \ continue).readNullable[String]
+    )(Continue.apply _)
+
 
   // for https://www.mediawiki.org/wiki/API:Legacy_Query_Continue, not supported for now
   def queryContinueReads(queryType: String, continue: String): Reads[String] = (__ \ "query-continue" \ queryType \ continue).read[String]
