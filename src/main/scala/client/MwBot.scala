@@ -161,7 +161,11 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
             pagesJson.keys.map {
               key =>
                 val pageJson: JsValue = pagesJson \ key
-                val page = pageJson.validate(MwReads2.pageWithRevisionReads).get
+                val reads = queryType match {
+                  case "revisions" => MwReads2.pageWithRevisionReads
+                  case "imageinfo" => MwReads2.pageWithImageInfoReads
+                }
+                val page = pageJson.validate(reads).get
                 page
             }.toSeq
           case _ => Seq.empty
@@ -276,9 +280,6 @@ object MwBot {
         commons.shutdown()
     }
   }
-
-
-
 
   def listsOld(system: ActorSystem, http: HttpClientImpl, ukWiki: MwBot)(implicit dispatcher: ExecutionContext) {
     ukWiki.whatTranscludesHere(PageQuery.byTitle("Template:ВЛЗ-рядок")) flatMap {

@@ -1,6 +1,6 @@
 package client.dto
 
-case class Page(pageid: Integer, ns: Integer, title: String, revisions: Seq[Revision] = Seq.empty) {
+case class Page(pageid: Integer, ns: Integer, title: String, revisions: Seq[Revision] = Seq.empty, imageInfo: Seq[ImageInfo] = Seq.empty) {
 
   def withText(text: String) = copy(revisions = Page.revisionsFromText(Some(text)))
 
@@ -16,6 +16,8 @@ object Page {
   = new Page(pageid, ns, title, texts.map(text => new Revision(text)))
 
   def withRevisions(pageid: Int, ns: Int, title: String, revisions: Seq[Revision])  = new Page(pageid, ns, title, revisions)
+
+  def withImageInfo(pageid: Int, ns: Int, title: String, imageInfo: Seq[ImageInfo])  = new Page(pageid, ns, title, Seq.empty, imageInfo)
 
   def apply(title: String) = new Page(null, null, title)
 

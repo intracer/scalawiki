@@ -1,8 +1,11 @@
 package client.json
 
-import client.dto.{Continue, LoginResponse, Revision, Page}
+import client.dto._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import client.dto.Revision
+import client.dto.Continue
+import client.dto.LoginResponse
 
 object MwReads {
 
@@ -40,6 +43,17 @@ object MwReads2 {
       (__ \ "comment").read[String] and
       (__ \ "*").read[String]
     )(Revision.apply _)
+
+  implicit val imageInfoReads: Reads[ImageInfo] = (
+    (__ \ "timestamp").read[String] and
+      (__ \ "user").read[String] and
+      (__ \ "size").read[Int] and
+      (__ \ "width").read[Int] and
+      (__ \ "height").read[Int] and
+      (__ \ "url").read[String] and
+      (__ \ "descriptionurl").read[String]
+    )(ImageInfo.apply _)
+
   val pageWithRevisionReads: Reads[Page] = (
     (__ \ "pageid").read[Int] and
       (__ \ "ns").read[Int] and
@@ -47,6 +61,21 @@ object MwReads2 {
       (__ \ "revisions").read[Seq[Revision]]
     )(Page.withRevisions _)
 
+  val pageWithImageInfoReads: Reads[Page] = (
+    (__ \ "pageid").read[Int] and
+      (__ \ "ns").read[Int] and
+      (__ \ "title").read[String] and
+      (__ \ "imageinfo").read[Seq[ImageInfo]]
+    )(Page.withImageInfo _)
+
   //  def pagesWithRevisionsReads(queryType:String): Reads[Seq[Page]] = (__ \ "query" \ "pages" ).read[Seq[Page]]
 
 }
+
+//"timestamp": "2014-05-20T20:54:33Z",
+//      "user": "Taras r",
+//      "size": 4270655,
+//      "width": 3648,
+//      "height": 2736,
+//      "url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/%22Dovbush-rocks%22_01.JPG",
+//      "descriptionurl": "https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_01.JPG"
