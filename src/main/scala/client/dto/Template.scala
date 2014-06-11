@@ -1,0 +1,59 @@
+package client.dto
+
+import java.util.regex.{Matcher, Pattern}
+
+class Template(val text: String) {
+
+  def getParam(name: String): String = {
+    findPosition(name).fold("") {
+      case (start, end) =>
+        text.substring(start, end).trim
+    }
+  }
+
+  def getParamOpt(name: String): Option[String] = {
+    findPosition(name)
+      .fold[Option[String]](None) {
+      case (start, end) =>
+        val value = text.substring(start, end).trim
+        if (value.isEmpty) None else Option(value)
+    }
+  }
+
+  def hasTemplateParam(name: String): Boolean = matcher(text, name).find()
+
+  def setTemplateParam(name: String, value: String): Template = {
+    findPosition(name).fold(this) {
+      case (start, end) =>
+        new Template(text.substring(0, start) + value + text.substring(end))
+    }
+  }
+
+  def matcher(text: String, param: String): Matcher = {
+    val p = Pattern.compile("\\|\\s*" + param + "\\s*=")
+    p.matcher(text)
+  }
+
+  def findPosition(param: String): Option[(Int, Int)] = {
+    val m = matcher(text, param)
+    if (m.find) {
+      val start = m.end
+      val end = text.indexOf("\n", start)
+      Some(start -> end)
+    } else None
+  }
+
+}
+
+
+object Template {
+
+  def getDefaultParam(text: String, templateName: String) = {
+    val template: String = "{{" + templateName + "|"
+
+    val start = text.indexOf(template) + template.length
+    val end = text.indexOf("}}", start)
+    text.substring(start, end).trim.toLowerCase
+  }
+
+}

@@ -4,7 +4,7 @@ import spray.http._
 import scala.concurrent.{ExecutionContext, Await, Future}
 import spray.http.HttpResponse
 import scala.concurrent.duration._
-import client.dto.{Namespace, SinglePageQuery, PageQuery, Page}
+import client.dto._
 
 import play.api.libs.json._
 import client.json.MwReads._
@@ -15,6 +15,10 @@ import akka.pattern.ask
 import spray.util._
 import client.json.MwReads2
 import spray.http.HttpHeaders.`Set-Cookie`
+import scala.Some
+import spray.http.HttpResponse
+import play.api.libs.json.JsObject
+import client.wlx.Monument
 
 class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
@@ -40,11 +44,11 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
         log.error("Could not login" + err)
         err.toString()
       }, { resp =>
-        Await.result(http.post(getUri("action" -> "login", "lgname" -> user, "lgpassword" -> password, "lgtoken" -> resp.token)) map cookiesAndBody map { cb=>
+        Await.result(http.post(getUri("action" -> "login", "lgname" -> user, "lgpassword" -> password, "lgtoken" -> resp.token)) map cookiesAndBody map { cb =>
           http.setCookies(cb.cookies)
           val json = Json.parse(cb.body)
-          val l = json.validate(loginResponseReads)  // {"login":{"result":"NotExists"}}
-          l.fold(err=> err.toString(),
+          val l = json.validate(loginResponseReads) // {"login":{"result":"NotExists"}}
+          l.fold(err => err.toString(),
             success => success.result
           )
         }, http.timeout)
@@ -100,7 +104,6 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
   }
 
 
-
   def getIndexUri(params: (String, String)*) =
     Uri(indexUrl) withQuery (params ++ Seq("format" -> "json"): _*)
 
@@ -127,11 +130,11 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
   def queryByGenerator(generator: String, generatorPrefix: String,
                        pageQuery: PageQuery,
-                  namespaces: Set[Int] = Set.empty,
-                  props: Set[String] = Set.empty,
-                  continueParam: Option[(String, String)],
-                  queryType: String,
-                  queryPrefix: String) = {
+                       namespaces: Set[Int] = Set.empty,
+                       props: Set[String] = Set.empty,
+                       continueParam: Option[(String, String)],
+                       queryType: String,
+                       queryPrefix: String) = {
     val extraParams: Map[String, String] = if (props.isEmpty) Map.empty else Map(queryPrefix + "prop" -> props.mkString("|"))
     query(pageQuery, namespaces, continueParam, "prop", queryType, queryPrefix, extraParams, Some(generator), Some(generatorPrefix))
   }
@@ -172,7 +175,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
         }
 
 
-        val continueParamName  = generatorPrefix.fold(queryPrefix)(s => "g" + s) + "continue"
+        val continueParamName = generatorPrefix.fold(queryPrefix)(s => "g" + s) + "continue"
         val continue = json.validate(continueReads(continueParamName)).asOpt
 
         system.log.info(s"pages: ${pages.size}, $continueParamName: $continue")
@@ -197,13 +200,13 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
       case "list" => ""
       case "prop" => generator.fold("s")(s => "")
     }
-    val queryPrefixWithGen = generatorPrefix.fold(queryPrefix)(s => "g" + s )
+    val queryPrefixWithGen = generatorPrefix.fold(queryPrefix)(s => "g" + s)
 
     val queryParamNames = module match {
       case "list" => (queryPrefixWithGen + "pageid" + querySuffix, queryPrefixWithGen + "title" + querySuffix)
       case "prop" => (
-        generatorPrefix.fold("pageid" + querySuffix)("g" + _  + "pageid"),
-        generatorPrefix.fold("title" + querySuffix)("g" + _  + "title"))
+        generatorPrefix.fold("pageid" + querySuffix)("g" + _ + "pageid"),
+        generatorPrefix.fold("title" + querySuffix)("g" + _ + "title"))
     }
 
     val limits = module match {
@@ -220,7 +223,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
       extraParams ++
       continueParam.fold(
         Map("continue" -> "")) {
-        case (c1,c2) => Map("continue" -> c1, (queryPrefixWithGen + "continue") -> c2)
+        case (c1, c2) => Map("continue" -> c1, (queryPrefixWithGen + "continue") -> c2)
       }
     params
   }
@@ -239,18 +242,45 @@ object MwBot {
 
     import system.dispatcher
 
-//    val ukWiki = new MwBot(http, system, "uk.wikipedia.org")
-//
-//    Await.result(ukWiki.login(args(0), args(1)), http.timeout)
-//    listsNew(system, http, ukWiki)
+        val ukWiki = new MwBot(http, system, "uk.wikipedia.org")
 
-    val commons = new MwBot(http, system, "commons.wikimedia.org")
-    val result = Await.result(commons.login(args(0), args(1)), http.timeout)
-//    images(system, http, commons)
+        Await.result(ukWiki.login(args(0), args(1)), http.timeout)
+    //    listsNew(system, http, ukWiki)
+    Monument.lists(ukWiki, "ВЛЗ-рядок")
+
+//    val commons = new MwBot(http, system, "commons.wikimedia.org")
+//    Await.result(commons.login(args(0), args(1)), http.timeout)
+    //    images(system, http, commons)
 //    imagesText(system, http, commons)
-    imagesInfo(system, http, commons)
+    //imagesInfo(system, http, commons)
 
+   // contestImages(commons)
 
+  }
+
+  def contestImages(commons: MwBot)(implicit dispatcher: ExecutionContext) {
+    commons.categoryMembers(PageQuery.byTitle("Category:Images from Wiki Loves Earth 2014"), Set(Namespace.CATEGORY_NAMESPACE)) flatMap {
+      categories =>
+        val filtered = categories.filter(c => c.title.startsWith("Category:Images from Wiki Loves Earth 2014 in"))
+        Future.traverse(filtered)(
+          category => commons.categoryMembers(PageQuery.byId(category.pageid), Set(Namespace.FILE_NAMESPACE))
+        )
+    } map {
+      filesInCategories =>
+
+        for (files1 <- filesInCategories;
+             files2 <- filesInCategories) {
+          if (files1 != files2) {
+            val intersect = files1.intersect(files2)
+            if (!intersect.isEmpty) {
+              println(intersect)
+            }
+          }
+        }
+
+        commons.shutdown()
+
+    }
   }
 
   def images(system: ActorSystem, http: HttpClientImpl, commons: MwBot)(implicit dispatcher: ExecutionContext) {
@@ -262,14 +292,21 @@ object MwBot {
     }
   }
 
-    def imagesText(system: ActorSystem, http: HttpClientImpl, commons: MwBot)(implicit dispatcher: ExecutionContext) {
-      commons.revisionsByGenerator("categorymembers", "cm", PageQuery.byTitle("Category:Images from Wiki Loves Earth 2014 in Ukraine"),
-        Set.empty, Set("content", "timestamp", "user", "comment")) map {
-        pages =>
-          system.log.info("pages:" + pages.size)
+  def imagesText(system: ActorSystem, http: HttpClientImpl, commons: MwBot)(implicit dispatcher: ExecutionContext) {
+    commons.revisionsByGenerator("categorymembers", "cm", PageQuery.byTitle("Category:Images from Wiki Loves Earth 2014 in Ukraine"),
+      Set.empty, Set("content", "timestamp", "user", "comment")) map {
+      pages =>
 
-          commons.shutdown()
-      }
+        val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
+       val ids:Seq[String] = pages.flatMap(_.text.map(Template.getDefaultParam(_, "UkrainianNaturalHeritageSite")))
+        .filter(_.matches(idRegex))
+
+        val byId = ids.groupBy(identity)
+        system.log.info("pages:" + pages.size)
+        system.log.info("ids:" + byId.size)
+
+        commons.shutdown()
+    }
   }
 
   def imagesInfo(system: ActorSystem, http: HttpClientImpl, commons: MwBot)(implicit dispatcher: ExecutionContext) {
@@ -299,7 +336,7 @@ object MwBot {
   }
 
   def listsNew(system: ActorSystem, http: HttpClientImpl, ukWiki: MwBot)(implicit dispatcher: ExecutionContext) {
-        ukWiki.revisionsByGenerator("embeddedin", "ei", PageQuery.byTitle("Template:ВЛП-рядок"), Set.empty, Set("content", "timestamp", "user", "comment")) map {
+    ukWiki.revisionsByGenerator("embeddedin", "ei", PageQuery.byTitle("Template:ВЛП-рядок"), Set.empty, Set("content", "timestamp", "user", "comment")) map {
       pages =>
         system.log.info("pages2:" + pages.size)
         for (page <- pages) {

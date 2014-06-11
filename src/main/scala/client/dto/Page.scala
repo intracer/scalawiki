@@ -1,6 +1,6 @@
 package client.dto
 
-case class Page(pageid: Integer, ns: Integer, title: String, revisions: Seq[Revision] = Seq.empty, imageInfo: Seq[ImageInfo] = Seq.empty) {
+case class Page(pageid: java.lang.Long, ns: Integer, title: String, revisions: Seq[Revision] = Seq.empty, imageInfo: Seq[ImageInfo] = Seq.empty) {
 
   def withText(text: String) = copy(revisions = Page.revisionsFromText(Some(text)))
 

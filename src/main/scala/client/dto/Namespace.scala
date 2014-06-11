@@ -10,4 +10,6 @@ object Namespace {
   final val FILE_NAMESPACE = 6
 
   final val TEMPLATE_NAMESPACE = 10
+
+  final val CATEGORY_NAMESPACE = 14
 }

@@ -10,7 +10,7 @@ object ScalaProjectBuild extends Build {
     settings = Project.defaultSettings ++ Seq(
       name := "mwbot",
       organization := "org.intracer",
-      version := "0.1",
+      version := "0.1.1",
       scalaVersion := "2.10.3",
       // add other settings here
         resolvers := Seq ("spray repo" at "http://repo.spray.io", "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"),
