@@ -2,8 +2,6 @@ package client.wlx
 
 import client.{LoginInfo, MwBot}
 
-import scala.concurrent.Await
-
 class MonumentDB(val contest: Contest) {
 
   var bot: MwBot = _
@@ -16,7 +14,7 @@ class MonumentDB(val contest: Contest) {
 
   def initBot() = {
     bot = MwBot.create(contest.country.languageCode + "wikipedia.org")
-    Await.result(bot.login(LoginInfo.login, LoginInfo.password), bot.http.timeout)
+    bot.await(bot.login(LoginInfo.login, LoginInfo.password))
   }
 
 
