@@ -1,25 +1,15 @@
 package client
 
+import java.util.concurrent.TimeUnit
+
+import client.dto.{ImageInfo, Page, Revision}
+import client.util.{Command, MockBotSpec}
 import org.specs2.mutable.Specification
-import client.util.{TestHttpClient, Command}
-import client.dto.{ImageInfo, Revision, Page, PageQuery}
+
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import java.util.concurrent.TimeUnit
-import scala.collection.mutable
-import akka.actor.ActorSystem
 
-class GeneratorSpec extends Specification {
-  val host = "uk.wikipedia.org"
-
-  private val system: ActorSystem = ActorSystem()
-
-  def getBot(commands: Command*) = {
-    val http = new TestHttpClient(host, mutable.Queue(commands: _*))
-
-    new MwBot(http, system, host)
-  }
-
+class GeneratorSpec extends Specification with MockBotSpec {
 
   "get revisions text in generator" should {
     "return a page text" in {
@@ -49,7 +39,7 @@ class GeneratorSpec extends Specification {
 
       val bot = getBot(commands: _*)
 
-      val future = bot.revisionsByGenerator("categorymembers", "cm", PageQuery.byTitle("Category:SomeCategory"), Set.empty, Set("content", "timestamp", "user", "comment"))
+      val future = bot.page("Category:SomeCategory").revisionsByGenerator("categorymembers", "cm", Set.empty, Set("content", "timestamp", "user", "comment"))
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2
       result(0) === Page(569559, 1, "Talk:Welfare reform", Seq(Revision("u1", "t1", "c1", pageText1)))
@@ -120,7 +110,7 @@ class GeneratorSpec extends Specification {
 
       val bot = getBot(commands: _*)
 
-      val future = bot.imageInfoByGenerator("categorymembers", "cm", PageQuery.byTitle("Category:SomeCategory"), Set.empty, Set("content", "timestamp", "user", "comment"))
+      val future = bot.page("Category:SomeCategory").imageInfoByGenerator("categorymembers", "cm", Set.empty, Set("content", "timestamp", "user", "comment"))
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2
       result(0) === Page(32885574, 6, "File:\"Dovbush-rocks\" 01.JPG", Seq.empty, Seq(ImageInfo("2014-05-20T20:54:33Z", "Taras r", 4270655, 3648, 2736,

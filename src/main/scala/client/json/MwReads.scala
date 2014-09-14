@@ -10,10 +10,16 @@ import client.dto.LoginResponse
 object MwReads {
 
   //  {"login":{"result":"NeedToken","token":"a504e9507bb8e8d7d3bf839ef096f8f7","cookieprefix":"ukwiki","sessionid":"37b1d67422436e253f5554de23ae0064"}}
+  // {"login":{"result":"Success","lguserid":678,"lgusername":"IlyaBot","lgtoken":"8afaf1c733a4e667628be1f3ac176cdd","cookieprefix":"ukwiki","sessionid":"f4bf2533e14517401478383ca458feee"}}
 
   def loginResponseReads: Reads[LoginResponse] = (
     (__ \ "login" \ "result").read[String] and
-      (__ \ "login" \ "token").read[String]
+      (__ \ "login" \ "token").readNullable[String] and
+      (__ \ "login" \ "lgtoken").readNullable[String] and
+      (__ \ "login" \ "lguserid").readNullable[Int] and
+      (__ \ "login" \ "lgusername").readNullable[String] and
+      (__ \ "login" \ "cookieprefix").readNullable[String] and
+      (__ \ "login" \ "sessionid").readNullable[String]
     )(LoginResponse.apply _)
 
   implicit val pageReads: Reads[Page] = (

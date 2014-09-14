@@ -13,7 +13,7 @@ import scala.concurrent.duration._
 
 
 trait HttpClient {
-  val timeout: Duration = 15.minutes
+  val timeout: Duration = 1.minute
 
   def setCookies(cookies: Seq[HttpCookie])
 
