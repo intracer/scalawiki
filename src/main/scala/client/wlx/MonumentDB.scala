@@ -1,26 +1,23 @@
 package client.wlx
 
-import client.{LoginInfo, MwBot}
+import client.wlx.dto.{Contest, Monument}
+import client.wlx.query.MonumentQuery
 
-class MonumentDB(val contest: Contest) {
-
-  var bot: MwBot = _
+class MonumentDB(val contest: Contest, monumentQuery: MonumentQuery) {
 
   var monuments: Seq[Monument] = Seq.empty
 
   var _byId: Map[String, Seq[Monument]] = Map.empty
 
-  def ids: Set[String] = _byId.keySet
+  var _byRegion : Map[String, Seq[Monument]] = Map.empty
 
-  def initBot() = {
-    bot = MwBot.create(contest.country.languageCode + "wikipedia.org")
-    bot.await(bot.login(LoginInfo.login, LoginInfo.password))
-  }
+  def ids: Set[String] = _byId.keySet
 
 
   def fetchLists() = {
-    monuments = bot.await(Monument.lists(bot, contest.listTemplate))
+    monuments = monumentQuery.lists(contest.listTemplate)
     _byId = monuments.groupBy(_.id)
+    _byRegion = monuments.groupBy(_.id.split("\\-")(0))
 
   }
 

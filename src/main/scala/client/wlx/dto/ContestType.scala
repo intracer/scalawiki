@@ -1,4 +1,4 @@
-package client.wlx
+package client.wlx.dto
 
 class ContestType(val code: String, val name: String) {
 

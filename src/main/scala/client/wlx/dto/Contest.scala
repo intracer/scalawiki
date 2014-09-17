@@ -1,4 +1,4 @@
-package client.wlx
+package client.wlx.dto
 
 class Contest(
               val contestType: ContestType,

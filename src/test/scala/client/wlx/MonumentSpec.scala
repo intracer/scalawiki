@@ -1,5 +1,6 @@
 package client.wlx
 
+import client.wlx.dto.Monument
 import org.specs2.mutable.Specification
 
 class MonumentSpec extends Specification {

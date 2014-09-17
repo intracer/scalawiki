@@ -1,4 +1,4 @@
-package client.wlx
+package client.wlx.dto
 
 case class Coordinate(lat: String, lon: String) {
   def toOpenStreetMap =

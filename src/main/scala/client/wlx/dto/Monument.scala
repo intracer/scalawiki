@@ -1,29 +1,25 @@
-package client.wlx
+package client.wlx.dto
 
 import java.net.URLEncoder
 
-import client.MwBot
 import client.dto.Template
 
-import scala.concurrent.{ExecutionContext, Future}
-
-case class Monument(textParam: String,
+case class Monument(textParam: String, pageParam: String,
                     id: String,
                     name: String,
-                    description: Option[String],
-                    article: Option[String],
-                    place: String,
-                    user: String,
-                    area: Option[String],
+                    description: Option[String] = None,
+                    article: Option[String] = None,
+                    place: Option[String] = None,
+                    user: Option[String] = None,
+                    area: Option[String] = None,
 //                    coordinate: Option[Coordinate],
-                    lat: Option[String],
-                    lon: Option[String],
-                    typ: String,
-                    subType: String,
-                    photo: Option[String],
-                    gallery: Option[String],
-                    resolution: Option[String],
-                    pageParam: String//,
+                    lat: Option[String] = None,
+                    lon: Option[String] = None,
+                    typ: Option[String] = None,
+                    subType: Option[String] = None,
+                    photo: Option[String] = None,
+                    gallery: Option[String] = None,
+                    resolution: Option[String] = None
 //                    otherParams: Map[String, String]
                      ) extends Template(textParam, pageParam) {
 
@@ -42,18 +38,18 @@ object Monument {
       id = t.getParam("ID"),
       name = name,
       description =  t.getParamOpt("опис"),
-      None,
-      place =  t.getParam("розташування"),
-      user = t.getParam("користувач"),
+      article = None,
+      place =  t.getParamOpt("розташування"),
+      user = t.getParamOpt("користувач"),
       area = t.getParamOpt("площа"),
       lat = t.getParamOpt("широта"),
       lon = t.getParamOpt("довгота"),
-      typ = t.getParam("тип"),
-      subType =  t.getParam("підтип"),
+      typ = t.getParamOpt("тип"),
+      subType =  t.getParamOpt("підтип"),
       photo = t.getParamOpt("фото"),
       gallery = t.getParamOpt("галерея"),
       resolution = t.getParamOpt("постанова"),
-      page
+      pageParam = page
     )
   }
 
@@ -78,14 +74,6 @@ object Monument {
 
   def monumentsFromText(text: String, page: String, template: String): Set[Monument] =
     text.split("\\{\\{" + template).map(text => init(text, page)).filter(_.id.nonEmpty).toSet
-
-  def lists(wiki: MwBot, template: String)(implicit dispatcher: ExecutionContext): Future[Seq[Monument]] = {
-    wiki.page("Template:" + template).revisionsByGenerator("embeddedin", "ei", Set.empty, Set("content", "timestamp", "user", "comment")) map {
-      pages =>
-        val monuments = pages.flatMap(page => monumentsFromText(page.text.getOrElse(""), page.title, template))
-        monuments
-    }
-  }
 
 }
 

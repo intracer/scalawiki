@@ -1,10 +1,6 @@
-package client.wlx
+package client.wlx.dto
 
-import client.dto.{Template, Namespace, SinglePageQuery, Page}
-import org.intracer.wmua.Contest
-import org.intracer.wmua.Image
-
-import scala.concurrent.Future
+import client.dto.Page
 
 
 case class Image(pageId: Long, title: String,
@@ -21,7 +17,7 @@ case class Image(pageId: Long, title: String,
 
 object Image {
 
-  def fromPage(page: Page, contest: Contest):Option[Image] = {
+  def fromPage(page: Page):Option[Image] = {
     for (imageInfo <- page.imageInfo.headOption)
     yield new Image(page.pageid, page.title, imageInfo.url, imageInfo.descriptionUrl, imageInfo.width, imageInfo.height, None)
   }
