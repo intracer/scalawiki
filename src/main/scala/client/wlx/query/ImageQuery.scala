@@ -5,8 +5,7 @@ import client.wlx.dto.{Contest, Image}
 import client.{LoginInfo, MwBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.concurrent._
+import scala.concurrent.{Future, _}
 
 trait ImageQuery {
 
@@ -17,7 +16,7 @@ trait ImageQuery {
   def imagesWithTemplate(template:String, contest: Contest):Seq[Image]
 }
 
-class ImageQueryApi extends ImageQuery{
+class ImageQueryApi extends ImageQuery {
 
 
   var bot: MwBot = _
@@ -89,8 +88,33 @@ class ImageQueryApi extends ImageQuery{
 
 }
 
+class CachedImageQuery(underlying: ImageQuery) extends ImageQuery {
+
+  import spray.caching.{LruCache, Cache}
+
+  val cache: Cache[Seq[Image]] = LruCache()
+
+  override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]] =
+    cache(category) {
+      underlying.imagesFromCategoryAsync(category, contest)
+    }
+
+  override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]] =
+    cache(template) {
+      underlying.imagesWithTemplateAsync(template, contest)
+    }
+
+  override def imagesFromCategory(category: String, contest: Contest): Seq[Image] =
+      underlying.imagesFromCategory(category, contest)
+
+
+  override def imagesWithTemplate(template: String, contest: Contest): Seq[Image] =
+    underlying.imagesWithTemplate(template, contest)
+
+
+}
+
 class ImageQuerySeq(
-                     contest: Contest,
                      imagesByCategory: Map[String, Seq[Image]],
                      imagesWithTemplate: Seq[Image]
                      ) extends ImageQuery {
