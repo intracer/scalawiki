@@ -81,7 +81,7 @@ class ImageQuerySeq(
 
 object ImageQuery {
 
-  def create(caching: Boolean = true, pickling: Boolean = false) = {
+  def create(caching: Boolean = true, pickling: Boolean = false):ImageQuery = {
     val api = new ImageQueryApi
 
     val query = if (caching)

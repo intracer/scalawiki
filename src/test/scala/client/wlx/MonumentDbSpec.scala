@@ -1,7 +1,6 @@
 package client.wlx
 
-import client.wlx.dto.{Region, Monument, Contest}
-import client.wlx.query.MonumentQuerySeq
+import client.wlx.dto.{Contest, Monument, Region}
 import org.specs2.mutable.Specification
 
 class MonumentDbSpec extends Specification {
@@ -22,10 +21,7 @@ class MonumentDbSpec extends Specification {
      "contain monuments ids" in {
        val contest = Contest.WLMUkraine(2014, "09-15", "10-15")
 
-       val query = new MonumentQuerySeq(monuments.toSeq)
-       val db = new MonumentDB(contest, query)
-
-       db.fetchLists()
+       val db = new MonumentDB(contest, monuments.toSeq)
 
        db.ids.size === monuments.size
        db.ids ===  monuments.map(_.id)
@@ -34,10 +30,7 @@ class MonumentDbSpec extends Specification {
     "group monuments by regions" in {
       val contest = Contest.WLMUkraine(2014, "09-15", "10-15")
 
-      val query = new MonumentQuerySeq(monuments.toSeq)
-      val db = new MonumentDB(contest, query)
-
-      db.fetchLists()
+      val db = new MonumentDB(contest, monuments.toSeq)
 
       val regions = db._byRegion.keySet
 

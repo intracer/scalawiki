@@ -1,7 +1,7 @@
 package client.wlx
 
 import client.wlx.dto.{Contest, Image, Monument, Region}
-import client.wlx.query.{MonumentQuerySeq, ImageQuerySeq}
+import client.wlx.query.ImageQuerySeq
 import org.specs2.mutable.Specification
 
 class ImageDbSpec extends Specification {
@@ -43,7 +43,7 @@ class ImageDbSpec extends Specification {
       val src = images(2014)
 
       val query = new ImageQuerySeq(Map(contest.category -> src.toSeq), src.toSeq)
-      val monumentDb: MonumentDB = new MonumentDB(contest, new MonumentQuerySeq(monuments.toSeq))
+      val monumentDb: MonumentDB = new MonumentDB(contest, monuments.toSeq)
       val db = new ImageDB(contest, query.imagesFromCategory(contest.category, contest), monumentDb)
 
       val regions = db._imagesByRegion.keySet

@@ -1,6 +1,7 @@
 package client.wlx
 
 import client.wlx.dto.{Monument, Contest, Image}
+import client.wlx.query.ImageQuery
 
 class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: MonumentDB) {
 
@@ -30,6 +31,19 @@ class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Monu
 
   def authorsByRegion(regId: String) = _authorsByRegion.getOrElse(regId, Seq.empty[String])
 
+  def subSet(monuments: Seq[Monument]): ImageDB = {
+    val subSetMonumentDb = new MonumentDB(contest, monuments)
+    val subSetImages = images.filter(_.monumentId.fold(false)(subSetMonumentDb.ids.contains))
+    new ImageDB(contest, subSetImages, subSetMonumentDb)
+  }
+
+}
+
+object ImageDB {
+  def create(contest: Contest, imageQuery: ImageQuery, monumentDb: MonumentDB) = {
+    val images = imageQuery.imagesFromCategory(contest.category, contest)
+    new ImageDB(contest, images, monumentDb)
+  }
 }
 
 

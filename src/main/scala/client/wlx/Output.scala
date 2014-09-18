@@ -1,6 +1,6 @@
 package client.wlx
 
-import client.wlx.dto.Region
+import client.wlx.dto.{SpecialNomination, Region}
 
 import scala.collection.immutable.SortedSet
 
@@ -90,6 +90,33 @@ class Output {
 
     header + text + total
 
+  }
+
+  def specialNomination(imageDbs: Map[SpecialNomination, ImageDB]) = {
+
+    val columns = Seq("Special nomination", "authors", "monuments", "photos", "")
+
+    val header = "{| class='wikitable sortable'\n" +
+      "|+ Special nomination statistics\n" +
+      columns.mkString("!", "!!", "\n" )
+
+    var text = ""
+    val nominations: Seq[SpecialNomination] = imageDbs.keySet.toSeq.sortBy(_.name)
+    for (nomination <- nominations) {
+      val imageDb = imageDbs(nomination)
+      val columnData = Seq(
+        nomination.name,
+        imageDb.authors.size,
+        imageDb.ids.size,
+        imageDb.images.size
+      )
+
+      text += columnData.mkString("|-\n| ", " || ","\n")
+    }
+
+    val total = "|}" + "\n[[Category:Wiki Loves Monuments 2014 in Ukraine]]"
+
+    header + text + total
   }
 
 

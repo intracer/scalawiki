@@ -205,7 +205,7 @@ object MwBot {
       pages => getAuthors(pages)
     }, 15.minutes)
 
-    Thread.sleep(10000)
+    Thread.sleep(1000)
     result
   }
 

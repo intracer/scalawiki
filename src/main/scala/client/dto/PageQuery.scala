@@ -107,7 +107,7 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
         site.system.log.info(s"pages: ${pages.size}, $continueParamName: $continue")
 
         continue.fold(pages) { c =>
-          Thread.sleep(5000)
+          Thread.sleep(1000)
           pages ++ Await.result(query(namespaces, Some(c.continue.get, c.prefixed.get), module, queryType, queryPrefix, limit, extraParams, generator, generatorPrefix), site.http.timeout);
         }
     }
