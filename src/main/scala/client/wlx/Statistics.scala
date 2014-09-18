@@ -27,7 +27,11 @@ class Statistics {
     val totalImages = imageQuery.imagesWithTemplate(wlmContest.fileTemplate, wlmContest)
     val totalImageDb = new ImageDB(wlmContest, totalImages)
 
+    val output = new Output()
 
+    val stat = output.monumentsPictured(imageDbs, totalImageDb, monumentDb)
+
+    println(stat)
   }
 
 }

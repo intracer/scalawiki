@@ -1,7 +1,6 @@
 package client.wlx
 
 import client.wlx.dto.{Contest, Image}
-import client.wlx.query._
 
 class ImageDB(val contest: Contest, val images: Seq[Image]) {
 
@@ -12,15 +11,6 @@ class ImageDB(val contest: Contest, val images: Seq[Image]) {
 //  var allImages: Seq[Image] = Seq.empty
 
   def ids: Set[String] = _byId.keySet
-
-  def fetchImages() {
-  //  images = imageQuery.imagesFromCategory(contest.category, contest)
-    _byId =
-    _byRegion =
-    _idsByRegion =
-
-//    allImages = imageQuery.imagesWithTemplate(contest.fileTemplate, contest)
-  }
 
   def byId(id: String) = _byId.getOrElse(id, Seq.empty[Image])
 
