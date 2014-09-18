@@ -21,17 +21,20 @@ class Statistics {
     val imageDbs = allContests.map{
       contest =>
         val images = imageQuery.imagesFromCategory(contest.category, contest)
-        new ImageDB(contest, images)
+        new ImageDB(contest, images, monumentDb)
     }
 
     val totalImages = imageQuery.imagesWithTemplate(wlmContest.fileTemplate, wlmContest)
-    val totalImageDb = new ImageDB(wlmContest, totalImages)
+    val totalImageDb = new ImageDB(wlmContest, totalImages, monumentDb)
 
     val output = new Output()
 
-    val stat = output.monumentsPictured(imageDbs, totalImageDb, monumentDb)
+    val idsStat = output.monumentsPictured(imageDbs, totalImageDb, monumentDb)
+    println(idsStat)
 
-    println(stat)
+    val authorStat = output.authorsContributed(imageDbs, totalImageDb, monumentDb)
+    println(authorStat)
+
   }
 
 }

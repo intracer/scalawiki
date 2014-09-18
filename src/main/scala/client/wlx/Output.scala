@@ -13,7 +13,7 @@ class Output {
 
     val columns = Seq("Region", "Objects in lists", "3 years total", "3 years percentage" ,"2012", "2013", "2014")
 
-    val header = "{| class='wikitable sortable\n" +
+    val header = "{| class='wikitable sortable'\n" +
       "|+ Objects pictured\n" +
       columns.mkString("!", "!!", "\n" )
 
@@ -26,11 +26,11 @@ class Output {
       val columnData = Seq(
         Region.Ukraine(regionId),
           monumentsDb.byRegion(regionId).size,
-          totalImageDb.byRegion(regionId).size,
-          100 * totalImageDb.byRegion(regionId).size / monumentsDb.byRegion(regionId).size,
-          imageDbsByYear(2012).head.byRegion(regionId),
-          imageDbsByYear(2013).head.byRegion(regionId),
-          imageDbsByYear(2014).head.byRegion(regionId)
+          totalImageDb.idsByRegion(regionId).size,
+          100 * totalImageDb.idsByRegion(regionId).size / monumentsDb.byRegion(regionId).size,
+          imageDbsByYear(2012).head.idsByRegion(regionId).size,
+          imageDbsByYear(2013).head.idsByRegion(regionId).size,
+          imageDbsByYear(2014).head.idsByRegion(regionId).size
       )
 
       text += columnData.mkString("|-\n| ", " || ","\n")
@@ -45,11 +45,53 @@ class Output {
       imageDbsByYear(2013).head.ids.size,
       imageDbsByYear(2014).head.ids.size
     )
-    val total = totalData.mkString("|-\n| "," || " ,"\n|}")
+    val total = totalData.mkString("|-\n| "," || " ,"\n|}")  + "\n[[Category:Wiki Loves Monuments 2014 in Ukraine]]"
 
     header + text + total
 
   }
+
+  def authorsContributed(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentsDb:  MonumentDB) = {
+
+    // val contests = (2012 to 2014).map(year => Contest.WLMUkraine(year, "01-09", "31-09"))
+
+
+    val columns = Seq("Region", "3 years total", "2012", "2013", "2014")
+
+    val header = "{| class='wikitable sortable'\n" +
+      "|+ Authors contributed\n" +
+      columns.mkString("!", "!!", "\n" )
+
+    val regionIds = SortedSet(monumentsDb._byRegion.keySet.toSeq:_*)
+
+    val imageDbsByYear = imageDbs.groupBy(_.contest.year)
+
+    var text = ""
+    for (regionId <- regionIds) {
+      val columnData = Seq(
+        Region.Ukraine(regionId),
+        totalImageDb.authorsByRegion(regionId).size,
+        imageDbsByYear(2012).head.authorsByRegion(regionId).size,
+        imageDbsByYear(2013).head.authorsByRegion(regionId).size,
+        imageDbsByYear(2014).head.authorsByRegion(regionId).size
+      )
+
+      text += columnData.mkString("|-\n| ", " || ","\n")
+    }
+
+    val totalData = Seq(
+      "Total",
+      totalImageDb.authors.size,
+      imageDbsByYear(2012).head.authors.size,
+      imageDbsByYear(2013).head.authors.size,
+      imageDbsByYear(2014).head.authors.size
+    )
+    val total = totalData.mkString("|-\n| "," || " ,"\n|}") + "\n[[Category:Wiki Loves Monuments 2014 in Ukraine]]"
+
+    header + text + total
+
+  }
+
 
 
 }

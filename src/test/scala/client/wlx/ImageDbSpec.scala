@@ -1,7 +1,7 @@
 package client.wlx
 
 import client.wlx.dto.{Contest, Image, Monument, Region}
-import client.wlx.query.ImageQuerySeq
+import client.wlx.query.{MonumentQuerySeq, ImageQuerySeq}
 import org.specs2.mutable.Specification
 
 class ImageDbSpec extends Specification {
@@ -27,7 +27,7 @@ class ImageDbSpec extends Specification {
 
           if (i%10 == year%10 || i%10 - 1 == year%10) {
             imageCount +=1
-            Some(Image(year*1000 + imageCount, s"image of $id taken on $year number $imageCount", "", "", 10, 10, Some(id)))
+            Some(Image(year*1000 + imageCount, s"image of $id taken on $year number $imageCount", "", "", 10, 10, Some(id), Some("author")))
           } else None
         }
     }
@@ -43,14 +43,13 @@ class ImageDbSpec extends Specification {
       val src = images(2014)
 
       val query = new ImageQuerySeq(Map(contest.category -> src.toSeq), src.toSeq)
-      val db = new ImageDB(contest, query)
+      val monumentDb: MonumentDB = new MonumentDB(contest, new MonumentQuerySeq(monuments.toSeq))
+      val db = new ImageDB(contest, query.imagesFromCategory(contest.category, contest), monumentDb)
 
-      db.fetchImages()
-
-      val regions = db._byRegion.keySet
+      val regions = db._imagesByRegion.keySet
 
       for (region <- regions)  {
-        println(db._byRegion(region).size)
+        println(db._imagesByRegion(region).size)
       }
 
       1 === 1

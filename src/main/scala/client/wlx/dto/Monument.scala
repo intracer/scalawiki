@@ -75,5 +75,10 @@ object Monument {
   def monumentsFromText(text: String, page: String, template: String): Set[Monument] =
     text.split("\\{\\{" + template).map(text => init(text, page)).filter(_.id.nonEmpty).toSet
 
+  // test for "-" id
+  def getRegionId(monumentId: String): String =  monumentId.split("\\-").headOption.getOrElse("")
+
+  def getRegionId(monumentId: Option[String]): String =  monumentId.fold("")(getRegionId)
+
 }
 

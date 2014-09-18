@@ -58,9 +58,12 @@ object Template {
   def getDefaultParam(text: String, templateName: String) = {
     val template: String = "{{" + templateName + "|"
 
-    val start = text.indexOf(template) + template.length
-    val end = text.indexOf("}}", start)
-    text.substring(start, end).trim.toLowerCase
+    val templateStart = text.indexOf(template)
+    val end = text.indexOf("}}", templateStart)
+
+    if (templateStart > 0 && end > 0) {
+      text.substring(templateStart + template.length, end).trim.toLowerCase
+    } else ""
   }
 
 }

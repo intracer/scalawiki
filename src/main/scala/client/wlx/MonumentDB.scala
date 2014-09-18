@@ -20,16 +20,16 @@ class MonumentDB(val contest: Contest, monumentQuery: MonumentQuery) {
     val wrongIds = all.filterNot(m => isIdCorrect(m.id))
 
     _byId = monuments.groupBy(_.id)
-    _byRegion = monuments.groupBy(_.id.split("\\-")(0))
+    _byRegion = monuments.groupBy(m => Monument.getRegionId(m.id))
   }
 
   def byId(id: String) = _byId.getOrElse(id, Seq.empty[Monument]).headOption
 
-  def byRegion(regId: String) = monuments.filter(_.id.startsWith(regId))
+  def byRegion(regId: String) = _byRegion.getOrElse(regId, Seq.empty[Monument])
 
   def isIdCorrect(id:String) = {
     val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
-    id.matches(idRegex) && Region.Ukraine.contains(id.split("\\-")(0))
+    id.matches(idRegex) && Region.Ukraine.contains(Monument.getRegionId(id))
   }
 
 }

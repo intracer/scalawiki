@@ -199,7 +199,6 @@ object MwBot {
 
   }
 
-
   def getAuthors(commons: MwBot, category: String)(implicit dispatcher: ExecutionContext): SortedSet[String] = {
     val result = Await.result(commons.page(category).revisionsByGenerator("categorymembers", "cm",
       Set.empty, Set("content", "timestamp", "user", "comment")) map {

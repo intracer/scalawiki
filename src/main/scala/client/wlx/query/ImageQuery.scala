@@ -1,6 +1,5 @@
 package client.wlx.query
 
-import client.dto.{Namespace, Template}
 import client.wlx.WithBot
 import client.wlx.dto.{Contest, Image}
 
@@ -15,10 +14,10 @@ trait ImageQuery {
   def imagesWithTemplateAsync(template:String, contest: Contest):Future[Seq[Image]]
 
   final def imagesFromCategory(category:String, contest: Contest):Seq[Image] =
-    Await.result(imagesFromCategoryAsync(category, contest), 15.minutes)
+    Await.result(imagesFromCategoryAsync(category, contest), 30.minutes)
 
   final def imagesWithTemplate(template:String, contest: Contest):Seq[Image] =
-    Await.result(imagesWithTemplateAsync(template, contest), 15.minutes)
+    Await.result(imagesWithTemplateAsync(template, contest), 30.minutes)
 
 }
 
@@ -26,60 +25,25 @@ class ImageQueryApi extends ImageQuery with WithBot {
 
   val host = "commons.wikimedia.org"
 
-  override def imagesFromCategoryAsync(category:String, contest: Contest):Future[Seq[Image]] = {
+  override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]] = {
     val query = bot.page(category)
-    query.imageInfoByGenerator("categorymembers", "cm", Set(Namespace.FILE_NAMESPACE)).map {
-      filesInCategory =>
-        val newImages: Seq[Image] = filesInCategory.flatMap(page => Image.fromPage(page)).sortBy(_.pageId)
 
-        Some(contest.fileTemplate).fold(newImages) { monumentIdTemplate =>
-          bot.await(query.revisionsByGenerator("categorymembers", "cm",
-            Set.empty, Set("content", "timestamp", "user", "comment")) map {
-            pages =>
-
-              val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
-              val ids: Seq[Option[String]] = pages.sortBy(_.pageid)
-                .flatMap(_.text.map(Template.getDefaultParam(_, monumentIdTemplate)))
-                //                .map(id => if (id.matches(idRegex)) Some(id) else Some(id))
-                .map(id => if (id.isEmpty) None else Some(id))
-
-              val imagesWithIds = newImages.zip(ids).map {
-                case (image, Some(id)) => image.copy(monumentId = Some(id))
-                case (image, None) => image
-              }
-              imagesWithIds
-          })
-        }
+    query.revisionsByGenerator("categorymembers", "cm",
+      Set.empty, Set("content", "timestamp", "user", "comment")) map {
+      pages =>
+        pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate)).sortBy(_.pageId)
     }
   }
 
-  override def imagesWithTemplateAsync(template:String, contest: Contest):Future[Seq[Image]] = {
+  override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]] = {
     val query = bot.page("Template:" + template)
-    query.imageInfoByGenerator("embeddedin", "ei", Set(Namespace.FILE_NAMESPACE)).map {
-      filesInCategory =>
-        val newImages: Seq[Image] = filesInCategory.flatMap(page => Image.fromPage(page)).sortBy(_.pageId)
 
-        Some(contest.fileTemplate).fold(newImages) { monumentIdTemplate =>
-          bot.await(query.revisionsByGenerator("embeddedin", "ei",
-            Set.empty, Set("content", "timestamp", "user", "comment")) map {
-            pages =>
-
-              val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
-              val ids: Seq[Option[String]] = pages.sortBy(_.pageid)
-                .flatMap(_.text.map(Template.getDefaultParam(_, monumentIdTemplate)))
-                //                .map(id => if (id.matches(idRegex)) Some(id) else Some(id))
-                .map(id => if (id.isEmpty) None else Some(id))
-
-              val imagesWithIds = newImages.zip(ids).map {
-                case (image, Some(id)) => image.copy(monumentId = Some(id))
-                case (image, None) => image
-              }
-              imagesWithIds
-          })
-        }
+    query.revisionsByGenerator("embeddedin", "ei",
+      Set.empty, Set("content", "timestamp", "user", "comment")) map {
+      pages =>
+        pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate)).sortBy(_.pageId)
     }
   }
-
 }
 
 class ImageQueryCached(underlying: ImageQuery) extends ImageQuery {
@@ -132,3 +96,58 @@ object ImageQuery {
     query
   }
 }
+
+
+//private def imagesFromCategoryAsyncFull(category:String, contest: Contest):Future[Seq[Image]] = {
+//val query = bot.page(category)
+//query.imageInfoByGenerator("categorymembers", "cm", Set(Namespace.FILE_NAMESPACE)).map {
+//filesInCategory =>
+//val newImages: Seq[Image] = filesInCategory.flatMap(page => Image.fromPageImageInfo(page)).sortBy(_.pageId)
+//
+//Some(contest.fileTemplate).fold(newImages) { monumentIdTemplate =>
+//bot.await(query.revisionsByGenerator("categorymembers", "cm",
+//Set.empty, Set("content", "timestamp", "user", "comment")) map {
+//pages =>
+//
+//val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
+//val ids: Seq[Option[String]] = pages.sortBy(_.pageid)
+//.flatMap(_.text.map(Template.getDefaultParam(_, monumentIdTemplate)))
+////                .map(id => if (id.matches(idRegex)) Some(id) else Some(id))
+//.map(id => if (id.isEmpty) None else Some(id))
+//
+//val imagesWithIds = newImages.zip(ids).map {
+//case (image, Some(id)) => image.copy(monumentId = Some(id))
+//case (image, None) => image
+//}
+//imagesWithIds
+//})
+//}
+//}
+//}
+//
+//private def imagesWithTemplateAsyncFull(template:String, contest: Contest):Future[Seq[Image]] = {
+//val query = bot.page("Template:" + template)
+//query.imageInfoByGenerator("embeddedin", "ei", Set(Namespace.FILE_NAMESPACE)).map {
+//filesInCategory =>
+//val newImages: Seq[Image] = filesInCategory.flatMap(page => Image.fromPageImageInfo(page)).sortBy(_.pageId)
+//
+//Some(contest.fileTemplate).fold(newImages) { monumentIdTemplate =>
+//bot.await(query.revisionsByGenerator("embeddedin", "ei",
+//Set.empty, Set("content", "timestamp", "user", "comment")) map {
+//pages =>
+//
+//val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
+//val ids: Seq[Option[String]] = pages.sortBy(_.pageid)
+//.flatMap(_.text.map(Template.getDefaultParam(_, monumentIdTemplate)))
+////                .map(id => if (id.matches(idRegex)) Some(id) else Some(id))
+//.map(id => if (id.isEmpty) None else Some(id))
+//
+//val imagesWithIds = newImages.zip(ids).map {
+//case (image, Some(id)) => image.copy(monumentId = Some(id))
+//case (image, None) => image
+//}
+//imagesWithIds
+//})
+//}
+//}
+//}
