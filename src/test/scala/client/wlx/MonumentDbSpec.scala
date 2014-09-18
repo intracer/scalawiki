@@ -20,9 +20,9 @@ class MonumentDbSpec extends Specification {
 
    "monument db" should {
      "contain monuments ids" in {
-       val contest = Contest.WLMUkraine("2014", "09-15", "10-15")
+       val contest = Contest.WLMUkraine(2014, "09-15", "10-15")
 
-       val query = new MonumentQuerySeq(contest, monuments.toSeq)
+       val query = new MonumentQuerySeq(monuments.toSeq)
        val db = new MonumentDB(contest, query)
 
        db.fetchLists()
@@ -32,9 +32,9 @@ class MonumentDbSpec extends Specification {
      }
 
     "group monuments by regions" in {
-      val contest = Contest.WLMUkraine("2014", "09-15", "10-15")
+      val contest = Contest.WLMUkraine(2014, "09-15", "10-15")
 
-      val query = new MonumentQuerySeq(contest, monuments.toSeq)
+      val query = new MonumentQuerySeq(monuments.toSeq)
       val db = new MonumentDB(contest, query)
 
       db.fetchLists()

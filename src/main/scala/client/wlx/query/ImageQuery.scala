@@ -1,30 +1,30 @@
 package client.wlx.query
 
 import client.dto.{Namespace, Template}
+import client.wlx.WithBot
 import client.wlx.dto.{Contest, Image}
-import client.{LoginInfo, MwBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, _}
 
 trait ImageQuery {
+  import scala.concurrent.duration._
+
 
   def imagesFromCategoryAsync(category:String, contest: Contest):Future[Seq[Image]]
   def imagesWithTemplateAsync(template:String, contest: Contest):Future[Seq[Image]]
 
-  def imagesFromCategory(category:String, contest: Contest):Seq[Image]
-  def imagesWithTemplate(template:String, contest: Contest):Seq[Image]
+  final def imagesFromCategory(category:String, contest: Contest):Seq[Image] =
+    Await.result(imagesFromCategoryAsync(category, contest), 15.minutes)
+
+  final def imagesWithTemplate(template:String, contest: Contest):Seq[Image] =
+    Await.result(imagesWithTemplateAsync(template, contest), 15.minutes)
+
 }
 
-class ImageQueryApi extends ImageQuery {
+class ImageQueryApi extends ImageQuery with WithBot {
 
-
-  var bot: MwBot = _
-
-  def initBot() = {
-    bot = MwBot.create("commons.wikimedia.org")
-    bot.await(bot.login(LoginInfo.login, LoginInfo.password))
-  }
+  val host = "commons.wikimedia.org"
 
   override def imagesFromCategoryAsync(category:String, contest: Contest):Future[Seq[Image]] = {
     val query = bot.page(category)
@@ -80,17 +80,11 @@ class ImageQueryApi extends ImageQuery {
     }
   }
 
-  override def imagesFromCategory(category:String, contest: Contest):Seq[Image] =
-    bot.await(imagesFromCategoryAsync(category, contest))
-
-  override def imagesWithTemplate(template: String, contest: Contest): Seq[Image] =
-    bot.await(imagesWithTemplateAsync(template, contest))
-
 }
 
-class CachedImageQuery(underlying: ImageQuery) extends ImageQuery {
+class ImageQueryCached(underlying: ImageQuery) extends ImageQuery {
 
-  import spray.caching.{LruCache, Cache}
+  import spray.caching.{Cache, LruCache}
 
   val cache: Cache[Seq[Image]] = LruCache()
 
@@ -104,31 +98,37 @@ class CachedImageQuery(underlying: ImageQuery) extends ImageQuery {
       underlying.imagesWithTemplateAsync(template, contest)
     }
 
-  override def imagesFromCategory(category: String, contest: Contest): Seq[Image] =
-      underlying.imagesFromCategory(category, contest)
-
-
-  override def imagesWithTemplate(template: String, contest: Contest): Seq[Image] =
-    underlying.imagesWithTemplate(template, contest)
-
-
 }
 
 class ImageQuerySeq(
                      imagesByCategory: Map[String, Seq[Image]],
                      imagesWithTemplate: Seq[Image]
                      ) extends ImageQuery {
-  override def imagesFromCategory(category: String, contest: Contest): Seq[Image] =
-    imagesByCategory.getOrElse(category, Seq.empty)
 
   override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]] = future {
-    imagesFromCategory(category, contest)
+    imagesByCategory.getOrElse(category, Seq.empty)
   }
-
-  override def imagesWithTemplate(template: String, contest: Contest): Seq[Image] = imagesWithTemplate
 
   override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]] = future {
-    imagesWithTemplate(template, contest)
+    imagesWithTemplate
   }
 
+}
+
+object ImageQuery {
+
+  def create(caching: Boolean = true, pickling: Boolean = false) = {
+    val api = new ImageQueryApi
+
+    val query = if (caching)
+      new ImageQueryCached(
+        if (pickling)
+          api
+        //          new ImageQueryPickling(api, contest)
+        else api
+      )
+    else api
+
+    query
+  }
 }

@@ -10,7 +10,7 @@ object ScalaProjectBuild extends Build {
       name := "mwbot",
       organization := "org.intracer",
       version := "0.1.1",
-      scalaVersion := "2.10.3",
+      scalaVersion := "2.10.4",
       // add other settings here
         resolvers := Seq ("spray repo" at "http://repo.spray.io", "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"),
       libraryDependencies ++= {
@@ -22,6 +22,7 @@ object ScalaProjectBuild extends Build {
           "io.spray" %%  "spray-json" % "1.2.6",
           "com.typesafe.play" %% "play-json" % "2.2.3",
           "com.typesafe.akka"   %%  "akka-actor"    % akkaV,
+          "org.scala-lang" %% "scala-pickling" % "0.8.0",
           "org.specs2" %% "specs2" % "2.3.12" % "test"
         )
       },

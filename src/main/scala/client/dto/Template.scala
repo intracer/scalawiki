@@ -38,8 +38,13 @@ class Template(val text: String, val page: String = "") {
     val m = matcher(text, param)
     if (m.find) {
       val start = m.end
-      val end = text.indexOf("\n", start)
-      Some(start -> end)
+      val newline = text.indexOf("\n", start)
+      if (newline > 0)
+        Some(start -> newline)
+      else {
+        val templateEnd = text.indexOf("}}", start)
+        Some(start -> templateEnd)
+      }
     } else None
   }
 

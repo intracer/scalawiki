@@ -1,11 +1,11 @@
 package client.dto
 
-import client.{MwBot, MwUtils}
-import scala.concurrent.{Await, Future}
-import play.api.libs.json.{JsValue, JsObject, Json}
 import client.json.MwReads._
-import scala.Some
 import client.json.MwReads2
+import client.{MwBot, MwUtils}
+import play.api.libs.json.{JsObject, JsValue, Json}
+
+import scala.concurrent.{Await, Future}
 
 class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
 
@@ -23,15 +23,17 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
                             generator: String, generatorPrefix: String,
                             namespaces: Set[Int] = Set(Namespace.FILE_NAMESPACE),
                             props: Set[String] = Set("timestamp", "user", "url", "size"),
-                            continueParam: Option[(String, String)] = None) = {
-    queryByGenerator(generator, generatorPrefix, namespaces, props, continueParam, "imageinfo", "ii")
+                            continueParam: Option[(String, String)] = None,
+                            limit:String = "max") = {
+    queryByGenerator(generator, generatorPrefix, namespaces, props, continueParam, "imageinfo", "ii", limit)
   }
 
   def revisionsByGenerator(
                             generator: String, generatorPrefix: String,
                             namespaces: Set[Int] = Set.empty, props: Set[String] = Set.empty,
-                            continueParam: Option[(String, String)] = None) = {
-    queryByGenerator(generator, generatorPrefix, namespaces, props, continueParam, "revisions", "rv")
+                            continueParam: Option[(String, String)] = None,
+                            limit:String = "max") = {
+    queryByGenerator(generator, generatorPrefix, namespaces, props, continueParam, "revisions", "rv", limit)
   }
 
   def queryList(namespaces: Set[Int] = Set.empty, continueParam: Option[(String, String)], queryType: String, queryPrefix: String) = {
@@ -43,9 +45,11 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
                   props: Set[String] = Set.empty,
                   continueParam: Option[(String, String)],
                   queryType: String,
-                  queryPrefix: String) = {
+                  queryPrefix: String,
+                  limit:String = "max"
+                  ) = {
     val extraParams: Map[String, String] = if (props.isEmpty) Map.empty else Map(queryPrefix + "prop" -> props.mkString("|"))
-    query(namespaces, continueParam, "prop", queryType, queryPrefix, extraParams)
+    query(namespaces, continueParam, "prop", queryType, queryPrefix, limit, extraParams)
   }
 
   def queryByGenerator(generator: String, generatorPrefix: String,
@@ -53,9 +57,10 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
                        props: Set[String] = Set.empty,
                        continueParam: Option[(String, String)],
                        queryType: String,
-                       queryPrefix: String) = {
+                       queryPrefix: String,
+                       limit:String = "max") = {
     val extraParams: Map[String, String] = if (props.isEmpty) Map.empty else Map(queryPrefix + "prop" -> props.mkString("|"))
-    query(namespaces, continueParam, "prop", queryType, queryPrefix, extraParams, Some(generator), Some(generatorPrefix))
+    query(namespaces, continueParam, "prop", queryType, queryPrefix, limit, extraParams, Some(generator), Some(generatorPrefix))
   }
 
   def query(
@@ -64,10 +69,11 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
              module: String,
              queryType: String,
              queryPrefix: String,
+             limit:String = "max",
              extraParams: Map[String, String] = Map.empty,
              generator: Option[String] = None,
              generatorPrefix: Option[String] = None): Future[Seq[Page]] = {
-    val params = makeParams(namespaces, continueParam, module, queryType, queryPrefix, extraParams, generator, generatorPrefix)
+    val params = makeParams(namespaces, continueParam, module, queryType, queryPrefix, limit, extraParams, generator, generatorPrefix)
 
     val url = site.getUri(params)
 
@@ -102,7 +108,7 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
 
         continue.fold(pages) { c =>
           Thread.sleep(5000)
-          pages ++ Await.result(query(namespaces, Some(c.continue.get, c.prefixed.get), module, queryType, queryPrefix, extraParams, generator, generatorPrefix), site.http.timeout);
+          pages ++ Await.result(query(namespaces, Some(c.continue.get, c.prefixed.get), module, queryType, queryPrefix, limit, extraParams, generator, generatorPrefix), site.http.timeout);
         }
     }
   }
@@ -112,7 +118,8 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
                   module: String,
                   queryType: String,
                   queryPrefix: String,
-                  extraParams: Map[String, String],
+                  limit: String = "max",
+                  extraParams: Map[String, String] = Map.empty,
                   generator: Option[String] = None,
                   generatorPrefix: Option[String] = None): Map[String, String] = {
     val querySuffix = module match {
@@ -129,8 +136,8 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
     }
 
     val limits = module match {
-      case "list" => Map(queryPrefix + "limit" -> "max")
-      case "prop" => generatorPrefix.fold(Map.empty[String, String])(s => Map(queryPrefixWithGen + "limit" -> "max"))
+      case "list" => Map(queryPrefix + "limit" -> limit)
+      case "prop" => generatorPrefix.fold(Map.empty[String, String])(s => Map(queryPrefixWithGen + "limit" -> limit))
     }
 
     val params = Map("action" -> "query",

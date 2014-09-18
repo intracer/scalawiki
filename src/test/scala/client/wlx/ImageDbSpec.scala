@@ -38,11 +38,11 @@ class ImageDbSpec extends Specification {
   "image db"  should {
 
     "group images by regions" in {
-      val contest = Contest.WLMUkraine("2014", "09-15", "10-15")
+      val contest = Contest.WLMUkraine(2014, "09-15", "10-15")
 
       val src = images(2014)
 
-      val query = new ImageQuerySeq(contest, Map(contest.category -> src.toSeq), src.toSeq)
+      val query = new ImageQuerySeq(Map(contest.category -> src.toSeq), src.toSeq)
       val db = new ImageDB(contest, query)
 
       db.fetchImages()
@@ -52,6 +52,8 @@ class ImageDbSpec extends Specification {
       for (region <- regions)  {
         println(db._byRegion(region).size)
       }
+
+      1 === 1
     }
 
 
