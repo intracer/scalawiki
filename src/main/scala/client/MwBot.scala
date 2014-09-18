@@ -13,7 +13,7 @@ import spray.util._
 
 import scala.collection.SortedSet
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, Future}
 
 class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
@@ -51,6 +51,23 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
       })
     }
   }
+
+  lazy val token = await(getToken)
+
+  def getToken = get(tokenReads, "action" -> "query", "meta" -> "tokens")
+
+
+  def get[T](reads: Reads[T], params: (String, String)*): Future[T] =
+    http.get(getUri(params:_*)) map getBody map {
+      body =>
+        Json.parse(body).validate(reads).get
+    }
+
+  def post[T](reads: Reads[T], params: (String, String)*): Future[T] =
+    http.post(getUri(params:_*)) map getBody map {
+      body =>
+        Json.parse(body).validate(reads).get
+    }
 
   def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)
 
@@ -99,11 +116,25 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
 object MwBot {
 
+  import spray.caching.{Cache, LruCache}
+  import scala.concurrent.ExecutionContext.Implicits.global
+  import scala.concurrent.{Future, _}
+
+  val commons = "commons.wikimedia.org"
+
   def create(host: String): MwBot = {
     val system = ActorSystem()
     val http = new HttpClientImpl(system)
 
     new MwBot(http, system, host)
+  }
+
+  val cache: Cache[MwBot] = LruCache()
+
+  def get(host: String): MwBot = {
+    Await.result(cache(host) {
+      future { create(host) }
+    }, 1.minute)
   }
 
   def main(args: Array[String]) {
@@ -116,8 +147,6 @@ object MwBot {
     //Monument.lists(ukWiki, "ВЛЗ-рядок")
 
     val commons = create("commons.wikimedia.org")
-
-    import commons.system.dispatcher
 
     commons.await(commons.login(args(0), args(1)))
     //    images(commons)

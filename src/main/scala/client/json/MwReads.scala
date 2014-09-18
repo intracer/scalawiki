@@ -30,6 +30,10 @@ object MwReads {
 
   def pagesReads(queryType: String): Reads[Seq[Page]] = (__ \ "query" \ queryType).read[Seq[Page]]
 
+  def tokenReads: Reads[String] = (__ \ "query" \ "tokens" \ "csrftoken").read[String]
+
+  def editResponseReads: Reads[String] = (__ \ "edit" \ "result" ).read[String]
+
   def continueReads(continue: String): Reads[Continue] = (
     (__ \ "continue" \ "continue").readNullable[String] and
       (__ \ "continue" \ continue).readNullable[String]

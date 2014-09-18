@@ -60,7 +60,7 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
                        queryPrefix: String,
                        limit:String = "max") = {
     val extraParams: Map[String, String] = if (props.isEmpty) Map.empty else Map(queryPrefix + "prop" -> props.mkString("|"))
-    query(namespaces, continueParam, "prop", queryType, queryPrefix, limit, extraParams, Some(generator), Some(generatorPrefix))
+    query(namespaces, continueParam, "prop", queryType, queryPrefix, limit, extraParams, Some(generator), Option(generatorPrefix))
   }
 
   def query(
@@ -107,7 +107,7 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
         site.system.log.info(s"pages: ${pages.size}, $continueParamName: $continue")
 
         continue.fold(pages) { c =>
-          Thread.sleep(1000)
+          Thread.sleep(1500)
           pages ++ Await.result(query(namespaces, Some(c.continue.get, c.prefixed.get), module, queryType, queryPrefix, limit, extraParams, generator, generatorPrefix), site.http.timeout);
         }
     }
@@ -124,7 +124,7 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
                   generatorPrefix: Option[String] = None): Map[String, String] = {
     val querySuffix = module match {
       case "list" => ""
-      case "prop" => generator.fold("s")(s => "")
+      case "prop" => if (generator != Some("links")) generator.fold("s")(s => "") else "s"
     }
     val queryPrefixWithGen = generatorPrefix.fold(queryPrefix)(s => "g" + s)
 
@@ -165,6 +165,10 @@ class SinglePageQuery(query: Either[Long, String], site: MwBot) extends PageQuer
 
   def categoryMembers(namespaces: Set[Int] = Set.empty, continueParam: Option[(String, String)] = None): Future[Seq[Page]] = {
     queryList(namespaces, continueParam, "categorymembers", "cm")
+  }
+
+  def edit(text: String, summary: String) = {
+    site.post(editResponseReads, "action" -> "edit", "text" -> text, "summary" -> summary, "token" -> site.token)
   }
 }
 

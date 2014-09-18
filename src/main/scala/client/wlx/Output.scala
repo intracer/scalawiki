@@ -13,7 +13,7 @@ class Output {
 
     val columns = Seq("Region", "Objects in lists", "3 years total", "3 years percentage" ,"2012", "2013", "2014")
 
-    val header = "{| class='wikitable sortable'\n" +
+    val header = "==Objects pictured==\n{| class='wikitable sortable'\n" +
       "|+ Objects pictured\n" +
       columns.mkString("!", "!!", "\n" )
 
@@ -45,7 +45,7 @@ class Output {
       imageDbsByYear(2013).head.ids.size,
       imageDbsByYear(2014).head.ids.size
     )
-    val total = totalData.mkString("|-\n| "," || " ,"\n|}")  + "\n[[Category:Wiki Loves Monuments 2014 in Ukraine]]"
+    val total = totalData.mkString("|-\n| "," || " ,"\n|}")
 
     header + text + total
 
@@ -58,7 +58,7 @@ class Output {
 
     val columns = Seq("Region", "3 years total", "2012", "2013", "2014")
 
-    val header = "{| class='wikitable sortable'\n" +
+    val header = "==Authors contributed==\n{| class='wikitable sortable'\n" +
       "|+ Authors contributed\n" +
       columns.mkString("!", "!!", "\n" )
 
@@ -86,7 +86,7 @@ class Output {
       imageDbsByYear(2013).head.authors.size,
       imageDbsByYear(2014).head.authors.size
     )
-    val total = totalData.mkString("|-\n| "," || " ,"\n|}") + "\n[[Category:Wiki Loves Monuments 2014 in Ukraine]]"
+    val total = totalData.mkString("|-\n| "," || " ,"\n|}")
 
     header + text + total
 

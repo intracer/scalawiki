@@ -3,7 +3,7 @@ package client.util
 import org.specs2.mutable.Specification
 import akka.actor.ActorSystem
 import client.{MwBot, HttpClientImpl}
-import scala.concurrent.Await
+import scala.concurrent.{Future, Await}
 
 
 class BaseIntegrationSpec extends Specification {
@@ -23,7 +23,8 @@ class BaseIntegrationSpec extends Specification {
   def getCommonsBot = new MwBot(http, system, commons)
 
   def login(wiki: MwBot, username: String = botUsername, passwd: String = botPasswd) =
-    Await.result(wiki.login(username, passwd), http.timeout)
+    await(wiki.login(username, passwd))
 
+  def await[T](future: Future[T]) = Await.result(future, http.timeout)
 
 }

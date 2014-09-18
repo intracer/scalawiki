@@ -30,7 +30,7 @@ class SpecialNomination(val name: String, val listTemplate:String, val pages: Se
 
 object SpecialNomination {
   val music = new SpecialNomination("Музичні пам'ятки в Україні", "WLM-рядок",
-    Seq("Шаблон:WLM-music-navbar"))
+    Seq("Template:WLM-music-navbar"))
 
   val nationalLiberation = new SpecialNomination("Пам'ятки національно-визвольної боротьби", "WLM-рядок",
     Seq("Вікіпедія:Вікі любить пам'ятки/Пам'ятки національно-визвольної боротьби"))
@@ -44,5 +44,5 @@ object SpecialNomination {
   val worldWarOne = new SpecialNomination("Українські пам'ятки Першої світової війни", "WLM-рядок",
     Seq("Вікіпедія:Вікі любить пам'ятки/Українські пам'ятки Першої світової війни"))
 
-  val nominations = Seq(nationalLiberation, greek, armenian, worldWarOne)
+  val nominations = Seq(music, nationalLiberation, greek, armenian, worldWarOne)
 }

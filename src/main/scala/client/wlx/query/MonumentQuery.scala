@@ -16,7 +16,7 @@ trait MonumentQuery {
   def byPageAsync(page: String, template: String): Future[Seq[Monument]]
 
   final def byMonumentTemplate(template: String) = Await.result(byMonumentTemplateAsync(template), 15.minutes): Seq[Monument]
-  final def byPage(page: String, template: String) = Await.result(byMonumentTemplateAsync(page), 15.minutes): Seq[Monument]
+  final def byPage(page: String, template: String) = Await.result(byPageAsync(page, template), 15.minutes): Seq[Monument]
 }
 
 class MonumentQueryApi(contest: Contest) extends MonumentQuery with WithBot {
@@ -30,9 +30,23 @@ class MonumentQueryApi(contest: Contest) extends MonumentQuery with WithBot {
     }
   }
 
-  override def byPageAsync(page: String, template: String): Future[Seq[Monument]] = bot.page(page).revisions().map {
-    revs =>
-      revs.headOption.map(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template).toSeq).getOrElse(Seq.empty)
+  override def byPageAsync(page: String, template: String): Future[Seq[Monument]] = {
+    if (!page.startsWith("Template")) {
+      bot.page(page).revisions(Set.empty, Set("content", "timestamp", "user", "comment")).map {
+        revs =>
+          revs.headOption.map(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template).toSeq).getOrElse(Seq.empty)
+      }
+    } else {
+//      bot.page(page).revisionsByGenerator("links", null, Set.empty, Set("content", "timestamp", "user", "comment")).map {
+//        pages =>
+//          pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template).toSeq)
+//      }
+      bot.page(page).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT_NAMESPACE), Set("content", "timestamp", "user", "comment"), None, "100") map {
+        pages =>
+          pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template))
+      }
+
+    }
   }
 }
 

@@ -1,5 +1,6 @@
 package client.wlx.query
 
+import client.MwBot
 import client.wlx.WithBot
 import client.wlx.dto.{Contest, Image}
 
@@ -23,7 +24,7 @@ trait ImageQuery {
 
 class ImageQueryApi extends ImageQuery with WithBot {
 
-  val host = "commons.wikimedia.org"
+  val host = MwBot.commons
 
   override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]] = {
     val query = bot.page(category)

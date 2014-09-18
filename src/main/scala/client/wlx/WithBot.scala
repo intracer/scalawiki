@@ -9,7 +9,7 @@ trait WithBot {
   lazy val bot: MwBot = createBot()
 
   private def createBot() = {
-    val bot = MwBot.create(host)
+    val bot = MwBot.get(host)
     bot.await(bot.login(LoginInfo.login, LoginInfo.password))
     bot
   }
