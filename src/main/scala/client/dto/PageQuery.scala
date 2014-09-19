@@ -4,8 +4,9 @@ import client.json.MwReads._
 import client.json.MwReads2
 import client.{MwBot, MwUtils}
 import play.api.libs.json.{JsObject, JsValue, Json}
+import spray.http.HttpResponse
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
 
@@ -72,14 +73,19 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
              limit:String = "max",
              extraParams: Map[String, String] = Map.empty,
              generator: Option[String] = None,
-             generatorPrefix: Option[String] = None): Future[Seq[Page]] = {
+             generatorPrefix: Option[String] = None,
+             previousPages: Seq[Page] = Seq.empty): Future[Seq[Page]] = {
     val params = makeParams(namespaces, continueParam, module, queryType, queryPrefix, limit, extraParams, generator, generatorPrefix)
 
     val url = site.getUri(params)
 
     import site.system.dispatcher
 
-    site.http.get(url) map site.getBody map {
+  import scala.concurrent._
+
+    val eventualResponse: Future[HttpResponse] = site.http.get(url)
+
+    eventualResponse map site.getBody flatMap {
       body =>
         val json = Json.parse(body)
 
@@ -106,9 +112,8 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
 
         site.system.log.info(s"pages: ${pages.size}, $continueParamName: $continue")
 
-        continue.fold(pages) { c =>
-          Thread.sleep(1500)
-          pages ++ Await.result(query(namespaces, Some(c.continue.get, c.prefixed.get), module, queryType, queryPrefix, limit, extraParams, generator, generatorPrefix), site.http.timeout);
+        continue.fold( future {previousPages ++ pages}) { c =>
+          query(namespaces, Some(c.continue.get, c.prefixed.get), module, queryType, queryPrefix, limit, extraParams, generator, generatorPrefix, previousPages ++ pages)
         }
     }
   }
@@ -168,7 +173,7 @@ class SinglePageQuery(query: Either[Long, String], site: MwBot) extends PageQuer
   }
 
   def edit(text: String, summary: String) = {
-    site.post(editResponseReads, "action" -> "edit", "text" -> text, "summary" -> summary, "token" -> site.token)
+    site.post(editResponseReads, "action" -> "edit", "text" -> text, "summary" -> summary, "format" -> "json", "token" -> site.token)
   }
 }
 

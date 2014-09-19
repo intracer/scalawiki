@@ -30,7 +30,7 @@ class TestHttpClient(val host: String, val commands: mutable.Queue[Command]) ext
 
   override def setCookies(cookies: Seq[HttpCookie]): Unit = ???
 
-  override def post(url: String): Future[HttpResponse] = ???
+  override def post(url: String, params: Map[String, String]): Future[HttpResponse] = ???
 
-  override def post(url: Uri): Future[HttpResponse] = ???
+  override def post(url: Uri, params: Map[String, String]): Future[HttpResponse] = ???
 }

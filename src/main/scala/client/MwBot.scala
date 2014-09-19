@@ -32,15 +32,15 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
   def log = system.log
 
   def login(user: String, password: String) = {
-    http.post(getUri("action" -> "login", "lgname" -> user, "lgpassword" -> password)) map cookiesAndBody map { cb =>
+    http.post(apiUrl, "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json") map cookiesAndBody map { cb =>
       http.setCookies(cb.cookies)
       val json = Json.parse(cb.body)
       json.validate(loginResponseReads).fold({ err =>
         log.error("Could not login" + err)
         err.toString()
       }, { resp =>
-        val uri = getUri("action" -> "login", "lgname" -> user, "lgpassword" -> password, "lgtoken" -> resp.token.get)
-        Await.result(http.post(uri) map cookiesAndBody map { cb =>
+        val params = Map("action" -> "login", "lgname" -> user, "lgpassword" -> password, "lgtoken" -> resp.token.get, "format" -> "json")
+        Await.result(http.post(apiUrl, params) map cookiesAndBody map { cb =>
           http.setCookies(cb.cookies)
           val json = Json.parse(cb.body)
           val l = json.validate(loginResponseReads) // {"login":{"result":"NotExists"}}
@@ -64,7 +64,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
     }
 
   def post[T](reads: Reads[T], params: (String, String)*): Future[T] =
-    http.post(getUri(params:_*)) map getBody map {
+    http.post(apiUrl, params.toMap) map getBody map {
       body =>
         Json.parse(body).validate(reads).get
     }

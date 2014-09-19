@@ -44,12 +44,16 @@ class ImageDbSpec extends Specification {
 
       val query = new ImageQuerySeq(Map(contest.category -> src.toSeq), src.toSeq)
       val monumentDb: MonumentDB = new MonumentDB(contest, monuments.toSeq)
-      val db = new ImageDB(contest, query.imagesFromCategory(contest.category, contest), monumentDb)
 
-      val regions = db._imagesByRegion.keySet
+      query.imagesFromCategoryAsync(contest.category, contest).map {
+        images =>
+          val db = new ImageDB(contest, images, monumentDb)
 
-      for (region <- regions)  {
-        println(db._imagesByRegion(region).size)
+          val regions = db._imagesByRegion.keySet
+
+          for (region <- regions) {
+            println(db._imagesByRegion(region).size)
+          }
       }
 
       1 === 1

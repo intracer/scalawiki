@@ -3,6 +3,8 @@ package client.wlx
 import client.wlx.dto.{Monument, Contest, Image}
 import client.wlx.query.ImageQuery
 
+import scala.concurrent.Future
+
 class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: MonumentDB) {
 
   val withCorrectIds = images.filter(_.monumentId.fold(false)(monumentDb.ids.contains))
@@ -39,11 +41,17 @@ class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Monu
 
 }
 
+
 object ImageDB {
-  def create(contest: Contest, imageQuery: ImageQuery, monumentDb: MonumentDB) = {
-    val images = imageQuery.imagesFromCategory(contest.category, contest)
-    new ImageDB(contest, images, monumentDb)
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  def create(contest: Contest, imageQuery: ImageQuery, monumentDb: MonumentDB):Future[ImageDB] = {
+    imageQuery.imagesFromCategoryAsync(contest.category, contest).map {
+      images => new ImageDB(contest, images, monumentDb)
+    }
   }
 }
 
 
+//Error:(46, 70) Cannot find an implicit ExecutionContext, either import scala.concurrent.ExecutionContext.Implicits.global or use a custom one
+//imageQuery.imagesFromCategoryAsync(contest.category, contest).map{

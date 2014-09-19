@@ -14,10 +14,10 @@ trait ImageQuery {
   def imagesFromCategoryAsync(category:String, contest: Contest):Future[Seq[Image]]
   def imagesWithTemplateAsync(template:String, contest: Contest):Future[Seq[Image]]
 
-  final def imagesFromCategory(category:String, contest: Contest):Seq[Image] =
+  final private[this] def imagesFromCategory(category:String, contest: Contest):Seq[Image] =
     Await.result(imagesFromCategoryAsync(category, contest), 30.minutes)
 
-  final def imagesWithTemplate(template:String, contest: Contest):Seq[Image] =
+  final private[this] def imagesWithTemplate(template:String, contest: Contest):Seq[Image] =
     Await.result(imagesWithTemplateAsync(template, contest), 30.minutes)
 
 }
