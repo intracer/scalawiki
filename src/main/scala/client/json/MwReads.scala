@@ -3,9 +3,6 @@ package client.json
 import client.dto._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import client.dto.Revision
-import client.dto.Continue
-import client.dto.LoginResponse
 
 object MwReads {
 
@@ -31,6 +28,7 @@ object MwReads {
   def pagesReads(queryType: String): Reads[Seq[Page]] = (__ \ "query" \ queryType).read[Seq[Page]]
 
   def tokenReads: Reads[String] = (__ \ "query" \ "tokens" \ "csrftoken").read[String]
+  def tokensReads: Reads[String] = (__ \ "tokens" \ "edittoken").read[String]
 
   def editResponseReads: Reads[String] = (__ \ "edit" \ "result" ).read[String]
 
@@ -68,8 +66,16 @@ object MwReads2 {
     (__ \ "pageid").read[Int] and
       (__ \ "ns").read[Int] and
       (__ \ "title").read[String] and
+      (__ \ "edittoken").readNullable[String] and
       (__ \ "revisions").read[Seq[Revision]]
     )(Page.withRevisions _)
+
+  val pageInfoReads: Reads[Page] = (
+    (__ \ "pageid").readNullable[Int] and
+      (__ \ "ns").read[Int] and
+      (__ \ "title").read[String] and
+      (__ \ "edittoken").readNullable[String]
+    )(Page.withEditToken _)
 
   val pageWithImageInfoReads: Reads[Page] = (
     (__ \ "pageid").read[Int] and

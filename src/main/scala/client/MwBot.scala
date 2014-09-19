@@ -21,7 +21,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
   import system.dispatcher
 
-  val baseUrl: String = "https://" + host + "/w/"
+  val baseUrl: String = "http://" + host + "/w/"
 
   val indexUrl = baseUrl + "index.php"
 
@@ -56,6 +56,8 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
   def getToken = get(tokenReads, "action" -> "query", "meta" -> "tokens")
 
+  def getTokens = get(tokensReads, "action" -> "tokens")
+
 
   def get[T](reads: Reads[T], params: (String, String)*): Future[T] =
     http.get(getUri(params:_*)) map getBody map {
@@ -64,10 +66,14 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
     }
 
   def post[T](reads: Reads[T], params: (String, String)*): Future[T] =
-    http.post(apiUrl, params.toMap) map getBody map {
+    post(reads, params.toMap)
+
+  def post[T](reads: Reads[T], params: Map[String, String]): Future[T] =
+    http.post(apiUrl, params) map getBody map {
       body =>
         Json.parse(body).validate(reads).get
     }
+
 
   def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)
 

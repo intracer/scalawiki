@@ -1,6 +1,9 @@
 package client
 
-import akka.actor.ActorSystem
+import java.security.cert.X509Certificate
+import javax.net.ssl.{KeyManager, X509TrustManager, SSLContext}
+
+import akka.actor.{ActorRef, Props, ActorSystem}
 import spray.http._
 import scala.concurrent.Future
 import spray.client.pipelining._
@@ -36,9 +39,37 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
 
   var cookies: Seq[HttpCookie] = Seq.empty
 
+//  implicit def trustfulSslContext: SSLContext = {
+//    object BlindFaithX509TrustManager extends X509TrustManager {
+//      def checkClientTrusted(chain: Array[X509Certificate], authType: String) = ()
+//
+//      def checkServerTrusted(chain: Array[X509Certificate], authType: String) = ()
+//
+//      def getAcceptedIssuers = Array[X509Certificate]()
+//    }
+//
+//    val context = SSLContext.getInstance("TLS")
+//    context.init(Array[KeyManager](), Array(BlindFaithX509TrustManager), null)
+//    context
+//  }
 
-  override def setCookies(cookies: Seq[HttpCookie]): Unit = {
-    this.cookies = cookies
+//  val httpClient = system.actorOf(Props(new HttpClient {
+//    implicit def sslContextProvider = new CustomContextProvider
+//    implicit def sslEngineProvider = new CustomClientSSLEngineProvider(sslContextProvider)
+//
+//    override def createConnector(host: String, port: Int, ssl: Boolean): ActorRef =
+//      context.actorOf(Props(
+//        new HttpHostConnector(host, port, hostConnectorSettingsFor(host, port), clientConnectionSettingsFor(host, port))(sslEngineProvider) {
+//          override def tagForConnection(index: Int): Any = connectionTagFor(host, port, index, ssl)
+//        }
+//      ))
+//
+//
+//  }), "http-client")
+
+
+    override def setCookies(cookies: Seq[HttpCookie]): Unit = {
+    this.cookies ++= cookies
   }
 
   // execution context for futures
@@ -51,7 +82,11 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
       Cookie(cookies),
       `Accept-Encoding`(HttpEncodings.gzip),
       `User-Agent`("ScalaMwBot/0.1")) ~>
-      logRequest(log, Logging.InfoLevel)
+//      logRequest(log, Logging.InfoLevel)
+      logRequest(r =>
+        log.info(s"HttpRequest: h: ${r.headers} d:${r.entity.data.asString}")
+      )
+      ~> ((_:HttpRequest).mapEntity(_.flatMap(entity => HttpEntity(entity.contentType.withoutDefinedCharset, entity.data))))
       ~> sendReceive
       ~> decode(Gzip)
       ~> logResponse( r => log.info(s"HttpResponse: ${r.status}, ${r.headers}" ))

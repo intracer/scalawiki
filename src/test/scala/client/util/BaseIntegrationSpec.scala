@@ -20,6 +20,8 @@ class BaseIntegrationSpec extends Specification {
 
   def getUkWikiBot = new MwBot(http, system, ukWiki)
 
+  def getTestBot = new MwBot(http, system, "wikilovesearth.org")
+
   def getCommonsBot = new MwBot(http, system, commons)
 
   def login(wiki: MwBot, username: String = botUsername, passwd: String = botPasswd) =

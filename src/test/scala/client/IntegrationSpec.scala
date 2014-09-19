@@ -17,21 +17,4 @@ class IntegrationSpec extends BaseIntegrationSpec {
      }
   }
 
-  "query meta" should {
-    "get csrf token" in {
-
-      val bot = getUkWikiBot
-      val result = login(bot)
-      result === "Success"
-
-      val token = bot.token
-
-      token must not be empty
-
-    }
-  }
-
-
-
-
 }

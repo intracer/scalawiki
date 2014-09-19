@@ -37,6 +37,10 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
     queryByGenerator(generator, generatorPrefix, namespaces, props, continueParam, "revisions", "rv", limit)
   }
 
+  def editToken = {
+    queryProps(queryType = "info", queryPrefix = "", extraParams = Map("intoken" -> "edit"))
+  }
+
   def queryList(namespaces: Set[Int] = Set.empty, continueParam: Option[(String, String)], queryType: String, queryPrefix: String) = {
     query(namespaces, continueParam, "list", queryType, queryPrefix)
   }
@@ -44,13 +48,14 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
   def queryProps(
                   namespaces: Set[Int] = Set.empty,
                   props: Set[String] = Set.empty,
-                  continueParam: Option[(String, String)],
+                  continueParam: Option[(String, String)] = None,
                   queryType: String,
                   queryPrefix: String,
-                  limit:String = "max"
+                  limit:String = "max",
+                  extraParams: Map[String, String] = Map.empty
                   ) = {
-    val extraParams: Map[String, String] = if (props.isEmpty) Map.empty else Map(queryPrefix + "prop" -> props.mkString("|"))
-    query(namespaces, continueParam, "prop", queryType, queryPrefix, limit, extraParams)
+    val propsParams: Map[String, String] = if (props.isEmpty) Map.empty else Map(queryPrefix + "prop" -> props.mkString("|"))
+    query(namespaces, continueParam, "prop", queryType, queryPrefix, limit, extraParams ++ propsParams)
   }
 
   def queryByGenerator(generator: String, generatorPrefix: String,
@@ -98,6 +103,7 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
                 val pageJson: JsValue = pagesJson \ key
                 val reads = queryType match {
                   case "revisions" => MwReads2.pageWithRevisionReads
+                  case "info" => MwReads2.pageInfoReads
                   case "imageinfo" => MwReads2.pageWithImageInfoReads
                 }
                 val page = pageJson.validate(reads).get
@@ -172,8 +178,16 @@ class SinglePageQuery(query: Either[Long, String], site: MwBot) extends PageQuer
     queryList(namespaces, continueParam, "categorymembers", "cm")
   }
 
-  def edit(text: String, summary: String) = {
-    site.post(editResponseReads, "action" -> "edit", "text" -> text, "summary" -> summary, "format" -> "json", "token" -> site.token)
+  def edit(text: String, summary: String, token: Option[String] = None) = {
+    val fold: String = token.fold(site.token)(identity)
+    val params = Map("action" -> "edit",
+      "text" -> text,
+      "summary" -> summary,
+      "format" -> "json",
+      "bot" -> "",
+      "token" -> token.get) ++ toMap("pageid", "title")
+
+    site.post(editResponseReads, params)
   }
 }
 
