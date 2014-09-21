@@ -84,10 +84,10 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
       Cookie(cookies),
       `Accept-Encoding`(HttpEncodings.gzip),
       `User-Agent`("ScalaMwBot/0.1")) ~>
-//      logRequest(log, Logging.InfoLevel)
-      logRequest(r =>
-        log.info(s"HttpRequest: h: ${r.headers} d:${r.entity.data.asString}")
-      )
+      logRequest(log, Logging.InfoLevel)
+//      logRequest(r =>
+//        log.info(s"HttpRequest: h: ${r.headers} d:${r.entity.data.asString}")
+//      )
       //~> ((_:HttpRequest).mapEntity(_.flatMap(entity => HttpEntity(entity.contentType.withoutDefinedCharset, entity.data))))
       ~> sendReceive
       ~> decode(Gzip)

@@ -19,7 +19,9 @@ class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Monu
     images => images.groupBy(_.author.getOrElse("")).keySet
   }
 
-//  var allImages: Seq[Image] = Seq.empty
+  val _authorsByIds: Map[String, Set[String]] = _byAuthor.mapValues(images => images.groupBy(_.monumentId.getOrElse("")).keySet)
+
+    //  var allImages: Seq[Image] = Seq.empty
 
   def ids: Set[String] = _byId.keySet
 
@@ -32,6 +34,7 @@ class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Monu
   def idsByRegion(regId: String) = _idsByRegion.getOrElse(regId, Seq.empty[String])
 
   def authorsByRegion(regId: String) = _authorsByRegion.getOrElse(regId, Seq.empty[String])
+
 
   def subSet(monuments: Seq[Monument]): ImageDB = {
     val subSetMonumentDb = new MonumentDB(contest, monuments)

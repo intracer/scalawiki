@@ -9,6 +9,7 @@ class Slick {
   val db = Database.forURL("jdbc:h2:tcp://localhost/~/wlm_ua", driver = "org.h2.Driver", user = "sa", password = "")
 
   val monuments = TableQuery[Monuments]
+  val images = TableQuery[Images]
 
   def createDdl {
     db.withSession { implicit session =>

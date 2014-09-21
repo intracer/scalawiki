@@ -1,6 +1,7 @@
 package client.wlx.query
 
 import client.MwBot
+import client.dto.Namespace
 import client.wlx.WithBot
 import client.wlx.dto.{Contest, Image}
 
@@ -29,10 +30,28 @@ class ImageQueryApi extends ImageQuery with WithBot {
   override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]] = {
     val query = bot.page(category)
 
-    query.revisionsByGenerator("categorymembers", "cm",
+    val revsFuture = query.revisionsByGenerator("categorymembers", "cm",
       Set.empty, Set("content", "timestamp", "user", "comment")) map {
       pages =>
-        pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate)).sortBy(_.pageId)
+        pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
+    }
+
+    val imageInfoFuture = query.imageInfoByGenerator("categorymembers", "cm", Set(Namespace.FILE_NAMESPACE)) map {
+      pages =>
+        pages.flatMap(page => Image.fromPageImageInfo(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
+    }
+
+    for (revs <- revsFuture;
+          imageInfos <- imageInfoFuture) yield {
+      val revsByPageId = revs.groupBy(_.pageId)
+      imageInfos.map {
+        ii =>
+          val revImage = revsByPageId.get(ii.pageId).map(_.head)
+          ii.copy(
+            monumentId = revImage.flatMap(_.monumentId),
+            author = revImage.flatMap(_.author)
+          )
+      }
     }
   }
 
@@ -42,7 +61,7 @@ class ImageQueryApi extends ImageQuery with WithBot {
     query.revisionsByGenerator("embeddedin", "ei",
       Set.empty, Set("content", "timestamp", "user", "comment")) map {
       pages =>
-        pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate)).sortBy(_.pageId)
+        pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, "")).sortBy(_.pageId)
     }
   }
 }

@@ -1,14 +1,29 @@
 package client.dto
 
 case class ImageInfo(timestamp: String,
-                      user: String,
+                      uploader: String,
                       size: Int,
                       width: Int,
                       height: Int,
                       url: String,
-                      descriptionUrl: String) {
+                      descriptionUrl: String,
+                      author: Option[String] = None) {
 
   def pixels  = width * height
 
+
+}
+
+
+object ImageInfo {
+  def basic(timestamp: String,
+                      uploader: String,
+                      size: Int,
+                      width: Int,
+                      height: Int
+//                      ,url: String,
+//                      descriptionUrl: String
+                      )
+  = new ImageInfo(timestamp, uploader, size, width, height, "", "")
 
 }

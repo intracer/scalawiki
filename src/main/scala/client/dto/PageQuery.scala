@@ -23,7 +23,7 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
   def imageInfoByGenerator(
                             generator: String, generatorPrefix: String,
                             namespaces: Set[Int] = Set(Namespace.FILE_NAMESPACE),
-                            props: Set[String] = Set("timestamp", "user", "url", "size"),
+                            props: Set[String] = Set("timestamp", "user", "size"/*, "url", "extmetadata"*/),
                             continueParam: Option[(String, String)] = None,
                             limit:String = "max") = {
     queryByGenerator(generator, generatorPrefix, namespaces, props, continueParam, "imageinfo", "ii", limit)

@@ -27,7 +27,7 @@ class ImageDbSpec extends Specification {
 
           if (i%10 == year%10 || i%10 - 1 == year%10) {
             imageCount +=1
-            Some(Image(year*1000 + imageCount, s"image of $id taken on $year number $imageCount", "", "", 10, 10, Some(id), Some("author")))
+            Some(Image(year*1000 + imageCount, s"image of $id taken on $year number $imageCount", "", "", 10, 10, 10, Some(id), Some("author")))
           } else None
         }
     }
