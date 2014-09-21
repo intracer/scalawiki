@@ -2,6 +2,7 @@ package client.wlx.query
 
 import client.MwBot
 import client.dto.Namespace
+import client.slick.Slick
 import client.wlx.WithBot
 import client.wlx.dto.{Contest, Image}
 
@@ -9,16 +10,18 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, _}
 
 trait ImageQuery {
+
   import scala.concurrent.duration._
 
 
-  def imagesFromCategoryAsync(category:String, contest: Contest):Future[Seq[Image]]
-  def imagesWithTemplateAsync(template:String, contest: Contest):Future[Seq[Image]]
+  def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]]
 
-  final private[this] def imagesFromCategory(category:String, contest: Contest):Seq[Image] =
+  def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]]
+
+  final private[this] def imagesFromCategory(category: String, contest: Contest): Seq[Image] =
     Await.result(imagesFromCategoryAsync(category, contest), 30.minutes)
 
-  final private[this] def imagesWithTemplate(template:String, contest: Contest):Seq[Image] =
+  final private[this] def imagesWithTemplate(template: String, contest: Contest): Seq[Image] =
     Await.result(imagesWithTemplateAsync(template, contest), 30.minutes)
 
 }
@@ -42,7 +45,7 @@ class ImageQueryApi extends ImageQuery with WithBot {
     }
 
     for (revs <- revsFuture;
-          imageInfos <- imageInfoFuture) yield {
+         imageInfos <- imageInfoFuture) yield {
       val revsByPageId = revs.groupBy(_.pageId)
       imageInfos.map {
         ii =>
@@ -81,6 +84,22 @@ class ImageQueryCached(underlying: ImageQuery) extends ImageQuery {
     cache(template) {
       underlying.imagesWithTemplateAsync(template, contest)
     }
+}
+
+class ImageQuerySlick extends ImageQuery {
+
+  import scala.slick.driver.H2Driver.simple._
+
+  val slick = new Slick()
+
+  override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]] =
+    future {
+      slick.db.withSession { implicit session =>
+        slick.images.list.filter(_.date == Some(contest.year.toString))
+      }
+    }
+
+  override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]] = ???
 
 }
 
@@ -101,8 +120,9 @@ class ImageQuerySeq(
 
 object ImageQuery {
 
-  def create(caching: Boolean = true, pickling: Boolean = false):ImageQuery = {
-    val api = new ImageQueryApi
+  def create(caching: Boolean = true, pickling: Boolean = false): ImageQuery = {
+    val api = new ImageQuerySlick
+    //new ImageQueryApi
 
     val query = if (caching)
       new ImageQueryCached(
