@@ -5,6 +5,7 @@ import akka.io.IO
 import akka.pattern.ask
 import client.dto._
 import client.json.MwReads._
+import org.wikipedia.Wiki
 import play.api.libs.json._
 import spray.can.Http
 import spray.http.HttpHeaders.`Set-Cookie`
@@ -30,6 +31,16 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
   def encodeTitle(title: String): String = MwUtils.normalize(title)
 
   def log = system.log
+
+
+  def getJavaWiki = {
+    val w: Wiki = new Wiki(host)
+    w.setUserAgent("WPBot 1.0")
+    w.login(LoginInfo.login, LoginInfo.password)
+    w.setMarkBot(true)
+    w.setMarkMinor(true)
+    w
+  }
 
   def login(user: String, password: String) = {
     http.post(apiUrl, "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json") map cookiesAndBody map { cb =>
@@ -77,7 +88,14 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
   def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T] =
     http.postMultiPart(apiUrl, params) map getBody map {
       body =>
-        Json.parse(body).validate(reads).get
+        val json = Json.parse(body)
+        val response = json.validate(reads)
+//        response.fold[T](err => {
+//          json.validate(errorReads)
+//        },
+//          success => success
+//        )
+        response.get
     }
 
   def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)

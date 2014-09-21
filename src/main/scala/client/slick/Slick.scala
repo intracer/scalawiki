@@ -1,29 +1,57 @@
 package client.slick
 
-import client.wlx.dto.Monument
-
 import scala.slick.driver.H2Driver.simple._
 
 class Slick {
 
 //  val db = Database.forURL("jdbc:h2:mem:hello", driver = "org.h2.Driver")
 
-  val db = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver")
+  val db = Database.forURL("jdbc:h2:tcp://localhost/~/wlm_ua", driver = "org.h2.Driver", user = "sa", password = "")
 
-  db.withSession { implicit session =>
+  val monuments = TableQuery[Monuments]
 
-
+  def createDdl {
+    db.withSession { implicit session =>
+      monuments.ddl.create
+    }
   }
+
+  def drop {
+    db.withSession { implicit session =>
+      monuments.ddl.drop
+    }
+  }
+
+  def withSession[T](f:(Session) => T) =
+    db.withSession { implicit session =>
+      f(session)
+    }
 
 }
 
 
-abstract class Monuments(tag: Tag) extends Table[Monument](tag, "MONUMENTS") {
-  // Auto Increment the id primary key column
-  def id = column[Int]("ID", O.PrimaryKey, O.AutoInc)
-  // The name can't be null
-  def name = column[String]("NAME", O.NotNull)
-  // the * projection (e.g. select * ...) auto-transforms the tupled
-  // column values to / from a User
-//  def * = (name, id.?) <> (Monument.tupled, Monument.unapply)
+object Slick {
+
+  def main(args: Array[String]) {
+    new Slick().createDdl
+  }
+
+}
+
+case class Test2(id:Int, name: String)
+
+class Tests(tag: Tag) extends Table[Test2](tag, "TESTS") {
+  def id = column[Int]("ID")
+  def name = column[String]("NAME")
+  def * = (id, name) <> (fromDb, toDb)
+
+  def fromDb(t:(Int, String)) = Test2(t._1, t._2)
+
+  def toDb(m:Test2) = Some((m.id, m.name))
+
+//  (Test2.tupled, Test2.unapply)
+
+  //
+
+
 }

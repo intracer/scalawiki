@@ -32,6 +32,11 @@ object MwReads {
 
   def editResponseReads: Reads[String] = (__ \ "edit" \ "result" ).read[String]
 
+  def errorReads: Reads[MwError] = (
+    (__ \ "code").read[String] and
+      (__ \ "info").read[String]
+    )(MwError.apply _)
+
   def continueReads(continue: String): Reads[Continue] = (
     (__ \ "continue" \ "continue").readNullable[String] and
       (__ \ "continue" \ continue).readNullable[String]

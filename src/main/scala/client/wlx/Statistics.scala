@@ -1,10 +1,12 @@
 package client.wlx
 
 import client.MwBot
+import client.slick.Slick
 import client.wlx.dto.{Contest, SpecialNomination}
 import client.wlx.query.{ImageQuery, MonumentQuery}
 
 import scala.concurrent.Future
+import scala.slick.driver.H2Driver
 
 class Statistics {
 
@@ -19,9 +21,10 @@ class Statistics {
     val allMonuments = monumentQuery.byMonumentTemplate(wlmContest.listTemplate)
     val monumentDb = new MonumentDB(wlmContest, allMonuments)
 
-    val imageQuery = ImageQuery.create()
+    saveMonuments(monumentDb)
 
-    regionalStat(wlmContest, allContests, monumentDb, imageQuery)
+//   val imageQuery = ImageQuery.create()
+//   regionalStat(wlmContest, allContests, monumentDb, imageQuery)
 
     //    specialNominations(allContests.find(_.year == 2013).get, imageQuery, monumentQuery)
   }
@@ -71,16 +74,24 @@ class Statistics {
       val category = "\n[[Category:Wiki Loves Monuments 2014 in Ukraine]]"
       val regionalStat = toc + idsStat + authorStat + category
 
-      val bot = MwBot.get(MwBot.commons)
+//      val bot = MwBot.get(MwBot.commons)
+//      bot.await(bot.page("Commons:Wiki Loves Monuments 2014 in Ukraine/Regional statistics").edit(regionalStat, "update statistics"))
 
-      bot.await(bot.page("Commons:Wiki Loves Monuments 2014 in Ukraine/Regional statistics").edit(regionalStat, "update statistics"))
-
+      MwBot.get(MwBot.commons).getJavaWiki.edit("Commons:Wiki Loves Monuments 2014 in Ukraine/Regional statistics", regionalStat, "updating")
     }
 
   }
 
+  def saveMonuments(monumentDb: MonumentDB) {
+    import H2Driver.simple._
 
+    val slick = new Slick()
+  //  slick.createDdl
 
+    slick.db.withSession { implicit  session =>
+      slick.monuments ++= monumentDb.allMonuments
+    }
+  }
 }
 
 object Statistics {

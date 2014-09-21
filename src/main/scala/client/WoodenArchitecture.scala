@@ -12,13 +12,19 @@ object WoodenArchitecture {
 
   def main(args: Array[String]) {
     val ukWiki = MwBot.get("uk.wikipedia.org")
+    val java = ukWiki.getJavaWiki
+
+    val specialNomination = "замки і фортеці"
 
     val contest = Contest.WLMUkraine(2014, "", "")
     val query = MonumentQuery.create(contest)
     query.byMonumentTemplateAsync(contest.listTemplate).map {
       monuments =>
 
-        val wooden = monuments.filter(_.name.contains("(д"))
+        val wooden = monuments.filter { m =>
+          val name = m.name.toLowerCase
+          Set("замок", "замк", "форт", " вал").exists(name.contains)
+        }
 
         val byRegion = wooden.groupBy(m => Monument.getRegionId(m.id))
 
@@ -35,18 +41,24 @@ object WoodenArchitecture {
           val pages = SortedSet(byPage.keys.toSeq: _*)
 
           val buf = new StringBuffer
-          buf.append("{{WLM Дерев'яна архітектура}}")
+          buf.append(s"{{WLM $specialNomination}}\n__TOC__\n")
           buf.append("{{WLM-шапка}}")
 
           for (page <- pages) {
             val title = page.replace("Вікіпедія:Вікі любить пам'ятки/", "")
-            buf.append(s"|-\n|colspan=9 bgcolor=lightyellow|\n=== [[$page|$title]]} ===\n|-\n")
-            byPage(page).foreach(monument => buf.append(s"{{WLM-рядок${monument.textParam}"))
+            buf.append(s"|-\n|colspan=9 bgcolor=lightyellow|\n=== [[$page|$title]] ===\n|-\n")
+            byPage(page).foreach{
+              monument =>
+                val text = monument.textParam.split("\\|\\}")(0)
+                buf.append(s"{{WLM-рядок${text}")
+            }
           }
           buf.append("\n|}")
           val s = buf.toString
 
-          ukWiki.page(regionLink +" дерев'яна архітектура").edit(s, s"$regionTitle - дерев'яна архітектура")
+          //ukWiki.page(regionLink +" дерев'яна архітектура").edit(s, s"$regionTitle - дерев'яна архітектура")
+          java.edit(s"$regionLink $specialNomination", s,  s"$regionTitle - $specialNomination")
+
         }
     }
 
