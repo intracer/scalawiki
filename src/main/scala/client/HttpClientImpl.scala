@@ -28,6 +28,8 @@ trait HttpClient {
 
   def post(url: Uri, params: Map[String, String]): Future[HttpResponse]
 
+  def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse]
+
 }
 
 class HttpClientImpl(val system: ActorSystem) extends HttpClient {
@@ -86,7 +88,7 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
       logRequest(r =>
         log.info(s"HttpRequest: h: ${r.headers} d:${r.entity.data.asString}")
       )
-      ~> ((_:HttpRequest).mapEntity(_.flatMap(entity => HttpEntity(entity.contentType.withoutDefinedCharset, entity.data))))
+      //~> ((_:HttpRequest).mapEntity(_.flatMap(entity => HttpEntity(entity.contentType.withoutDefinedCharset, entity.data))))
       ~> sendReceive
       ~> decode(Gzip)
       ~> logResponse( r => log.info(s"HttpResponse: ${r.status}, ${r.headers}" ))
@@ -99,6 +101,15 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
   override def post(url: String, params: Map[String, String]): Future[HttpResponse] = submit(Post(url, FormData(params)))
 
   override def post(url: Uri, params: Map[String, String]): Future[HttpResponse] = submit(Post(url, FormData(params)))
+
+  override def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse] = {
+    val bodyParts = params.map { case (key, value) =>
+      (key, BodyPart(HttpEntity(value), key))
+
+    }
+    submit(Post(url, MultipartFormData(bodyParts)))
+  }
+
 }
 
 //     submit(Post(baseUrl + url, FormData(Map("username" -> user, "password" -> password)))) map cookiesAndBody

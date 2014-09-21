@@ -22,8 +22,11 @@ object ScalaProjectBuild extends Build {
           "io.spray" %%  "spray-json" % "1.2.6",
           "com.typesafe.play" %% "play-json" % "2.2.3",
           "com.typesafe.akka"   %%  "akka-actor"    % akkaV,
+          "com.typesafe.slick" %% "slick" % "2.1.0",
+          "com.h2database" % "h2" % "1.3.175",
           "org.scala-lang" %% "scala-pickling" % "0.8.0",
           "org.specs2" %% "specs2" % "2.3.12" % "test"
+
         )
       },
 //      publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))

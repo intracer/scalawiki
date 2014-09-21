@@ -185,9 +185,9 @@ class SinglePageQuery(query: Either[Long, String], site: MwBot) extends PageQuer
       "summary" -> summary,
       "format" -> "json",
       "bot" -> "",
-      "token" -> token.get) ++ toMap("pageid", "title")
+      "token" -> fold) ++ toMap("pageid", "title")
 
-    site.post(editResponseReads, params)
+    site.postMultiPart(editResponseReads, params)
   }
 }
 

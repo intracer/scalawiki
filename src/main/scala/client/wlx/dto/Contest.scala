@@ -16,7 +16,7 @@ class Contest(
 
 object Contest {
 
-  def WLMUkraine(year: Int, startDate: String, endDate: String) =
+  def WLMUkraine(year: Int, startDate: String = "01-09", endDate: String = "30-09") =
     new Contest(ContestType.WLM, Country.Ukraine, year, startDate, endDate, "ВЛП-рядок", "Monument Ukraine", Seq.empty)
 
   def WLEUkraine(year: Int, startDate: String, endDate: String) =
@@ -24,7 +24,7 @@ object Contest {
 
 }
 
-class SpecialNomination(val name: String, val listTemplate:String, val pages: Seq[String]) {
+class SpecialNomination(val name: String, val listTemplate: String, val pages: Seq[String]) {
 
 }
 

@@ -74,6 +74,11 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
         Json.parse(body).validate(reads).get
     }
 
+  def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T] =
+    http.postMultiPart(apiUrl, params) map getBody map {
+      body =>
+        Json.parse(body).validate(reads).get
+    }
 
   def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)
 
