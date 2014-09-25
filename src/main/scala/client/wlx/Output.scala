@@ -129,24 +129,29 @@ class Output {
       columns.mkString("!", "!!", "\n" )
 
     var text = ""
-    for (user <- imageDb.authors) {
-      val columnData = Seq(
-        user,
-        imageDb._authorsIds(user).size,
-        imageDb._byAuthor(user).size
-      ) ++ country.regionIds.map(regId => imageDb._authorIdsByRegion(user).getOrElse(regId, Seq.empty).size)
-
-      text += columnData.mkString("|-\n| ", " || ", "\n")
-    }
     val totalData = Seq(
       "Total",
       imageDb.ids.size,
       imageDb.images.size
-    ) ++ country.regionIds.map(regId => imageDb.idsByRegion(regId).size)
+    ) ++ country.regionIds.toSeq.map(regId => imageDb.idsByRegion(regId).size)
 
     text += totalData.mkString("|-\n| ", " || ", "\n")
 
-    imageDb
+    val authors =  imageDb.authors.toSeq.sortBy(user => -imageDb._authorsIds(user).size)
+    for (user <- authors) {
+      val columnData = Seq(
+        user.replaceAll("\\{\\{", "").replaceAll("\\}\\}", ""),
+        imageDb._authorsIds(user).size,
+        imageDb._byAuthor(user).size
+      ) ++ country.regionIds.toSeq.map(regId => imageDb._authorIdsByRegion(user).getOrElse(regId, Seq.empty).size)
+
+      text += columnData.mkString("|-\n| ", " || ", "\n")
+    }
+
+
+    val total = "|}" + "\n[[Category:Wiki Loves Monuments 2014 in Ukraine]]"
+
+    header + text + total
   }
 
 }

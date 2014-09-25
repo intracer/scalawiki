@@ -21,7 +21,7 @@ class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Monu
 
   val _authorsIds: Map[String, Set[String]] = _byAuthor.mapValues(images => images.groupBy(_.monumentId.getOrElse("")).keySet)
   val _authorIdsByRegion =
-        _byAuthor.mapValues(images => images.groupBy(im => Monument.getRegionId(im.monumentId)))
+    _authorsIds.mapValues(ids => ids.groupBy(id => Monument.getRegionId(id)))
 
     //  var allImages: Seq[Image] = Seq.empty
 

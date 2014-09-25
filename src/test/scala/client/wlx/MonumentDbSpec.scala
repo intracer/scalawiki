@@ -1,18 +1,20 @@
 package client.wlx
 
-import client.wlx.dto.{Contest, Monument, Region}
+import client.wlx.dto.{Contest, Country, Monument}
 import org.specs2.mutable.Specification
 
 class MonumentDbSpec extends Specification {
 
-  val monuments = Region.Ukraine.keySet.flatMap{
+  private val Ukraine = Country.Ukraine
+
+  val monuments = Ukraine.regionIds.flatMap{
     regionId =>
       (1 to regionId.toInt).map { i =>
         Monument(
           textParam = "",
           pageParam = "",
           id = regionId + "-001-" + f"$i%04d",
-          name = "Monument in " + Region.Ukraine(regionId)
+          name = "Monument in " +  Ukraine.regionById(regionId).name
         )
       }
   }
@@ -38,7 +40,7 @@ class MonumentDbSpec extends Specification {
         db._byRegion(region).size === region.toInt
       }
 
-      regions === Region.Ukraine.keySet
+      regions === Ukraine.regionIds
     }
   }
 

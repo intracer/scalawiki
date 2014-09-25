@@ -1,26 +1,27 @@
 package client.wlx
 
-import client.wlx.dto.{Contest, Image, Monument, Region}
+import client.wlx.dto._
 import client.wlx.query.ImageQuerySeq
 import org.specs2.mutable.Specification
 
 class ImageDbSpec extends Specification {
 
-  val monuments = Region.Ukraine.keySet.flatMap{
+  private val Ukraine = Country.Ukraine
+  val monuments = Ukraine.regionIds.flatMap{
     regionId =>
       (1 to regionId.toInt).map { i =>
         Monument(
           textParam = "",
           pageParam = "",
           id = regionId + "-001-" + f"$i%04d",
-          name = "Monument in " + Region.Ukraine(regionId)
+          name = "Monument in " + Ukraine.regionById(regionId).name
         )
       }
   }
 
   def images(year: Int):Set[Image] = {
     var imageCount = 0
-    Region.Ukraine.keySet.flatMap{
+    Ukraine.regionIds.keySet.flatMap{
       regionId =>
         (1 to regionId.toInt).flatMap { i =>
           val id = regionId + "-001-" + f"$i%04d"
