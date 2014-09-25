@@ -1,6 +1,6 @@
 package client
 
-import client.wlx.dto.{Region, Monument, Contest}
+import client.wlx.dto.{Contest, Monument}
 import client.wlx.query.MonumentQuery
 
 import scala.collection.immutable.SortedSet
@@ -32,7 +32,7 @@ object WoodenArchitecture {
 
         for (regionId <- regionIds) {
 
-          val regionTitle = Region.Ukraine(regionId)
+          val regionTitle = contest.country.regionById(regionId).name
           val regionLink = "Вікіпедія:Вікі любить пам'ятки/" + regionTitle
 
           val regionMonuments = byRegion(regionId)

@@ -27,6 +27,8 @@ case class Monument(textParam: String, pageParam: String,
 
   override def init(text: String, page:String):Monument = Monument.init(text, page)
 
+  def regionId = Monument.getRegionId(id)
+
 }
 
 object Monument {

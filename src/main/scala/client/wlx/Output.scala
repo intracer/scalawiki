@@ -1,12 +1,12 @@
 package client.wlx
 
-import client.wlx.dto.{SpecialNomination, Region}
+import client.wlx.dto.SpecialNomination
 
 import scala.collection.immutable.SortedSet
 
 class Output {
 
-  def monumentsPictured(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentsDb:  MonumentDB) = {
+  def monumentsPictured(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb:  MonumentDB) = {
 
    // val contests = (2012 to 2014).map(year => Contest.WLMUkraine(year, "01-09", "31-09"))
 
@@ -17,17 +17,17 @@ class Output {
       "|+ Objects pictured\n" +
       columns.mkString("!", "!!", "\n" )
 
-    val regionIds = SortedSet(monumentsDb._byRegion.keySet.toSeq:_*)
+    val regionIds = SortedSet(monumentDb._byRegion.keySet.toSeq:_*)
 
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
 
     var text = ""
     for (regionId <- regionIds) {
       val columnData = Seq(
-        Region.Ukraine(regionId),
-          monumentsDb.byRegion(regionId).size,
+          monumentDb.contest.country.regionById(regionId).name,
+          monumentDb.byRegion(regionId).size,
           totalImageDb.idsByRegion(regionId).size,
-          100 * totalImageDb.idsByRegion(regionId).size / monumentsDb.byRegion(regionId).size,
+          100 * totalImageDb.idsByRegion(regionId).size / monumentDb.byRegion(regionId).size,
           imageDbsByYear(2012).head.idsByRegion(regionId).size,
           imageDbsByYear(2013).head.idsByRegion(regionId).size,
           imageDbsByYear(2014).head.idsByRegion(regionId).size
@@ -38,9 +38,9 @@ class Output {
 
     val totalData = Seq(
       "Total",
-      monumentsDb.monuments.size,
+      monumentDb.monuments.size,
       totalImageDb.ids.size,
-      100 * totalImageDb.ids.size / monumentsDb.monuments.size,
+      100 * totalImageDb.ids.size / monumentDb.monuments.size,
       imageDbsByYear(2012).head.ids.size,
       imageDbsByYear(2013).head.ids.size,
       imageDbsByYear(2014).head.ids.size
@@ -51,7 +51,7 @@ class Output {
 
   }
 
-  def authorsContributed(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentsDb:  MonumentDB) = {
+  def authorsContributed(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb:  MonumentDB) = {
 
     // val contests = (2012 to 2014).map(year => Contest.WLMUkraine(year, "01-09", "31-09"))
 
@@ -62,14 +62,14 @@ class Output {
       "|+ Authors contributed\n" +
       columns.mkString("!", "!!", "\n" )
 
-    val regionIds = SortedSet(monumentsDb._byRegion.keySet.toSeq:_*)
+    val regionIds = SortedSet(monumentDb._byRegion.keySet.toSeq:_*)
 
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
 
     var text = ""
     for (regionId <- regionIds) {
       val columnData = Seq(
-        Region.Ukraine(regionId),
+        monumentDb.contest.country.regionById(regionId).name,
         totalImageDb.authorsByRegion(regionId).size,
         imageDbsByYear(2012).head.authorsByRegion(regionId).size,
         imageDbsByYear(2013).head.authorsByRegion(regionId).size,
@@ -94,7 +94,7 @@ class Output {
 
   def specialNomination(imageDbs: Map[SpecialNomination, ImageDB]) = {
 
-    val columns = Seq("Special nomination", "authors", "monuments", "photos", "")
+    val columns = Seq("Special nomination", "authors", "monuments", "photos")
 
     val header = "{| class='wikitable sortable'\n" +
       "|+ Special nomination statistics\n" +
@@ -119,6 +119,34 @@ class Output {
     header + text + total
   }
 
+  def authorsMonuments(imageDb: ImageDB) = {
 
+    val country = imageDb.contest.country
+    val columns = Seq("User", "Objects pictured",  "Photos uploaded") ++  country.regionNames
+
+    val header = "{| class='wikitable sortable'\n" +
+      "|+ Number of objects pictured by uploader\n" +
+      columns.mkString("!", "!!", "\n" )
+
+    var text = ""
+    for (user <- imageDb.authors) {
+      val columnData = Seq(
+        user,
+        imageDb._authorsIds(user).size,
+        imageDb._byAuthor(user).size
+      ) ++ country.regionIds.map(regId => imageDb._authorIdsByRegion(user).getOrElse(regId, Seq.empty).size)
+
+      text += columnData.mkString("|-\n| ", " || ", "\n")
+    }
+    val totalData = Seq(
+      "Total",
+      imageDb.ids.size,
+      imageDb.images.size
+    ) ++ country.regionIds.map(regId => imageDb.idsByRegion(regId).size)
+
+    text += totalData.mkString("|-\n| ", " || ", "\n")
+
+    imageDb
+  }
 
 }

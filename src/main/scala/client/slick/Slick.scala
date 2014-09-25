@@ -1,5 +1,8 @@
 package client.slick
 
+import client.wlx.dto.{Country, Monument}
+
+import scala.collection.immutable.SortedSet
 import scala.slick.driver.H2Driver.simple._
 
 class Slick {
@@ -34,10 +37,21 @@ class Slick {
 object Slick {
 
   def main(args: Array[String]) {
-    new Slick().createDdl
-  }
+    val slick: Slick = new Slick()
+    slick.db.withSession { implicit session =>
 
+      val images = slick.images.filter(_.date === "2014").list
+      val byRegion = images.groupBy(im => Monument.getRegionId(im.monumentId))
+      val regionIds = SortedSet(byRegion.keySet.toSeq:_*)
+
+      for (regionId <- regionIds)
+          println(s"${Country.Ukraine.regionById.getOrElse(regionId, "-")} ${byRegion(regionId).size}")
+
+
+    }
+  }
 }
+
 
 case class Test2(id:Int, name: String)
 

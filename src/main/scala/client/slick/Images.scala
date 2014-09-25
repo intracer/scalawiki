@@ -7,15 +7,15 @@ class Images(tag: Tag) extends Table[Image](tag, "IMAGES") {
 
   def pageId = column[Long]("ID", O.NotNull)
   def title = column[String]("TITLE", O.NotNull)
-  def monumentId = column[Option[String]]("MONUMENT_ID")
-  def author = column[Option[String]]("AUTHOR")
-  def uploader = column[Option[String]]("UPLOADER")
-  def date = column[Option[String]]("DATE")
+  def monumentId = column[String]("MONUMENT_ID")
+  def author = column[String]("AUTHOR")
+  def uploader = column[String]("UPLOADER")
+  def date = column[String]("DATE")
   def width = column[Int]("WIDTH")
   def height = column[Int]("HEIGHT")
   def size = column[Int]("SIZE")
 
-  def * = (pageId, title, monumentId, author, uploader, date, width, height, size) <> (fromDb, toDb)
+  def * = (pageId, title, monumentId.?, author.?, uploader.?, date.?, width, height, size) <> (fromDb, toDb)
 
   def fromDb(t:(Long, String, Option[String], Option[String], Option[String], Option[String], Int, Int, Int)) =
     Image(

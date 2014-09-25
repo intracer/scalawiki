@@ -14,13 +14,13 @@ object ScalaProjectBuild extends Build {
       // add other settings here
         resolvers := Seq ("spray repo" at "http://repo.spray.io", "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"),
       libraryDependencies ++= {
-        val akkaV = "2.2.4"
-        val sprayV = "1.2.1"
+        val akkaV = "2.3.2"
+        val sprayV = "1.3.1"
         Seq(
           "io.spray" % "spray-client" % sprayV,
           "io.spray" % "spray-caching" % sprayV,
-          "io.spray" %%  "spray-json" % "1.2.6",
-          "com.typesafe.play" %% "play-json" % "2.2.3",
+          "io.spray" %%  "spray-json" % "1.3.0",
+          "com.typesafe.play" %% "play-json" % "2.3.6",
           "com.typesafe.akka"   %%  "akka-actor"    % akkaV,
           "com.typesafe.slick" %% "slick" % "2.1.0",
           "com.h2database" % "h2" % "1.3.175",

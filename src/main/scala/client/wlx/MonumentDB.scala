@@ -1,6 +1,6 @@
 package client.wlx
 
-import client.wlx.dto.{Contest, Monument, Region}
+import client.wlx.dto.{Contest, Monument}
 
 class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument]) {
 
@@ -19,7 +19,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument]) {
 
   def isIdCorrect(id:String) = {
     val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
-    id.matches(idRegex) && Region.Ukraine.contains(Monument.getRegionId(id))
+    id.matches(idRegex) && contest.country.regionIds.contains(Monument.getRegionId(id))
   }
 
 }

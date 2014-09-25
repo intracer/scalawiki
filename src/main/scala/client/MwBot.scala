@@ -22,7 +22,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
   import system.dispatcher
 
-  val baseUrl: String = "http://" + host + "/w/"
+  val baseUrl: String = "https://" + host + "/w/"
 
   val indexUrl = baseUrl + "index.php"
 
@@ -150,6 +150,7 @@ object MwBot {
   import scala.concurrent.{Future, _}
 
   val commons = "commons.wikimedia.org"
+  val ukWiki = "uk.wikipedia.org"
 
   def create(host: String): MwBot = {
     val system = ActorSystem()

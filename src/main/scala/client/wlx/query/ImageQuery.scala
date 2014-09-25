@@ -62,7 +62,7 @@ class ImageQueryApi extends ImageQuery with WithBot {
     val query = bot.page("Template:" + template)
 
     query.revisionsByGenerator("embeddedin", "ei",
-      Set.empty, Set("content", "timestamp", "user", "comment")) map {
+      Set(Namespace.FILE_NAMESPACE), Set("content", "timestamp", "user", "comment")) map {
       pages =>
         pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, "")).sortBy(_.pageId)
     }
@@ -120,20 +120,17 @@ class ImageQuerySeq(
 
 object ImageQuery {
 
-  def create(caching: Boolean = true, pickling: Boolean = false): ImageQuery = {
-    val api = new ImageQuerySlick
-    //new ImageQueryApi
+  def create(db: Boolean = true, caching: Boolean = true, pickling: Boolean = false): ImageQuery = {
+    val query = if (db)
+      new ImageQuerySlick
+    else
+      new ImageQueryApi
 
-    val query = if (caching)
-      new ImageQueryCached(
-        if (pickling)
-          api
-        //          new ImageQueryPickling(api, contest)
-        else api
-      )
-    else api
+    val wrapper = if (caching)
+      new ImageQueryCached(if (pickling) query else query)//          new ImageQueryPickling(api, contest)
+    else query
 
-    query
+    wrapper
   }
 }
 
