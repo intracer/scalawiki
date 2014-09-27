@@ -1,6 +1,7 @@
 package client.wlx
 
-import client.wlx.dto.SpecialNomination
+import client.MwBot
+import client.wlx.dto.{Country, SpecialNomination}
 
 import scala.collection.immutable.SortedSet
 
@@ -103,13 +104,28 @@ class Output {
     var text = ""
     val nominations: Seq[SpecialNomination] = imageDbs.keySet.toSeq.sortBy(_.name)
     for (nomination <- nominations) {
+
+      val imagesPage = s"Commons:Images from Wiki Loves Monuments 2014 in Ukraine special nomination ${nomination.name}"
+
       val imageDb = imageDbs(nomination)
       val columnData = Seq(
         nomination.name,
         imageDb.authors.size,
         imageDb.ids.size,
-        imageDb.images.size
+        s"[[$imagesPage|${imageDb.images.size}]]"
       )
+
+      var imagesText = "__TOC__"
+
+      for (region <- Country.Ukraine.regions) {
+        val images = imageDb.imagesByRegion(region.code)
+        if (images.nonEmpty) {
+          imagesText += s"\n== ${region.name} ${images.size} images ==\n"
+          imagesText += images.map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
+        }
+      }
+
+      MwBot.get(MwBot.commons).getJavaWiki.edit(imagesPage, imagesText, "updating")
 
       text += columnData.mkString("|-\n| ", " || ","\n")
     }

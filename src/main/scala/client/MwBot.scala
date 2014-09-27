@@ -32,8 +32,11 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
   def log = system.log
 
+  lazy val javaWiki = createJavaWiki
 
-  def getJavaWiki = {
+  def getJavaWiki = javaWiki
+
+  def createJavaWiki = {
     val w: Wiki = new Wiki(host)
     w.setUserAgent("WPBot 1.0")
     w.login(LoginInfo.login, LoginInfo.password)
