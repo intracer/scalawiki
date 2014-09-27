@@ -3,6 +3,8 @@ package client.wlx
 import client.MwBot
 import client.wlx.dto.{Image, Monument}
 
+import scala.collection.immutable.SortedSet
+
 class ListFiller {
 
   def fillLists(monumentDb: MonumentDB, imageDb: ImageDB) {
@@ -17,11 +19,12 @@ class ListFiller {
     val monumentToFill = monumentsWithoutImages.filter(m => newIds.contains(m.id))
     val monumentsByPage = monumentToFill.groupBy(_.pageParam)
 
-    println(s"pages: ${monumentsByPage.keySet.size}")
+    val titles = SortedSet(monumentsByPage.keys.toSeq:_*)
+    println(s"pages: ${titles.size}")
 
     val bot = MwBot.get(MwBot.ukWiki)
     val javaBot = bot.getJavaWiki
-    for (title <- monumentsByPage.keySet) {
+    for (title <- titles) {
       val ids = monumentsByPage(title).map(_.id).toSet
 
       val pageText = javaBot.getPageText(title)

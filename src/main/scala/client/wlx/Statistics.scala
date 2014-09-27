@@ -31,6 +31,7 @@ class Statistics {
 
     //    specialNominations(allContests.find(_.year == 2013).get, imageQuery, monumentQuery)
     authorsStat(monumentDb)
+    fillLists(monumentDb)
   }
 
   def authorsStat(monumentDb: MonumentDB) {
@@ -79,9 +80,17 @@ class Statistics {
 
       MwBot.get(MwBot.commons).getJavaWiki.edit("Commons:Wiki Loves Monuments 2014 in Ukraine/Regional statistics", regionalStat, "updating")
 
-      //      fillLists(monumentDb, totalImageDb)
+
     }
 
+  }
+
+  def fillLists(monumentDb: MonumentDB): Unit = {
+    val total = new ImageQueryApi().imagesWithTemplateAsync(wlmContest.fileTemplate, wlmContest)
+    for (totalImages <- total) {
+      val totalImageDb = new ImageDB(wlmContest, totalImages, monumentDb)
+      new ListFiller().fillLists(monumentDb, totalImageDb)
+    }
   }
 
   def saveMonuments(monumentDb: MonumentDB) {
