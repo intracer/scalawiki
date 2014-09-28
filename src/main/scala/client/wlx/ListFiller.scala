@@ -6,6 +6,7 @@ import client.wlx.dto.{Image, Monument}
 import scala.collection.immutable.SortedSet
 
 class ListFiller {
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   def fillLists(monumentDb: MonumentDB, imageDb: ImageDB) {
 
@@ -19,36 +20,36 @@ class ListFiller {
     val monumentToFill = monumentsWithoutImages.filter(m => newIds.contains(m.id))
     val monumentsByPage = monumentToFill.groupBy(_.pageParam)
 
-    val titles = SortedSet(monumentsByPage.keys.toSeq:_*)
+    val titles = SortedSet(monumentsByPage.keys.toSeq: _*)
     println(s"pages: ${titles.size}")
 
     val bot = MwBot.get(MwBot.ukWiki)
-    val javaBot = bot.getJavaWiki
+    //val javaBot = bot.getJavaWiki
     for (title <- titles) {
       val ids = monumentsByPage(title).map(_.id).toSet
 
-      val pageText = javaBot.getPageText(title)
+      for (pageText <- bot.pageText(title)) {
+        val splitted = pageText.split("\\{\\{" + monumentDb.contest.listTemplate)
 
-      //        .map { pageText =>
-      val splitted = pageText.split("\\{\\{" + monumentDb.contest.listTemplate)
-
-      val edited = splitted.zipWithIndex.map { case (text, index) =>
-        if (index == 0 || index == splitted.size - 1)
-          text
-        else {
-          val monument = Monument.init(text, title)
-
-          if (!ids.contains(monument.id))
+        val edited = splitted.zipWithIndex.map { case (text, index) =>
+          if (index == 0)
             text
           else {
-            monument.setTemplateParam("фото", bestImage(imageDb.byId(monument.id)).title).text.replaceFirst("File:", "")
+            val monument = Monument.init(text, title)
+
+            if (!ids.contains(monument.id))
+              text
+            else {
+              monument.setTemplateParam("фото", bestImage(imageDb.byId(monument.id)).title).text.replaceFirst("File:", "")
+            }
           }
         }
-      }
 
-      val newText = edited.mkString("{{" + monumentDb.contest.listTemplate)
-      javaBot.edit(title, newText, s"adding ${ids.size} images")
-      //      }
+        val newText = edited.mkString("{{" + monumentDb.contest.listTemplate)
+        val comment = s"adding ${ids.size} images"
+        bot.page(title).edit(newText, comment)
+  //      javaBot.edit(title, newText, comment)
+      }
     }
   }
 

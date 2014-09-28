@@ -35,7 +35,6 @@ trait HttpClient {
 
 class HttpClientImpl(val system: ActorSystem) extends HttpClient {
 
-
   implicit val sys = system
 
   import system.dispatcher
@@ -79,6 +78,8 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
   val sendAndDecode: HttpRequest => Future[HttpResponse] = sendReceive ~> decode(Gzip)
   val log = Logging(system, getClass)
   //  val TraceLevel = Logging.LogLevel(Logging.DebugLevel.asInt + 1)
+
+ override implicit val timeout: Duration = 5.minutes
 
   def submit: HttpRequest => Future[HttpResponse] = (
     addHeaders(

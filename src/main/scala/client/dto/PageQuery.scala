@@ -178,7 +178,7 @@ class SinglePageQuery(query: Either[Long, String], site: MwBot) extends PageQuer
     queryList(namespaces, continueParam, "categorymembers", "cm")
   }
 
-  def edit(text: String, summary: String, token: Option[String] = None) = {
+  def edit(text: String, summary: String, token: Option[String] = None, multi:Boolean = true) = {
     val fold: String = token.fold(site.token)(identity)
     val params = Map("action" -> "edit",
       "text" -> text,
@@ -187,7 +187,10 @@ class SinglePageQuery(query: Either[Long, String], site: MwBot) extends PageQuer
       "bot" -> "",
       "token" -> fold) ++ toMap("pageid", "title")
 
-    site.postMultiPart(editResponseReads, params)
+    if (multi)
+      site.postMultiPart(editResponseReads, params)
+    else
+      site.post(editResponseReads, params)
   }
 }
 

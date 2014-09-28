@@ -12,7 +12,6 @@ object WoodenArchitecture {
 
   def main(args: Array[String]) {
     val ukWiki = MwBot.get("uk.wikipedia.org")
-    val java = ukWiki.getJavaWiki
 
     val specialNomination = "замки і фортеці"
 
@@ -57,7 +56,7 @@ object WoodenArchitecture {
           val s = buf.toString
 
           //ukWiki.page(regionLink +" дерев'яна архітектура").edit(s, s"$regionTitle - дерев'яна архітектура")
-          java.edit(s"$regionLink $specialNomination", s,  s"$regionTitle - $specialNomination")
+          ukWiki.page(s"$regionLink $specialNomination").edit(s,  s"$regionTitle - $specialNomination")
 
         }
     }

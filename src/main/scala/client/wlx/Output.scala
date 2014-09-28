@@ -1,7 +1,7 @@
 package client.wlx
 
 import client.MwBot
-import client.wlx.dto.{Country, SpecialNomination}
+import client.wlx.dto.{Contest, Country, SpecialNomination}
 
 import scala.collection.immutable.SortedSet
 
@@ -14,7 +14,7 @@ class Output {
 
     val columns = Seq("Region", "Objects in lists", "3 years total", "3 years percentage" ,"2012", "2013", "2014")
 
-    val header = "==Objects pictured==\n{| class='wikitable sortable'\n" +
+    val header = "\n==Objects pictured==\n{| class='wikitable sortable'\n" +
       "|+ Objects pictured\n" +
       columns.mkString("!", "!!", "\n" )
 
@@ -59,7 +59,7 @@ class Output {
 
     val columns = Seq("Region", "3 years total", "2012", "2013", "2014")
 
-    val header = "==Authors contributed==\n{| class='wikitable sortable'\n" +
+    val header = "\n==Authors contributed==\n{| class='wikitable sortable'\n" +
       "|+ Authors contributed\n" +
       columns.mkString("!", "!!", "\n" )
 
@@ -93,7 +93,7 @@ class Output {
 
   }
 
-  def specialNomination(imageDbs: Map[SpecialNomination, ImageDB]) = {
+  def specialNomination(contest: Contest, imageDbs: Map[SpecialNomination, ImageDB]) = {
 
     val columns = Seq("Special nomination", "authors", "monuments", "photos")
 
@@ -105,7 +105,7 @@ class Output {
     val nominations: Seq[SpecialNomination] = imageDbs.keySet.toSeq.sortBy(_.name)
     for (nomination <- nominations) {
 
-      val imagesPage = s"Commons:Images from Wiki Loves Monuments 2014 in Ukraine special nomination ${nomination.name}"
+      val imagesPage = s"Commons:Images from Wiki Loves Monuments ${contest.year} in Ukraine special nomination ${nomination.name}"
 
       val imageDb = imageDbs(nomination)
       val columnData = Seq(
@@ -125,12 +125,12 @@ class Output {
         }
       }
 
-      MwBot.get(MwBot.commons).getJavaWiki.edit(imagesPage, imagesText, "updating")
+      MwBot.get(MwBot.commons).page(imagesPage).edit(imagesText, "updating")
 
       text += columnData.mkString("|-\n| ", " || ","\n")
     }
 
-    val total = "|}" + "\n[[Category:Wiki Loves Monuments 2014 in Ukraine]]"
+    val total = "|}" + s"\n[[Category:Wiki Loves Monuments ${contest.year} in Ukraine]]"
 
     header + text + total
   }

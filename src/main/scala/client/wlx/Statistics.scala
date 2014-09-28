@@ -29,15 +29,15 @@ class Statistics {
     for (imageDb <- ImageDB.create(wlmContest, imageQueryApi, monumentDb)) {
 
       authorsStat(monumentDb, imageDb)
-      specialNominations(wlmContest, imageQueryApi, monumentQuery)
+      specialNominations(wlmContest, imageDb, monumentQuery)
 
       val total = new ImageQueryApi().imagesWithTemplateAsync(wlmContest.fileTemplate, wlmContest)
-      for(totalImages <- total) {
+      for (totalImages <- total) {
 
         val totalImageDb = new ImageDB(wlmContest, totalImages, monumentDb)
 
         regionalStat(wlmContest, monumentDb, imageQueryDb, imageDb, totalImageDb)
-      //  fillLists(monumentDb, totalImageDb)
+        fillLists(monumentDb, totalImageDb)
       }
     }
 
@@ -46,7 +46,7 @@ class Statistics {
   def authorsStat(monumentDb: MonumentDB, imageDb: ImageDB) {
     val output = new Output()
     val text = output.authorsMonuments(imageDb)
-    MwBot.get(MwBot.commons).getJavaWiki.edit("Commons:Wiki Loves Monuments 2014 in Ukraine/Number of objects pictured by uploader ", text, "updating")
+    MwBot.get(MwBot.commons).page("Commons:Wiki Loves Monuments 2014 in Ukraine/Number of objects pictured by uploader").edit(text, "updating")
   }
 
   def regionalStat(wlmContest: Contest, monumentDb: MonumentDB,
@@ -75,20 +75,26 @@ class Statistics {
             val authorStat = output.authorsContributed(imageDbs, totalImageDb, monumentDb)
             println(authorStat)
 
-            val toc = "__TOC__\n"
+            val toc = "__TOC__"
             val category = "\n[[Category:Wiki Loves Monuments 2014 in Ukraine]]"
             val regionalStat = toc + idsStat + authorStat + category
 
             //      val bot = MwBot.get(MwBot.commons)
             //      bot.await(bot.page("Commons:Wiki Loves Monuments 2014 in Ukraine/Regional statistics").edit(regionalStat, "update statistics"))
 
-            MwBot.get(MwBot.commons).getJavaWiki.edit("Commons:Wiki Loves Monuments 2014 in Ukraine/Regional statistics", regionalStat, "updating")
+            MwBot.get(MwBot.commons).page("Commons:Wiki Loves Monuments 2014 in Ukraine/Regional statistics").edit(regionalStat, "updating")
+
+            val monumentQuery = MonumentQuery.create(wlmContest)
+
+            specialNominations(previousContests.find(_.year == 2012).get, firstYear, monumentQuery)
+            specialNominations(previousContests.find(_.year == 2013).get, lastYear, monumentQuery)
+
         }
     }
   }
 
   def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
-      new ListFiller().fillLists(monumentDb, imageDb)
+    new ListFiller().fillLists(monumentDb, imageDb)
   }
 
   def saveMonuments(monumentDb: MonumentDB) {
@@ -118,7 +124,7 @@ class Statistics {
     }
   }
 
-  def specialNominations(contest: Contest, imageQuery: ImageQuery, monumentQuery: MonumentQuery) {
+  def specialNominations(contest: Contest, imageDb: ImageDB, monumentQuery: MonumentQuery) {
     val monumentsMap = SpecialNomination.nominations.map { nomination =>
       val monuments = monumentQuery.byPage(nomination.pages.head, nomination.listTemplate)
       (nomination, monuments)
@@ -126,17 +132,14 @@ class Statistics {
 
     val allMonuments = monumentsMap.values.flatMap(identity)
 
-    ImageDB.create(contest, imageQuery, new MonumentDB(contest, allMonuments.toSeq)).map { imageDb =>
-
       val imageDbs: Map[SpecialNomination, ImageDB] = SpecialNomination.nominations.map { nomination =>
         (nomination, imageDb.subSet(monumentsMap(nomination)))
       }.toMap
 
       val output = new Output()
-      val stat = output.specialNomination(imageDbs)
+      val stat = output.specialNomination(contest, imageDbs)
 
-      MwBot.get(MwBot.commons).getJavaWiki.edit("Commons:Wiki Loves Monuments 2014 in Ukraine/Special nominations statistics", stat, "updating")
-    }
+      MwBot.get(MwBot.commons).page(s"Commons:Wiki Loves Monuments ${contest.year} in Ukraine/Special nominations statistics").edit(stat, "updating")
   }
 
 
