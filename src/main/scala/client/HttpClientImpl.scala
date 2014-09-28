@@ -124,13 +124,12 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
       (key,
         BodyPart(
           HttpEntity(
-            ContentType(MediaTypes.`multipart/form-data`, HttpCharsets.`UTF-8`),
             value),
           key)
         )
 
     }
-    submit(Post(url, MultipartFormData(bodyParts)))
+    submit(Post(Uri(url) withQuery("title" -> params("title")), new MultipartFormData(bodyParts.values.toSeq)))
   }
 
 }

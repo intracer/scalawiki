@@ -89,7 +89,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
     }
 
   def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T] =
-    http.post(apiUrl, params) map getBody map {
+    http.postMultiPart(apiUrl, params) map getBody map {
       body =>
         val json = Json.parse(body)
         val response = json.validate(reads)
