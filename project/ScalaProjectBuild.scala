@@ -17,16 +17,15 @@ object ScalaProjectBuild extends Build {
         val akkaV = "2.3.2"
         val sprayV = "1.3.1"
         Seq(
-          "io.spray" % "spray-client" % sprayV,
-          "io.spray" % "spray-caching" % sprayV,
-          "io.spray" %%  "spray-json" % "1.3.0",
-          "com.typesafe.play" %% "play-json" % "2.3.6",
-          "com.typesafe.akka"   %%  "akka-actor"    % akkaV,
-          "com.typesafe.slick" %% "slick" % "2.1.0",
-          "com.h2database" % "h2" % "1.3.175",
-          "org.scala-lang" %% "scala-pickling" % "0.8.0",
-          "org.specs2" %% "specs2" % "2.3.12" % "test"
-
+          "io.spray" % "spray-client" % sprayV withSources() withJavadoc(),
+          "io.spray" % "spray-caching" % sprayV withSources() withJavadoc(),
+          "io.spray" %%  "spray-json" % "1.3.0" withSources() withJavadoc(),
+          "com.typesafe.play" %% "play-json" % "2.3.4" withSources(),
+          "com.typesafe.akka"   %%  "akka-actor"    % akkaV withSources() withJavadoc(),
+          "com.typesafe.slick" %% "slick" % "2.1.0" withSources() withJavadoc(),
+          "com.h2database" % "h2" % "1.3.175" withSources() withJavadoc(),
+          "org.scala-lang" %% "scala-pickling" % "0.8.0" withSources() withJavadoc(),
+          "org.specs2" %% "specs2" % "2.3.12" % "test" withSources() withJavadoc()
         )
       },
 //      publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))

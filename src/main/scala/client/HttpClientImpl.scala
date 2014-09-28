@@ -5,6 +5,7 @@ import javax.net.ssl.{KeyManager, X509TrustManager, SSLContext}
 
 import akka.actor.{ActorRef, Props, ActorSystem}
 import spray.http._
+import spray.httpx.marshalling.Marshaller
 import scala.concurrent.Future
 import spray.client.pipelining._
 import spray.httpx.encoding.Gzip
@@ -41,43 +42,43 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
 
   var cookies: Seq[HttpCookie] = Seq.empty
 
-//  implicit def trustfulSslContext: SSLContext = {
-//    object BlindFaithX509TrustManager extends X509TrustManager {
-//      def checkClientTrusted(chain: Array[X509Certificate], authType: String) = ()
-//
-//      def checkServerTrusted(chain: Array[X509Certificate], authType: String) = ()
-//
-//      def getAcceptedIssuers = Array[X509Certificate]()
-//    }
-//
-//    val context = SSLContext.getInstance("TLS")
-//    context.init(Array[KeyManager](), Array(BlindFaithX509TrustManager), null)
-//    context
-//  }
+  //  implicit def trustfulSslContext: SSLContext = {
+  //    object BlindFaithX509TrustManager extends X509TrustManager {
+  //      def checkClientTrusted(chain: Array[X509Certificate], authType: String) = ()
+  //
+  //      def checkServerTrusted(chain: Array[X509Certificate], authType: String) = ()
+  //
+  //      def getAcceptedIssuers = Array[X509Certificate]()
+  //    }
+  //
+  //    val context = SSLContext.getInstance("TLS")
+  //    context.init(Array[KeyManager](), Array(BlindFaithX509TrustManager), null)
+  //    context
+  //  }
 
-//  val httpClient = system.actorOf(Props(new HttpClient {
-//    implicit def sslContextProvider = new CustomContextProvider
-//    implicit def sslEngineProvider = new CustomClientSSLEngineProvider(sslContextProvider)
-//
-//    override def createConnector(host: String, port: Int, ssl: Boolean): ActorRef =
-//      context.actorOf(Props(
-//        new HttpHostConnector(host, port, hostConnectorSettingsFor(host, port), clientConnectionSettingsFor(host, port))(sslEngineProvider) {
-//          override def tagForConnection(index: Int): Any = connectionTagFor(host, port, index, ssl)
-//        }
-//      ))
-//
-//
-//  }), "http-client")
+  //  val httpClient = system.actorOf(Props(new HttpClient {
+  //    implicit def sslContextProvider = new CustomContextProvider
+  //    implicit def sslEngineProvider = new CustomClientSSLEngineProvider(sslContextProvider)
+  //
+  //    override def createConnector(host: String, port: Int, ssl: Boolean): ActorRef =
+  //      context.actorOf(Props(
+  //        new HttpHostConnector(host, port, hostConnectorSettingsFor(host, port), clientConnectionSettingsFor(host, port))(sslEngineProvider) {
+  //          override def tagForConnection(index: Int): Any = connectionTagFor(host, port, index, ssl)
+  //        }
+  //      ))
+  //
+  //
+  //  }), "http-client")
 
 
-    override def setCookies(cookies: Seq[HttpCookie]): Unit = {
+  override def setCookies(cookies: Seq[HttpCookie]): Unit = {
     this.cookies ++= cookies
   }
 
   // execution context for futures
   val sendAndDecode: HttpRequest => Future[HttpResponse] = sendReceive ~> decode(Gzip)
   val log = Logging(system, getClass)
-//  val TraceLevel = Logging.LogLevel(Logging.DebugLevel.asInt + 1)
+  //  val TraceLevel = Logging.LogLevel(Logging.DebugLevel.asInt + 1)
 
   def submit: HttpRequest => Future[HttpResponse] = (
     addHeaders(
@@ -85,26 +86,48 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
       `Accept-Encoding`(HttpEncodings.gzip),
       `User-Agent`("ScalaMwBot/0.1")) ~>
       logRequest(log, Logging.InfoLevel)
-//      logRequest(r =>
-//        log.info(s"HttpRequest: h: ${r.headers} d:${r.entity.data.asString}")
-//      )
+      //      logRequest(r =>
+      //        log.info(s"HttpRequest: h: ${r.headers} d:${r.entity.data.asString}")
+      //      )
       //~> ((_:HttpRequest).mapEntity(_.flatMap(entity => HttpEntity(entity.contentType.withoutDefinedCharset, entity.data))))
       ~> sendReceive
       ~> decode(Gzip)
-      ~> logResponse( r => log.info(s"HttpResponse: ${r.status}, ${r.headers}" ))
+      ~> logResponse(r => log.info(s"HttpResponse: ${r.status}, ${r.headers}"))
     )
 
   override def get(url: String) = submit(Get(url))
 
   override def get(url: Uri) = submit(Get(url))
 
-  override def post(url: String, params: Map[String, String]): Future[HttpResponse] = submit(Post(url, FormData(params)))
+  //  implicit val UTF8FormDataMarshaller =
+  //    Marshaller.delegate[FormData, String](MediaTypes.`application/x-www-form-urlencoded`) { (formData, contentType) ⇒
+  //      import java.net.URLEncoder.encode
+  //      val charset = "UTF-8"
+  //      formData.fields.map { case (key, value) ⇒ encode(key, charset) + '=' + encode(value, charset) }.mkString("&")
+  //    }
 
-  override def post(url: Uri, params: Map[String, String]): Future[HttpResponse] = submit(Post(url, FormData(params)))
+  implicit val UTF8FormDataMarshaller =
+    Marshaller.delegate[FormData, String](MediaTypes.`application/x-www-form-urlencoded`) { (formData, contentType) ⇒
+      Uri.Query(formData.fields: _*).render(new StringRendering, HttpCharsets.`UTF-8`.nioCharset).get
+    }
+
+  override def post(url: String, params: Map[String, String]): Future[HttpResponse] = {
+    submit(Post(url, FormData(params)))
+  }
+
+  override def post(url: Uri, params: Map[String, String]): Future[HttpResponse] = {
+    submit(Post(url, FormData(params)))
+  }
 
   override def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse] = {
     val bodyParts = params.map { case (key, value) =>
-      (key, BodyPart(HttpEntity(value), key))
+      (key,
+        BodyPart(
+          HttpEntity(
+            ContentType(MediaTypes.`multipart/form-data`, HttpCharsets.`UTF-8`),
+            value),
+          key)
+        )
 
     }
     submit(Post(url, MultipartFormData(bodyParts)))
