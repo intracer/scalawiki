@@ -23,7 +23,7 @@ object MwReads {
     (__ \ "pageid").read[Int] and
       (__ \ "ns").read[Int] and
       (__ \ "title").read[String] and
-      (__ \ "missing").read[Option[String]]
+      (__ \ "missing").readNullable[String]
     )(Page.noText _)
 
   def pagesReads(queryType: String): Reads[Seq[Page]] = (__ \ "query" \ queryType).read[Seq[Page]]
@@ -76,7 +76,7 @@ object MwReads2 {
       (__ \ "title").read[String] and
       (__ \ "edittoken").readNullable[String] and
       (__ \ "revisions").read[Seq[Revision]] and
-      (__ \ "missing").read[Option[String]]
+      (__ \ "missing").readNullable[String]
     )(Page.withRevisions _)
 
   val pageInfoReads: Reads[Page] = (
