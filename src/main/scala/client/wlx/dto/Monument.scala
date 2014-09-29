@@ -7,6 +7,7 @@ import client.dto.Template
 case class Monument(textParam: String, pageParam: String,
                     id: String,
                     name: String,
+                    year: Option[String] = None,
                     description: Option[String] = None,
                     article: Option[String] = None,
                     place: Option[String] = None,
@@ -19,7 +20,8 @@ case class Monument(textParam: String, pageParam: String,
                     subType: Option[String] = None,
                     photo: Option[String] = None,
                     gallery: Option[String] = None,
-                    resolution: Option[String] = None
+                    resolution: Option[String] = None,
+                    stateId: Option[String] = None
 //                    otherParams: Map[String, String]
                      ) extends Template(textParam, pageParam) {
 
@@ -84,7 +86,8 @@ object Monument {
   }
 
   def monumentsFromText(text: String, page: String, template: String): Set[Monument] =
-    text.split("\\{\\{" + template).map(text => init(text, page)).filter(_.id.nonEmpty).toSet
+    text.split("\\{\\{" + template).tail.map(text => init(text, page)).toSet
+      //.filter(_.id.nonEmpty).toSet
 
   // test for "-" id
   def getRegionId(monumentId: String): String =  monumentId.split("\\-").headOption.getOrElse("")

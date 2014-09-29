@@ -13,10 +13,10 @@ trait MonumentQuery {
   import scala.concurrent.duration._
 
   def byMonumentTemplateAsync(template: String): Future[Seq[Monument]]
-  def byPageAsync(page: String, template: String): Future[Seq[Monument]]
+  def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false): Future[Seq[Monument]]
 
   final def byMonumentTemplate(template: String) = Await.result(byMonumentTemplateAsync(template), 15.minutes): Seq[Monument]
-  final def byPage(page: String, template: String) = Await.result(byPageAsync(page, template), 15.minutes): Seq[Monument]
+  final def byPage(page: String, template: String, pageIsTemplate: Boolean = false) = Await.result(byPageAsync(page, template, pageIsTemplate), 15.minutes): Seq[Monument]
 }
 
 class MonumentQueryApi(contest: Contest) extends MonumentQuery with WithBot {
@@ -30,8 +30,8 @@ class MonumentQueryApi(contest: Contest) extends MonumentQuery with WithBot {
     }
   }
 
-  override def byPageAsync(page: String, template: String): Future[Seq[Monument]] = {
-    if (!page.startsWith("Template")) {
+  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false): Future[Seq[Monument]] = {
+    if (!page.startsWith("Template") || pageIsTemplate) {
       bot.page(page).revisions(Set.empty, Set("content", "timestamp", "user", "comment")).map {
         revs =>
           revs.headOption.map(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template).toSeq).getOrElse(Seq.empty)
@@ -55,7 +55,7 @@ class MonumentQuerySeq(monuments: Seq[Monument]) extends MonumentQuery {
 
   override def byMonumentTemplateAsync(template: String): Future[Seq[Monument]] = future { monuments }
 
-  override def byPageAsync(page: String, template: String): Future[Seq[Monument]] = future { monuments }
+  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false): Future[Seq[Monument]] = future { monuments }
 }
 
 class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
@@ -68,7 +68,7 @@ class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
     underlying.byMonumentTemplateAsync(template)
   }
 
-  override def byPageAsync(page: String, template: String): Future[Seq[Monument]] = cache(page) {
+  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false): Future[Seq[Monument]] = cache(page) {
     underlying.byPageAsync(page, template: String)
   }
 }
@@ -96,7 +96,7 @@ import scala.pickling.binary._  // :( exception with unpickling
       }
   }
 
-  override def byPageAsync(page: String, template: String): Future[Seq[Monument]] = ???
+  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false): Future[Seq[Monument]] = ???
 }
 
 object MonumentQuery {

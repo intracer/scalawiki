@@ -4,11 +4,14 @@ import java.util.regex.{Matcher, Pattern}
 
 class Template(val text: String, val page: String = "") {
 
-  def getParam(name: String): String = {
-    findPosition(name).fold("") {
+  def getParam(name: String, withoutComments: Boolean = true): String = {
+    val param = findPosition(name).fold("") {
       case (start, end) =>
-        text.substring(start, end).trim
+        text.substring(start, end)
     }
+    if (withoutComments)
+      Template.removeComments(param).trim
+    else param.trim
   }
 
   def getParamOpt(name: String): Option[String] = {
@@ -38,13 +41,13 @@ class Template(val text: String, val page: String = "") {
     val m = matcher(text, param)
     if (m.find) {
       val start = m.end
+      val nextParam = text.indexOf("|", start)
       val newline = text.indexOf("\n", start)
-      if (newline > 0)
-        Some(start -> newline)
-      else {
-        val templateEnd = text.indexOf("}}", start)
-        Some(start -> templateEnd)
-      }
+      val templateEnd = text.indexOf("}}", start)
+      val stringEnd = text.size - 1
+
+      val end = Seq(newline, nextParam, templateEnd, stringEnd).filter(_ >= 0).min
+      Some(start -> end)
     } else None
   }
 
@@ -64,6 +67,19 @@ object Template {
     if (templateStart > 0 && end > 0) {
       text.substring(templateStart + template.length, end).trim.toLowerCase
     } else ""
+  }
+
+  def removeComments(s: String): String = {
+    val start = s.indexOf("<!--")
+
+    if (start > 0) {
+      val end = s.indexOf("-->", start + 4)
+      if (end > 0) {
+        removeComments(s.substring(0, start) + s.substring(end + 3, s.size))
+      }
+      else s.substring(0, start)
+    } else
+      s
   }
 
 }

@@ -2,7 +2,7 @@ package client.wlx
 
 import client.MwBot
 import client.slick.Slick
-import client.wlx.dto.{Contest, SpecialNomination}
+import client.wlx.dto.{Monument, Contest, SpecialNomination}
 import client.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
 
 class Statistics {
@@ -18,9 +18,19 @@ class Statistics {
 
     val monumentQuery = MonumentQuery.create(wlmContest)
     val allMonuments = monumentQuery.byMonumentTemplate(wlmContest.listTemplate)
+
     val monumentDb = new MonumentDB(wlmContest, allMonuments)
 
-//    saveMonuments(monumentDb)
+    val grouped: Map[String, Seq[Monument]] = monumentDb.wrongIdMonuments.groupBy(_.pageParam)
+    for ((page, monuments)  <- grouped) {
+      println(page)
+//      for (monument <- monuments)
+//      println(s"  id: ${monument.id}, name: ${monument.name},"
+        //+s" place ${monument.place}"
+//      )
+    }
+
+    //    saveMonuments(monumentDb)
 //   new Output().monumentsByType(monumentDb)
 
     imagesStatistics(monumentQuery, monumentDb)
@@ -42,6 +52,9 @@ class Statistics {
 
         regionalStat(wlmContest, monumentDb, imageQueryDb, imageDb, totalImageDb)
         fillLists(monumentDb, totalImageDb)
+
+        val badImages = totalImageDb.subSet(monumentDb.wrongIdMonuments)
+        val byId = badImages._byId
       }
     }
   }

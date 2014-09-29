@@ -38,6 +38,9 @@ object SpecialNomination {
   val fortification = new SpecialNomination("Замки і фортеці України", "WLM-рядок",
     Seq("Template:WLM замки і фортеці"))
 
+  val tatars = new SpecialNomination("Кримськотатарські пам'ятки в Україні", "WLM-рядок",
+    Seq("Вікіпедія:Вікі любить пам'ятки/Кримськотатарські пам'ятки в Україні"))
+
   val nationalLiberation = new SpecialNomination("Пам'ятки національно-визвольної боротьби", "WLM-рядок",
     Seq("Вікіпедія:Вікі любить пам'ятки/Пам'ятки національно-визвольної боротьби"))
 
@@ -50,5 +53,5 @@ object SpecialNomination {
   val worldWarOne = new SpecialNomination("Українські пам'ятки Першої світової війни", "WLM-рядок",
     Seq("Вікіпедія:Вікі любить пам'ятки/Українські пам'ятки Першої світової війни"))
 
-  val nominations = Seq(music, nationalLiberation, greek, armenian, worldWarOne, wooden, fortification)
+  val nominations = Seq(music, nationalLiberation, greek, armenian, worldWarOne, wooden, fortification, tatars)
 }
