@@ -29,6 +29,15 @@ case class Monument(textParam: String, pageParam: String,
 
   def regionId = Monument.getRegionId(id)
 
+  val types = initTypes
+
+  def initTypes: Set[String] = {
+    val str = typ.getOrElse("").replaceAll("\\.", "")
+    if (str.toLowerCase.contains("комплекс"))
+      Set("комплекс")
+    else str.split(",").map(_.trim).toSet
+  }
+
 }
 
 object Monument {

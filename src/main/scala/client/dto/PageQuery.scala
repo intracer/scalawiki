@@ -184,7 +184,7 @@ class SinglePageQuery(query: Either[Long, String], site: MwBot) extends PageQuer
       "text" -> text,
       "summary" -> summary,
       "format" -> "json",
-      "bot" -> "",
+      "bot" -> "x",
       "token" -> fold) ++ toMap("pageid", "title")
 
     if (multi)

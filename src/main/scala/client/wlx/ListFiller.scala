@@ -46,7 +46,7 @@ class ListFiller {
         }
 
         val newText = edited.mkString("{{" + monumentDb.contest.listTemplate)
-        val comment = s"adding ${ids.size} images"
+        val comment = s"adding ${ids.size} image(s)"
         bot.page(title).edit(newText, comment)
   //      javaBot.edit(title, newText, comment)
       }

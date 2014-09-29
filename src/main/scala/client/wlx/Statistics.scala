@@ -17,12 +17,16 @@ class Statistics {
   def init(): Unit = {
 
     val monumentQuery = MonumentQuery.create(wlmContest)
-
     val allMonuments = monumentQuery.byMonumentTemplate(wlmContest.listTemplate)
     val monumentDb = new MonumentDB(wlmContest, allMonuments)
 
-    //    saveMonuments(monumentDb)
+//    saveMonuments(monumentDb)
+//   new Output().monumentsByType(monumentDb)
 
+    imagesStatistics(monumentQuery, monumentDb)
+  }
+
+  def imagesStatistics(monumentQuery: MonumentQuery, monumentDb: MonumentDB) {
     val imageQueryDb = ImageQuery.create(db = true)
     val imageQueryApi = ImageQuery.create(db = false)
 
@@ -40,7 +44,6 @@ class Statistics {
         fillLists(monumentDb, totalImageDb)
       }
     }
-
   }
 
   def authorsStat(monumentDb: MonumentDB, imageDb: ImageDB) {

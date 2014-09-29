@@ -8,8 +8,13 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument]) {
   val wrongIdMonuments = allMonuments.filterNot(m => isIdCorrect(m.id))
 
   val _byId: Map[String, Seq[Monument]] = monuments.groupBy(_.id)
-
   val _byRegion : Map[String, Seq[Monument]] = monuments.groupBy(m => Monument.getRegionId(m.id))
+
+  val _byType: Map[String, Seq[Monument]] = {
+    monuments.flatMap(m => m.types.map(t => (t, m))).groupBy(_._1).mapValues(seq => seq.map(_._2))
+  }
+
+  val _byTypeAndRegion : Map[String, Map[String,Seq[Monument]]] = _byType.mapValues(_.groupBy(m => Monument.getRegionId(m.id)))
 
   def ids: Set[String] = _byId.keySet
 
