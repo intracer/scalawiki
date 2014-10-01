@@ -46,13 +46,12 @@ object Image {
       val id = Template.getDefaultParam(revision.content, monumentIdTemplate)
       val ipOpt = if (id.matches(idRegex)) Some(id) else None
 
-      val authorValue = new Template(revision.content).getParam("author")
+      val template = new Template(revision.content)
+      val authorValue = template.getParamOpt("author").getOrElse(template.getParam("Author"))
 
-      val author = authorValue.split("\\|")(0).replace("[[User:", "")
+      val author = authorValue.split("\\|")(0).replace("[[User:", "").replace("[[user:", "")
 
       new Image(page.pageid, page.title, "", "", 0, 0, 0, ipOpt, Some(author), None, Some(date))
     }
   }
-
-
 }

@@ -2,9 +2,9 @@ package client.wlx
 
 import client.wlx.dto.{Contest, Monument}
 
-class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument]) {
+class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFalseIds: Boolean = false) {
 
-  val monuments = allMonuments.filter(m => isIdCorrect(m.id))
+  val monuments = allMonuments.filter(m => withFalseIds || isIdCorrect(m.id))
   val wrongIdMonuments = allMonuments.filterNot(m => isIdCorrect(m.id))
 
   val _byId: Map[String, Seq[Monument]] = monuments.groupBy(_.id)

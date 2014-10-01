@@ -50,8 +50,11 @@ object SpecialNomination {
   val armenian = new SpecialNomination("Вірменські пам'ятки в Україні", "WLM-рядок",
     Seq("Вікіпедія:Вікі любить пам'ятки/Вірменські пам'ятки в Україні"))
 
+  val libraries = new SpecialNomination("Бібліотеки", "WLM-рядок",
+    Seq("Вікіпедія:Вікі любить пам'ятки/Бібліотеки"))
+
   val worldWarOne = new SpecialNomination("Українські пам'ятки Першої світової війни", "WLM-рядок",
     Seq("Вікіпедія:Вікі любить пам'ятки/Українські пам'ятки Першої світової війни"))
 
-  val nominations = Seq(music, nationalLiberation, greek, armenian, worldWarOne, wooden, fortification, tatars)
+  val nominations = Seq(music, nationalLiberation, greek, armenian, worldWarOne, wooden, fortification, tatars, libraries)
 }

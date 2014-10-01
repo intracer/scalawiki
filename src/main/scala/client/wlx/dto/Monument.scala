@@ -52,7 +52,7 @@ object Monument {
       name = name,
       description =  t.getParamOpt("опис"),
       article = None,
-      place =  t.getParamOpt("розташування"),
+      place =  t.getParamOpt("розташування").orElse(t.getParamOpt("адреса")),
       user = t.getParamOpt("користувач"),
       area = t.getParamOpt("площа"),
       lat = t.getParamOpt("широта"),

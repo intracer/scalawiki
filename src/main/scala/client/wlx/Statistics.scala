@@ -2,7 +2,7 @@ package client.wlx
 
 import client.MwBot
 import client.slick.Slick
-import client.wlx.dto.{Monument, Contest, SpecialNomination}
+import client.wlx.dto.{Contest, SpecialNomination}
 import client.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
 
 class Statistics {
@@ -19,16 +19,17 @@ class Statistics {
     val monumentQuery = MonumentQuery.create(wlmContest)
     val allMonuments = monumentQuery.byMonumentTemplate(wlmContest.listTemplate)
 
+    val libraries = allMonuments.filter(m => m.name.toLowerCase.contains("бібліо") || m.place.fold(false)(_.contains("бібліо")))
     val monumentDb = new MonumentDB(wlmContest, allMonuments)
 
-    val grouped: Map[String, Seq[Monument]] = monumentDb.wrongIdMonuments.groupBy(_.pageParam)
-    for ((page, monuments)  <- grouped) {
-      println(page)
+//    val grouped: Map[String, Seq[Monument]] = monumentDb.wrongIdMonuments.groupBy(_.pageParam)
+//    for ((page, monuments)  <- grouped) {
+//      println(page)
 //      for (monument <- monuments)
 //      println(s"  id: ${monument.id}, name: ${monument.name},"
         //+s" place ${monument.place}"
 //      )
-    }
+//    }
 
     //    saveMonuments(monumentDb)
 //   new Output().monumentsByType(monumentDb)
@@ -53,7 +54,7 @@ class Statistics {
         regionalStat(wlmContest, monumentDb, imageQueryDb, imageDb, totalImageDb)
         fillLists(monumentDb, totalImageDb)
 
-        val badImages = totalImageDb.subSet(monumentDb.wrongIdMonuments)
+        val badImages = totalImageDb.subSet(monumentDb.wrongIdMonuments, true)
         val byId = badImages._byId
       }
     }
@@ -86,10 +87,10 @@ class Statistics {
             val output = new Output()
 
             val idsStat = output.monumentsPictured(imageDbs, totalImageDb, monumentDb)
-            println(idsStat)
+//            println(idsStat)
 
             val authorStat = output.authorsContributed(imageDbs, totalImageDb, monumentDb)
-            println(authorStat)
+//            println(authorStat)
 
             val toc = "__TOC__"
             val category = "\n[[Category:Wiki Loves Monuments 2014 in Ukraine]]"
@@ -100,11 +101,14 @@ class Statistics {
 
             MwBot.get(MwBot.commons).page("Commons:Wiki Loves Monuments 2014 in Ukraine/Regional statistics").edit(regionalStat, "updating")
 
+            val authorsByRegionTotal = output.authorsMonuments(totalImageDb) + "\n[[Category:Wiki Loves Monuments in Ukraine]]"
+
+            MwBot.get(MwBot.commons).page("Commons:Wiki Loves Monuments in Ukraine/3 years total number of objects pictured by uploader").edit(authorsByRegionTotal, "updating")
+
             val monumentQuery = MonumentQuery.create(wlmContest)
 
             specialNominations(previousContests.find(_.year == 2012).get, firstYear, monumentQuery)
             specialNominations(previousContests.find(_.year == 2013).get, lastYear, monumentQuery)
-
         }
     }
   }

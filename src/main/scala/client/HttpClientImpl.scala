@@ -93,7 +93,7 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
       //~> ((_:HttpRequest).mapEntity(_.flatMap(entity => HttpEntity(entity.contentType.withoutDefinedCharset, entity.data))))
       ~> sendReceive
       ~> decode(Gzip)
-//      ~> logResponse(r => log.info(s"HttpResponse: ${r.status}, ${r.headers}"))
+      ~> logResponse(r => log.info(s"HttpResponse: ${r.status}, ${r.headers}"))
     )
 
   override def get(url: String) = submit(Get(url))
