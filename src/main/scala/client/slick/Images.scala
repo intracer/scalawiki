@@ -24,7 +24,7 @@ class Images(tag: Tag) extends Table[Image](tag, "IMAGES") {
       monumentId = t._3,
       author = t._4,
       uploader = t._5,
-      date = t._6,
+      year = t._6,
       width = t._7,
       height = t._8,
       size = t._9,
@@ -38,7 +38,7 @@ class Images(tag: Tag) extends Table[Image](tag, "IMAGES") {
     im.monumentId,
     im.author,
     im.uploader,
-    im.date,
+    im.year,
     im.width,
     im.height,
     im.size

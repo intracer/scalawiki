@@ -36,12 +36,21 @@ class ImageQueryApi extends ImageQuery with WithBot {
     val revsFuture = query.revisionsByGenerator("categorymembers", "cm",
       Set.empty, Set("content", "timestamp", "user", "comment")) map {
       pages =>
-        pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
+        try {
+          pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
+        } catch {case e =>
+            println(e)
+            throw e
+        }
     }
 
     val imageInfoFuture = query.imageInfoByGenerator("categorymembers", "cm", Set(Namespace.FILE_NAMESPACE)) map {
       pages =>
+        try {
         pages.flatMap(page => Image.fromPageImageInfo(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
+        } catch {case e =>
+          throw e
+        }
     }
 
     for (revs <- revsFuture;
@@ -95,7 +104,7 @@ class ImageQuerySlick extends ImageQuery {
   override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]] =
     future {
       slick.db.withSession { implicit session =>
-        slick.images.list.filter(_.date == Some(contest.year.toString))
+        slick.images.list.filter(_.year == Some(contest.year.toString))
       }
     }
 

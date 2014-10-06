@@ -40,7 +40,7 @@ class ListFiller {
             if (!ids.contains(monument.id))
               text
             else {
-              monument.setTemplateParam("фото", bestImage(imageDb.byId(monument.id)).title).text.replaceFirst("File:", "")
+              monument.setTemplateParam("фото", " " + bestImage(imageDb.byId(monument.id)).title).text.replaceFirst("File:", "")
             }
           }
         }

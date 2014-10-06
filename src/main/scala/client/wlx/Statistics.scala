@@ -2,8 +2,10 @@ package client.wlx
 
 import client.MwBot
 import client.slick.Slick
-import client.wlx.dto.{Contest, SpecialNomination}
+import client.wlx.dto.{Monument, Contest, SpecialNomination}
 import client.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
+
+import scala.collection.immutable.SortedSet
 
 class Statistics {
 
@@ -22,17 +24,17 @@ class Statistics {
     val libraries = allMonuments.filter(m => m.name.toLowerCase.contains("бібліо") || m.place.fold(false)(_.contains("бібліо")))
     val monumentDb = new MonumentDB(wlmContest, allMonuments)
 
-//    val grouped: Map[String, Seq[Monument]] = monumentDb.wrongIdMonuments.groupBy(_.pageParam)
-//    for ((page, monuments)  <- grouped) {
-//      println(page)
-//      for (monument <- monuments)
-//      println(s"  id: ${monument.id}, name: ${monument.name},"
-        //+s" place ${monument.place}"
-//      )
-//    }
+    //    val grouped: Map[String, Seq[Monument]] = monumentDb.wrongIdMonuments.groupBy(_.pageParam)
+    //    for ((page, monuments)  <- grouped) {
+    //      println(page)
+    //      for (monument <- monuments)
+    //      println(s"  id: ${monument.id}, name: ${monument.name},"
+    //+s" place ${monument.place}"
+    //      )
+    //    }
 
     //    saveMonuments(monumentDb)
-//   new Output().monumentsByType(monumentDb)
+    //   new Output().monumentsByType(monumentDb)
 
     imagesStatistics(monumentQuery, monumentDb)
   }
@@ -44,20 +46,61 @@ class Statistics {
     for (imageDb <- ImageDB.create(wlmContest, imageQueryApi, monumentDb)) {
 
       authorsStat(monumentDb, imageDb)
+    //  byDayAndRegion(imageDb)
       specialNominations(wlmContest, imageDb, monumentQuery)
+     // fixWadco(imageDb, monumentDb)
 
       val total = new ImageQueryApi().imagesWithTemplateAsync(wlmContest.fileTemplate, wlmContest)
       for (totalImages <- total) {
 
         val totalImageDb = new ImageDB(wlmContest, totalImages, monumentDb)
 
+//        val withWrongIdsKh  = totalImages.filter(_.monumentId.exists(id => id.startsWith("63-101-") && !monumentDb.ids.contains(id)))
+//        val text = withWrongIdsKh.map(image => s"${image.title}|${image.monumentId.getOrElse("")}").mkString("<gallery>", "\n", "</gallery>")
+//        MwBot.get(MwBot.commons).page("User:IlyaBot/KharkivBadIdImages").edit(text, "updating")
+
         regionalStat(wlmContest, monumentDb, imageQueryDb, imageDb, totalImageDb)
-        fillLists(monumentDb, totalImageDb)
+      //  fillLists(monumentDb, totalImageDb)
 
         val badImages = totalImageDb.subSet(monumentDb.wrongIdMonuments, true)
         val byId = badImages._byId
       }
     }
+  }
+
+  def fixWadco(imageDb: ImageDB, monumentDb: MonumentDB) {
+    val images = imageDb.byId("99-999-9999")
+    for (image <- images) {
+      val title = image.title
+      if (title.size>=11) {
+        val id = title.substring(0, 11)
+        for (monument <-  monumentDb.byId(id)) {
+         // image.
+        }
+      }
+    }
+  }
+
+  def byDayAndRegion(imageDb: ImageDB): Unit = {
+
+    val byDay = imageDb.withCorrectIds.groupBy(_.date.getOrElse("2014-00-00").substring(8, 10))
+
+    val firstSlice = (16 to 16).flatMap(day => byDay.getOrElse(day.toString, Seq.empty))
+
+    val byRegion = firstSlice.groupBy(im => Monument.getRegionId(im.monumentId))
+
+    var text = ""
+    val dayPage = "Commons:Wiki Loves Monuments 2014 in Ukraine/Day 2"
+    for (regionId <- SortedSet(byRegion.keySet.toSeq:_*)) {
+      val regionName: String = imageDb.monumentDb.contest.country.regionById(regionId).name
+      val pageName = s"$dayPage Region $regionName"
+      val gallery = byRegion(regionId).map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
+
+      text += s"* [[$pageName|$regionName]]\n"
+
+      MwBot.get(MwBot.commons).page(pageName).edit(gallery, "updating")
+    }
+    MwBot.get(MwBot.commons).page(dayPage).edit(text, "updating")
   }
 
   def authorsStat(monumentDb: MonumentDB, imageDb: ImageDB) {
@@ -87,10 +130,10 @@ class Statistics {
             val output = new Output()
 
             val idsStat = output.monumentsPictured(imageDbs, totalImageDb, monumentDb)
-//            println(idsStat)
+            //            println(idsStat)
 
             val authorStat = output.authorsContributed(imageDbs, totalImageDb, monumentDb)
-//            println(authorStat)
+            //            println(authorStat)
 
             val toc = "__TOC__"
             val category = "\n[[Category:Wiki Loves Monuments 2014 in Ukraine]]"
@@ -104,6 +147,9 @@ class Statistics {
             val authorsByRegionTotal = output.authorsMonuments(totalImageDb) + "\n[[Category:Wiki Loves Monuments in Ukraine]]"
 
             MwBot.get(MwBot.commons).page("Commons:Wiki Loves Monuments in Ukraine/3 years total number of objects pictured by uploader").edit(authorsByRegionTotal, "updating")
+
+            val mostPopularMonuments  = output.mostPopularMonuments(imageDbs, totalImageDb, monumentDb)
+            MwBot.get(MwBot.commons).page("Commons:Wiki Loves Monuments in Ukraine/Most photographed objects").edit(mostPopularMonuments, "updating")
 
             val monumentQuery = MonumentQuery.create(wlmContest)
 
@@ -152,14 +198,14 @@ class Statistics {
 
     val allMonuments = monumentsMap.values.flatMap(identity)
 
-      val imageDbs: Map[SpecialNomination, ImageDB] = SpecialNomination.nominations.map { nomination =>
-        (nomination, imageDb.subSet(monumentsMap(nomination)))
-      }.toMap
+    val imageDbs: Map[SpecialNomination, ImageDB] = SpecialNomination.nominations.map { nomination =>
+      (nomination, imageDb.subSet(monumentsMap(nomination)))
+    }.toMap
 
-      val output = new Output()
-      val stat = output.specialNomination(contest, imageDbs)
+    val output = new Output()
+    val stat = output.specialNomination(contest, imageDbs)
 
-      MwBot.get(MwBot.commons).page(s"Commons:Wiki Loves Monuments ${contest.year} in Ukraine/Special nominations statistics").edit(stat, "updating")
+    MwBot.get(MwBot.commons).page(s"Commons:Wiki Loves Monuments ${contest.year} in Ukraine/Special nominations statistics").edit(stat, "updating")
   }
 
 

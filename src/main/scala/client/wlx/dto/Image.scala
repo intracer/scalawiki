@@ -11,6 +11,7 @@ case class Image(pageId: Long, title: String,
                  monumentId: Option[String] = None,
                  author: Option[String] = None,
                  uploader: Option[String] = None,
+                 year: Option[String] = None,
                  date: Option[String] = None) extends Ordered[Image]{
 
   def compare(that: Image) =  (this.pageId - that.pageId).signum
@@ -21,7 +22,7 @@ case class Image(pageId: Long, title: String,
 
 object Image {
 
-  def fromPageImageInfo(page: Page, monumentIdTemplate: String, date: String):Option[Image] = {
+  def fromPageImageInfo(page: Page, monumentIdTemplate: String, year: String):Option[Image] = {
     page.imageInfo.headOption.map{ ii =>
           Image(
             pageId = page.pageid,
@@ -34,7 +35,8 @@ object Image {
             monumentId = None,
             author = None,
             Some(ii.uploader),
-            Some(date)
+            Some(year),
+            Some(ii.timestamp)
           )
     }
   }
@@ -49,7 +51,23 @@ object Image {
       val template = new Template(revision.content)
       val authorValue = template.getParamOpt("author").getOrElse(template.getParam("Author"))
 
-      val author = authorValue.split("\\|")(0).replace("[[User:", "").replace("[[user:", "")
+      val i1: Int = authorValue.indexOf("User:")
+      val i2: Int = authorValue.indexOf("user:")
+      val start = Seq(i1, i2, Int.MaxValue).filter(_ >= 0).min
+
+     val author =
+       if (start < Int.MaxValue) {
+        val pipe = authorValue.indexOf("|", start)
+         val end = if (pipe>=0)
+          pipe
+        else authorValue.size
+       authorValue.substring(start + "user:".size, end)
+      }
+     else
+       authorValue
+
+
+//      val author = authorValue.split("\\|")(0).replace("[[User:", "").replace("[[user:", "")
 
       new Image(page.pageid, page.title, "", "", 0, 0, 0, ipOpt, Some(author), None, Some(date))
     }

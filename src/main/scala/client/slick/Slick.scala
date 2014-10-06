@@ -9,6 +9,7 @@ class Slick {
 
 //  val db = Database.forURL("jdbc:h2:mem:hello", driver = "org.h2.Driver")
 
+  //  val db = Database.forURL("jdbc:h2:~/wlm_ua;AUTO_SERVER=TRUE", driver = "org.h2.Driver", user = "sa", password = "")
   val db = Database.forURL("jdbc:h2:tcp://localhost/~/wlm_ua", driver = "org.h2.Driver", user = "sa", password = "")
 
   val monuments = TableQuery[Monuments]

@@ -1,11 +1,100 @@
 package client.wlx
 
 import client.MwBot
-import client.wlx.dto.{Contest, Country, SpecialNomination}
+import client.wlx.dto.{Image, Contest, Country, SpecialNomination}
 
 import scala.collection.immutable.SortedSet
 
 class Output {
+
+  def mostPopularMonuments(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB) = {
+    try {
+
+      val columns = Seq("Id", "Name",
+      "3 years photos", "3 years authors",
+      "2012 photos", "2012 authors",
+      "2013 photos", "2013 authors",
+      "2014 photos", "2014 authors")
+
+    val imageDbsByYear = imageDbs.groupBy(_.contest.year)
+
+    val photosCountTotal = imageCountById(totalImageDb)
+    val authorsCountTotal = authorsCountById(totalImageDb)
+
+    val photosCount2012 = imageCountById(imageDbsByYear(2012).head)
+    val authorsCount2012 = authorsCountById(imageDbsByYear(2012).head)
+
+    val photosCount2013 = imageCountById(imageDbsByYear(2013).head)
+    val authorsCount2013 = authorsCountById(imageDbsByYear(2013).head)
+
+    val photosCount2014 = imageCountById(imageDbsByYear(2014).head)
+    val authorsCount2014 = authorsCountById(imageDbsByYear(2014).head)
+
+    val topPhotos = Set(photosCountTotal, photosCount2012, photosCount2013, photosCount2014).flatMap(topN(12, _).toSet)
+    val topAuthors = Set(authorsCountTotal, authorsCount2012, authorsCount2013, authorsCount2014).flatMap(topN(12, _).toSet)
+
+    val allTop = topPhotos ++ topAuthors
+    val allTopOrdered = allTop.toSeq.sortBy(identity)
+
+    val header = "\n==Most photographed objects==\n{| class='wikitable sortable'\n" +
+      "|+ Most photographed objects\n" +
+      columns.mkString("!", "!!", "\n")
+
+    var text = ""
+    for (id <- allTopOrdered) {
+      val monument = monumentDb.byId(id).get
+      val columnData = Seq(
+        id,
+        monument.gallery.fold(monument.name.replaceAll("\\[\\[", "[[:uk:")){ gallery =>
+          s"[[:Category:$gallery|$gallery]]"
+        },
+        photosCountTotal.getOrElse(id, 0),
+        authorsCountTotal.getOrElse(id, 0),
+        photosCount2012.getOrElse(id, 0),
+        authorsCount2012.getOrElse(id, 0),
+        photosCount2013.getOrElse(id, 0),
+        authorsCount2013.getOrElse(id, 0),
+        photosCount2014.getOrElse(id, 0),
+        authorsCount2014.getOrElse(id, 0)
+      )
+
+      text += columnData.mkString("|-\n| ", " || ", "\n")
+    }
+
+    val total = "|}" + s"\n[[Category:Wiki Loves Monuments in Ukraine]]"
+
+    header + text + total
+
+    } catch {case e =>
+      println(e)
+      throw e
+    }
+
+
+  }
+
+  def topN(n: Int, stat: Map[String, Int]) = stat.toSeq.sortBy(-_._2).take(n).map(_._1)
+
+
+  def authorsCountById(imageDb: ImageDB): Map[String, Int] =
+    imageDb._byId.mapValues(_.flatMap(_.author).toSet.size)
+
+  def imageCountById(imageDb: ImageDB): Map[String, Int] =
+    imageDb._byId.mapValues(_.size)
+
+  def byAuthors(totalImageDb: ImageDB): Map[Int, Map[String, Seq[Image]]] = {
+    totalImageDb._byId.toSeq.groupBy {
+      case (id, photos) =>
+        val authors = photos.flatMap(_.author).toSet
+        authors.size
+    }.mapValues(_.toMap)
+  }
+
+  def byPhotos(totalImageDb: ImageDB): Map[Int, Map[String, Seq[Image]]] = {
+    totalImageDb._byId.toSeq.groupBy {
+      case (id, photos) => -photos.size
+    }.mapValues(_.toMap)
+  }
 
   def monumentsPictured(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB) = {
 

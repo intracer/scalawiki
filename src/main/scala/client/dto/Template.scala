@@ -41,17 +41,33 @@ class Template(val text: String, val page: String = "") {
     val m = matcher(text, param)
     if (m.find) {
       val start = m.end
-      val nextParam = text.indexOf("|", start)
-      val newline = text.indexOf("\n", start)
+
+      val linkStart = text.indexOf("[[", start)
+      var nextPipe = text.indexOf("\n|", start)
+      if  (nextPipe < 0)
+        nextPipe = text.indexOf("|", start)
+      var linkEnd = -1
+
+      if (linkStart > 0) {
+        linkEnd = text.indexOf("]]", linkStart + 2)
+      }
+
+      if (nextPipe > linkStart && nextPipe < linkEnd) {
+        var nextPipe = text.indexOf("\n|", linkEnd)
+        if  (nextPipe < 0)
+          nextPipe = text.indexOf("|", linkEnd)
+      }
+
+      //      val newline = text.indexOf("\n", start)
       val templateEnd = text.indexOf("}}", start)
       val stringEnd = text.size - 1
 
-      val end = Seq(newline, nextParam, templateEnd, stringEnd).filter(_ >= 0).min
+      val end = Seq(nextPipe, templateEnd, stringEnd).filter(_ >= 0).min
       Some(start -> end)
     } else None
   }
 
-  def init(text: String, page:String ):Template = new Template(text, page)
+  def init(text: String, page: String): Template = new Template(text, page)
 
 }
 
