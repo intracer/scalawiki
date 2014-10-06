@@ -60,12 +60,16 @@ class Statistics {
 //        MwBot.get(MwBot.commons).page("User:IlyaBot/KharkivBadIdImages").edit(text, "updating")
 
         regionalStat(wlmContest, monumentDb, imageQueryDb, imageDb, totalImageDb)
-      //  fillLists(monumentDb, totalImageDb)
+        fillLists(monumentDb, totalImageDb)
 
         val badImages = totalImageDb.subSet(monumentDb.wrongIdMonuments, true)
         val byId = badImages._byId
       }
     }
+  }
+
+  def regionIdGallery(imageDb: ImageDB, monumentDb: MonumentDB): Unit = {
+
   }
 
   def fixWadco(imageDb: ImageDB, monumentDb: MonumentDB) {

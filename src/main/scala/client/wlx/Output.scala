@@ -45,8 +45,9 @@ class Output {
       val monument = monumentDb.byId(id).get
       val columnData = Seq(
         id,
-        monument.gallery.fold(monument.name.replaceAll("\\[\\[", "[[:uk:")){ gallery =>
-          s"[[:Category:$gallery|$gallery]]"
+        monument.name.replaceAll("\\[\\[", "[[:uk:") +
+        monument.gallery.fold(""){ gallery =>
+          s" [[:Category:$gallery|$gallery]]"
         },
         photosCountTotal.getOrElse(id, 0),
         authorsCountTotal.getOrElse(id, 0),
