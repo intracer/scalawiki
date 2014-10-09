@@ -12,14 +12,16 @@ import scala.concurrent.{Future, _}
 trait MonumentQuery {
   import scala.concurrent.duration._
 
-  def byMonumentTemplateAsync(template: String): Future[Seq[Monument]]
+  def contest: Contest
+
+  def byMonumentTemplateAsync(template: String = contest.listTemplate): Future[Seq[Monument]]
   def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false): Future[Seq[Monument]]
 
-  final def byMonumentTemplate(template: String) = Await.result(byMonumentTemplateAsync(template), 15.minutes): Seq[Monument]
+  final def byMonumentTemplate(template: String = contest.listTemplate) = Await.result(byMonumentTemplateAsync(template), 15.minutes): Seq[Monument]
   final def byPage(page: String, template: String, pageIsTemplate: Boolean = false) = Await.result(byPageAsync(page, template, pageIsTemplate), 15.minutes): Seq[Monument]
 }
 
-class MonumentQueryApi(contest: Contest) extends MonumentQuery with WithBot {
+class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot {
 
   val host = contest.country.languageCode + ".wikipedia.org"
 
@@ -51,7 +53,7 @@ class MonumentQueryApi(contest: Contest) extends MonumentQuery with WithBot {
 }
 
 
-class MonumentQuerySeq(monuments: Seq[Monument]) extends MonumentQuery {
+class MonumentQuerySeq(val contest: Contest, monuments: Seq[Monument]) extends MonumentQuery {
 
   override def byMonumentTemplateAsync(template: String): Future[Seq[Monument]] = future { monuments }
 
@@ -59,6 +61,8 @@ class MonumentQuerySeq(monuments: Seq[Monument]) extends MonumentQuery {
 }
 
 class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
+
+  override def contest = underlying.contest
 
   import spray.caching.{Cache, LruCache}
 
@@ -74,13 +78,15 @@ class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
 }
 
 
-class MonumentQueryPickling(underlying: MonumentQuery, contest: Contest) extends MonumentQuery {
+class MonumentQueryPickling(underlying: MonumentQuery) extends MonumentQuery {
 
   import scala.pickling._
 //  import scala.pickling.json._   // :( Slow parsing
   import java.nio.file.Files
 
 import scala.pickling.binary._  // :( exception with unpickling
+
+  override def contest = underlying.contest
 
   override def byMonumentTemplateAsync(template: String): Future[Seq[Monument]]
   = future {
@@ -107,7 +113,7 @@ object MonumentQuery {
     val query = if (caching)
       new MonumentQueryCached(
         if (pickling)
-          new MonumentQueryPickling(api, contest)
+          new MonumentQueryPickling(api)
         else api
       )
     else api

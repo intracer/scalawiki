@@ -6,6 +6,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
   val monuments = allMonuments.filter(m => withFalseIds || isIdCorrect(m.id))
   val wrongIdMonuments = allMonuments.filterNot(m => isIdCorrect(m.id))
+  val withArticles = allMonuments.filter(m => m.name.contains("[[")).groupBy(m => Monument.getRegionId(m.id))
 
   val _byId: Map[String, Seq[Monument]] = monuments.groupBy(_.id)
   val _byRegion : Map[String, Seq[Monument]] = monuments.groupBy(m => Monument.getRegionId(m.id))

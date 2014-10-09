@@ -281,7 +281,7 @@ class Output {
     }
 
 
-    val total = "|}"
+    val total = "|}" + "\n[[Category:Wiki Loves Monuments 2014 in Ukraine]]"
 
     header + text + total
   }
