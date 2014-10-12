@@ -10,6 +10,8 @@ import scala.collection.immutable.SortedSet
 
 class Output {
 
+  val charts = new Charts()
+
   def mostPopularMonuments(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB) = {
     try {
 
@@ -168,26 +170,28 @@ class Output {
       allMonuments,
       picturedMonuments,
       100 * picturedMonuments / allMonuments,
-      imageDbsByYear(2012).head.ids.size,
-      imageDbsByYear(2013).head.ids.size,
-      imageDbsByYear(2014).head.ids.size
+      ids2012.size,
+      ids2013.size,
+      ids2014.size
     )
     val total = totalData.mkString("|-\n| ", " || ", "\n|}") +
       "\n[[File:WikiLovesMonumentsInUkrainePicturedByYearTotal.png|Wiki Loves Monuments in Ukraine, monuments pictured by year overall|left]]" +
       "\n[[File:WikiLovesMonumentsInUkrainePicturedByYear.png|Wiki Loves Monuments in Ukraine, monuments pictured by year by regions|left]]" +
       "\n<br clear=\"all\">"
 
-    val charts = new Charts()
     val chart = charts.createChart(dataset, "Регіон")
-    val width = 900
-    val height = 900
-    
-    saveCharts(charts, chart, "WikiLovesMonumentsInUkrainePicturedByYear", width, height)
+    saveCharts(charts, chart, "WikiLovesMonumentsInUkrainePicturedByYear", 900, 900)
 
+    intersectionDiagram(charts, "WikiLovesMonumentsInUkrainePicturedByYearPie", ids2012, ids2013, ids2014, 900, 900)
+
+    header + text + total
+  }
+
+  def intersectionDiagram(charts: Charts, name:String, ids2012: Set[String], ids2013: Set[String], ids2014: Set[String], width: Int, height: Int) {
     val ids1213 = ids2012 intersect ids2013
     val ids1314 = ids2013 intersect ids2014
     val ids1214 = ids2012 intersect ids2014
-    
+
     val union = ids2012 ++ ids2013 ++ ids2014
 
     val intersect = ids1213 intersect ids1214
@@ -206,9 +210,8 @@ class Output {
     pieDataset.setValue("2012 & 2013 & 2014", intersect.size)
 
     val pieChart = charts.createPieChart(pieDataset)
-    saveCharts(charts, pieChart, "WikiLovesMonumentsInUkrainePicturedByYearPie", width, height)
+    saveCharts(charts, pieChart, name, width, height)
 
-    header + text + total
   }
 
   def saveCharts(charts: Charts, chart: JFreeChart, name: String, width: Int, height: Int) {
@@ -272,14 +275,19 @@ class Output {
       text += columnData.mkString("|-\n| ", " || ", "\n")
     }
 
+    val authors2012 = imageDbsByYear(2012).head.authors
+    val authors2013 = imageDbsByYear(2013).head.authors
+    val authors2014 = imageDbsByYear(2014).head.authors
     val totalData = Seq(
       "Total",
       totalImageDb.authors.size,
-      imageDbsByYear(2012).head.authors.size,
-      imageDbsByYear(2013).head.authors.size,
-      imageDbsByYear(2014).head.authors.size
+      authors2012.size,
+      authors2013.size,
+      authors2014.size
     )
     val total = totalData.mkString("|-\n| ", " || ", "\n|}")
+
+    intersectionDiagram(charts, "WikiLovesMonumentsInUkraineAuthorsByYearPie", authors2012, authors2013, authors2014, 900, 900)
 
     header + text + total
 
