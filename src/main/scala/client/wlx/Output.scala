@@ -2,7 +2,9 @@ package client.wlx
 
 import client.MwBot
 import client.wlx.dto._
+import org.jfree.chart.JFreeChart
 import org.jfree.data.category.DefaultCategoryDataset
+import org.jfree.data.general.DefaultPieDataset
 
 import scala.collection.immutable.SortedSet
 
@@ -119,6 +121,10 @@ class Output {
 
     var withPhotoInListsFromRegions = Set.empty[String]
 
+    val ids2012 = imageDbsByYear(2012).head.ids
+    val ids2013 = imageDbsByYear(2013).head.ids
+    val ids2014 = imageDbsByYear(2014).head.ids
+
     var text = ""
     for (regionId <- regionIds) {
 
@@ -127,9 +133,13 @@ class Output {
       val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
       val allMonumentsInRegion: Int = monumentDb.byRegion(regionId).size
 
-      val pictured2012 = imageDbsByYear(2012).head.idsByRegion(regionId).size
-      val pictured2013 = imageDbsByYear(2013).head.idsByRegion(regionId).size
-      val pictured2014 = imageDbsByYear(2014).head.idsByRegion(regionId).size
+      val regionIds2012 = imageDbsByYear(2012).head.idsByRegion(regionId).toSet
+      val regionIds2013 = imageDbsByYear(2013).head.idsByRegion(regionId).toSet
+      val regionIds2014 = imageDbsByYear(2014).head.idsByRegion(regionId).toSet
+
+      val pictured2012 = regionIds2012.size
+      val pictured2013 = regionIds2013.size
+      val pictured2014 = regionIds2014.size
 
       val regionName = monumentDb.contest.country.regionById(regionId).name
       val columnData = Seq(
@@ -172,11 +182,39 @@ class Output {
     val width = 900
     val height = 900
     
-    charts.saveAsJPEG(chart, "WikiLovesMonumentsInUkrainePicturedByYear.jpg", width, height)
-    charts.saveAsPNG(chart, "WikiLovesMonumentsInUkrainePicturedByYear.png", width, height)
-    charts.saveAsSVG(chart, "WikiLovesMonumentsInUkrainePicturedByYear.svg", width, height)
+    saveCharts(charts, chart, "WikiLovesMonumentsInUkrainePicturedByYear", width, height)
+
+    val ids1213 = ids2012 intersect ids2013
+    val ids1314 = ids2013 intersect ids2014
+    val ids1214 = ids2012 intersect ids2014
+    
+    val union = ids2012 ++ ids2013 ++ ids2014
+
+    val intersect = ids1213 intersect ids1214
+
+    val only2012 = union -- (ids2013 ++ ids2014)
+    val only2013 = union -- (ids2012 ++ ids2014)
+    val only2014 = union -- (ids2012 ++ ids2013)
+
+    val pieDataset = new DefaultPieDataset()
+    pieDataset.setValue("2012", only2012.size)
+    pieDataset.setValue("2013", only2013.size)
+    pieDataset.setValue("2014", only2014.size)
+    pieDataset.setValue("2012 & 2013", ids1213.size)
+    pieDataset.setValue("2013 & 2014", ids1314.size)
+    pieDataset.setValue("2012 & 2014", ids1214.size)
+    pieDataset.setValue("2012 & 2013 & 2014", intersect.size)
+
+    val pieChart = charts.createPieChart(pieDataset)
+    saveCharts(charts, pieChart, "WikiLovesMonumentsInUkrainePicturedByYearPie", width, height)
 
     header + text + total
+  }
+
+  def saveCharts(charts: Charts, chart: JFreeChart, name: String, width: Int, height: Int) {
+    charts.saveAsJPEG(chart, name + ".jpg", width, height)
+    charts.saveAsPNG(chart, name + ".png", width, height)
+    charts.saveAsSVG(chart, name + ".svg", width, height)
   }
 
   def monumentsByType(/*imageDbs: Seq[ImageDB], totalImageDb: ImageDB,*/ monumentDb: MonumentDB) = {

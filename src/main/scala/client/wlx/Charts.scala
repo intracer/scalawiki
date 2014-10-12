@@ -2,8 +2,10 @@ package client.wlx
 
 import java.awt.{Font, Color, Rectangle}
 import java.io.File
+import java.text.DecimalFormat
 
 import org.jfree.chart.axis.NumberAxis
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator
 import org.jfree.chart.plot.{PiePlot, PlotOrientation}
 import org.jfree.chart.renderer.category.{BarRenderer, StandardBarPainter}
 import org.jfree.chart.{ChartFactory, ChartUtilities, JFreeChart}
@@ -12,6 +14,10 @@ import org.jfree.data.general.{PieDataset, DefaultPieDataset}
 import org.jfree.graphics2d.svg.{SVGGraphics2D, SVGUtils}
 
 class Charts {
+
+  val color2014 = new Color(220, 57, 18)
+  val color2013 = new Color(255, 153, 0)
+  val color2012 = new Color(51, 102, 204)
 
   def init {
     val dataset = createDataset()
@@ -43,12 +49,14 @@ class Charts {
 
   def createPieDataset() = {
     val dataset = new DefaultPieDataset()
-    dataset.setValue("One", 43.2)
-    dataset.setValue("Two", 10.0)
-    dataset.setValue("Three", 27.5)
-    dataset.setValue("Four", 17.5)
-    dataset.setValue("Five", 11.0)
-    dataset.setValue("Six", 19.4)
+    dataset.setValue("2012", 43.2)
+    dataset.setValue("2013", 10.0)
+    dataset.setValue("2014", 27.5)
+    dataset.setValue("2012 & 2013", 17.5)
+    dataset.setValue("2013 & 2014", 11.0)
+    dataset.setValue("2012 & 2014", 11.0)
+    dataset.setValue("2012 & 2013 & 2014", 11.0)
+    
     dataset
   }
 
@@ -62,23 +70,42 @@ class Charts {
   def createPieChart(dataset: PieDataset) = {
 
     val chart = ChartFactory.createPieChart(
-      "Pie Chart Demo 1",  // chart title
+      "Унікальність фотографій пам'яток за роками",  // chart title
       dataset,             // data
-      true,               // include legend
+      false,               // include legend
       true,
       false
     )
 
     val plot = chart.getPlot.asInstanceOf[PiePlot]
-    plot.setLabelFont(new Font("SansSerif", Font.PLAIN, 12))
+    plot.setLabelFont(new Font("SansSerif", Font.BOLD, 14))
     plot.setNoDataMessage("No data available")
     plot.setCircular(false)
     plot.setLabelGap(0.02)
     plot.setShadowXOffset(0)
     plot.setShadowYOffset(0)
     plot.setBackgroundPaint(Color.white)
+
+    plot.setSectionPaint("2012", color2012)
+    plot.setSectionPaint("2013", color2013)
+    plot.setSectionPaint("2014", color2014)
+    plot.setSectionPaint("2012 & 2013", blend(color2012, color2013))
+    plot.setSectionPaint("2013 & 2014", blend(color2013, color2014))
+    plot.setSectionPaint("2012 & 2014", blend(color2012, color2014))
+    plot.setSectionPaint("2012 & 2013 & 2014",  new Color(0x99CC00))
+
+    val gen = new StandardPieSectionLabelGenerator("{0}:\n{1} ({2})", new DecimalFormat("0"), new DecimalFormat("0%"))
+    plot.setLabelGenerator(gen)
     chart
-  }  
+  }
+
+  def blend(c0: Color, c1: Color, weight: Double = 0.5) = {
+    val r = (c0.getRed + c1.getRed) * weight
+    val g = (c0.getGreen + c1.getGreen) * weight
+    val b = (c0.getBlue + c1.getBlue) * weight
+
+    new Color(r.toInt, g.toInt, b.toInt)
+  }
 
   /**
    * Returns a sample dataset.
@@ -106,6 +133,7 @@ class Charts {
 
     dataset
   }
+
 
   /**
    * Creates a sample chart.
@@ -152,11 +180,11 @@ class Charts {
 
     // disable bar outlines...
     val renderer = plot.getRenderer.asInstanceOf[BarRenderer]
-    renderer.setDrawBarOutline(false)
+    renderer.setDrawBarOutline(true)
 
-    renderer.setSeriesPaint(0, new Color(220, 57, 18))
-    renderer.setSeriesPaint(1, new Color(255, 153, 0))
-    renderer.setSeriesPaint(2, new Color(51, 102, 204))
+    renderer.setSeriesPaint(0, color2014)
+    renderer.setSeriesPaint(1, color2013)
+    renderer.setSeriesPaint(2, color2012)
 
 //    val domainAxis = plot.getDomainAxis
 //    domainAxis.setCategoryLabelPositions(
