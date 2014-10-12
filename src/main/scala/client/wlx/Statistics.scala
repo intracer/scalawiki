@@ -21,7 +21,9 @@ class Statistics {
     val monumentQuery = MonumentQuery.create(wlmContest)
     val allMonuments = monumentQuery.byMonumentTemplate(wlmContest.listTemplate)
 
-    val libraries = allMonuments.filter(m => m.name.toLowerCase.contains("бібліо") || m.place.fold(false)(_.contains("бібліо")))
+    val wrongRegionMonuemnts = allMonuments.filterNot(monument => wlmContest.country.regionIds.contains(Monument.getRegionId(monument.id)))
+
+//    val libraries = allMonuments.filter(m => m.name.toLowerCase.contains("бібліо") || m.place.fold(false)(_.contains("бібліо")))
     val monumentDb = new MonumentDB(wlmContest, allMonuments)
 
     //    val grouped: Map[String, Seq[Monument]] = monumentDb.wrongIdMonuments.groupBy(_.pageParam)
@@ -48,6 +50,7 @@ class Statistics {
       authorsStat(monumentDb, imageDb)
     //  byDayAndRegion(imageDb)
       specialNominations(wlmContest, imageDb, monumentQuery)
+      wrongIds(wlmContest, imageDb, monumentDb)
      // fixWadco(imageDb, monumentDb)
 
       val total = new ImageQueryApi().imagesWithTemplateAsync(wlmContest.fileTemplate, wlmContest)
@@ -66,6 +69,14 @@ class Statistics {
         val byId = badImages._byId
       }
     }
+  }
+
+  def wrongIds(wlmContest: Contest, imageDb: ImageDB, monumentDb: MonumentDB) {
+
+    val wrongIdImages = imageDb.images.filterNot(image => image.monumentId.fold(false)(monumentDb.ids.contains))
+
+    val text = wrongIdImages.map(_.title).mkString("<gallery>","\n", "</gallery>")
+    MwBot.get(MwBot.commons).page("Commons:Wiki Loves Monuments 2014 in Ukraine/Images with bad ids").edit(text, "updating")
   }
 
   def regionIdGallery(imageDb: ImageDB, monumentDb: MonumentDB): Unit = {

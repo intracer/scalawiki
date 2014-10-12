@@ -66,7 +66,10 @@ object Monument {
     )
   }
 
-  def wikiLinkToUrl(wikiText: String, host: String) = {
+  def wikiLinkToUrl(wikiText: Option[String], host: String):String =
+    wikiText.fold(""){t => wikiLinkToUrl(t, host)}
+
+    def wikiLinkToUrl(wikiText: String, host: String):String = {
     val r1 = "\\[\\[([^|]*?)\\]\\]".r.replaceAllIn(wikiText, {
       m =>
         val url = URLEncoder.encode(m.group(1).replaceAll(" ", "_"), "UTF-8")
@@ -80,7 +83,6 @@ object Monument {
         val title = m.group(2)
         s"""<a href='https://$host/wiki/$url'>$title</a>"""
     })
-
 
     r2
   }

@@ -1,7 +1,7 @@
 package client.wlx
 
 import client.MwBot
-import client.wlx.dto.{Image, Contest, Country, SpecialNomination}
+import client.wlx.dto._
 
 import scala.collection.immutable.SortedSet
 
@@ -112,26 +112,39 @@ class Output {
 
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
 
+    val withPhotoInLists = monumentDb.monuments.filter(_.photo.isDefined).map(_.id).toSet
+
+    var withPhotoInListsFromRegions = Set.empty[String]
+
     var text = ""
     for (regionId <- regionIds) {
+
+      val withPhotoInListsCurrentRegion = withPhotoInLists.filter(id => Monument.getRegionId(id) == regionId)
+      val picturedMonumentsInRegionSet = (totalImageDb.idsByRegion(regionId) ++ withPhotoInListsCurrentRegion).toSet
+      val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
+      val allMonumentsInRegion: Int = monumentDb.byRegion(regionId).size
       val columnData = Seq(
         monumentDb.contest.country.regionById(regionId).name,
-        monumentDb.byRegion(regionId).size,
-        totalImageDb.idsByRegion(regionId).size,
-        100 * totalImageDb.idsByRegion(regionId).size / monumentDb.byRegion(regionId).size,
+        allMonumentsInRegion,
+        picturedMonumentsInRegion,
+        100 * picturedMonumentsInRegion / allMonumentsInRegion,
         imageDbsByYear(2012).head.idsByRegion(regionId).size,
         imageDbsByYear(2013).head.idsByRegion(regionId).size,
         imageDbsByYear(2014).head.idsByRegion(regionId).size
       )
 
       text += columnData.mkString("|-\n| ", " || ", "\n")
+      withPhotoInListsFromRegions ++= picturedMonumentsInRegionSet
     }
 
+    val delta = withPhotoInLists -- withPhotoInListsFromRegions
+    val allMonuments: Int = monumentDb.monuments.size
+    val picturedMonuments = (totalImageDb.ids ++ withPhotoInLists).size
     val totalData = Seq(
       "Total",
-      monumentDb.monuments.size,
-      totalImageDb.ids.size,
-      100 * totalImageDb.ids.size / monumentDb.monuments.size,
+      allMonuments,
+      picturedMonuments,
+      100 * picturedMonuments / allMonuments,
       imageDbsByYear(2012).head.ids.size,
       imageDbsByYear(2013).head.ids.size,
       imageDbsByYear(2014).head.ids.size

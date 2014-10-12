@@ -34,7 +34,7 @@ class ImageQueryApi extends ImageQuery with WithBot {
     val query = bot.page(category)
 
     val revsFuture = query.revisionsByGenerator("categorymembers", "cm",
-      Set.empty, Set("content", "timestamp", "user", "comment")) map {
+      Set.empty, Set("content", "timestamp", "user", "comment"), None, "3000") map {
       pages =>
         try {
           pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
