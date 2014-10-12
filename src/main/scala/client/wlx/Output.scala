@@ -2,6 +2,7 @@ package client.wlx
 
 import client.MwBot
 import client.wlx.dto._
+import org.jfree.data.category.DefaultCategoryDataset
 
 import scala.collection.immutable.SortedSet
 
@@ -104,6 +105,8 @@ class Output {
 
     val columns = Seq("Region", "Objects in lists", "3 years total", "3 years percentage", "2012", "2013", "2014")
 
+    val dataset = new DefaultCategoryDataset()
+
     val header = "\n==Objects pictured==\n{| class='wikitable sortable'\n" +
       "|+ Objects pictured\n" +
       columns.mkString("!", "!!", "\n")
@@ -123,22 +126,32 @@ class Output {
       val picturedMonumentsInRegionSet = (totalImageDb.idsByRegion(regionId) ++ withPhotoInListsCurrentRegion).toSet
       val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
       val allMonumentsInRegion: Int = monumentDb.byRegion(regionId).size
+
+      val pictured2012 = imageDbsByYear(2012).head.idsByRegion(regionId).size
+      val pictured2013 = imageDbsByYear(2013).head.idsByRegion(regionId).size
+      val pictured2014 = imageDbsByYear(2014).head.idsByRegion(regionId).size
+
+      val regionName = monumentDb.contest.country.regionById(regionId).name
       val columnData = Seq(
-        monumentDb.contest.country.regionById(regionId).name,
+        regionName,
         allMonumentsInRegion,
         picturedMonumentsInRegion,
         100 * picturedMonumentsInRegion / allMonumentsInRegion,
-        imageDbsByYear(2012).head.idsByRegion(regionId).size,
-        imageDbsByYear(2013).head.idsByRegion(regionId).size,
-        imageDbsByYear(2014).head.idsByRegion(regionId).size
+        pictured2012,
+        pictured2013,
+        pictured2014
       )
+
+      val shortRegionName = regionName.replaceAll("область", "").replaceAll("Автономна Республіка", "АР")
+      dataset.addValue(pictured2014, "2014", shortRegionName)
+      dataset.addValue(pictured2013, "2013", shortRegionName)
+      dataset.addValue(pictured2012, "2012", shortRegionName)
 
       text += columnData.mkString("|-\n| ", " || ", "\n")
       withPhotoInListsFromRegions ++= picturedMonumentsInRegionSet
     }
 
-    val delta = withPhotoInLists -- withPhotoInListsFromRegions
-    val allMonuments: Int = monumentDb.monuments.size
+    val allMonuments = monumentDb.monuments.size
     val picturedMonuments = (totalImageDb.ids ++ withPhotoInLists).size
     val totalData = Seq(
       "Total",
@@ -149,7 +162,19 @@ class Output {
       imageDbsByYear(2013).head.ids.size,
       imageDbsByYear(2014).head.ids.size
     )
-    val total = totalData.mkString("|-\n| ", " || ", "\n|}")
+    val total = totalData.mkString("|-\n| ", " || ", "\n|}") +
+      "\n[[File:WikiLovesMonumentsInUkrainePicturedByYearTotal.png|Wiki Loves Monuments in Ukraine, monuments pictured by year overall|left]]" +
+      "\n[[File:WikiLovesMonumentsInUkrainePicturedByYear.png|Wiki Loves Monuments in Ukraine, monuments pictured by year by regions|left]]" +
+      "\n<br clear=\"all\">"
+
+    val charts = new Charts()
+    val chart = charts.createChart(dataset, "Регіон")
+    val width = 900
+    val height = 900
+    
+    charts.saveAsJPEG(chart, "WikiLovesMonumentsInUkrainePicturedByYear.jpg", width, height)
+    charts.saveAsPNG(chart, "WikiLovesMonumentsInUkrainePicturedByYear.png", width, height)
+    charts.saveAsSVG(chart, "WikiLovesMonumentsInUkrainePicturedByYear.svg", width, height)
 
     header + text + total
   }

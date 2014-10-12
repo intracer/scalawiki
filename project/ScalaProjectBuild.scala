@@ -24,6 +24,8 @@ object ScalaProjectBuild extends Build {
           "com.typesafe.akka"   %%  "akka-actor"    % akkaV withSources() withJavadoc(),
           "com.typesafe.slick" %% "slick" % "2.1.0" withSources() withJavadoc(),
           "com.h2database" % "h2" % "1.3.175" withSources() withJavadoc(),
+          "com.github.wookietreiber" %% "scala-chart" % "0.4.0" withSources() withJavadoc(),
+          "org.jfree" % "jfreesvg" % "2.1" withSources() withJavadoc(),
           "org.scala-lang" %% "scala-pickling" % "0.8.0" withSources() withJavadoc(),
           "com.github.tototoshi" %% "scala-csv" % "1.0.0",
           "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.2",
