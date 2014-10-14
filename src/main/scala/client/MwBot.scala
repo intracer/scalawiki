@@ -65,6 +65,12 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
         Json.parse(body).validate(reads).get
     }
 
+  def getByteArray(url: String): Future[Array[Byte]] =
+    http.get(url) map {
+      response => response.entity.data.toByteArray
+    }
+
+
   def post[T](reads: Reads[T], params: (String, String)*): Future[T] =
     post(reads, params.toMap)
 
@@ -90,6 +96,22 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
         println(result)
         result
     }
+
+  def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String): Future[T] =
+    http.postFile(apiUrl, params, fileParam , filename) map getBody map {
+      body =>
+        val json = Json.parse(body)
+        val response = json.validate(reads)
+        //        response.fold[T](err => {
+        //          json.validate(errorReads)
+        //        },
+        //          success => success
+        //        )
+        val result = response.get
+        println(result)
+        result
+  }
+
 
   def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)
 
@@ -149,7 +171,9 @@ object MwBot {
     val system = ActorSystem()
     val http = new HttpClientImpl(system)
 
-    new MwBot(http, system, host)
+    val bot = new MwBot(http, system, host)
+    bot.await(bot.login(LoginInfo.login, LoginInfo.password))
+    bot
   }
 
   val cache: Cache[MwBot] = LruCache()
@@ -171,7 +195,7 @@ object MwBot {
 
     val commons = create("commons.wikimedia.org")
 
-    commons.await(commons.login(args(0), args(1)))
+//    commons.await(commons.login(args(0), args(1)))
     //    images(commons)
 //    imagesText(commons)
     //imagesInfo(commons)

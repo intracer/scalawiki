@@ -1,6 +1,6 @@
 package client.wlx
 
-import client.{LoginInfo, MwBot}
+import client.MwBot
 
 trait WithBot {
 
@@ -9,9 +9,7 @@ trait WithBot {
   lazy val bot: MwBot = createBot()
 
   private def createBot() = {
-    val bot = MwBot.get(host)
-    bot.await(bot.login(LoginInfo.login, LoginInfo.password))
-    bot
+    MwBot.get(host)
   }
 
 }

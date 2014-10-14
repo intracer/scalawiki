@@ -63,6 +63,8 @@ class Statistics {
 //        MwBot.get(MwBot.commons).page("User:IlyaBot/KharkivBadIdImages").edit(text, "updating")
 
         regionalStat(wlmContest, monumentDb, imageQueryDb, imageDb, totalImageDb)
+
+        Thread.sleep(5000)
         fillLists(monumentDb, totalImageDb)
 
         val badImages = totalImageDb.subSet(monumentDb.wrongIdMonuments, true)
@@ -151,13 +153,13 @@ class Statistics {
             //            println(authorStat)
 
             val toc = "__TOC__"
-            val category = "\n[[Category:Wiki Loves Monuments 2014 in Ukraine]]"
+            val category = "\n[[Category:Wiki Loves Monuments in Ukraine]]"
             val regionalStat = toc + idsStat + authorStat + category
 
             //      val bot = MwBot.get(MwBot.commons)
             //      bot.await(bot.page("Commons:Wiki Loves Monuments 2014 in Ukraine/Regional statistics").edit(regionalStat, "update statistics"))
 
-            MwBot.get(MwBot.commons).page("Commons:Wiki Loves Monuments 2014 in Ukraine/Regional statistics").edit(regionalStat, "updating")
+            MwBot.get(MwBot.commons).page("Commons:Wiki Loves Monuments in Ukraine/Regional statistics").edit(regionalStat, "updating")
 
             val authorsByRegionTotal = output.authorsMonuments(totalImageDb) + "\n[[Category:Wiki Loves Monuments in Ukraine]]"
 

@@ -4,6 +4,7 @@ import java.awt.{Font, Color, Rectangle}
 import java.io.File
 import java.text.DecimalFormat
 
+import client.MwBot
 import org.jfree.chart.axis.NumberAxis
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator
 import org.jfree.chart.plot.{PiePlot, PlotOrientation}
@@ -13,19 +14,23 @@ import org.jfree.data.category.{CategoryDataset, DefaultCategoryDataset}
 import org.jfree.data.general.{PieDataset, DefaultPieDataset}
 import org.jfree.graphics2d.svg.{SVGGraphics2D, SVGUtils}
 
-class Charts {
+class Charts extends WithBot{
+
+  override def host: String = MwBot.commons
 
   val color2014 = new Color(220, 57, 18)
   val color2013 = new Color(255, 153, 0)
   val color2012 = new Color(51, 102, 204)
 
   def init {
-    val dataset = createDataset()
+    val dataset = createTotalDataset(1,2,3)
     val chart = createChart(dataset, "")
 
-    saveAsPNG(chart, "WikiLovesMonumentsInUkrainePicturedByYearTotal.png", 900, 200)
+//    val filename = "WikiLovesMonumentsInUkrainePicturedByYearTotal.png"
+//    saveAsPNG(chart, filename, 900, 200)
+//    bot.page(filename).upload(filename)
 
-    saveAsPNG(createPieChart(createPieDataset()), "WikiLovesMonumentsInUkrainePicturedByYearPie.png", 600, 600)
+    saveAsPNG(createPieChart(createPieDataset(), "Унікальність фотографій пам'яток за роками"), "WikiLovesMonumentsInUkrainePicturedByYearPieTest.png", 900, 900)
 
   }
 
@@ -49,14 +54,14 @@ class Charts {
 
   def createPieDataset() = {
     val dataset = new DefaultPieDataset()
-    dataset.setValue("2012", 43.2)
-    dataset.setValue("2013", 10.0)
-    dataset.setValue("2014", 27.5)
-    dataset.setValue("2012 & 2013", 17.5)
-    dataset.setValue("2013 & 2014", 11.0)
-    dataset.setValue("2012 & 2014", 11.0)
-    dataset.setValue("2012 & 2013 & 2014", 11.0)
-    
+    dataset.setValue("2012", 3240.0)
+    dataset.setValue("2013", 3046.0)
+    dataset.setValue("2014", 5328.0)
+    dataset.setValue("2013 & 2014", 2274.0)
+    dataset.setValue("2012 & 2014", 1069.0)
+    dataset.setValue("2012 & 2013 & 2014", 2402.0)
+    dataset.setValue("2012 & 2013", 1615.0)
+
     dataset
   }
 
@@ -67,20 +72,21 @@ class Charts {
    *
    * @return A chart.
    */
-  def createPieChart(dataset: PieDataset) = {
+  def createPieChart(dataset: PieDataset, title: String) = {
 
     val chart = ChartFactory.createPieChart(
-      "Унікальність фотографій пам'яток за роками",  // chart title
+      title,  // chart title
       dataset,             // data
       false,               // include legend
       true,
       false
     )
 
+
     val plot = chart.getPlot.asInstanceOf[PiePlot]
     plot.setLabelFont(new Font("SansSerif", Font.BOLD, 14))
     plot.setNoDataMessage("No data available")
-    plot.setCircular(false)
+    plot.setCircular(true)
     plot.setLabelGap(0.02)
     plot.setShadowXOffset(0)
     plot.setShadowYOffset(0)
@@ -112,7 +118,7 @@ class Charts {
    *
    * @return The dataset.
    */
-  def createDataset() = {
+  def createTotalDataset(n2014: Int, n2013: Int, n2012: Int) = {
 
     // row keys...
     val series1 = "2014"
@@ -125,11 +131,11 @@ class Charts {
     // create the dataset...
     val dataset = new DefaultCategoryDataset()
 
-    dataset.addValue(10667, series1, category1)
+    dataset.addValue(n2014, series1, category1)
 
-    dataset.addValue(9337, series2, category1)
+    dataset.addValue(n2013, series2, category1)
 
-    dataset.addValue(8325, series3, category1)
+    dataset.addValue(n2012, series3, category1)
 
     dataset
   }
@@ -194,7 +200,6 @@ class Charts {
 
     chart
   }
-
 
 }
 

@@ -1,5 +1,8 @@
 package client.wlx.dto
 
+import java.nio.file.{Paths, Files}
+
+import client.MwBot
 import client.dto.{Template, Page}
 
 
@@ -17,6 +20,12 @@ case class Image(pageId: Long, title: String,
   def compare(that: Image) = (this.pageId - that.pageId).signum
 
   //  def region: Option[String] = monumentId.map(_.split("-")(0))
+
+  def download(filename: String) {
+    import scala.concurrent.ExecutionContext.Implicits.global
+    for (bytes <- MwBot.get(MwBot.commons).getByteArray(url))
+      Files.write(Paths.get(filename), bytes)
+  }
 
 }
 

@@ -10,12 +10,12 @@ object ScalaProjectBuild extends Build {
       name := "mwbot",
       organization := "org.intracer",
       version := "0.1.1",
-      scalaVersion := "2.10.4",
+      scalaVersion := "2.11.2",
       // add other settings here
         resolvers := Seq ("spray repo" at "http://repo.spray.io", "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"),
       libraryDependencies ++= {
-        val akkaV = "2.3.2"
-        val sprayV = "1.3.1"
+        val akkaV = "2.3.6"
+        val sprayV = "1.3.2"
         Seq(
           "io.spray" % "spray-client" % sprayV withSources() withJavadoc(),
           "io.spray" % "spray-caching" % sprayV withSources() withJavadoc(),
@@ -28,6 +28,7 @@ object ScalaProjectBuild extends Build {
           "org.jfree" % "jfreesvg" % "2.1" withSources() withJavadoc(),
           "org.scala-lang" %% "scala-pickling" % "0.8.0" withSources() withJavadoc(),
           "com.github.tototoshi" %% "scala-csv" % "1.0.0",
+//          "nl.grons" %% "metrics-scala" % "3.3.0_a2.3",
           "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.2",
          // "no.priv.garshol.duke" %% "duke" % "1.2",
           "org.specs2" %% "specs2" % "2.3.12" % "test" withSources() withJavadoc()

@@ -1,6 +1,6 @@
 package client.wlx
 
-import client.wlx.dto.{Monument, Contest, Image}
+import client.wlx.dto.{Contest, Image, Monument}
 import client.wlx.query.ImageQuery
 
 import scala.concurrent.Future

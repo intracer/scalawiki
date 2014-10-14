@@ -35,4 +35,6 @@ class TestHttpClient(val host: String, val commands: mutable.Queue[Command]) ext
   override def post(url: Uri, params: Map[String, String]): Future[HttpResponse] = ???
 
   override def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse] = ???
+
+  override def postFile(url: String, params: Map[String, String], fileParam: String, filename: String): Future[HttpResponse] = ???
 }

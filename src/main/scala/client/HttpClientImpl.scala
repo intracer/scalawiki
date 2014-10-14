@@ -1,16 +1,16 @@
 package client
 
-import java.security.cert.X509Certificate
-import javax.net.ssl.{KeyManager, X509TrustManager, SSLContext}
+import java.io.File
 
-import akka.actor.{ActorRef, Props, ActorSystem}
-import spray.http._
-import spray.httpx.marshalling.Marshaller
-import scala.concurrent.Future
-import spray.client.pipelining._
-import spray.httpx.encoding.Gzip
+import akka.actor.ActorSystem
 import akka.event.Logging
-import spray.http.HttpHeaders.{Cookie, `User-Agent`, `Accept-Encoding`}
+import spray.client.pipelining._
+import spray.http.HttpHeaders.{Cookie, `Accept-Encoding`, `User-Agent`}
+import spray.http._
+import spray.httpx.encoding.Gzip
+import spray.httpx.marshalling.Marshaller
+
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 
@@ -30,6 +30,8 @@ trait HttpClient {
   def post(url: Uri, params: Map[String, String]): Future[HttpResponse]
 
   def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse]
+
+  def postFile(url: String, params: Map[String, String], fileParam: String, filename: String): Future[HttpResponse]
 
 }
 
@@ -122,15 +124,17 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
 
   override def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse] = {
     val bodyParts = params.map { case (key, value) =>
-      (key,
-        BodyPart(
-          HttpEntity(
-            value),
-          key)
-        )
-
+      (key,BodyPart(HttpEntity(value),key))
     }
     submit(Post(Uri(url) withQuery("title" -> params("title")), new MultipartFormData(bodyParts.values.toSeq)))
+  }
+
+  override def postFile(url: String, params: Map[String, String], fileParam: String, filename: String): Future[HttpResponse] = {
+
+    val bodyParts = params.map { case (key, value) =>
+      (key,BodyPart(HttpEntity(value),key))
+    } + (fileParam -> BodyPart(new File(filename), fileParam))
+    submit(Post(Uri(url), new MultipartFormData(bodyParts.values.toSeq)))
   }
 
 }

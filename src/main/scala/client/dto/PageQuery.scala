@@ -1,5 +1,7 @@
 package client.dto
 
+import java.nio.file.{Paths, Files}
+
 import client.json.MwReads._
 import client.json.MwReads2
 import client.{MwBot, MwUtils}
@@ -191,6 +193,21 @@ class SinglePageQuery(query: Either[Long, String], site: MwBot) extends PageQuer
       site.postMultiPart(editResponseReads, params)
     else
       site.post(editResponseReads, params)
+  }
+
+  def upload(filename: String) {
+    val pagename = query.right.toOption.fold(filename)(identity)
+    val token = site.token
+    val fileContents = Files.readAllBytes(Paths.get(filename))
+    val params = Map(
+      "action" -> "upload",
+      "filename" -> pagename,
+      "token" -> token,
+      "format" -> "json",
+      "comment" -> "update",
+      "filesize" -> fileContents.size.toString,
+      "ignorewarnings" -> "true")
+    site.postFile(editResponseReads, params, "file", filename)
   }
 }
 

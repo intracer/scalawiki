@@ -176,48 +176,63 @@ class Output {
     )
     val total = totalData.mkString("|-\n| ", " || ", "\n|}") +
       "\n[[File:WikiLovesMonumentsInUkrainePicturedByYearTotal.png|Wiki Loves Monuments in Ukraine, monuments pictured by year overall|left]]" +
+      "\n[[File:WikiLovesMonumentsInUkrainePicturedByYearPie.png|Wiki Loves Monuments in Ukraine, monuments pictured by year pie chart|left]]" +
       "\n[[File:WikiLovesMonumentsInUkrainePicturedByYear.png|Wiki Loves Monuments in Ukraine, monuments pictured by year by regions|left]]" +
       "\n<br clear=\"all\">"
 
     val chart = charts.createChart(dataset, "Регіон")
-    saveCharts(charts, chart, "WikiLovesMonumentsInUkrainePicturedByYear", 900, 900)
+    val byRegionFile = "WikiLovesMonumentsInUkrainePicturedByYear"
+    saveCharts(charts, chart, byRegionFile, 900, 1200)
+    MwBot.get(MwBot.commons).page(byRegionFile + ".png").upload(byRegionFile + ".png")
 
-    intersectionDiagram(charts, "WikiLovesMonumentsInUkrainePicturedByYearPie", ids2012, ids2013, ids2014, 900, 900)
+    val chartTotal = charts.createChart(charts.createTotalDataset(ids2014.size, ids2013.size, ids2012.size), "")
+
+    val chartTotalFile = "WikiLovesMonumentsInUkrainePicturedByYearTotal.png"
+    charts.saveAsPNG(chartTotal, chartTotalFile, 900, 200)
+    MwBot.get(MwBot.commons).page(chartTotalFile).upload(chartTotalFile)
+
+    val intersectionFile = "WikiLovesMonumentsInUkrainePicturedByYearPie"
+    intersectionDiagram(charts, "Унікальність фотографій пам'яток за роками", intersectionFile, ids2012, ids2013, ids2014, 900, 800)
+    MwBot.get(MwBot.commons).page(intersectionFile + ".png").upload(intersectionFile + ".png")
 
     header + text + total
   }
 
-  def intersectionDiagram(charts: Charts, name:String, ids2012: Set[String], ids2013: Set[String], ids2014: Set[String], width: Int, height: Int) {
-    val ids1213 = ids2012 intersect ids2013
-    val ids1314 = ids2013 intersect ids2014
-    val ids1214 = ids2012 intersect ids2014
+  def intersectionDiagram(charts: Charts, title:String, filename:String, ids2012: Set[String], ids2013: Set[String], ids2014: Set[String], width: Int, height: Int) {
+    val intersect = ids2012 intersect ids2013 intersect ids2014
+
+    val ids1213 = (ids2012 intersect ids2013) -- intersect
+    val ids1314 = (ids2013 intersect ids2014) -- intersect
+    val ids1214 = (ids2012 intersect ids2014) -- intersect
 
     val union = ids2012 ++ ids2013 ++ ids2014
 
-    val intersect = ids1213 intersect ids1214
+    val only2012 = ids2012 -- (ids2013 ++ ids2014)
+    val only2013 = ids2013 -- (ids2012 ++ ids2014)
+    val only2014 = ids2014 -- (ids2012 ++ ids2013)
 
-    val only2012 = union -- (ids2013 ++ ids2014)
-    val only2013 = union -- (ids2012 ++ ids2014)
-    val only2014 = union -- (ids2012 ++ ids2013)
+    val check2012 = only2012 ++ ids1213 ++ ids1214 ++ intersect
+    val check2013 = only2013 ++ ids1213 ++ ids1314 ++ intersect
+    val check2014 = only2014 ++ ids1214 ++ ids1314 ++ intersect
 
     val pieDataset = new DefaultPieDataset()
     pieDataset.setValue("2012", only2012.size)
     pieDataset.setValue("2013", only2013.size)
     pieDataset.setValue("2014", only2014.size)
-    pieDataset.setValue("2012 & 2013", ids1213.size)
     pieDataset.setValue("2013 & 2014", ids1314.size)
     pieDataset.setValue("2012 & 2014", ids1214.size)
     pieDataset.setValue("2012 & 2013 & 2014", intersect.size)
+    pieDataset.setValue("2012 & 2013", ids1213.size)
 
-    val pieChart = charts.createPieChart(pieDataset)
-    saveCharts(charts, pieChart, name, width, height)
+    val pieChart = charts.createPieChart(pieDataset, title)
+    saveCharts(charts, pieChart, filename, width, height)
 
   }
 
   def saveCharts(charts: Charts, chart: JFreeChart, name: String, width: Int, height: Int) {
-    charts.saveAsJPEG(chart, name + ".jpg", width, height)
+    //charts.saveAsJPEG(chart, name + ".jpg", width, height)
     charts.saveAsPNG(chart, name + ".png", width, height)
-    charts.saveAsSVG(chart, name + ".svg", width, height)
+    //charts.saveAsSVG(chart, name + ".svg", width, height)
   }
 
   def monumentsByType(/*imageDbs: Seq[ImageDB], totalImageDb: ImageDB,*/ monumentDb: MonumentDB) = {
@@ -287,7 +302,7 @@ class Output {
     )
     val total = totalData.mkString("|-\n| ", " || ", "\n|}")
 
-    intersectionDiagram(charts, "WikiLovesMonumentsInUkraineAuthorsByYearPie", authors2012, authors2013, authors2014, 900, 900)
+    intersectionDiagram(charts, "Унікальність авторів за роками", "WikiLovesMonumentsInUkraineAuthorsByYearPie", authors2012, authors2013, authors2014, 900, 900)
 
     header + text + total
 
