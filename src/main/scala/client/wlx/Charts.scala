@@ -93,10 +93,10 @@ class Charts extends WithBot{
     plot.setBackgroundPaint(Color.white)
 
     plot.setSectionPaint("2012", color2012)
-    plot.setSectionPaint("2013", color2013)
-    plot.setSectionPaint("2014", color2014)
     plot.setSectionPaint("2012 & 2013", blend(color2012, color2013))
+    plot.setSectionPaint("2013", color2013)
     plot.setSectionPaint("2013 & 2014", blend(color2013, color2014))
+    plot.setSectionPaint("2014", color2014)
     plot.setSectionPaint("2012 & 2014", blend(color2012, color2014))
     plot.setSectionPaint("2012 & 2013 & 2014",  new Color(0x99CC00))
 

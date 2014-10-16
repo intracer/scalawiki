@@ -41,7 +41,7 @@ class ListFiller extends WithBot {
       result
     }
 
-   for (seq <- Future.sequence(results)) {
+   for (seq <- Future.sequence(results.toSeq)) {
      val succesfull = seq.count(_ == "Success")
      println (s"Succesfull pages inserts: $succesfull")
 

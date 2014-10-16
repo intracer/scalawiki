@@ -9,18 +9,18 @@ object ScalaProjectBuild extends Build {
     settings = Project.defaultSettings ++ Seq(
       name := "mwbot",
       organization := "org.intracer",
-      version := "0.1.1",
-      scalaVersion := "2.11.2",
+      version := "0.2.0",
+      scalaVersion := "2.10.4",
       // add other settings here
         resolvers := Seq ("spray repo" at "http://repo.spray.io", "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"),
       libraryDependencies ++= {
-        val akkaV = "2.3.6"
-        val sprayV = "1.3.2"
+        val akkaV = "2.2.3"
+        val sprayV = "1.2.2"
         Seq(
           "io.spray" % "spray-client" % sprayV withSources() withJavadoc(),
           "io.spray" % "spray-caching" % sprayV withSources() withJavadoc(),
           "io.spray" %%  "spray-json" % "1.3.0" withSources() withJavadoc(),
-          "com.typesafe.play" %% "play-json" % "2.3.4" withSources(),
+          "com.typesafe.play" %% "play-json" % "2.2.3" withSources(),
           "com.typesafe.akka"   %%  "akka-actor"    % akkaV withSources() withJavadoc(),
           "com.typesafe.slick" %% "slick" % "2.1.0" withSources() withJavadoc(),
           "com.h2database" % "h2" % "1.3.175" withSources() withJavadoc(),
@@ -34,7 +34,7 @@ object ScalaProjectBuild extends Build {
           "org.specs2" %% "specs2" % "2.3.12" % "test" withSources() withJavadoc()
         )
       },
-//      publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
+   //   publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
         publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.ivy2/local")))
     )
   )

@@ -4,6 +4,7 @@ import java.io.File
 
 import akka.actor.ActorSystem
 import akka.event.Logging
+import akka.util.Timeout
 import spray.client.pipelining._
 import spray.http.HttpHeaders.{Cookie, `Accept-Encoding`, `User-Agent`}
 import spray.http._
@@ -81,22 +82,25 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
   val log = Logging(system, getClass)
   //  val TraceLevel = Logging.LogLevel(Logging.DebugLevel.asInt + 1)
 
- override implicit val timeout: Duration = 5.minutes
+ override implicit val timeout: Duration = 15.minutes
 
-  def submit: HttpRequest => Future[HttpResponse] = (
-    addHeaders(
-      Cookie(cookies),
-      `Accept-Encoding`(HttpEncodings.gzip),
-      `User-Agent`("ScalaMwBot/0.1")) ~>
-      logRequest(log, Logging.InfoLevel)
-      //      logRequest(r =>
-      //        log.info(s"HttpRequest: h: ${r.headers} d:${r.entity.data.asString}")
-      //      )
-      //~> ((_:HttpRequest).mapEntity(_.flatMap(entity => HttpEntity(entity.contentType.withoutDefinedCharset, entity.data))))
-      ~> sendReceive
-      ~> decode(Gzip)
-      ~> logResponse(r => log.info(s"HttpResponse: ${r.status}, ${r.headers}"))
-    )
+  def submit: HttpRequest => Future[HttpResponse] = {
+    implicit val timeout: Timeout = 5.minutes
+    (
+      addHeaders(
+        Cookie(cookies),
+        `Accept-Encoding`(HttpEncodings.gzip),
+        `User-Agent`("ScalaMwBot/0.1")) ~>
+        logRequest(log, Logging.InfoLevel)
+        //      logRequest(r =>
+        //        log.info(s"HttpRequest: h: ${r.headers} d:${r.entity.data.asString}")
+        //      )
+        //~> ((_:HttpRequest).mapEntity(_.flatMap(entity => HttpEntity(entity.contentType.withoutDefinedCharset, entity.data))))
+        ~> sendReceive
+        ~> decode(Gzip)
+        ~> logResponse(r => log.info(s"HttpResponse: ${r.status}, ${r.headers}"))
+      )
+  }
 
   override def get(url: String) = submit(Get(url))
 

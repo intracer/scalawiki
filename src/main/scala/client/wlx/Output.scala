@@ -217,12 +217,12 @@ class Output {
 
     val pieDataset = new DefaultPieDataset()
     pieDataset.setValue("2012", only2012.size)
+    pieDataset.setValue("2012 & 2013", ids1213.size)
     pieDataset.setValue("2013", only2013.size)
-    pieDataset.setValue("2014", only2014.size)
     pieDataset.setValue("2013 & 2014", ids1314.size)
+    pieDataset.setValue("2014", only2014.size)
     pieDataset.setValue("2012 & 2014", ids1214.size)
     pieDataset.setValue("2012 & 2013 & 2014", intersect.size)
-    pieDataset.setValue("2012 & 2013", ids1213.size)
 
     val pieChart = charts.createPieChart(pieDataset, title)
     saveCharts(charts, pieChart, filename, width, height)

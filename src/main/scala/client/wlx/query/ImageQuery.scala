@@ -68,7 +68,8 @@ class ImageQueryApi extends ImageQuery with WithBot {
     query.revisionsByGenerator("embeddedin", "ei",
       Set(Namespace.FILE_NAMESPACE), Set("content", "timestamp", "user", "comment"), None, "3000") map {
       pages =>
-        pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, "")).sortBy(_.pageId)
+       val result =  pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, "")).sortBy(_.pageId)
+        result
     }
   }
 }

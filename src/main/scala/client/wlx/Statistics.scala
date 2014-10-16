@@ -1,5 +1,7 @@
 package client.wlx
 
+import java.nio.file.{Paths, Files}
+
 import client.MwBot
 import client.slick.Slick
 import client.wlx.dto.{Monument, Contest, SpecialNomination}
@@ -45,7 +47,15 @@ class Statistics {
     val imageQueryDb = ImageQuery.create(db = true)
     val imageQueryApi = ImageQuery.create(db = false)
 
-    for (imageDb <- ImageDB.create(wlmContest, imageQueryApi, monumentDb)) {
+    val imageDbFuture = ImageDB.create(wlmContest, imageQueryApi, monumentDb)
+
+    imageDbFuture onFailure {
+      case f =>
+        println("Failure " +  f)
+    }
+
+    imageDbFuture onSuccess {
+      case imageDb =>
 
       authorsStat(monumentDb, imageDb)
     //  byDayAndRegion(imageDb)
@@ -123,6 +133,7 @@ class Statistics {
   def authorsStat(monumentDb: MonumentDB, imageDb: ImageDB) {
     val output = new Output()
     val text = output.authorsMonuments(imageDb)
+    Files.write(Paths.get("authorsRating.txt"), text.getBytes)
     MwBot.get(MwBot.commons).page("Commons:Wiki Loves Monuments 2014 in Ukraine/Number of objects pictured by uploader").edit(text, "updating")
   }
 
