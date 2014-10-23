@@ -24,7 +24,7 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
 
   def imageInfoByGenerator(
                             generator: String, generatorPrefix: String,
-                            namespaces: Set[Int] = Set(Namespace.FILE_NAMESPACE),
+                            namespaces: Set[Int] = Set(Namespace.FILE),
                             props: Set[String] = Set("timestamp", "user", "size"/*, "url", "extmetadata"*/),
                             continueParam: Option[(String, String)] = None,
                             limit:String = "max") = {
@@ -120,7 +120,11 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
 
         site.system.log.info(s"pages: ${pages.size}, $continueParamName: $continue")
 
-        continue.fold( future {previousPages ++ pages}) { c =>
+        continue.fold( future {
+          val result = previousPages ++ pages
+          site.system.log.info(s"""query: ${toMap("id", "title")} , size: ${result.size}""")
+          result
+        }) { c =>
           query(namespaces, Some(c.continue.get, c.prefixed.get), module, queryType, queryPrefix, limit, extraParams, generator, generatorPrefix, previousPages ++ pages)
         }
     }
@@ -158,7 +162,7 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
       limits ++
       generator.fold(Map.empty[String, String])(s => Map("generator" -> s)) ++
       toMap(queryParamNames) ++
-      (if (!namespaces.isEmpty) Map(queryPrefixWithGen + "namespace" -> namespaces.mkString("|")) else Map.empty) ++
+      (if (namespaces.nonEmpty) Map(queryPrefixWithGen + "namespace" -> namespaces.mkString("|")) else Map.empty) ++
       extraParams ++
       continueParam.fold(
         Map("continue" -> "")) {

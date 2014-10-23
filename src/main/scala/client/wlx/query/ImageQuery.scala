@@ -39,7 +39,7 @@ class ImageQueryApi extends ImageQuery with WithBot {
           pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
     }
 
-    val imageInfoFuture = query.imageInfoByGenerator("categorymembers", "cm", Set(Namespace.FILE_NAMESPACE)) map {
+    val imageInfoFuture = query.imageInfoByGenerator("categorymembers", "cm", Set(Namespace.FILE)) map {
       pages =>
         try {
         pages.flatMap(page => Image.fromPageImageInfo(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
@@ -66,7 +66,7 @@ class ImageQueryApi extends ImageQuery with WithBot {
     val query = bot.page("Template:" + template)
 
     query.revisionsByGenerator("embeddedin", "ei",
-      Set(Namespace.FILE_NAMESPACE), Set("content", "timestamp", "user", "comment"), None, "3000") map {
+      Set(Namespace.FILE), Set("content", "timestamp", "user", "comment"), None, "3000") map {
       pages =>
        val result =  pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, "")).sortBy(_.pageId)
         result

@@ -208,11 +208,11 @@ object MwBot {
   }
 
   def contestImages(commons: MwBot)(implicit dispatcher: ExecutionContext) {
-    commons.page("Category:Images from Wiki Loves Earth 2014").categoryMembers(Set(Namespace.CATEGORY_NAMESPACE)) flatMap {
+    commons.page("Category:Images from Wiki Loves Earth 2014").categoryMembers(Set(Namespace.CATEGORY)) flatMap {
       categories =>
         val filtered = categories.filter(c => c.title.startsWith("Category:Images from Wiki Loves Earth 2014 in"))
         Future.traverse(filtered)(
-          category => commons.page(category.pageid).categoryMembers(Set(Namespace.FILE_NAMESPACE))
+          category => commons.page(category.pageid).categoryMembers(Set(Namespace.FILE))
         )
     } map {
       filesInCategories =>
