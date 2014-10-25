@@ -22,7 +22,7 @@ class ListFiller extends WithBot {
     println(s"NewIds: ${newIds.size}")
 
     val monumentToFill = monumentsWithoutImages.filter(m => newIds.contains(m.id))
-    val monumentsByPage = monumentToFill.groupBy(_.pageParam)
+    val monumentsByPage = monumentToFill.groupBy(_.containingPage)
 
     val titles = SortedSet(monumentsByPage.keys.toSeq: _*)
     println(s"pages: ${titles.size}")

@@ -50,7 +50,7 @@ object WoodenArchitecture {
       buf.append("{{WLM-шапка}}")
       val regionMonuments = byRegion(regionId)
 
-      val byPage = regionMonuments.groupBy(_.page)
+      val byPage = regionMonuments.groupBy(_.containingPage)
       val pages = SortedSet(byPage.keys.toSeq: _*)
 
       for (page <- pages) {
@@ -82,7 +82,7 @@ object WoodenArchitecture {
 
       val regionMonuments = byRegion(regionId)
 
-      val byPage = regionMonuments.groupBy(_.page)
+      val byPage = regionMonuments.groupBy(_.containingPage)
       val pages = SortedSet(byPage.keys.toSeq: _*)
 
       val buf = new StringBuffer

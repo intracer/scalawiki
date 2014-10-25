@@ -34,8 +34,8 @@ object ScalaProjectBuild extends Build {
           "org.specs2" %% "specs2" % "2.3.12" % "test" withSources() withJavadoc()
         )
       },
-   //   publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
-        publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.ivy2/local")))
+        publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
+       // publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.ivy2/local")))
     )
   )
 

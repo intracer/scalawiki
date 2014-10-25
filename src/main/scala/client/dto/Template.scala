@@ -2,7 +2,7 @@ package client.dto
 
 import java.util.regex.{Matcher, Pattern}
 
-class Template(val text: String, val page: String = "") {
+class Template(val text: String, val containingPage: String = "") {
 
   def getParam(name: String, withoutComments: Boolean = true): String = {
     val param = findPosition(name).fold("") {
@@ -28,7 +28,7 @@ class Template(val text: String, val page: String = "") {
   def setTemplateParam(name: String, value: String): Template = {
     findPosition(name).fold(this) {
       case (start, end) =>
-        init(text.substring(0, start) + value + text.substring(end), page)
+        init(text.substring(0, start) + value + text.substring(end), containingPage)
     }
   }
 

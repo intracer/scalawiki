@@ -4,7 +4,7 @@ import java.net.URLEncoder
 
 import client.dto.Template
 
-case class Monument(textParam: String, pageParam: String,
+case class Monument(textParam: String, page: String,
                     id: String,
                     name: String,
                     year: Option[String] = None,
@@ -23,7 +23,7 @@ case class Monument(textParam: String, pageParam: String,
                     resolution: Option[String] = None,
                     stateId: Option[String] = None
 //                    otherParams: Map[String, String]
-                     ) extends Template(textParam, pageParam) {
+                     ) extends Template(textParam, page) {
 
   def toUrls = Monument.wikiLinkToUrl(name +" * "  + place, "uk.wikipedia.org")
 
@@ -62,7 +62,7 @@ object Monument {
       photo = t.getParamOpt("фото"),
       gallery = t.getParamOpt("галерея"),
       resolution = t.getParamOpt("постанова"),
-      pageParam = page
+      page = page
     )
   }
 
