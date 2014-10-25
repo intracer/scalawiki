@@ -63,9 +63,9 @@ object MwReads2 {
       (__ \ "user").read[String] and
       (__ \ "size").read[Int] and
       (__ \ "width").read[Int] and
-      (__ \ "height").read[Int]
-//      (__ \ "url").read[String] and
-//      (__ \ "descriptionurl").read[String] and
+      (__ \ "height").read[Int] and
+      (__ \ "url").read[String] and
+      (__ \ "descriptionurl").read[String]
 //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
 //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
     )(ImageInfo.basic _)

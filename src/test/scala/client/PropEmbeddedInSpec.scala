@@ -37,7 +37,7 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
 
       val future = bot.page("Template:SomeTemplate").whatTranscludesHere()
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
-      result must have size(1)
+      result must have size 1
       result(0) === Page(569559, 1, "Talk:Welfare reform")
     }
   }
@@ -55,7 +55,7 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
 
       val future = bot.page("Template:SomeTemplate").whatTranscludesHere()
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
-      result must have size(2)
+      result must have size 2
       result(0) === Page(569559, 1, "Talk:Welfare reform")
       result(1) === Page(4571809, 2, "User:Formator")
     }
@@ -79,7 +79,7 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
 
       val future = bot.page("Template:SomeTemplate").whatTranscludesHere()
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
-      result must have size(2)
+      result must have size 2
       result(0) === Page(569559, 1, "Talk:Welfare reform")
       result(1) === Page(4571809, 2, "User:Formator")
     }

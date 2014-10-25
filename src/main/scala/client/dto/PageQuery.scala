@@ -24,19 +24,21 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
 
   def imageInfoByGenerator(
                             generator: String, generatorPrefix: String,
-                            namespaces: Set[Int] = Set(Namespace.FILE),
+                            namespaces: Set[Int] = Set(),
                             props: Set[String] = Set("timestamp", "user", "size"/*, "url", "extmetadata"*/),
                             continueParam: Option[(String, String)] = None,
-                            limit:String = "max") = {
-    queryByGenerator(generator, generatorPrefix, namespaces, props, continueParam, "imageinfo", "ii", limit)
+                            limit:String = "max",
+                            titlePrefix: Option[String] = None) = {
+    queryByGenerator(generator, generatorPrefix, namespaces, props, continueParam, "imageinfo", "ii", limit, titlePrefix)
   }
 
   def revisionsByGenerator(
                             generator: String, generatorPrefix: String,
                             namespaces: Set[Int] = Set.empty, props: Set[String] = Set.empty,
                             continueParam: Option[(String, String)] = None,
-                            limit:String = "max") = {
-    queryByGenerator(generator, generatorPrefix, namespaces, props, continueParam, "revisions", "rv", limit)
+                            limit:String = "max",
+                            titlePrefix: Option[String] = None) = {
+    queryByGenerator(generator, generatorPrefix, namespaces, props, continueParam, "revisions", "rv", limit, titlePrefix)
   }
 
   def editToken = {
@@ -66,9 +68,10 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
                        continueParam: Option[(String, String)],
                        queryType: String,
                        queryPrefix: String,
-                       limit:String = "max") = {
+                       limit:String = "max",
+                       titlePrefix: Option[String] = None) = {
     val extraParams: Map[String, String] = if (props.isEmpty) Map.empty else Map(queryPrefix + "prop" -> props.mkString("|"))
-    query(namespaces, continueParam, "prop", queryType, queryPrefix, limit, extraParams, Some(generator), Option(generatorPrefix))
+    query(namespaces, continueParam, "prop", queryType, queryPrefix, limit, extraParams, Some(generator), Option(generatorPrefix), titlePrefix = titlePrefix)
   }
 
   def query(
@@ -81,8 +84,9 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
              extraParams: Map[String, String] = Map.empty,
              generator: Option[String] = None,
              generatorPrefix: Option[String] = None,
-             previousPages: Seq[Page] = Seq.empty): Future[Seq[Page]] = {
-    val params = makeParams(namespaces, continueParam, module, queryType, queryPrefix, limit, extraParams, generator, generatorPrefix)
+             previousPages: Seq[Page] = Seq.empty,
+             titlePrefix: Option[String] = None): Future[Seq[Page]] = {
+    val params = makeParams(namespaces, continueParam, module, queryType, queryPrefix, limit, extraParams, generator, generatorPrefix, titlePrefix)
 
     val url = site.getUri(params)
 
@@ -138,18 +142,21 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
                   limit: String = "max",
                   extraParams: Map[String, String] = Map.empty,
                   generator: Option[String] = None,
-                  generatorPrefix: Option[String] = None): Map[String, String] = {
+                  generatorPrefix: Option[String] = None,
+                  titlePrefix: Option[String] = None): Map[String, String] = {
     val querySuffix = module match {
       case "list" => ""
-      case "prop" => if (generator != Some("links")) generator.fold("s")(s => "") else "s"
+      case "prop" => generator.fold("s")(s => titlePrefix.fold("")(_ => "s"))
     }
     val queryPrefixWithGen = generatorPrefix.fold(queryPrefix)(s => "g" + s)
+
+    val actualTitlePrefix = titlePrefix.orElse(generatorPrefix.map("g" + _))
 
     val queryParamNames = module match {
       case "list" => (queryPrefixWithGen + "pageid" + querySuffix, queryPrefixWithGen + "title" + querySuffix)
       case "prop" => (
-        generatorPrefix.fold("pageid" + querySuffix)("g" + _ + "pageid"),
-        generatorPrefix.fold("title" + querySuffix)("g" + _ + "title"))
+        actualTitlePrefix.fold("pageid" + querySuffix)( _ + "pageid" + querySuffix),
+        actualTitlePrefix.fold("title" + querySuffix)( _ + "title" + querySuffix))
     }
 
     val limits = module match {

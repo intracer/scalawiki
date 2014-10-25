@@ -21,9 +21,9 @@ object ImageInfo {
                       size: Int,
                       width: Int,
                       height: Int
-//                      ,url: String,
-//                      descriptionUrl: String
+                      ,url: String,
+                      descriptionUrl: String
                       )
-  = new ImageInfo(timestamp, uploader, size, width, height, "", "")
+  = new ImageInfo(timestamp, uploader, size, width, height, url, descriptionUrl)
 
 }
