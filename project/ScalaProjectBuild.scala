@@ -35,8 +35,9 @@ object ScalaProjectBuild extends Build {
         )
       },
         publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
-       // publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.ivy2/local")))
-    )
+       // publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.ivy2/local"))),
+
+    ) ++ net.virtualvoid.sbt.graph.Plugin.graphSettings
   )
 
 
