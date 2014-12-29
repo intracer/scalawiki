@@ -3,6 +3,7 @@ package client.finance
 import client.MwBot
 import client.sweble.{Section, WtTools}
 import org.sweble.wikitext.parser.nodes._
+
 import scala.collection.JavaConverters._
 
 object GrantReader {
@@ -12,6 +13,12 @@ object GrantReader {
   def main(args: Array[String]) {
 
     val title = "Grants:PEG/WM_UA/Programs_in_Ukraine_2014"
+    val items = grantItems(title)
+
+    println(items.toSeq)
+  }
+
+  def grantItems(title: String): Seq[GrantItem] = {
     val text = bot.await(bot.pageText(title))
 
     val cp = WtTools.parse(title, text)
@@ -26,24 +33,16 @@ object GrantReader {
 
     val titles = headers.map(WtTools.getText)
 
-    println(titles.toString())
+//    println(titles.toString())
 
-    for (row <- rows.tail if row.getBody.size() > 0) {
+    val items = for (row <- rows.tail if row.getBody.size() > 0) yield {
 
-      def getContent(row: WtTableRow, cell:Int): String = WtTools.getText(row.getBody.get(cell).asInstanceOf[WtTableCell].getBody).trim
+      def getContent(row: WtTableRow, cell: Int): String = WtTools.getText(row.getBody.get(cell).asInstanceOf[WtTableCell].getBody).trim
 
-      val funded = row.getBody.size() match {
-        case 5 => getContent(row, 2)
-        case 9 => getContent(row, 6)
-      }
+      val values = (0 to row.getBody.size() - 1).map(getContent(row, _))
 
-      val description = row.getBody.size() match {
-        case 5 => "== " + getContent(row, 0)
-        case 9 => "   " + (0 to 1).map(getContent(row,_)).mkString(" ")
-      }
-
-      println(s"$description - $funded")
+      GrantItem(values)
     }
+    items
   }
-
 }

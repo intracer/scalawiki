@@ -30,6 +30,9 @@ object ScalaProjectBuild extends Build {
           "com.github.tototoshi" %% "scala-csv" % "1.0.0",
         //  "org.sweble.wikitext" % "sweble-wikitext" % "2.0.0",
           "org.sweble.wikitext" % "swc-engine" % "2.0.0",
+          "com.squants"  %% "squants"  % "0.4.2",
+          "com.google.gdata" % "core" % "1.47.1",
+
 
         //          "nl.grons" %% "metrics-scala" % "3.3.0_a2.3",
           "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.2",
