@@ -22,7 +22,8 @@ case class Monument(textParam: String, page: String,
                     photo: Option[String] = None,
                     gallery: Option[String] = None,
                     resolution: Option[String] = None,
-                    stateId: Option[String] = None
+                    stateId: Option[String] = None,
+                    contest: Option[Long] = None
 //                    otherParams: Map[String, String]
                      ) extends Template(textParam, page) {
 
