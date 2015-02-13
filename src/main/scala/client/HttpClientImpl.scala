@@ -1,6 +1,8 @@
 package client
 
-import java.io.File
+import java.io._
+import java.net.URL
+import java.nio.channels.Channels
 
 import akka.actor.ActorSystem
 import akka.event.Logging
@@ -139,6 +141,36 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
       (key,BodyPart(HttpEntity(value),key))
     } + (fileParam -> BodyPart(new File(filename), fileParam))
     submit(Post(Uri(url), new MultipartFormData(bodyParts.values.toSeq)))
+  }
+
+  def download(urlStr: String, filename: String): Unit = {
+    val url = new URL(urlStr)
+
+    val rbc = Channels.newChannel(url.openStream())
+    val fos = new FileOutputStream(filename)
+    fos.getChannel.transferFrom(rbc, 0, Long.MaxValue)
+    fos.close()
+    rbc.close()
+  }
+
+  val  BUFFER_SIZE = 8192
+  def downloadToStream(url: String, outputStream: OutputStream) = {
+    copy(new URL(url).openStream(), outputStream)
+  }
+
+
+  def copy(source: InputStream, sink: OutputStream): Long = {
+    var nread: Long = 0L
+    val buf: Array[Byte] = new Array[Byte](BUFFER_SIZE)
+    var n: Int = 0
+    while ( {
+      n = source.read(buf)
+      n
+    } > 0) {
+      sink.write(buf, 0, n)
+      nread += n
+    }
+    nread
   }
 
 }
