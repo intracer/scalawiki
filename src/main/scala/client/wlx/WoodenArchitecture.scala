@@ -1,5 +1,6 @@
-package client
+package client.wlx
 
+import client.MwBot
 import client.wlx.dto.{Contest, Monument}
 import client.wlx.query.MonumentQuery
 
@@ -59,7 +60,7 @@ object WoodenArchitecture {
         byPage(page).foreach {
           monument =>
             val text = monument.textParam.split("\\|\\}")(0)
-            buf.append(s"{{WLM-рядок${text}")
+            buf.append(s"{{WLM-рядок$text")
         }
       }
       buf.append("\n|}")
@@ -95,7 +96,7 @@ object WoodenArchitecture {
         byPage(page).foreach {
           monument =>
             val text = monument.textParam.split("\\|\\}")(0)
-            buf.append(s"{{WLM-рядок${text}")
+            buf.append(s"{{WLM-рядок$text")
         }
       }
       buf.append("\n|}")
