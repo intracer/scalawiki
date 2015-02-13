@@ -1,16 +1,16 @@
 package client.wlx.metadata
 
 
-case class Entity(val name: String, properties: Seq[Property[_]]) {
+case class Entity(name: String, properties: Seq[Property[_]]) {
 
 }
 
 
-case class Property[T](val name: String, val _type: Class[T], val value: Option[T] = None) {
+case class Property[T](name: String, _type: Class[T], value: Option[T] = None) {
 
 }
 
-case class Value[T](val code: String, value: T) {
+case class Value[T](code: String, value: T) {
 
 }
 
