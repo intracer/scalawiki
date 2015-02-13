@@ -1,12 +1,10 @@
 package client.board
 
-import org.joda.time.LocalDate
-
 class Resolution(
                   val number: String,
-                  val date: LocalDate,
+                  val date: String,
                   val description: String,
                   val text: String,
                   val votes: Votes,
                   val board: Board,
-                  val meeting: Option[BoardMeeting] = None)
+                  val protocol: Option[BoardProtocol] = None)
