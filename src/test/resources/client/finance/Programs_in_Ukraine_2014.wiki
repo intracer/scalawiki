@@ -1,0 +1,952 @@
+<!---
+The status on this template should be set to "Open" when your request is ready for review. Until that time, you may leave this status as "Draft".
+--->
+
+ {{Grant request|Status=Funded|Date=2013-14|Grantee=organization}}
+{{Change to grant submission/Extension/Approved}}
+<!---
+The text within arrows is instructional only and will not appear once your form is rendered. To use this form, replace the PLACEHOLDER TEXT in capital letters with your own text. We recommend that you don't alter the form's text or markup unless you need to, or this form may not render correctly. All questions are required unless otherwise noted. Contact grants at wikimedia dot org with questions about how to complete the form.
+--->
+
+== Basic information ==
+=== Grant details ===
+=== Project details ===
+; Official project name:
+:Programs in Ukraine 2014 <!--- EXAMPLE: Regional conference to support the development of GLAM activities in Central Asia --->
+;Project start date (include month, day, and year):
+:01 February 2014 <!--- EXAMPLE: 9 August 2013--->
+; Project completion date (include month, day, and year):
+:<s>30 June 2014</s> <!--- EXAMPLE: 3 March 2014---> <s>30 September 2014</s> <s>31 December 2014</s> January 31, 2015
+; Please describe the project in 1–2 sentences:
+:The goal of this project is to support advancement of programmes in Ukraine (such as Wikiexpeditions, Wikimedia Education Programme etc.), organize a number of events (most notably Wiki Loves Earth, which includes global coordination), prepare and distribute materials about Wikimedia projects as well as support development by purchasing equipment for programmes in Ukraine <!--- EXAMPLE: Over the course of six months, we will conduct a series of outreach workshops to encourage university students to contribute high-quality content to Spanish-language Wikipedias and share the outreach materials we develop with the Wikimedia movement. --->
+
+=== Financial details ===
+; Currency requested: <!--- please specify a currency! --->
+:USD <!--- EXAMPLE: Euros --->
+; Amount requested in currency requested:
+:$33,195 <!--- EXAMPLE: €8,000--->
+; Equivalent amount in US$ on the date of this submission:
+:$33,195 <!--- EXAMPLE: US$10,000--->
+; List the exchange rate used to calculate the amount listed in US$:
+:UAH 799.3 per US$ 100.0 (quoted from [http://www.bank.gov.ua/control/uk/curmetal/detail/currency?period=daily bank.gov.ua] on 1 February 2014) <!--- EXAMPLE: US$1.25739 per euro (quoted from oanda.com on 8 January 2012)--->
+
+=== Grantee details ===
+''See [[Grants:Index/Eligibility requirements|the eligibility requirements]] for more information.''
+;What is the official name of the organization requesting this grant?
+:Wikimedia Ukraine
+;Are you an organization, an individual, or an individual submitting on behalf of a group? <!--- EXAMPLE: Organization --->
+:''Answer'' '''ORGANIZATION''', '''INDIVIDUAL''', ''or'' '''GROUP'''.
+:ORGANIZATION
+; Are you a for-profit entity?
+:''Answer'' '''YES''' or '''NO'''.
+:NO
+; Are you able to provide local proof of nonprofit status within your country?
+:''Answer'' '''YES''' or '''NO'''.
+:YES
+; Does your organization currently employ any fulltime or part-time staff or contractors?
+:''Answer'' '''YES''' or '''NO'''.
+:NO
+:; If you answered YES, please indicate how many. You may use fractions or percentages for part-time staff if appropriate.
+:::''EX: 4 fulltime staff and 2 part-time contractors (50% each).''
+:::N/A
+:; If yes, please provide a list of their job functions, or a link to your organization's staff page, if it lists all employees and contractors employed or engaged by your organization.
+::: ''EX: A complete list of staff and contractors is available at http://wikimediafoundation.org/wiki/Staff_and_contractors.''
+:::N/A
+
+=== Contact information ===
+; Primary contact name:
+: Mykola Kozlenko / Микола Козленко
+; Primary contact username or email:
+:[[User:NickK|NickK]], mycola-k at ukr dot net
+; Primary contact title (position within the organization):
+:Deputy Chair of the Board — Treasurer of Wikimedia Ukraine
+
+'''If this project will be executed by someone other than the primary contact for your organization, please list that person's details here:'''
+; Project lead name:
+:Andriy Makukha / Андрій Макуха
+; Project lead username or email:
+:[[user:Amakuha|Amakuha]], andriy.makukha at gmail dot com
+; Project lead title (position), if any:
+:Chair of the Board
+
+== Goals and measures of success ==
+=== Project goal ===
+''Please briefly describe what will be accomplished if the project is successful.''
+;Project goal:
+:The goal of the project is to increase the number of active contributors to Wikimedia projects (Wikipedia, Commons, Wikisource, Wikivoyage, Wikinews and others), help generate new and higher-quality content (Wikipedia articles, pictures at Commons, digitized materials at Wikisource etc.) by organizing programmes and events as well as providing equipment.
+
+<!--EXAMPLE: The goal of the project is to digitize the Yiddish Algmeine encyclopedia and put this into
+Wikisource under a free license.-->
+
+=== Measures of success ===
+[[File:Wle-logo1.jpg|thumb|right|200px|Wiki Loves Earth logo]]
+[[File:Dawn on cloud nine.jpg|thumb|right|200px|Winning photo of WLE 2013]]
+''Please provide a list of measurable criteria that will be used determine how successful the project is.''
+''You will need to report on the success of the project according to these measures after the project is completed.''
+;Measures of success:
+:number of newly registered editors (wikiexpeditions, workshops, article contests, WLE 2014 in Ukraine, WLE 2014 international) - 10 / 100<ref>10 workshops, 10 participants</ref> / 20 / 120 / 400;
+:number of illustrations uploaded to Wikimedia Commons and Wikipedia<ref>NoFOP in Ukraine will prevent from uploading every picture taken to Wikimedia Commons</ref> (wikiexpeditions, WLE 2014 in Ukraine, WLE 2014 international) - 1900<ref>38 wikiexpeditions, 50 pictures each</ref> / 10 000 / 75 000;
+:number of participating countries (WLE 2014 international) - 15;
+:number of local publications (about our projects, wikiexpeditions, WLE 2013, Wikipedia and other wikiprojects, for example, Wikivoyage) - 20 per month, 100 total;
+:number of international publications (WLE 2014 international) - 50;
+:number of articles created and expanded within projects and during events - 100;
+:number of new good and featured article in Ukrainian Wikipedia thanks to article contests - 10;
+:number of scanned books uploaded on Wikimedia Commons - 10;
+:number of scanned books fully digitized on Ukrainian Wikisource - 5;
+:number of free music recordings uploaded on Wikimedia Commons - 15.
+
+<!-- EXAMPLE: We will consider this project a success if the encyclopedia is successfully
+digitized and placed in Wikisource under a free license.-->
+
+== Project scope and activities ==
+[[File:Ukrainian wikiexpedition logo.png|thumb|right|200px|Logo of Ukrainian Wikiexpeditions]]
+[[File:Wikitraining 2013-08-22 (15).JPG|thumb|right|200px|Wikiworkshop for AIESEC members, August 2013]]
+''This section describes what will happen if this project is funded. Who will do what, and when?''
+
+;List of activities:
+:Wikimedia Ukraine will support and organize:
+# Wiki Loves Earth - our pilot edition in 2013 was really successful and will go international this year. We will organize both national edition (where we expect to repeat the success of the previous edition) and [[:commons:Commons:Wiki Loves Earth 2014|the international one]], with already 11 countries participating;
+# Wikiexpeditions - we plan to conduct at least 10 long-distance wikiexpeditions (by car or by train), 14 medium (by bicycle) and 14 short ones (on foot). Concepts of [[:uk:Вікіпедія:Вікіекспедиції|Wikiexpeditions]] and [[:uk:Вікіпедія:Велоекспедиції|expeditions by bicycle]] have already a good track record;
+# Photo grants - getting photos of notable cultural and sports events by sponsoring tickets and/or accreditations;
+# Wikimedia education program (WEP) and GLAM workshops - we plan to conduct at least 10 workshops;
+# GLAM equipment - we plan to buy a book scanner and use it to scan public domain books from our partner libraries, especially in Lviv region. We have a preliminary agreement with several libraries in Lviv that we will be allowed to scan public domain books, but libraries themselves lack adequate scanning equipment;
+# Article contest - following the success of [[:uk:Вікіпедія:WikiBioContest-2013|WikiBioContest-2013]], we want to organize a contest of good and featured articles on a particular topic. The concept is to encourage high-quality articles written by users who have a good knowledge of a particular field and evaluated by the jury of experts in a particular field. We plan to organize two or three similar contests this year, the topic of the one held in spring will be most likely either Astronomy or Media;
+# Music projects - we are planning to organize two Free Music Concerts, featuring music by prominent composers in Ukrainian translations. Both translations and performance are licensed under Creative Commons licenses, thus providing Wikimedia projects with free recordings;
+# Other wiki events - we plan to organize an event to 200th anniversary of [[:en:Taras Shevchenko|Taras Shevchenko]], most likely an edit-a-thon, but we may also hold some GLAM events if we find interested institutions;
+# Publishing - we are planning to publish a new edition of the hand book "How to edit Wikipedia" (postponed from 2013), the 2013 yearly report, brochures on other Wikimedia projects (e.g. ones targeting Wikisource or Wikinews), as well as leaflets on our projects and events (e.g. GLAM or music projects);
+# Souvenirs - pens, T-Shirts, cups, souvenir badges etc;
+# WM UA Library - buying printed encyclopedic books for WM UA Library, that are needed for writing and improving articles, this time some will have a more narrow scope and will focus on [[:en:Taras Shevchenko|Taras Shevchenko]] and related topics.
+
+<!--EXAMPLE: Wikimedia US-NYC has already negotiated with the owner of the
+Algmeine Encyclopedie that if the encyclopedia can be digitized, its
+owner will release it under a free license. Funding for this project
+will pay for the encyclopedia to be digitized and put into Wikisource.
+After that, it will be available for individual volunteers to use
+however they like, in the Yiddish Wikipedia.-->
+
+== Budget and resources ==
+''Please provide a detailed breakdown of project expenses according to the instructions [[Grants:Index/Create project budget|here]].''
+
+''Grantees are subject to line-item scrutiny of expenses. Changes to the approved budget beyond 10% in any category must be approved in advance.''
+
+=== Project budget table ===
+{| class="wikitable"
+|-
+| style="background:#4682B4;color:white"|'''Number'''
+| style="background:#4682B4;color:white"|'''Category'''
+| style="background:#4682B4;color:white"|'''Total cost'''
+| style="background:#4682B4;color:white"|'''WMF contribution'''
+| style="background:#4682B4;color:white"|'''Other sources'''
+| style="background:#4682B4;color:white"|'''Currency'''
+| style="background:#4682B4;color:white"|'''Notes'''
+|-
+| 1
+| WEP and GLAM events
+| style="background:#4682B4;color:white"|616.00<ref>The exchange rate used for calculating is 799.3, as indicated above. The amounts are rounded</ref>
+| 522.00
+| 94.00
+| USD
+|
+|-
+| 2
+| Wikiexpeditions
+| style="background:#4682B4;color:white"|1788.00
+| 1722.00
+| 66.00
+| USD
+|
+|-
+| 3
+| Wiki events
+| style="background:#4682B4;color:white"|3906.00
+| 3180.00
+| 725.00
+| USD
+|
+|-
+| 4
+| Publishing
+| style="background:#4682B4;color:white"|2502.00
+| 2502.00
+|
+| USD
+|
+|-
+| 5
+| Souvenirs and Wikizghushchivka
+| style="background:#4682B4;color:white"|1001.00
+| 1001.00
+|
+| USD
+|
+|-
+| 6
+| Library
+| style="background:#4682B4;color:white"|250.00
+| 250.00
+|
+| USD
+|
+|-
+| 7
+| Office and supplies
+| style="background:#4682B4;color:white"|2502.00
+| 2502.00
+|
+| USD
+|
+|-
+| 8
+| Wiki Loves Earth
+| style="background:#4682B4;color:white"|23389.00
+| 19897.00
+| 3489.00
+| USD
+|
+|-
+| 9
+| GLAM equipment
+| style="background:#4682B4;color:white"|980.00
+| 980.00
+|
+| USD
+|
+|-
+| 10
+| Administrative expenses
+| style="background:#4682B4;color:white"|1052.00
+| 639.00
+| 413.00
+| USD
+|
+|-
+| colspan="2"|Total
+| style="background:#4682B4;color:white"|37982.00
+| 33195.00
+| 4787.00
+| USD
+|
+|-
+|}
+
+=== Detailed breakdown ===
+
+{| class="wikitable"
+|-
+! style="background:#4682B4;color:white"|Number !! style="background:#4682B4;color:white"|Item description !!style="background:#4682B4;color:white"|Unit  !!style="background:#4682B4;color:white"|Qty !!style="background:#4682B4;color:white"|Cost per unit UAH /USD !!style="background:#4682B4;color:white"|Total cost USD!!style="background:#4682B4;color:white"|WMF contribution (USD)!! style="background:#4682B4;color:white"|Other sources (USD)!! style="background:#4682B4;color:white"|Notes
+|-
+|colspan="5"|'''1. WEP and GLAM events'''
+|style="background:#4682B4;color:white"| 616.00
+|style="background:#4682B4;color:white"| 522.00
+|style="background:#4682B4;color:white"| 94.00
+|style="background:#4682B4;color:white"|
+|----
+|1.1
+|Wikiworkshops (travel and per diems for conducting workshops)
+| event
+| 10
+| 375.00 UAH / 46.92 USD
+| style="background:#4682B4;color:white"| 469.00
+| 375.00
+| 94.00
+| WMF contribution covers cities where we have no volunteers at all or not with specific skills. There are also volunteers willing to conduct wikiworkshops in their own town, or while traveling (e.g. on business)
+|----
+|1.2
+| Travel (travel and per diems for signing the agreements etc)
+| event
+| 3
+| 375.00 UAH / 46.92 USD
+| style="background:#4682B4;color:white"| 141.00
+| 141.00
+|
+| Sometimes partners can cover these expenses, but it is really uncommon. Sending by post is not advised, as if lost, it would be very difficult to get a rector to sign the agreement again (and without this document it is really tricky to start working, especially on WEP)
+|----
+|1.3
+| Materials (printing out the materials for the workshops)
+| event
+| 10
+| 5.00 UAH / 0.63 USD
+| style="background:#4682B4;color:white"| 6.00
+| 6.00
+|
+|
+|----
+|colspan="5"|'''2. Wikiexpeditions'''
+|style="background:#4682B4;color:white"| 1788.00
+|style="background:#4682B4;color:white"| 1722.00
+|style="background:#4682B4;color:white"| 66.00
+|style="background:#4682B4;color:white"|
+|----
+| 2.1
+| Wikiexpeditions (by bus, train or car)
+| event
+| 10
+| 600.00 UAH / 75.07 USD
+| style="background:#4682B4;color:white"| 751.00
+| 751.00
+|
+| Long-distance expeditions, the description is available [[:uk:Вікіпедія:Вікіекспедиція|in Ukrainian]]
+|----
+| 2.2
+| Wikiexpeditions (by bike)
+| event
+| 14
+| 225.00 UAH / 28.15 USD
+| style="background:#4682B4;color:white"| 394.00
+| 357.00
+| 37.00
+| There are always volunteers willing to take pictures along their way. They can be awarded with a badge or a T-shirt
+|----
+| 2.3
+| Wikiexpeditions (on foot)
+| event
+| 14
+| 10.00 UAH / 1.25 USD
+| style="background:#4682B4;color:white"| 18.00
+| 14.00
+| 4.00
+| These wikiexpeditions can be time-consuming while preparing (looking for all the notable buildings and places to see, and planning the route). A bottle of cold water (summer time) or a cup of hot coffee (autumn/winter time) would be great<ref>It is recommended to take photos of buildings in winter or in spring as the trees (if there are trees, of course) would be without leaves</ref>
+|----
+| 2.4
+| Photo grants (accreditations, tickets for events)
+| event
+| 20
+| 200.00 UAH / 25.02 USD
+| style="background:#4682B4;color:white"| 500.00
+| 475.00
+| 25.00
+| This includes coverage of cultural and sports events (concerts, exhibitions, matches and tournaments etc.) involving notable people. We will reimburse tickets and/or costs of accreditation for these events
+|----
+| 2.5
+| Budget camera for Wikiexpeditions
+| camera
+| 1
+| 1000.00 UAH / 125.00 USD
+| style="background:#4682B4;color:white"| 125.00
+| 125.00
+|
+| A second camera for documenting various places during expeditions would be helpful, especially when we have to events at the same time or we have to pass a camera to the city other than Kyiv
+|----
+|colspan="5"|'''3. Wiki events'''
+|style="background:#4682B4;color:white"| 3906.00
+|style="background:#4682B4;color:white"| 3180.00
+|style="background:#4682B4;color:white"| 725.00
+|style="background:#4682B4;color:white"|
+|----
+| 3.1
+| Hall rent
+| event
+| 3
+| 1000.00 UAH / 125.11 USD
+| style="background:#4682B4;color:white"| 375.00
+| 250.00
+| 125.00
+| We expect to organize at least three different events: two Free Music Concerts (incl. one originally planned in December but cancelled) and an article contest. We also plan to organize an event to 200th anniversary of [[:en:Taras Shevchenko|Taras Shevchenko]], this may be linked to the article contest or be a separate event. We believe that at least one event will be covered by sponsors
+|----
+| 3.2
+| Prizes
+| prize
+| 6
+| 3000.00 UAH / 375.33 USD
+| style="background:#4682B4;color:white"| 2252.00
+| 1877.00
+| 375.00
+| Prizes for the contest of good and featured articles, we believe that at least one will be presented by sponsors.
+|----
+| 3.3
+| Transport expenses
+| event
+| 2
+| 60.00 UAH / 7.51 USD
+| style="background:#4682B4;color:white"| 15.00
+| 15.00
+|
+| Transporting equipment (banners, projector, screen) to the events
+|----
+| 3.4
+| Preparing scores for the concert
+| page
+| 230
+| 20.00 UAH / 2.50 USD
+| style="background:#4682B4;color:white"| 576.00
+| 350.00
+| 225.00
+| For the Free Music Concerts, we are using translations released under Creative Commons licenses of famous works in foreign languages. Unfortunately scores with Ukrainian words are not available, so we need to prepare them specially. Some of this work will be done by volunteers (especially when scores with original words are available), but we do not have enough volunteers with specific skills
+|----
+| 3.5
+| Coffee breaks
+| participant
+| 60
+| 25.00 UAH / 3.13 USD
+| style="background:#4682B4;color:white"| 188.00
+| 188.00
+|
+|
+|----
+| 3.6
+| International conference travel expenses
+| person
+| 2
+| 2000.00 UAH / 250.22 USD
+| style="background:#4682B4;color:white"| 500.00
+| 500.00
+|
+| Participation in at least one international conference (most likely Poland)
+|----
+|colspan="5"|'''4. Publishing'''
+|style="background:#4682B4;color:white"| 2502.00
+|style="background:#4682B4;color:white"| 2502.00
+|style="background:#4682B4;color:white"|
+|style="background:#4682B4;color:white"|
+|----
+| 4.1
+| Publishing
+| project
+| 1
+| 20 000.00 UAH / 2502.19 USD
+| style="background:#4682B4;color:white"| 2502.00
+| 2502.00
+|
+| We are planning to publish the 2013 annual report in order to present it to partners. We are also going to publish a hand book on editing Wikipedia (like our previous [[:File:How To Edit Wikipedia. Guide For Beginners. Ukrainian Edition.pdf|How to Edit Wikipedia]]), brochures on other Wikimedia projects (e.g. ones targeting Wikisource or Wikinews), as well as leaflets on our projects and events (e.g. GLAM or music projects)
+|----
+|colspan="5"|'''5. Souvenirs and Wikizghushchivka'''
+|style="background:#4682B4;color:white"| 1001.00
+|style="background:#4682B4;color:white"| 1001.00
+|style="background:#4682B4;color:white"|
+|style="background:#4682B4;color:white"|
+|----
+| 5.1
+| Souvenirs
+| project
+| 1
+| 8 000.00 UAH / 1001.00 USD
+| style="background:#4682B4;color:white"| 1001.00
+| 1001.00
+|
+| [[:wmua:Згущівка поштою|Wikizghushchivka]] is our local award, given for the biggest contribution made to the wikiproject (usually one for a newbie and one for a more experienced user). We also plan to produce souvenirs to award hard-working volunteers participating in our projects (e.g. music projects) and active participants of thematic weeks.
+|----
+|colspan="5"|'''6. Library'''
+|style="background:#4682B4;color:white"| 250.00
+|style="background:#4682B4;color:white"| 250.00
+|style="background:#4682B4;color:white"|
+|style="background:#4682B4;color:white"|
+|----
+| 6.1
+| Library
+| book
+| 10
+| 200.00 UAH / 25.02 USD
+| style="background:#4682B4;color:white"| 250.00
+| 250.00
+|
+| We plan to buy more books with the content useful for encyclopedia, but more focused on some particular subjects (and thus less expensive). A particular attention will be given to the 200th anniversary of [[:en:Taras Shevchenko|Taras Shevchenko]]: we are likely to buy some books on this topic and use them during edit-a-thon(s)
+|----
+|colspan="5"|'''7. Office and supplies'''
+|style="background:#4682B4;color:white"| 2502.00
+|style="background:#4682B4;color:white"| 2502.00
+|style="background:#4682B4;color:white"|
+|style="background:#4682B4;color:white"|
+|----
+| 7.1
+| Office rent
+| month
+| 4
+| 4 000.00 UAH / 500.44 USD
+| style="background:#4682B4;color:white"| 2002.00
+| 2002.00
+|
+| Given the growth of our activities and lack of any permanent facilities for work, meetings and storage (most of documents and materials are currently stored in members' homes, and meetings are held either in members' offices or in public places), we would need an office to exercise our activities more efficiently, especially as we will need part-time employees. We are looking for an entry-level furnished office with shared facilities, but in a convenient location in order to be able to organize meetings there.
+|----
+| 7.2
+| Office equipment
+| set
+| 1
+| 4 000.00 UAH / 500.44 USD
+| style="background:#4682B4;color:white"| 500.00
+| 500.00
+|
+| Although we plan to rent a fully furnished office, we will need to buy equipment for at least one workplace. This pack will include a standard desktop computer, an office phone, a printer, a Wi-Fi router etc.
+|----
+|colspan="5"|'''8. Wiki Loves Earth'''
+|style="background:#4682B4;color:white"| 23385.00
+|style="background:#4682B4;color:white"| 19897.00
+|style="background:#4682B4;color:white"| 3489.00
+|style="background:#4682B4;color:white"|
+|----
+| 8.1
+| Press-conference
+| event
+| 2
+| 2040.00 UAH / 255.22 USD
+| style="background:#4682B4;color:white"| 510.00
+| 255.00
+| 255.00
+| We believe that our partners (particularly [http://regionews.ua/ RegioNews]) will help us with at least one of these events
+|----
+| 8.2
+| Main Prizes (national contest)
+| per nomination (1-3 places)
+| 6 / 3
+| 1720.50 UAH / 215.25 USD
+| style="background:#4682B4;color:white"| 1292.00
+| 1076.00
+| 215.00
+| We are looking for other partners / sponsors, who will be willing to support the contest
+|----
+| 8.3
+| Medium Prizes (national contest)
+| per nomination (4-6 places)
+| 6 / 3
+| 1147.50 UAH / 143.50 USD
+| style="background:#4682B4;color:white"| 861.00
+| 718.00
+| 144.00
+|
+|----
+| 8.4
+| Small Prizes (national contest)
+| per nomination (7-10 places)
+| 8 / 4
+| 573.50 UAH / 71.75 USD
+| style="background:#4682B4;color:white"| 574.00
+| 502.00
+| 72.00
+|
+|----
+| 8.5
+| Additional Prizes & Awards (national contest)
+| person
+| 15
+| 300.00 UAH / 37.53 USD
+| style="background:#4682B4;color:white"| 563.00
+| 563.00
+|
+| Awards for jury members and for winners of regional nominations
+|----
+| 8.6
+| National jury's offline meeting (travel expenses and meals)
+| event
+| 1
+| 2400.00 UAH / 300.26 USD
+| style="background:#4682B4;color:white"| 300.00
+| 300.00
+|
+| Judging from our previous experience (WLM 2012 and 2013, WLE 2013), this offline meeting is very important given the number of images uploaded
+|----
+| 8.7
+| Hall rent (national awards ceremony)
+| day
+| 1
+| 1500.00 UAH / 187.66 USD
+| style="background:#4682B4;color:white"| 188.00
+| 188.00
+|
+|
+|----
+| 8.8
+| Hall decorations (national awards ceremony)
+| event
+| 1
+| 1000.00 UAH / 125.11 USD
+| style="background:#4682B4;color:white"| 125.00
+| 125.00
+|
+| The prize-winning photos are to be printed out, we may also use them for the exhibition (like WLE and WLM 2013)
+|----
+| 8.9
+| Travel expenses (for participants and jury members)
+| person
+| 20
+| 150.00 UAH / 18.77 USD
+| style="background:#4682B4;color:white"| 375.00
+| 375.00
+|
+| To the national awards ceremony
+|----
+| 8.10
+| Food & beverages (coffee break or stand-up party)
+| person
+| 30
+| 25.00 UAH / 3.13 USD
+| style="background:#4682B4;color:white"| 94.00
+| 94.00
+|
+| National awards ceremony
+|----
+| 8.11
+| Post expenses and telephone charges (national)
+| project
+| 1
+| 1000.00 UAH / 125.11 USD
+| style="background:#4682B4;color:white"| 125.00
+| 125.00
+|
+| Sending prizes and souvenirs to participants who will not attend the ceremony, contacting governmental and local authorities
+|---
+| 8.12
+| Publishing WLE calendars and post cards
+| copies
+| 500
+| 45.80 UAH / 5.73 USD
+| style="background:#4682B4;color:white"| 2865.00
+| 2865.00
+|
+| Postcards and wall calendars with the best pictures from the contest. We are going to print them out on the recycled paper
+|----
+| 8.13
+| International contest support
+| hour
+| 3000
+| 40.00 UAH / 5.00 USD
+| style="background:#4682B4;color:white"| 1501.00
+| 1501.00
+|
+| As the contest had a huge success and goes international this year, more efforts will have to be dedicated to international coordination. While we can organize a national contest fully on a volunteer basis, we lack qualified and available volunteers for such activities as coordinating international teams, international media support, research of partners and sponsors on the international level or contacting international jurors. We expect this work to be done by a part-time employee who is expected to work half-time from March to June. Ideally we would hire a student majoring in Communication, Public Relations or a similar sphere.
+|----
+| 8.14
+| Post expenses (international)
+| project
+| 1
+| 25000.00 UAH / 3127.74 USD
+| style="background:#4682B4;color:white"| 13128.00
+| 3128.00
+|
+| All prizes and souvenirs to the winners of the international contest will have to be sent by post, no international award ceremony is planned
+|----
+| 8.15
+| Technical support
+| hour
+| 300
+| 40.00 UAH / 5.00 USD
+| style="background:#4682B4;color:white"| 1301.00
+| 200.00
+| 1301.00
+| We expect that most of this work (list conversion, monument search, geolocation tools etc.) can be done by volunteers, we have several members of our local team with necessary skills and some international volunteers that have previously worked on WLM. We may need some external help (estimated at 40 hours) if we will lack volunteers with specific skills
+|----
+| 8.16
+| Prizes (international contest)
+| contest
+| 1
+| 40000.00 UAH / 5004.38 USD
+| style="background:#4682B4;color:white"| 5004.00
+| 3816.00
+| 1189.00
+| As for Wiki Loves Monuments, we expect to provide a full scholarship for Wikimania to the main winner. We also expect to provide prizes to all authors of photos in top-15, some of them are expected to be funded by sponsors.
+|----
+| 8.17
+| Souvenirs (international contest)
+| contest
+| 1
+| 5000.00 UAH / 625.55 USD
+| style="background:#4682B4;color:white"| 626.00
+| 313.00
+| 313.00
+| Souvenirs to be distributed among participants of international contest, some of them may be funded by sponsors.
+|----
+| 8.18
+| Presentations in other countries
+| trips
+| 6
+| 5000.00 UAH / 625.55 USD
+| style="background:#4682B4;color:white"| 3753.00
+| 3753.00
+|
+| We will send volunteers to help other countries to organize local editions of contests, similarly to Wiki Loves Monuments in the previous years.
+|----
+|colspan="5"|'''9. GLAM equipment'''
+|style="background:#4682B4;color:white"| 980.00
+|style="background:#4682B4;color:white"| 980.00
+|style="background:#4682B4;color:white"|
+|style="background:#4682B4;color:white"|
+|----
+| 9.1
+| diybookscanner.eu base kit
+| kit
+| 1
+| 5175.00 UAH / 647.44 USD
+| style="background:#4682B4;color:white"| 647.00
+| 647.00
+|
+| Acquiring a [http://diybookscanner.eu/ diybookscanner.eu] scanning kit. The provided price is a special price for Wikimedia Ukraine including all fees (converted EUR -> UAH -> USD)
+|----
+| 9.2
+| 2 x 3mm glass 280x356mm
+| kit
+| 6
+| 242.00 UAH / 30.28 USD
+| style="background:#4682B4;color:white"| 30.00
+| 30.00
+|
+| [http://kzs.com.ua/images/files/01_1_Стекло%20прозрачное%20и%20сверхпрозрачное(18).doc Sample price list], including work
+|----
+| 9.3
+| 16 Mpx Canon PowerShot A2400 IS Black
+| camera
+| 2
+| 677.00 UAH / 84.70 USD
+| style="background:#4682B4;color:white"| 169.00
+| 169.00
+|
+| Simple camera but compatible with CHDK in order to speed up scanning, [http://deshevshe.net.ua/photo-canon/canon_powershot_a2400_is_black.html reference]
+|----
+| 9.4
+| Transcend Premium X300 8GB Class 10
+| card
+| 2
+| 97.00 UAH / 12.14 USD
+| style="background:#4682B4;color:white"| 24.00
+| 24.00
+|
+| Memory cards for cameras, [http://deshevshe.ua/securedigital-transcend/transcend_premium_x300_8gb_cla.html reference]
+|----
+| 9.5
+| SVEN Optima Base Surge Protector
+| piece
+| 1
+| 53.00 UAH / 6.63 USD
+| style="background:#4682B4;color:white"| 7.00
+| 7.00
+|
+| [http://deshevshe.ua/networkfilter-sven/sven_optima_50_m.html Sample reference]
+|----
+| 9.6
+| Remote switch with two cables
+| piece
+| 1
+| 260.00 UAH / 32.53 USD
+| style="background:#4682B4;color:white"| 33.00
+| 33.00
+|
+| [http://www.flickr.com/photos/fvdk3d/sets/72157624151791739/ Reference], special price for Wikimedia Ukraine
+|----
+| 9.7
+| AC power adapter CANON ACK-DC90
+| piece
+| 2
+| 280.00 UAH / 35.03 USD
+| style="background:#4682B4;color:white"| 70.00
+| 70.00
+|
+| [http://hi-power.com.ua/camera-adapters/canon/ack-dc90 Reference]
+|----
+|colspan="5"|'''10. Administrative expenses'''
+|style="background:#4682B4;color:white"| 1052.00
+|style="background:#4682B4;color:white"| 639.00
+|style="background:#4682B4;color:white"| 413.00
+|style="background:#4682B4;color:white"|
+|----
+| 10.1
+| Post expenses and telephone charges
+| month
+| 5
+| 60.00 UAH / 7.51 USD
+| style="background:#4682B4;color:white"| 38.00
+| 38.00
+|
+|
+|----
+| 10.2
+| Accounting fees
+| month
+| 5
+| 600.00 UAH / 75.07 USD
+| style="background:#4682B4;color:white"| 375.00
+|
+| 375.00
+| It will be done on a volunteer basis
+|----
+| 10.3
+| Travel expenses (board meetings)
+| person
+| 4
+| 375.00 UAH / 46.92 USD
+| style="background:#4682B4;color:white"| 188.00
+| 188.00
+|
+|
+|----
+| 10.4
+| Office supplies
+| month
+| 5
+| 100.00 UAH / 12.51 USD
+| style="background:#4682B4;color:white"| 63.00
+| 63.00
+|
+|
+|----
+| 10.5
+| Bank expenses
+| month
+| 5
+| 400.00 UAH / 50.04 USD
+| style="background:#4682B4;color:white"| 250.00
+| 250.00
+|
+|
+|----
+| 10.6
+| Transportation expenses
+| month
+| 5
+| 60.00 UAH / 7.51 USD
+| style="background:#4682B4;color:white"| 38.00
+|
+| 38.00
+|
+|----
+| 10.7
+| Website hosting
+| month
+| 5
+| 160.00 UAH / 20.02 USD
+| style="background:#4682B4;color:white"| 100.00
+| 100.00
+|
+|
+|----
+|colspan="5"|'''TOTAL'''
+|style="background:#4682B4;color:white"| 37982.00
+|style="background:#4682B4;color:white"| 33195.00
+|style="background:#4682B4;color:white"| 4787.00
+|style="background:#4682B4;color:white"|
+|----
+|-
+|}
+
+
+;Total cost of project:
+:37,982.00 USD
+
+;Total amount requested from the [[Grants:Index|WMF Grants Program]]:
+:33,195.00 USD
+
+;Additional sources of revenue that may fund part of this project, and amounts funded:
+:4787.00 USD
+
+=== Non-financial requirements ===
+''See a [[Grants:Index/Non-financial_assistance|description of nonfinancial assistance available]]. Please inform Wikimedia Foundation (WMF) of any requirements for non-financial assistance now.''
+
+;Requests for non-financial assistance:
+* We will need informational support for Wiki Loves Earth, in particular, post(s) on WMF blog and an international banner in the SiteNotice;
+* We would be glad if Wikimedia Foundation could provide a Wikimania scholarship to the winner of the international part of Wiki Loves Earth, otherwise it will be funded from this grant
+* We may need supplies, printed materials and other merchandises (T-shirts, stickers, badges, calenders, posters etc) for outreach from Wikimedia Foundation
+
+<!--- EXAMPLE:
+*We'll need five Wikipedia T-shirts to distribute as prizes for our project launch event. We've already contacted WMF to request the shirts. We don't think it will be cost-effective to produce the shirts locally, considering that we only need five.
+*We've contacted trademark at wikimedia dot org to request the use of Wikimedia's marks on our banners.
+*We may want to publish a blog post on our project on WMF's blog. We will need help reaching out to the communications
+team at WMF to coordinate this.--->
+
+=== Resources ===
+''This section is optional. It may be used to highlight the potential grantee's potential for successfully executing this project.''
+
+''Consider including the following information:
+*''List of team members (names or usernames):''
+:*[[user:A1|A1]] (music projects, particularly free music concerts)
+:*[[user:Ahonc|Ahonc]] (WLE)
+:*[[user:Aliona Lyasheva|Aliona Lyasheva]] (WEP)
+:*[[user:Amakuha|Amakuha]] (wikiexpeditions, WEP coordinator, publishing, wiki events: Shevchenko)
+:*[[user:Antanana|Antanana]] (executive director, WLE, wikizghushchivka, wikiexpeditions)
+:*[[user:Arsen yakovenko|Arsen yakovenko]] (music projects)
+:*[[user:Base|Base]] (WLE and wikizghushchivka)
+:*[[user:DixonD|DixonD]] (GLAM)
+:*[[user:Dzyadyk|Dzyadyk]] (wiki events: Shevchenko)
+:*[[user:Friend|Friend]] (GLAM)
+:*[[user:Ilya|Ilya]] (WLE)
+:*[[user:Jbuket|Jbuket]] (WLE, wikiexpeditions)
+:*[[user:Kharkivian|Kharkivian]] (WLE, WEP, publishing)
+:*[[user:Nickispeaki|Nickispeaki]] (WEP, wikiexpeditions, publishing)
+:*[[user:NickK|NickK]] (treasurer, WLE, publishing, international projects)
+:*[[user:Pavlo Shevelo|Pavlo Shevelo]] (GLAM)
+:*[[user:Perohanych|Perohanych]] (publishing)
+:*[[user:Shao|Shao]] (wiki events: article contests)
+:*[[user:Taras r|Taras r]] (wikiexpeditions)
+:*[[user:Visem|Visem]] (wikiexpeditions coordinator)
+:*[[user:Ата|Ата]] (WEP, wikizghushchivka)
+:*[[user:Ліонкінг|Ліонкінг]] (wikiexpeditions, international projects)
+:*[[user:Павло Зубов|Павло Зубов]] (music projects)
+:*[[user:Юрій Булка|Юрій Булка]] (WEP, music projects)
+*''Onwiki evidence of community support (such as a project about this discussion):''
+:*different projects: [[:wmua:Вікі любить Землю|Wiki Loves Earth]], [[:wmua:Світова класика українською|music projects]], [[:wmua:Вікіекспедиції|wikiexpeditions]] and [[:wmua:Велоекспедиції|wikiexpeditions by bike]], [[:wmua:Згущівка поштою|wikizghushchivka]], [[:wmua:200-річчя Тараса Шевченка|Taras Shevchenko project]] etc.
+*''Endorsements from community members or movement groups:''
+:*Wiki Loves Earth ([[:commons:Commons:Wiki Loves Earth 2014|Commons]], [[:uk:Вікіпедія:Проект:Вікі любить Землю|Ukrainian]], [[:pt:Wikipédia:Wiki Loves Earth|Portuguese]] and [[:ca:Viquiprojecte:Patrimoni natural|Catalan]] Wikipedias), [[:uk:Вікіпедія:Освітня програма Вікіпедії|WEP]] (in particular [[:uk:Вікіпедія:Проект:Віківишколи у КНУ|Wikiworkshops in KNU]]), [[:uk:Вікіпедія:WikiBioContest-2013|WikiBioContest]] etc.
+*''Special skills or qualifications this potential grantee or project lead brings to this project:''
+** We have members with good technical skills (various platforms and languages) who can support tools for WLE, administrate websites etc.
+** We have members who are professional musicians and have an experience of organizing concerts.
+** We have a good press service helping us get a good coverage in the national media.
+*''Evidence of past success in executing similar projects:''
+** We have strong track record of organizing photo contests: Wiki Loves Monuments 2012 and 2013 getting over 30,000 images uploaded each, and Wiki Loves Earth 2013 getting over 10,000 images uploaded. We also stay in touch with several international WLM organizers who help us support WLE.
+** We have an experience of organization of the [[Grants:PEG/WM UA/Free Vocal Music concert|Free Vocal Music concert]].
+** We have successful partnership with a number of universities for our WEP with several dozens of wikiworkshops already held.
+** We have an experience of organizing [[:uk:Вікіпедія:Вікіекспедиція|over 20 Wikiexpeditions]].
+
+;Resources:
+* We have a good camera and photo equipment to be used during expeditions and other events.
+* Our professional recording equipment to be used during concerts.
+* List conversion programme for the national WLE is readily available.
+
+<!---EXAMPLE:
+*We have strong track record organizing conferences of this size.
+*We will have a dedicated group of five volunteer contributors who will help to coordinate the event.
+*We have secured an agreement with a local promotion company, to help with event planning on a pro bono basis if the project is approved.
+*Our project was discussed by our local community here, and the community was enthusiastic about its potential: LINK.
+--->
+
+== Impact ==
+''In the sections below, please describe how the project is related to the Wikimedia mission and Wikimedia's strategic priorities.''
+
+=== Fit to strategy ===
+;How will this project support the key organizational objectives of:
+;*increasing reach (more people will access or contribute to Wikipedia or our other projects),
+;*participation (more people ''actually'' contributing),
+;*quality (more content, more useful content, or higher-quality content),
+;*credibility (more trust in our projects),
+;*organizational maturity and effectiveness (how it will move you or the Wikimedia community forward),
+;*or financial sustainability (how it will help you achieve more in the long run)?
+;This statement should address at least one of the strategic priorities listed here specifically. See [[Grants:Index/Criteria|WMF Grants Program criteria for decisionmaking]].
+::This project will:
+:*increase reach and participation (more people will contribute and to Wikipedia thanks to workshops and other events, to Wikimedia Commons during WLE and to the other  Wikiprojects via images uploaded),
+:*quality (more free pictures to illustrate the articles with, more high-quality articles thanks to article contests and other events),
+:*credibility (more trust in our projects, e.g., Wikipedia and Wikisource),
+:*organizational maturity and effectiveness (growing volunteer base, getting more experience, purchasing equipment that will be used by our volunteers),
+:*financial sustainability (new partnerships that may be useful for us in general).
+<!--EXAMPLE: The project will provide a large amount of previously unavailable high-quality material
+that Yiddish-speaking Wikipedians can immediately incorporate into the Yiddish Wikipedia.
+It will therefore primarily benefit the quality of Yiddish Wikipedia.-->
+
+=== Benefits ===
+
+;If the project will benefit a specific online community, please tell us.
+:Ukrainian Wikipedia, Wikisource, Wikivoyage and Wikinews directly, likely also Crimean Tatar Wikipedia directly; Wikimedia Commons via image uploads (especially WLE) and all the other Wiki projects using these images
+
+<!---EXAMPLE: This project will directly benefit French Wiktionary, as we expect to increase the
+number of expert editors on that project through this series of workshops.--->
+
+;Please provide a brief statement about how the project is related to other work in the Wikimedia movement. For example, does the project fit into a work area such as GLAM, education, organizational development, editor retention, or outreach?
+:The main focus of this project is Outreach since it will be aimed at recruiting and supporting new Wikimedians and building strong relationships with cultural and educational institutions. Particular programmes fit into GLAM (in particular, partnership with museums and libraries), education (collaboration with universities), organizational development (purchasing equipment that will be used by organization members) and editor retention (presenting souvenirs to the most active users).
+
+<!---EXAMPLE: The project falls into the GLAM (galleries, libraries, archives, and museum) program area
+since it will be targeting Wikipedians working with archives.--->
+
+;If successful, will the project have the potential to be replicated successfully by other individuals, groups, or organizations? Please explain how in 1–2 sentences.
+:We are always open to exchanging experience with other chapters and thematic organizations. The projects having, in our view, most potential to be successfully replicated, are Wiki Loves Earth (held only in Ukraine in 2013, joined by already a dozen of countries in 2014), Wikiexpeditions and GLAM scanning initiative.
+
+<!---EXAMPLE: This project has a high potential to be replicated by other groups in the region. For one thing, we will
+develop some high-quality outreach materials in a local language and will be thoroughly documenting
+the successes and failures of this project, in essence producing a project manual for other organizations
+and groups doing similar work in local region.--->
+
+;Please list other benefits to the movement here.
+:The positive press coverage generated by the launch events (WLE, article contests, edit-a-thons) and new partnerships should increase the presence of free knowledge groups in our country and awareness of the general population with our projects.
+
+<!--- EXAMPLE: The positive press coverage generated by the launch event should increase the
+presence of free knowledge groups in our country.--->
+-----
+<references/>
+
+{{WMF grant submission}}
+{{Grant submission actions}}
+{{Project and Event Grant to a Wikimedia organization}}
+
+[[Category:Project and Event Grants for organization plans]]
