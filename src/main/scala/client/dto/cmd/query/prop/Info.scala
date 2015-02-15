@@ -4,7 +4,7 @@ import client.dto.cmd._
 
 trait InfoParam extends Parameter
 
-object Info extends EnumArgument[PropArg]("info", "Get basic page information.") with PropArg with ArgWithParams[InfoParam]
+object Info extends EnumArgument[PropArg]("info", "Get basic page information.") with PropArg with ArgWithParams[InfoParam, PropArg]
 
 
 object InProp extends EnumParameter[InPropArg]("inprop", "") with InfoParam
