@@ -221,7 +221,7 @@ object MwBot {
              files2 <- filesInCategories) {
           if (files1 != files2) {
             val intersect = files1.intersect(files2)
-            if (!intersect.isEmpty) {
+            if (intersect.nonEmpty) {
               println(intersect)
             }
           }

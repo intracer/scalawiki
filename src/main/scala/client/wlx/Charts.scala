@@ -4,7 +4,7 @@ import java.awt.{Font, Color, Rectangle}
 import java.io.File
 import java.text.DecimalFormat
 
-import client.MwBot
+import client.{WithBot, MwBot}
 import org.jfree.chart.axis.NumberAxis
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator
 import org.jfree.chart.plot.{PiePlot, PlotOrientation}
@@ -14,7 +14,7 @@ import org.jfree.data.category.{CategoryDataset, DefaultCategoryDataset}
 import org.jfree.data.general.{PieDataset, DefaultPieDataset}
 import org.jfree.graphics2d.svg.{SVGGraphics2D, SVGUtils}
 
-class Charts extends WithBot{
+class Charts extends WithBot {
 
   override def host: String = MwBot.commons
 

@@ -1,6 +1,4 @@
-package client.wlx
-
-import client.MwBot
+package client
 
 trait WithBot {
 

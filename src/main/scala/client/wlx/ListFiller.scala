@@ -1,6 +1,6 @@
 package client.wlx
 
-import client.MwBot
+import client.{WithBot, MwBot}
 import client.wlx.dto.{Image, Monument}
 
 import scala.collection.immutable.SortedSet

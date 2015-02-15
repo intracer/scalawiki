@@ -1,9 +1,8 @@
 package client.wlx.query
 
-import client.MwBot
+import client.{WithBot, MwBot}
 import client.dto.Namespace
 import client.slick.Slick
-import client.wlx.WithBot
 import client.wlx.dto.{Contest, Image}
 
 import scala.concurrent.ExecutionContext.Implicits.global

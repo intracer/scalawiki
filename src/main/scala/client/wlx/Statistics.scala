@@ -57,10 +57,10 @@ class Statistics {
     imageDbFuture onSuccess {
       case imageDb =>
 
-      authorsStat(monumentDb, imageDb)
+     // authorsStat(monumentDb, imageDb)
     //  byDayAndRegion(imageDb)
-      specialNominations(wlmContest, imageDb, monumentQuery)
-      wrongIds(wlmContest, imageDb, monumentDb)
+     // specialNominations(wlmContest, imageDb, monumentQuery)
+      //wrongIds(wlmContest, imageDb, monumentDb)
      // fixWadco(imageDb, monumentDb)
 
       val total = new ImageQueryApi().imagesWithTemplateAsync(wlmContest.fileTemplate, wlmContest)
@@ -72,7 +72,7 @@ class Statistics {
 //        val text = withWrongIdsKh.map(image => s"${image.title}|${image.monumentId.getOrElse("")}").mkString("<gallery>", "\n", "</gallery>")
 //        MwBot.get(MwBot.commons).page("User:IlyaBot/KharkivBadIdImages").edit(text, "updating")
 
-        regionalStat(wlmContest, monumentDb, imageQueryDb, imageDb, totalImageDb)
+  //      regionalStat(wlmContest, monumentDb, imageQueryDb, imageDb, totalImageDb)
 
         Thread.sleep(5000)
         fillLists(monumentDb, totalImageDb)

@@ -1,7 +1,7 @@
 package client.wlx.query
 
 import client.dto.Namespace
-import client.wlx.WithBot
+import client.WithBot
 import client.wlx.dto.{Contest, Monument}
 
 import scala.concurrent.ExecutionContext.Implicits.global

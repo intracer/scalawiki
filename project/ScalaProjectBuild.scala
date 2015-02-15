@@ -47,6 +47,11 @@ object ScalaProjectBuild extends Build {
           "org.apache.commons" % "commons-compress" % "1.9",
           "org.tukaani" % "xz" % "1.5",
 
+          "org.eclipse.jgit" % "org.eclipse.jgit" % "3.6.2.201501210735-r" withSources() withJavadoc(),
+          "jp.skypencil.java-diff-utils" % "diffutils" % "1.5.0" withSources() withJavadoc(),
+          "com.sksamuel.elastic4s" %% "elastic4s" % "1.4.11" withSources() withJavadoc(),
+          "org.apache.lucene" % "lucene-expressions" % "4.10.3" withSources() withJavadoc(),
+
 
         //          "nl.grons" %% "metrics-scala" % "3.3.0_a2.3",
           "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.2",
@@ -54,6 +59,7 @@ object ScalaProjectBuild extends Build {
           "org.specs2" %% "specs2" % "2.3.12" % "test" withSources() withJavadoc(),
            "com.google.jimfs" % "jimfs" % "1.0" % "test" withSources() withJavadoc(),
           "com.google.guava" % "guava" % "16.0.1" withSources() withJavadoc()
+
         )
       },
       publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath + "/.m2/repository")))

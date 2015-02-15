@@ -12,6 +12,8 @@ case class Page(
   def withText(text: String) = copy(revisions = Page.revisionsFromText(Some(text)))
 
   def text = revisions.headOption.map(_.content)
+
+  def isTalkPage = ns % 2 == 1
 }
 
 object Page {
