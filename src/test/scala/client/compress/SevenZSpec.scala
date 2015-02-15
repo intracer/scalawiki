@@ -3,11 +3,10 @@ package client.compress
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 
-import com.google.common.collect.ImmutableList
+import com.google.common.jimfs.{Configuration, Jimfs}
 import org.specs2.mutable.Specification
 
-import com.google.common.jimfs.Configuration
-import com.google.common.jimfs.Jimfs
+import scala.collection.JavaConverters._
 
 class SevenZSpec extends Specification {
 
@@ -21,15 +20,13 @@ class SevenZSpec extends Specification {
 //      Files.createDirectory(foo)
 
       val path = fs.getPath("/text.txt")
-      Files.write(path, ImmutableList.of("hello world"), charset)
+      Files.write(path, "hello world".getBytes(charset))
 
-      val text = Array.fill(10)('a')
+      val text = "hello world"
 
-//      SevenZ.
+      val read = Files.readAllLines(path, charset).asScala.toSeq
 
-      val read = Files.readAllLines(path, charset)
-
-      read === text
+      read === Seq(text)
 
     }
   }
