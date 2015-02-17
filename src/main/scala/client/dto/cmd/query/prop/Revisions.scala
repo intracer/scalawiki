@@ -1,12 +1,13 @@
 package client.dto.cmd.query.prop
 
 import client.dto.cmd._
+import client.dto.cmd.query.Module
 
 /**
  *  ?action=query&amp;prop=revisions
  *
  */
-object Revisions extends  EnumArgument[PropArg]("revisions", "Get revision information.") with PropArg with ArgWithParams[RevParam, PropArg]
+object Revisions extends Module[PropArg]("rv", "revisions", "Get revision information.") with PropArg with ArgWithParams[RevParam, PropArg]
 
 
 /**

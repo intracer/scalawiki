@@ -10,7 +10,7 @@ import client.dto.cmd.{EnumArg, EnumParameter}
 object ListParam extends EnumParameter[ListArg]("list", "")
 
 /**
- *  ?action=query&amp;list= argument
+ *  ?action=query&amp;list=argument
  *
  */
 trait ListArg extends EnumArg[ListArg] { val param = ListParam }

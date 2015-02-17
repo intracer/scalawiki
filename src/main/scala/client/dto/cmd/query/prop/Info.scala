@@ -1,12 +1,13 @@
 package client.dto.cmd.query.prop
 
 import client.dto.cmd._
+import client.dto.cmd.query.Module
 
 /**
  *  ?action=query&amp;prop=info
  *
  */
-case class Info(override val params:InfoParam*) extends EnumArgument[PropArg]("info", "Get basic page information.") with PropArg with ArgWithParams[InfoParam, PropArg]
+case class Info(override val params:InfoParam*) extends Module[PropArg]("in", "info", "Get basic page information.") with PropArg with ArgWithParams[InfoParam, PropArg]
 
 
 /**
