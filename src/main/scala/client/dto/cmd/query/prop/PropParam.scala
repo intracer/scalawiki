@@ -13,4 +13,4 @@ trait PropArg extends EnumArg[PropArg] { val param = PropParam }
 /**
  * ?action=query&amp;prop= parameter
  */
-object PropParam extends EnumParameter[PropArg]("prop", "") with QueryParam[PropArg]
+case class PropParam(override val args: PropArg*) extends EnumParameter[PropArg]("prop", "") with QueryParam[PropArg]

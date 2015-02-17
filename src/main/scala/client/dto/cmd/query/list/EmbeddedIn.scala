@@ -2,16 +2,14 @@ package client.dto.cmd.query.list
 
 import client.dto.cmd._
 
-class EmbeddedIn {
-
-}
-
 /**
  *  ?action=query&amp;prop=revisions
  *
  */
-object EmbeddedIn extends  EnumArgument[ListArg]("embeddedin", "Find all pages that embed (transclude) the given page.") with ListArg with ArgWithParams[EiParam[AnyRef], ListArg]
-
+case class EmbeddedIn(override val params: EiParam[Any]*)
+  extends  EnumArgument[ListArg]("embeddedin", "Find all pages that embed (transclude) the given page.")
+  with ListArg
+  with ArgWithParams[EiParam[Any], ListArg]
 
 trait EiParam[+T] extends Parameter[T]
 

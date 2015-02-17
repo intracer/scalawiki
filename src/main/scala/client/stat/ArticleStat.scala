@@ -21,8 +21,6 @@ class ArticleStat extends WithBot {
     pagesWithTemplate(template).map {
       pagesAndTalks =>
        val (talks, pages) = pagesAndTalks.partition(_.isTalkPage)
-
-
         pages
     }
   }

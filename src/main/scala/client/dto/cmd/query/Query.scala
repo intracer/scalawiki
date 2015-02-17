@@ -8,7 +8,7 @@ import client.dto.cmd._
  *
  */
 
-object Query extends  EnumArgument[ActionArg]("query", "Various queries.") with ActionArg with ArgWithParams[QueryParam[AnyRef], ActionArg]
+case class Query(override val params: QueryParam[Any]*) extends  EnumArgument[ActionArg]("query", "Various queries.") with ActionArg with ArgWithParams[QueryParam[Any], ActionArg]
 
 /**
  * Marker trait for parameters available together with ?action=query

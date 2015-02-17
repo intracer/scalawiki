@@ -7,16 +7,13 @@ trait Parameter[+T] {
   def pairs: Seq[(String, String)]
 }
 
-case class EnumParameter[ARG <: EnumArg[ARG]](name: String, summary: String) extends Parameter[EnumArg[ARG]] {
+abstract class EnumParameter[ARG <: EnumArg[ARG]](val name: String, val summary: String) extends Parameter[EnumArg[ARG]] {
 
   var allArgs: Seq[EnumArg[ARG]] = Seq.empty
 
-  var args: Seq[EnumArg[ARG]] = Seq.empty
+  def args: Seq[EnumArg[ARG]] = Seq(arg)
 
-  def apply(args: ARG*): this.type = {
-    this.args = args
-    this
-  }
+  def arg: EnumArg[ARG] = args.head
 
   override def pairs: Seq[(String, String)] = {
     Seq(name -> args.map(_.name).mkString("|")) ++ args.flatMap(_.pairs)
@@ -57,19 +54,14 @@ case class IntListParameter(name: String, summary: String) extends ListParameter
 case class StringParameter(name: String, summary: String) extends SingleParameter[String]
 case class IntParameter(name: String, summary: String) extends SingleParameter[Int]
 
-trait ArgWithParams[P <: Parameter[AnyRef], T <: EnumArg[T]] extends EnumArg[T] {
-  var params: Seq[P] = Seq.empty
-
-  def apply(params: P*):this.type = {
-    this.params ++= params
-    this
-  }
+trait ArgWithParams[P <: Parameter[Any], T <: EnumArg[T]] extends EnumArg[T] {
+  def params: Seq[P] = Seq.empty
 
  override def pairs: Seq[(String, String)] = params.flatMap(_.pairs)
 }
 
 trait EnumArg[T <: EnumArg[T]] {
-  def param: EnumParameter[T]
+//  def param: EnumParameter[T]
   def name: String
   def summary: String
 
@@ -78,8 +70,8 @@ trait EnumArg[T <: EnumArg[T]] {
 
 abstract class EnumArgument[T <: EnumArg[T]](val name: String, val summary: String) extends EnumArg[T]
 
-trait ActionArg extends EnumArg[ActionArg] { val param = ActionParam }
-object ActionParam extends EnumParameter[ActionArg]("action", "")
+trait ActionArg extends EnumArg[ActionArg] { /*val param = ActionParam*/ }
+case class ActionParam(override val arg: ActionArg) extends EnumParameter[ActionArg]("action", "")
 
 
 

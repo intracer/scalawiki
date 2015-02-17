@@ -6,7 +6,7 @@ import client.dto.cmd._
  *  ?action=query&amp;prop=info
  *
  */
-object Info extends EnumArgument[PropArg]("info", "Get basic page information.") with PropArg with ArgWithParams[InfoParam, PropArg]
+case class Info(override val params:InfoParam*) extends EnumArgument[PropArg]("info", "Get basic page information.") with PropArg with ArgWithParams[InfoParam, PropArg]
 
 
 /**
@@ -19,7 +19,7 @@ trait InfoParam extends Parameter[AnyRef]
  *  ?action=query&amp;prop=info&amp;inprop=
  *
  */
-object InProp extends EnumParameter[InPropArg]("inprop", "") with InfoParam
+case class InProp(override val args: InPropArg*) extends EnumParameter[InPropArg]("inprop", "") with InfoParam
 
 
 /**
