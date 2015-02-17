@@ -19,7 +19,7 @@ trait InfoParam extends Parameter[AnyRef]
  *  ?action=query&amp;prop=info&amp;inprop=
  *
  */
-object InProp extends Action[InPropArg]("inprop", "") with InfoParam
+object InProp extends EnumParameter[InPropArg]("inprop", "") with InfoParam
 
 
 /**

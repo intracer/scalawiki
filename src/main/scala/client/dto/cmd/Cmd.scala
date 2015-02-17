@@ -7,7 +7,7 @@ trait Parameter[+T] {
   def pairs: Seq[(String, String)]
 }
 
-case class Action[ARG <: EnumArg[ARG]](name: String, summary: String) extends Parameter[EnumArg[ARG]] {
+case class EnumParameter[ARG <: EnumArg[ARG]](name: String, summary: String) extends Parameter[EnumArg[ARG]] {
 
   var allArgs: Seq[EnumArg[ARG]] = Seq.empty
 
@@ -69,7 +69,7 @@ trait ArgWithParams[P <: Parameter[AnyRef], T <: EnumArg[T]] extends EnumArg[T] 
 }
 
 trait EnumArg[T <: EnumArg[T]] {
-  def param: Action[T]
+  def param: EnumParameter[T]
   def name: String
   def summary: String
 
@@ -79,7 +79,7 @@ trait EnumArg[T <: EnumArg[T]] {
 abstract class EnumArgument[T <: EnumArg[T]](val name: String, val summary: String) extends EnumArg[T]
 
 trait ActionArg extends EnumArg[ActionArg] { val param = ActionParam }
-object ActionParam extends Action[ActionArg]("action", "")
+object ActionParam extends EnumParameter[ActionArg]("action", "")
 
 
 
