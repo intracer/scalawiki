@@ -2,14 +2,37 @@ package client.dto.cmd.query.prop
 
 import client.dto.cmd._
 
-trait InfoParam extends Parameter
-
+/**
+ *  ?action=query&amp;prop=info
+ *
+ */
 object Info extends EnumArgument[PropArg]("info", "Get basic page information.") with PropArg with ArgWithParams[InfoParam, PropArg]
 
 
-object InProp extends EnumParameter[InPropArg]("inprop", "") with InfoParam
+/**
+ * Marker trait for parameters used with prop=info
+ */
+trait InfoParam extends Parameter[AnyRef]
+
+
+/**
+ *  ?action=query&amp;prop=info&amp;inprop=
+ *
+ */
+object InProp extends Action[InPropArg]("inprop", "") with InfoParam
+
+
+/**
+ *  Trait for inprop= arguments
+ *
+ */
+
 trait InPropArg extends EnumArg[InPropArg] { val param = InProp }
 
+/**
+ *  inprop= arguments
+ *
+ */
 object Protection extends EnumArgument[InPropArg]("protection", "List the protection level of each page.") with InPropArg
 object TalkId extends EnumArgument[InPropArg]("talkid", "The page ID of the talk page for each non-talk page.") with InPropArg
 object Watched extends EnumArgument[InPropArg]("watched", "List the watched status of each page.") with InPropArg

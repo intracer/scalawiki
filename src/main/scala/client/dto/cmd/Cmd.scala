@@ -1,15 +1,13 @@
 package client.dto.cmd
 
-import client.dto.cmd.query.prop._
-
-trait Parameter {
+trait Parameter[+T] {
   def name: String
   def summary: String
 
   def pairs: Seq[(String, String)]
 }
 
-case class EnumParameter[ARG <: EnumArg[ARG]](name: String, summary: String) extends Parameter {
+case class Action[ARG <: EnumArg[ARG]](name: String, summary: String) extends Parameter[EnumArg[ARG]] {
 
   var allArgs: Seq[EnumArg[ARG]] = Seq.empty
 
@@ -23,11 +21,43 @@ case class EnumParameter[ARG <: EnumArg[ARG]](name: String, summary: String) ext
   override def pairs: Seq[(String, String)] = {
     Seq(name -> args.map(_.name).mkString("|")) ++ args.flatMap(_.pairs)
   }
-
-
 }
 
-trait ArgWithParams[P <: Parameter, T <: EnumArg[T]] extends EnumArg[T] {
+abstract class ListParameter[T] extends Parameter[T] {
+
+  var args: Seq[T] = Seq.empty
+
+  def apply(args: T*): this.type = {
+    this.args = args
+    this
+  }
+
+  override def pairs: Seq[(String, String)] = {
+    Seq(name -> args.mkString("|"))
+  }
+}
+
+abstract class SingleParameter[T] extends Parameter[T] {
+
+  var arg: T = _
+
+  def apply(arg: T): this.type = {
+    this.arg = arg
+    this
+  }
+
+  override def pairs: Seq[(String, String)] = {
+    Seq(name -> arg.toString)
+  }
+}
+
+case class StringListParameter(name: String, summary: String) extends ListParameter[String]
+case class IntListParameter(name: String, summary: String) extends ListParameter[Int]
+
+case class StringParameter(name: String, summary: String) extends SingleParameter[String]
+case class IntParameter(name: String, summary: String) extends SingleParameter[Int]
+
+trait ArgWithParams[P <: Parameter[AnyRef], T <: EnumArg[T]] extends EnumArg[T] {
   var params: Seq[P] = Seq.empty
 
   def apply(params: P*):this.type = {
@@ -36,11 +66,10 @@ trait ArgWithParams[P <: Parameter, T <: EnumArg[T]] extends EnumArg[T] {
   }
 
  override def pairs: Seq[(String, String)] = params.flatMap(_.pairs)
-
 }
 
 trait EnumArg[T <: EnumArg[T]] {
-  def param: EnumParameter[T]
+  def param: Action[T]
   def name: String
   def summary: String
 
@@ -49,22 +78,10 @@ trait EnumArg[T <: EnumArg[T]] {
 
 abstract class EnumArgument[T <: EnumArg[T]](val name: String, val summary: String) extends EnumArg[T]
 
-object ListParam extends EnumParameter[ListArg]("list", "")
-object MetaParam extends EnumParameter[MetaArg]("meta", "")
-
-trait ListArg extends EnumArg[ListArg] { val param = ListParam }
-trait MetaArg extends EnumArg[MetaArg] { val param = MetaParam }
-
-object QueryTest {
+trait ActionArg extends EnumArg[ActionArg] { val param = ActionParam }
+object ActionParam extends Action[ActionArg]("action", "")
 
 
-  def main(args: Array[String]) {
-
-    val prop = PropParam(Info(InProp(SubjectId)), Revisions)
-
-    println(prop.pairs)
-  }
-}
 
 
 
