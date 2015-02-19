@@ -1,6 +1,7 @@
 package client.json
 
 import client.dto._
+import org.joda.time.DateTime
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
@@ -53,12 +54,14 @@ object MwReads {
 object MwReads2 {
 
   import client.dto.Page.Id
+  val jodaDateTimeReads = Reads.jodaDateReads("yyyy-MM-dd'T'HH:mm:ss'Z'")
+
   implicit val revisonReads: Reads[Revision] = (
     (__ \ "revid").readNullable[Id] and
       (__ \ "parentid").readNullable[Id] and
       (__ \ "user").readNullable[String] and
       (__ \ "userid").readNullable[Id] and
-      (__ \ "timestamp").readNullable[String] and
+      (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) and
       (__ \ "comment").readNullable[String] and
       (__ \ "*").readNullable[String] and
       (__ \ "size").readNullable[Int]

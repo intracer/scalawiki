@@ -1,13 +1,14 @@
 package client.dto
 
 import client.dto.Page.Id
+import org.joda.time.DateTime
 
 case class Revision(
                      revId: Option[Id] = None,
                      parentId: Option[Id] = None,
                      user: Option[String] = None,
                      userId: Option[Id] = None,
-                     timestamp: Option[String] = None,
+                     timestamp: Option[DateTime] = None,
                      comment: Option[String] = None,
                      content: Option[String] = None,
                      size: Option[Int] = None) {

@@ -5,6 +5,8 @@ import client.dto.cmd.ActionParam
 import client.dto.cmd.query.Generator
 import client.dto.cmd.query.list.ListArg
 import client.dto.cmd.query.prop.PropArg
+import org.joda.time.format.ISODateTimeFormat
+import org.joda.time.{LocalDateTime, DateTime}
 import play.api.libs.json._
 
 class Parser(val action: ActionParam) {
@@ -48,6 +50,7 @@ class Parser(val action: ActionParam) {
 object Parser {
 
   import client.dto.Page.Id
+
   import play.api.libs.functional.syntax._
 
   val pageReads: Reads[Page] = (
@@ -59,12 +62,16 @@ object Parser {
       (__ \ "talkid").readNullable[Id]
     )(Page.full _)
 
+ // implicit val DefaultJodaDateReads = jodaDateReads()
+
+  val jodaDateTimeReads = Reads.jodaDateReads("yyyy-MM-dd'T'HH:mm:ss'Z'")
+
   implicit val revisonReads: Reads[Revision] = (
     (__ \ "revid").readNullable[Id] and
       (__ \ "parentid").readNullable[Id] and
       (__ \ "user").readNullable[String] and
       (__ \ "userid").readNullable[Id] and
-      (__ \ "timestamp").readNullable[String] and
+      (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) and
       (__ \ "comment").readNullable[String] and
       (__ \ "*").readNullable[String] and
       (__ \ "size").readNullable[Int]
