@@ -1,12 +1,11 @@
 package client.dto
 
-import java.nio.file.{Paths, Files}
+import java.nio.file.{Files, Paths}
 
 import client.json.MwReads._
 import client.json.MwReads2
 import client.{MwBot, MwUtils}
 import play.api.libs.json.{JsObject, JsValue, Json}
-import spray.http.HttpResponse
 
 import scala.concurrent.Future
 
@@ -88,15 +87,10 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
              titlePrefix: Option[String] = None): Future[Seq[Page]] = {
     val params = makeParams(namespaces, continueParam, module, queryType, queryPrefix, limit, extraParams, generator, generatorPrefix, titlePrefix)
 
-    val url = site.getUri(params)
-
     import site.system.dispatcher
+    import scala.concurrent._
 
-  import scala.concurrent._
-
-    val eventualResponse: Future[HttpResponse] = site.http.get(url)
-
-    eventualResponse map site.getBody flatMap {
+    site.get(params) flatMap {
       body =>
         val json = Json.parse(body)
 

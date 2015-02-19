@@ -16,6 +16,8 @@ trait EiParam[+T] extends Parameter[T]
 
 object EiTitle extends StringListParameter("eititle", "Title to search. Cannot be used together with eipageid.") with EiParam[String]
 object EiPageid extends IntListParameter("eipageid", "Page ID to search. Cannot be used together with eititle.") with EiParam[Int]
+object EiLimit extends StringListParameter("eilimit", "How many total pages to return.") with EiParam[String]
+
 
 //eititle
 //Title to search. Cannot be used together with eipageid.

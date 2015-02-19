@@ -1,8 +1,9 @@
 package client.util
 
+import client.http.HttpClientImpl
 import org.specs2.mutable.Specification
 import akka.actor.ActorSystem
-import client.{MwBot, HttpClientImpl}
+import client.MwBot
 import scala.concurrent.{Future, Await}
 
 

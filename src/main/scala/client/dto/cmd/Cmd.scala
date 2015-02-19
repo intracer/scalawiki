@@ -1,10 +1,13 @@
 package client.dto.cmd
 
+import client.dto.cmd.query.Query
+
 trait Parameter[+T] {
   def name: String
   def summary: String
 
   def pairs: Seq[(String, String)]
+  def flatten: Seq[Parameter[Any]] = Seq(this)
 }
 
 abstract class EnumParameter[ARG <: EnumArg[ARG]](val name: String, val summary: String) extends Parameter[EnumArg[ARG]] {
@@ -18,6 +21,27 @@ abstract class EnumParameter[ARG <: EnumArg[ARG]](val name: String, val summary:
   override def pairs: Seq[(String, String)] = {
     Seq(name -> args.map(_.name).mkString("|")) ++ args.flatMap(_.pairs)
   }
+
+//  def byClass[T <: EnumArg[ARG]](clazz: Class[T]): Seq[T] = args collect {
+//    case p if p.getClass == clazz => p
+//  }
+
+  def byType[X : Manifest]: Seq[X] =
+    args.collect {
+      case x if manifest[X].runtimeClass.isInstance(x) => x.asInstanceOf[X]
+    }
+
+
+  override def flatten = {
+    //Seq(this) ++
+
+//    val x = args.collect {
+//      case awp: ArgWithParams[Parameter[Any], EnumArg[AnyRef]] => awp.params //.flatMap(_.flatten)
+//    }
+
+    Seq(this)
+  }
+
 }
 
 abstract class ListParameter[T] extends Parameter[T] {
@@ -57,10 +81,19 @@ case class IntParameter(name: String, summary: String) extends SingleParameter[I
 trait ArgWithParams[P <: Parameter[Any], T <: EnumArg[T]] extends EnumArg[T] {
   def params: Seq[P] = Seq.empty
 
+//  def byClass[T <: P](clazz: Class[T]) = params collect {
+//    case p if p.getClass == clazz => p
+//  }
+
+  def byType[X : Manifest]: Seq[X] =
+    params.collect {
+      case x if manifest[X].runtimeClass.isInstance(x) => x.asInstanceOf[X]
+    }
+
  override def pairs: Seq[(String, String)] = params.flatMap(_.pairs)
 }
 
-trait EnumArg[T <: EnumArg[T]] {
+trait EnumArg[+T <: EnumArg[T]] {
 //  def param: EnumParameter[T]
   def name: String
   def summary: String
@@ -71,7 +104,9 @@ trait EnumArg[T <: EnumArg[T]] {
 abstract class EnumArgument[T <: EnumArg[T]](val name: String, val summary: String) extends EnumArg[T]
 
 trait ActionArg extends EnumArg[ActionArg] { /*val param = ActionParam*/ }
-case class ActionParam(override val arg: ActionArg) extends EnumParameter[ActionArg]("action", "")
+case class ActionParam(override val arg: ActionArg) extends EnumParameter[ActionArg]("action", "") {
+  def query: Option[Query] = byType(manifest[Query]).headOption
+}
 
 
 

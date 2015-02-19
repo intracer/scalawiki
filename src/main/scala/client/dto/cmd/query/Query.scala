@@ -1,6 +1,9 @@
 package client.dto.cmd.query
 
 import client.dto.cmd._
+import client.dto.cmd.query.list.{ListArg, ListParam}
+import client.dto.cmd.query.meta.{MetaArg, MetaParam}
+import client.dto.cmd.query.prop.{PropArg, PropParam}
 
 
 /**
@@ -8,7 +11,15 @@ import client.dto.cmd._
  *
  */
 
-case class Query(override val params: QueryParam[Any]*) extends  EnumArgument[ActionArg]("query", "Various queries.") with ActionArg with ArgWithParams[QueryParam[Any], ActionArg]
+case class Query(override val params: QueryParam[Any]*)
+  extends  EnumArgument[ActionArg]("query", "Various queries.")
+  with ActionArg
+  with ArgWithParams[QueryParam[Any], ActionArg] {
+
+  val lists: Seq[ListArg] = byType(manifest[ListParam]).flatMap(_.args)
+  val props: Seq[PropArg] = byType(manifest[PropParam]).flatMap(_.args)
+  val metas: Seq[MetaArg] = byType(manifest[MetaParam]).flatMap(_.args)
+}
 
 /**
  * Marker trait for parameters available together with ?action=query

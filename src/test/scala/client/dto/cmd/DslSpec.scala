@@ -1,15 +1,16 @@
 package client.dto.cmd
 
-import client.dto.cmd.query.list.{EiTitle, EmbeddedIn}
+import client.dto.cmd.query.list.{CmTitle, CategoryMembers, EiTitle, EmbeddedIn}
 import client.dto.cmd.query.{Generator, Query}
 import client.dto.cmd.query.prop._
+import org.specs2.matcher.ThrownMessages
 import org.specs2.mutable.Specification
 
-class DslSpec extends Specification {
+class DslSpec extends Specification  with ThrownMessages{
 
   "1" should {
     "23" in {
-      val action1 = ActionParam(
+      val action = ActionParam(
         Query(
           PropParam(
             Info(InProp(SubjectId)),
@@ -18,7 +19,27 @@ class DslSpec extends Specification {
         )
       )
 
-      action1.pairs.toMap === Map(
+
+     // action.flatten.map(_.name).toSet === Set("action", "prop", "inprop")
+
+      action.query.toSeq.flatMap(_.props).map(_.name).toSet === Set("info", "revisions")
+
+
+    }
+  }
+
+  "1" should {
+    "23" in {
+      val action = ActionParam(
+        Query(
+          PropParam(
+            Info(InProp(SubjectId)),
+            Revisions
+          )
+        )
+      )
+
+      action.pairs.toMap === Map(
         "action" -> "query",
         "prop" -> "info|revisions",
         "inprop" -> "subjectid")
@@ -27,17 +48,15 @@ class DslSpec extends Specification {
 
   "2" should {
     "34" in {
-      val action2 = ActionParam(
-        Query(
+      val action = ActionParam(Query(
           PropParam(
             Info(InProp(SubjectId)),
             Revisions
           ),
           Generator(EmbeddedIn(EiTitle("Template:Name")))
-        )
-      )
+        ))
 
-      action2.pairs.toMap === Map(
+      action.pairs.toMap === Map(
         "action" -> "query",
         "prop" -> "info|revisions",
         "inprop" -> "subjectid",
@@ -47,5 +66,25 @@ class DslSpec extends Specification {
     }
   }
 
+  "3" should {
+    "34" in {
+      val action = ActionParam(
+        Query(
+          PropParam(
+            Info(InProp(SubjectId)),
+            Revisions
+          ),
+          Generator(CategoryMembers(CmTitle("Category:Name")))
+        )
+      )
 
+      action.pairs.toMap === Map(
+        "action" -> "query",
+        "prop" -> "info|revisions",
+        "inprop" -> "subjectid",
+        "generator" -> "categorymembers",
+        "gcmtitle" -> "Category:Name"
+      )
+    }
+  }
 }

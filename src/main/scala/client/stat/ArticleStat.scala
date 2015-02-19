@@ -1,6 +1,10 @@
 package client.stat
 
-import client.dto.Page
+import client.dto.{DslQuery, Page}
+import client.dto.cmd.ActionParam
+import client.dto.cmd.query.list.{EiTitle, EmbeddedIn}
+import client.dto.cmd.query.{Generator, Query}
+import client.dto.cmd.query.prop._
 import client.{MwBot, WithBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -17,10 +21,22 @@ class ArticleStat extends WithBot {
       ns, Set("content", "timestamp", "user", "userid", "comment", "ids"), None, "500")
   }
 
+  def pagesWithTemplate2(template: String, ns: Set[Int] = Set.empty): Future[Seq[Page]] = {
+    val action = ActionParam(Query(
+      PropParam(
+        Info(InProp(SubjectId)),
+        Revisions
+      ),
+      Generator(EmbeddedIn(EiTitle("Template:Name")))
+    ))
+
+    new DslQuery(action, bot).run
+  }
+
   def pagesWithTemplateNoTalk(template: String): Future[Seq[Page]] = {
     pagesWithTemplate(template).map {
       pagesAndTalks =>
-       val (talks, pages) = pagesAndTalks.partition(_.isTalkPage)
+        val (talks, pages) = pagesAndTalks.partition(_.isTalkPage)
         pages
     }
   }

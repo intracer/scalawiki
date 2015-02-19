@@ -1,5 +1,6 @@
 package client.dto.cmd.query.list
 
+import client.dto.cmd.query.QueryParam
 import client.dto.cmd.{EnumArg, EnumParameter}
 
 /**
@@ -7,7 +8,7 @@ import client.dto.cmd.{EnumArg, EnumParameter}
  *
  */
 
-object ListParam extends EnumParameter[ListArg]("list", "")
+case class ListParam(override val args: ListArg*) extends EnumParameter[ListArg]("list", "") with QueryParam[ListArg]
 
 /**
  *  ?action=query&amp;list=argument

@@ -1,4 +1,4 @@
-package client
+package client.http
 
 import java.io._
 import java.net.URL
@@ -8,7 +8,7 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.util.Timeout
 import spray.client.pipelining._
-import spray.http.HttpHeaders.{Cookie, `Accept-Encoding`, `User-Agent`}
+import spray.http.HttpHeaders.{`Set-Cookie`, Cookie, `Accept-Encoding`, `User-Agent`}
 import spray.http._
 import spray.httpx.encoding.Gzip
 import spray.httpx.marshalling.Marshaller
@@ -22,9 +22,12 @@ trait HttpClient {
 
   def setCookies(cookies: Seq[HttpCookie])
 
-  def get(url: String): Future[HttpResponse]
+  def get(url: String): Future[String]
 
-  def get(url: Uri): Future[HttpResponse]
+  def get(url: Uri): Future[String]
+
+  def getResponse(url: Uri): Future[HttpResponse]
+  def getResponse(url: String): Future[HttpResponse]
 
   def post(url: String, params: (String, String)*): Future[HttpResponse] = post(url, params.toMap)
 
@@ -35,6 +38,10 @@ trait HttpClient {
   def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse]
 
   def postFile(url: String, params: Map[String, String], fileParam: String, filename: String): Future[HttpResponse]
+
+  def cookiesAndBody(response: HttpResponse): CookiesAndBody
+
+  def getBody(response: HttpResponse): String
 
 }
 
@@ -104,9 +111,12 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
       )
   }
 
-  override def get(url: String) = submit(Get(url))
+  override def get(url: String) = submit(Get(url)) map getBody
 
-  override def get(url: Uri) = submit(Get(url))
+  override def get(url: Uri) = submit(Get(url)) map getBody
+
+  override def getResponse(url: Uri): Future[HttpResponse] = submit(Get(url))
+  override def getResponse(url: String): Future[HttpResponse] = submit(Get(url))
 
   //  implicit val UTF8FormDataMarshaller =
   //    Marshaller.delegate[FormData, String](MediaTypes.`application/x-www-form-urlencoded`) { (formData, contentType) ⇒
@@ -173,6 +183,19 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
     nread
   }
 
+  def cookiesAndBody(response: HttpResponse): CookiesAndBody =
+    CookiesAndBody(getCookies(response), getBody(response))
+
+  def getBody(response: HttpResponse): String =
+    response.entity.asString(HttpCharsets.`UTF-8`)
+
+  def getCookies(response: HttpResponse): List[HttpCookie] =
+    response.headers.collect {
+      case `Set-Cookie`(hc) => hc
+    }
+
 }
+
+case class CookiesAndBody(cookies: List[HttpCookie], body: String)
 
 //     submit(Post(baseUrl + url, FormData(Map("username" -> user, "password" -> password)))) map cookiesAndBody

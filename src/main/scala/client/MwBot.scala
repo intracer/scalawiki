@@ -4,11 +4,11 @@ import akka.actor.ActorSystem
 import akka.io.IO
 import akka.pattern.ask
 import client.dto._
+import client.http.{HttpClient, HttpClientImpl}
 import client.json.MwReads._
 import play.api.libs.json._
 import spray.can.Http
-import spray.http.HttpHeaders.`Set-Cookie`
-import spray.http.{HttpResponse, _}
+import spray.http._
 import spray.util._
 
 import scala.collection.SortedSet
@@ -32,7 +32,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
   def log = system.log
 
   def login(user: String, password: String) = {
-    http.post(apiUrl, "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json") map cookiesAndBody map { cb =>
+    http.post(apiUrl, "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json") map http.cookiesAndBody map { cb =>
       http.setCookies(cb.cookies)
       val json = Json.parse(cb.body)
       json.validate(loginResponseReads).fold({ err =>
@@ -40,7 +40,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
         err.toString()
       }, { resp =>
         val params = Map("action" -> "login", "lgname" -> user, "lgpassword" -> password, "lgtoken" -> resp.token.get, "format" -> "json")
-        Await.result(http.post(apiUrl, params) map cookiesAndBody map { cb =>
+        Await.result(http.post(apiUrl, params) map http.cookiesAndBody map { cb =>
           http.setCookies(cb.cookies)
           val json = Json.parse(cb.body)
           val l = json.validate(loginResponseReads) // {"login":{"result":"NotExists"}}
@@ -60,13 +60,13 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
 
   def get[T](reads: Reads[T], params: (String, String)*): Future[T] =
-    http.get(getUri(params:_*)) map getBody map {
+    http.get(getUri(params:_*)) map {
       body =>
         Json.parse(body).validate(reads).get
     }
 
   def getByteArray(url: String): Future[Array[Byte]] =
-    http.get(url) map {
+    http.getResponse(url) map {
       response => response.entity.data.toByteArray
     }
 
@@ -75,7 +75,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
     post(reads, params.toMap)
 
   def post[T](reads: Reads[T], params: Map[String, String]): Future[T] =
-    http.post(apiUrl, params) map getBody map {
+    http.post(apiUrl, params) map http.getBody map {
       body =>
         val result = Json.parse(body).validate(reads).get
         println(result)
@@ -83,7 +83,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
     }
 
   def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T] =
-    http.postMultiPart(apiUrl, params) map getBody map {
+    http.postMultiPart(apiUrl, params) map http.getBody map {
       body =>
         val json = Json.parse(body)
         val response = json.validate(reads)
@@ -98,7 +98,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
     }
 
   def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String): Future[T] =
-    http.postFile(apiUrl, params, fileParam , filename) map getBody map {
+    http.postFile(apiUrl, params, fileParam , filename) map http.getBody map {
       body =>
         val json = Json.parse(body)
         val response = json.validate(reads)
@@ -112,7 +112,6 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
         result
   }
 
-
   def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)
 
   def pagesById(ids: Set[Long]) = PageQuery.byIds(ids, this)
@@ -121,23 +120,9 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
   def page(id: Long) = PageQuery.byId(id, this)
 
-
-  def cookiesAndBody(response: HttpResponse): CookiesAndBody =
-    CookiesAndBody(getCookies(response), getBody(response))
-
-  def getBody(response: HttpResponse): String =
-    response.entity.asString(HttpCharsets.`UTF-8`)
-
-  def getCookies(response: HttpResponse): List[HttpCookie] =
-    response.headers.collect {
-      case `Set-Cookie`(hc) => hc
-    }
-
-  case class CookiesAndBody(cookies: List[HttpCookie], body: String)
-
   def pageText(title: String): Future[String] = {
     val url = getIndexUri("title" -> encodeTitle(title), "action" -> "raw")
-    http.get(url) map getBody
+    http.get(url)
   }
 
   def getIndexUri(params: (String, String)*) =
@@ -145,6 +130,8 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
   def getUri(params: (String, String)*) =
     Uri(apiUrl) withQuery (params ++ Seq("format" -> "json"): _*)
+
+  def get(params: Map[String, String]): Future[String] = http.get(getUri(params))
 
   def getUri(params: Map[String, String]) =
     Uri(apiUrl) withQuery (params ++ Map("format" -> "json"))
@@ -161,6 +148,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 object MwBot {
 
   import spray.caching.{Cache, LruCache}
+
   import scala.concurrent.ExecutionContext.Implicits.global
   import scala.concurrent.{Future, _}
 

@@ -4,7 +4,7 @@ import java.io._
 import java.nio.file.{Files, Paths}
 
 import akka.actor.ActorSystem
-import client.HttpClientImpl
+import client.http.HttpClientImpl
 import client.xml.yaidom.YaiDomUtil
 import eu.cdevreeze.yaidom.queryapi.HasENameApi._
 

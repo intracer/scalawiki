@@ -1,8 +1,18 @@
 package client.dto.cmd.query.list
 
-class CategoryMembers {
+import client.dto.cmd.{IntListParameter, StringListParameter, Parameter, ArgWithParams}
+import client.dto.cmd.query.Module
 
-}
+case class CategoryMembers(override val params: CmParam[Any]*)
+  extends Module[ListArg]("cm", "categorymembers", "List all pages in a given category.")
+  with ListArg
+  with ArgWithParams[CmParam[Any], ListArg]
+
+trait CmParam[+T] extends Parameter[T]
+
+object CmTitle extends StringListParameter("cmtitle", "Title to search. Cannot be used together with cmpageid.") with CmParam[String]
+object CmPageId extends IntListParameter("cmpageid", "Page ID to search. Cannot be used together with cmtitle.") with CmParam[Int]
+object CmLimit extends StringListParameter("cmlimit", "How many total pages to return.") with CmParam[String]
 
 //cmtitle Which category to enumerate (required).
 //cmpageid Page ID of the category to enumerate. Cannot be used together with cmtitle.
