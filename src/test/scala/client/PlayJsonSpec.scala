@@ -84,7 +84,7 @@ class PlayJsonSpec extends Specification {
   }
 
   def checkPage(page: Page): MatchResult[Any] = {
-    page.pageid === 123
+    page.pageId === 123
     page.ns === 4
     page.title === "PageTitle"
   }

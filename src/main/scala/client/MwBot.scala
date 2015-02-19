@@ -200,7 +200,7 @@ object MwBot {
       categories =>
         val filtered = categories.filter(c => c.title.startsWith("Category:Images from Wiki Loves Earth 2014 in"))
         Future.traverse(filtered)(
-          category => commons.page(category.pageid).categoryMembers(Set(Namespace.FILE))
+          category => commons.page(category.pageId).categoryMembers(Set(Namespace.FILE))
         )
     } map {
       filesInCategories =>

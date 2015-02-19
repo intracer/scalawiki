@@ -1,7 +1,7 @@
 package client.dto
 
 case class Page(
-                 pageid: java.lang.Long,
+                 pageId: java.lang.Long,
                  ns: Integer,
                  title: String,
                  revisions: Seq[Revision] = Seq.empty,
@@ -17,17 +17,17 @@ case class Page(
 }
 
 object Page {
-  def noText(pageid: Int, ns: Int, title: String, missing: Option[String]) = new Page(pageid, ns, title, missing = missing.fold(false)(_ => true))
+  def noText(pageId: Int, ns: Int, title: String, missing: Option[String]) = new Page(pageId, ns, title, missing = missing.fold(false)(_ => true))
 
-  def withText(pageid: Int, ns: Int, title: String, text: Option[String]) = new Page(pageid, ns, title, revisionsFromText(text))
+  def withText(pageId: Int, ns: Int, title: String, text: Option[String]) = new Page(pageId, ns, title, revisionsFromText(text))
 
-  def withRevisionsText(pageid: Int, ns: Int, title: String, texts: Seq[String])
-  = new Page(pageid, ns, title, texts.map(text => new Revision(text)))
+  def withRevisionsText(pageId: Int, ns: Int, title: String, texts: Seq[String])
+  = new Page(pageId, ns, title, texts.map(text => new Revision(text)))
 
-  def withRevisions(pageid: Int, ns: Int, title: String, editToken: Option[String], revisions: Seq[Revision], missing: Option[String])
-  = new Page(pageid, ns, title, revisions, Seq.empty, editToken, missing.fold(false)(_ => true))
+  def withRevisions(pageId: Int, ns: Int, title: String, editToken: Option[String], revisions: Seq[Revision], missing: Option[String])
+  = new Page(pageId, ns, title, revisions, Seq.empty, editToken, missing.fold(false)(_ => true))
 
-  def withImageInfo(pageid: Int, ns: Int, title: String, imageInfo: Seq[ImageInfo])  = new Page(pageid, ns, title, Seq.empty, imageInfo)
+  def withImageInfo(pageId: Int, ns: Int, title: String, imageInfo: Seq[ImageInfo])  = new Page(pageId, ns, title, Seq.empty, imageInfo)
 
   def apply(title: String) = new Page(null, null, title)
 
