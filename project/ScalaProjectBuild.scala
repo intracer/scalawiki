@@ -58,7 +58,8 @@ object ScalaProjectBuild extends Build {
           // "no.priv.garshol.duke" %% "duke" % "1.2",
           "org.specs2" %% "specs2" % "2.3.12" % "test" withSources() withJavadoc(),
            "com.google.jimfs" % "jimfs" % "1.0" % "test" withSources() withJavadoc(),
-          "com.google.guava" % "guava" % "16.0.1" withSources() withJavadoc()
+          "com.google.guava" % "guava" % "16.0.1" withSources() withJavadoc(),
+          "com.github.nscala-time" %% "nscala-time" % "1.8.0"
 
         )
       },
