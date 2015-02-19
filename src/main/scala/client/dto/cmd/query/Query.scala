@@ -27,9 +27,14 @@ case class Query(override val params: QueryParam[Any]*)
  */
 trait QueryParam[+T] extends Parameter[T]
 
-object TitlesParam extends StringListParameter("titles", "A list of titles to work on") with QueryParam[String]
-object PageIdsParam extends IntListParameter("pageids", "A list of page IDs to work on") with QueryParam[Int]
-object RevIdsParam extends IntListParameter("revids", "A list of revision IDs to work on") with QueryParam[Int]
+import client.dto.Page.Id
+
+case class TitlesParam(override val args: Seq[String])
+  extends StringListParameter("titles", "A list of titles to work on") with QueryParam[String]
+case class PageIdsParam(override val args: Seq[Id])
+  extends IntListParameter("pageids", "A list of page IDs to work on") with QueryParam[Int]
+case class RevIdsParam(override val args: Seq[Id])
+  extends IntListParameter("revids", "A list of revision IDs to work on") with QueryParam[Int]
 
 //object GeneratorParam extends GeneratorParameter("generator", "Get the list of pages to work on by executing the specified query module") with QueryParam[Int]
 

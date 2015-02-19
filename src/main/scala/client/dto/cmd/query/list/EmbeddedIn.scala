@@ -14,9 +14,14 @@ case class EmbeddedIn(override val params: EiParam[Any]*)
 
 trait EiParam[+T] extends Parameter[T]
 
-object EiTitle extends StringListParameter("eititle", "Title to search. Cannot be used together with eipageid.") with EiParam[String]
-object EiPageid extends IntListParameter("eipageid", "Page ID to search. Cannot be used together with eititle.") with EiParam[Int]
-object EiLimit extends StringListParameter("eilimit", "How many total pages to return.") with EiParam[String]
+import client.dto.Page.Id
+
+case class EiTitle(override val arg: String)
+  extends StringParameter("eititle", "Title to search. Cannot be used together with eipageid.") with EiParam[String]
+case class EiPageid(override val arg: Id)
+  extends IntParameter("eipageid", "Page ID to search. Cannot be used together with eititle.") with EiParam[Int]
+case class EiLimit(override val arg: String)
+  extends StringParameter("eilimit", "How many total pages to return.") with EiParam[String]
 
 
 //eititle

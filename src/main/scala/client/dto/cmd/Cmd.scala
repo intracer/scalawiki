@@ -22,10 +22,6 @@ abstract class EnumParameter[ARG <: EnumArg[ARG]](val name: String, val summary:
     Seq(name -> args.map(_.name).mkString("|")) ++ args.flatMap(_.pairs)
   }
 
-//  def byClass[T <: EnumArg[ARG]](clazz: Class[T]): Seq[T] = args collect {
-//    case p if p.getClass == clazz => p
-//  }
-
   def byType[X : Manifest]: Seq[X] =
     args.collect {
       case x if manifest[X].runtimeClass.isInstance(x) => x.asInstanceOf[X]
@@ -46,12 +42,7 @@ abstract class EnumParameter[ARG <: EnumArg[ARG]](val name: String, val summary:
 
 abstract class ListParameter[T] extends Parameter[T] {
 
-  var args: Seq[T] = Seq.empty
-
-  def apply(args: T*): this.type = {
-    this.args = args
-    this
-  }
+  def args: Seq[T]
 
   override def pairs: Seq[(String, String)] = {
     Seq(name -> args.mkString("|"))
@@ -60,30 +51,21 @@ abstract class ListParameter[T] extends Parameter[T] {
 
 abstract class SingleParameter[T] extends Parameter[T] {
 
-  var arg: T = _
-
-  def apply(arg: T): this.type = {
-    this.arg = arg
-    this
-  }
+  def arg: T
 
   override def pairs: Seq[(String, String)] = {
     Seq(name -> arg.toString)
   }
 }
 
-case class StringListParameter(name: String, summary: String) extends ListParameter[String]
-case class IntListParameter(name: String, summary: String) extends ListParameter[Int]
+abstract class StringListParameter(val name: String, val summary: String) extends ListParameter[String]
+abstract class IntListParameter(val name: String, val summary: String) extends ListParameter[Int]
 
-case class StringParameter(name: String, summary: String) extends SingleParameter[String]
-case class IntParameter(name: String, summary: String) extends SingleParameter[Int]
+abstract class StringParameter(val name: String, val summary: String) extends SingleParameter[String]
+abstract class IntParameter(val name: String, val summary: String) extends SingleParameter[Int]
 
 trait ArgWithParams[P <: Parameter[Any], T <: EnumArg[T]] extends EnumArg[T] {
   def params: Seq[P] = Seq.empty
-
-//  def byClass[T <: P](clazz: Class[T]) = params collect {
-//    case p if p.getClass == clazz => p
-//  }
 
   def byType[X : Manifest]: Seq[X] =
     params.collect {

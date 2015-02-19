@@ -37,12 +37,15 @@ class Parser(val action: ActionParam) {
 }
 
 object Parser {
+  import client.dto.Page.Id
   import play.api.libs.functional.syntax._
 
   val pageReads: Reads[Page] = (
-    (__ \ "pageid").read[Int] and
+    (__ \ "pageid").read[Id] and
       (__ \ "ns").read[Int] and
       (__ \ "title").read[String] and
-      (__ \ "missing").readNullable[String]
-    )(Page.noText _)
+      (__ \ "missing").readNullable[String] and
+      (__ \ "subjectid").readNullable[Id] and
+      (__ \ "talkid").readNullable[Id]
+    )(Page.full _)
 }

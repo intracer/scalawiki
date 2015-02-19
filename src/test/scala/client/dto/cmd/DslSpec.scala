@@ -14,7 +14,7 @@ class DslSpec extends Specification  with ThrownMessages{
         Query(
           PropParam(
             Info(InProp(SubjectId)),
-            Revisions
+            Revisions()
           )
         )
       )
@@ -34,7 +34,7 @@ class DslSpec extends Specification  with ThrownMessages{
         Query(
           PropParam(
             Info(InProp(SubjectId)),
-            Revisions
+            Revisions()
           )
         )
       )
@@ -51,7 +51,7 @@ class DslSpec extends Specification  with ThrownMessages{
       val action = ActionParam(Query(
           PropParam(
             Info(InProp(SubjectId)),
-            Revisions
+            Revisions()
           ),
           Generator(EmbeddedIn(EiTitle("Template:Name")))
         ))
@@ -72,7 +72,7 @@ class DslSpec extends Specification  with ThrownMessages{
         Query(
           PropParam(
             Info(InProp(SubjectId)),
-            Revisions
+            Revisions()
           ),
           Generator(CategoryMembers(CmTitle("Category:Name")))
         )

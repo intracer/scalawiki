@@ -1,6 +1,7 @@
 package client.dto.cmd.query.list
 
-import client.dto.cmd.{IntListParameter, StringListParameter, Parameter, ArgWithParams}
+import client.dto.Page.Id
+import client.dto.cmd._
 import client.dto.cmd.query.Module
 
 case class CategoryMembers(override val params: CmParam[Any]*)
@@ -10,9 +11,9 @@ case class CategoryMembers(override val params: CmParam[Any]*)
 
 trait CmParam[+T] extends Parameter[T]
 
-object CmTitle extends StringListParameter("cmtitle", "Title to search. Cannot be used together with cmpageid.") with CmParam[String]
-object CmPageId extends IntListParameter("cmpageid", "Page ID to search. Cannot be used together with cmtitle.") with CmParam[Int]
-object CmLimit extends StringListParameter("cmlimit", "How many total pages to return.") with CmParam[String]
+case class CmTitle(override val arg: String) extends StringParameter("cmtitle", "Title to search. Cannot be used together with cmpageid.") with CmParam[String]
+case class CmPageId(override val arg: Id) extends IntParameter("cmpageid", "Page ID to search. Cannot be used together with cmtitle.") with CmParam[Id]
+case class CmLimit(override val arg: String) extends StringParameter("cmlimit", "How many total pages to return.") with CmParam[String]
 
 //cmtitle Which category to enumerate (required).
 //cmpageid Page ID of the category to enumerate. Cannot be used together with cmtitle.

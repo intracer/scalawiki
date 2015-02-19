@@ -23,6 +23,20 @@ case class Page(
 
 object Page {
   type Id = Int
+
+  def full(
+            id: Id,
+            ns: Int,
+            title: String,
+            missing: Option[String],
+            subjectId: Option[Id],
+            talkId: Option[Id]) =
+  {
+    new Page(id, ns, title,
+      missing = missing.fold(false)(_ => true),
+      subjectId = subjectId,
+      talkId = talkId)
+  }
   
   def noText(id: Id, ns: Int, title: String, missing: Option[String]) = new Page(id, ns, title, missing = missing.fold(false)(_ => true))
 
