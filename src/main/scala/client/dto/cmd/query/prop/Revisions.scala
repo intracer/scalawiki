@@ -9,20 +9,18 @@ import client.dto.cmd.query.Module
  */
 case class Revisions(override val params: RvParam*) extends Module[PropArg]("rv", "revisions", "Get revision information.") with PropArg with ArgWithParams[RvParam, PropArg]
 
-
 /**
  * Marker trait for parameters used with prop=revisions
  */
 trait RvParam extends Parameter[AnyRef]
 
-
 /**
  *  ?action=query&amp;prop=info&amp;rvprop=
  *
  */
-case class RvProp(override val args: RvPropArg*) extends EnumParameter[RvPropArg]("rvprop", "") with RvParam
+case class RvProp(override val args: RvPropArg*) extends EnumParameter[RvPropArg]("rvprop", "Which properties to get for each revision:") with RvParam
 
-
+case class RvLimit(override val arg: String) extends StringParameter("rvlimit", "") with RvParam
 /**
  *  Trait for rvprop= arguments
  *

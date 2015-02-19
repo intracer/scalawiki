@@ -54,7 +54,7 @@ object Image {
     page.revisions.headOption.map { revision =>
 
       val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
-      val content = revision.content
+      val content = revision.content.getOrElse("")
       val id = Template.getDefaultParam(content, monumentIdTemplate)
       val ipOpt = if (id.matches(idRegex)) Some(id) else None
 

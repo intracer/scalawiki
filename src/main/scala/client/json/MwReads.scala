@@ -29,9 +29,10 @@ object MwReads {
   def pagesReads(queryType: String): Reads[Seq[Page]] = (__ \ "query" \ queryType).read[Seq[Page]]
 
   def tokenReads: Reads[String] = (__ \ "query" \ "tokens" \ "csrftoken").read[String]
+
   def tokensReads: Reads[String] = (__ \ "tokens" \ "edittoken").read[String]
 
-  def editResponseReads: Reads[String] = (__ \ "edit" \ "result" ).read[String]
+  def editResponseReads: Reads[String] = (__ \ "edit" \ "result").read[String]
 
   def errorReads: Reads[MwError] = (
     (__ \ "code").read[String] and
@@ -51,11 +52,16 @@ object MwReads {
 
 object MwReads2 {
 
+  import client.dto.Page.Id
   implicit val revisonReads: Reads[Revision] = (
-    (__ \ "user").read[String] and
-      (__ \ "timestamp").read[String] and
-      (__ \ "comment").read[String] and
-      (__ \ "*").read[String]
+    (__ \ "revid").readNullable[Id] and
+      (__ \ "parentid").readNullable[Id] and
+      (__ \ "user").readNullable[String] and
+      (__ \ "userid").readNullable[Id] and
+      (__ \ "timestamp").readNullable[String] and
+      (__ \ "comment").readNullable[String] and
+      (__ \ "*").readNullable[String] and
+      (__ \ "size").readNullable[Int]
     )(Revision.apply _)
 
   implicit val imageInfoReads: Reads[ImageInfo] = (
@@ -66,8 +72,8 @@ object MwReads2 {
       (__ \ "height").read[Int] and
       (__ \ "url").read[String] and
       (__ \ "descriptionurl").read[String]
-//      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
-//      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
+    //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
+    //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
     )(ImageInfo.basic _)
 
   val pageWithRevisionReads: Reads[Page] = (

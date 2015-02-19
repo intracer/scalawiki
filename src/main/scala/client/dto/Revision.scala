@@ -1,8 +1,18 @@
 package client.dto
 
-case class Revision(user:String, timestamp: String, comment: String, content: String) {
+import client.dto.Page.Id
 
-  def this(content: String) = this(null, null, null, content)
+case class Revision(
+                     revId: Option[Id] = None,
+                     parentId: Option[Id] = None,
+                     user: Option[String] = None,
+                     userId: Option[Id] = None,
+                     timestamp: Option[String] = None,
+                     comment: Option[String] = None,
+                     content: Option[String] = None,
+                     size: Option[Int] = None) {
+
+  def this(content: String) = this(content = Some(content))
 
 }
 

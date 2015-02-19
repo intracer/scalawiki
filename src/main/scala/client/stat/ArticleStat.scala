@@ -37,7 +37,10 @@ class ArticleStat extends WithBot {
       PageIdsParam(ids),
       PropParam(
         Info(),
-        Revisions()
+        Revisions(
+          RvProp(Ids, Size, User, UserId, Timestamp),
+          RvLimit("max")
+        )
       )
     ))
 
@@ -47,15 +50,14 @@ class ArticleStat extends WithBot {
     }
   }
 
-
   def stat() = {
     for (newPagesIds <- pagesWithTemplate(ArticleStat.newTemplate)
-        //; improvedPagesIds <- pagesWithTemplate(ArticleStat.improvedTemplate)
+    //; improvedPagesIds <- pagesWithTemplate(ArticleStat.improvedTemplate)
     ) {
       println(s"New ${newPagesIds.size} $newPagesIds")
       //println(s"Improved ${improvedPagesIds.size} $improvedPagesIds")
 
-      for (revs <- pageRevisions(newPagesIds)) {
+      for (revs <- pageRevisions(Seq(newPagesIds.last))) {
         println(s"New ${revs.size} $revs")
       }
     }

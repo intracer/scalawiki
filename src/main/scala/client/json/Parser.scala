@@ -1,6 +1,6 @@
 package client.json
 
-import client.dto.Page
+import client.dto.{Revision, Page}
 import client.dto.cmd.ActionParam
 import client.dto.cmd.query.Generator
 import client.dto.cmd.query.list.ListArg
@@ -18,12 +18,21 @@ class Parser(val action: ActionParam) {
 
     val pagesJson = (json \ "query" \ queryChild).asInstanceOf[JsObject]
 
-   val pages = pagesJson.keys.map {
+    pagesJson.keys.map {
       key =>
-        (pagesJson \ key).validate(Parser.pageReads).get
-      }.toSeq
+        val pageJson = (pagesJson \ key).asInstanceOf[JsObject]
+        var page = pageJson.validate(Parser.pageReads).get
 
-    pages
+        if (pageJson.keys.contains("revisions")) {
+          val revisions:Seq[Revision] = pageJson.validate(Parser.revisionsReads).get
+
+          page = page.copy(revisions = revisions)
+        }
+
+
+        page
+    }.toSeq
+
   }
 
   def query = action.query.toSeq
@@ -37,6 +46,7 @@ class Parser(val action: ActionParam) {
 }
 
 object Parser {
+
   import client.dto.Page.Id
   import play.api.libs.functional.syntax._
 
@@ -48,4 +58,17 @@ object Parser {
       (__ \ "subjectid").readNullable[Id] and
       (__ \ "talkid").readNullable[Id]
     )(Page.full _)
+
+  implicit val revisonReads: Reads[Revision] = (
+    (__ \ "revid").readNullable[Id] and
+      (__ \ "parentid").readNullable[Id] and
+      (__ \ "user").readNullable[String] and
+      (__ \ "userid").readNullable[Id] and
+      (__ \ "timestamp").readNullable[String] and
+      (__ \ "comment").readNullable[String] and
+      (__ \ "*").readNullable[String] and
+      (__ \ "size").readNullable[Int]
+    )(Revision.apply _)
+
+  val revisionsReads: Reads[Seq[Revision]] = (__ \ "revisions").read[Seq[Revision]]
 }

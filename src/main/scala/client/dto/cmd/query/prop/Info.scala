@@ -20,7 +20,7 @@ trait InfoParam extends Parameter[AnyRef]
  *  ?action=query&amp;prop=info&amp;inprop=
  *
  */
-case class InProp(override val args: InPropArg*) extends EnumParameter[InPropArg]("inprop", "") with InfoParam
+case class InProp(override val args: InPropArg*) extends EnumParameter[InPropArg]("inprop", "Which additional properties to get:") with InfoParam
 
 
 /**
