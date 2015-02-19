@@ -34,7 +34,7 @@ object Image {
   def fromPageImageInfo(page: Page, monumentIdTemplate: String, year: String): Option[Image] = {
     page.imageInfo.headOption.map { ii =>
       Image(
-        pageId = page.pageId,
+        pageId = page.id,
         title = page.title,
         url = ii.url,
         pageUrl = ii.descriptionUrl,
@@ -62,7 +62,7 @@ object Image {
 
       //      val author = authorValue.split("\\|")(0).replace("[[User:", "").replace("[[user:", "")
 
-      new Image(page.pageId, page.title, "", "", 0, 0, 0, ipOpt, Some(author), None, Some(date))
+      new Image(page.id, page.title, "", "", 0, 0, 0, ipOpt, Some(author), None, Some(date))
     }
   }
 

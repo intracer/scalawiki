@@ -2,7 +2,7 @@ package client.stat
 
 import client.dto.{DslQuery, Page}
 import client.dto.cmd.ActionParam
-import client.dto.cmd.query.list.{EiTitle, EmbeddedIn}
+import client.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
 import client.dto.cmd.query.{Generator, Query}
 import client.dto.cmd.query.prop._
 import client.{MwBot, WithBot}
@@ -14,42 +14,27 @@ class ArticleStat extends WithBot {
 
   val host = MwBot.ukWiki
 
-  def pagesWithTemplate(template: String, ns: Set[Int] = Set.empty): Future[Seq[Page]] = {
-    val query = bot.page("Template:" + template)
-
-    query.revisionsByGenerator("embeddedin", "ei",
-      ns, Set("content", "timestamp", "user", "userid", "comment", "ids"), None, "500")
-  }
-
-  def pagesWithTemplate2(template: String, ns: Set[Int] = Set.empty): Future[Seq[Page]] = {
+  def pagesWithTemplate(template: String): Future[Seq[Page]] = {
     val action = ActionParam(Query(
       PropParam(
         Info(InProp(SubjectId)),
         Revisions
       ),
-      Generator(EmbeddedIn(EiTitle("Template:Name")))
+      Generator(EmbeddedIn(
+        EiTitle("Template:" + template),
+        EiLimit("500")
+      ))
     ))
 
     new DslQuery(action, bot).run
   }
-
-  def pagesWithTemplateNoTalk(template: String): Future[Seq[Page]] = {
-    pagesWithTemplate(template).map {
-      pagesAndTalks =>
-        val (talks, pages) = pagesAndTalks.partition(_.isTalkPage)
-        pages
-    }
-  }
-
-
-  // Обговорення:
 
 
   def stat() = {
     for (newPages <- pagesWithTemplate(ArticleStat.newTemplate);
          improvedPages <- pagesWithTemplate(ArticleStat.improvedTemplate)) {
       println(s"New ${newPages.size} $newPages")
-      println(s"New ${improvedPages.size} $improvedPages")
+      println(s"Improved ${improvedPages.size} $improvedPages")
     }
   }
 }
