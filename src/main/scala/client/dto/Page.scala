@@ -14,11 +14,15 @@ case class Page(
                  subjectId: Option[Id] = None,
                  talkId: Option[Id] = None
                  ) {
+  val history = new History(this)
+
   def withText(text: String) = copy(revisions = Page.revisionsFromText(Some(text)))
 
   def text:Option[String] = revisions.headOption.flatMap(_.content)
 
   def isTalkPage = ns % 2 == 1
+
+
 }
 
 object Page {
