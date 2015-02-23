@@ -6,7 +6,7 @@ import client.dto.cmd.query.prop._
 import org.specs2.matcher.ThrownMessages
 import org.specs2.mutable.Specification
 
-class DslSpec extends Specification  with ThrownMessages{
+class DslSpec extends Specification  with ThrownMessages {
 
   "1" should {
     "23" in {

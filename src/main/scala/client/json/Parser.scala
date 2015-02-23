@@ -28,7 +28,14 @@ class Parser(val action: ActionParam) {
         if (pageJson.keys.contains("revisions")) {
           val revisions:Seq[Revision] = pageJson.validate(Parser.revisionsReads).get
 
-          page = page.copy(revisions = revisions)
+          page =
+            try {
+              page.copy(revisions = revisions)
+            } catch {
+              case e: Throwable =>
+                println(e)
+                throw  e
+            }
         }
 
 
@@ -74,7 +81,8 @@ object Parser {
       (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) and
       (__ \ "comment").readNullable[String] and
       (__ \ "*").readNullable[String] and
-      (__ \ "size").readNullable[Int]
+      (__ \ "size").readNullable[Int] and
+      (__ \ "sha1").readNullable[String]
     )(Revision.apply _)
 
   val revisionsReads: Reads[Seq[Revision]] = (__ \ "revisions").read[Seq[Revision]]

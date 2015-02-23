@@ -1,6 +1,7 @@
 package client.dto
 
 import client.dto.Page.Id
+import client.dto.history.History
 
 case class Page(
                  id: Id,
@@ -47,7 +48,7 @@ object Page {
   def withText(id: Id, ns: Int, title: String, text: Option[String]) = new Page(id, ns, title, revisionsFromText(text))
 
   def withRevisionsText(id: Id, ns: Int, title: String, texts: Seq[String])
-  = new Page(id, ns, title, texts.map(text => new Revision(text)))
+  = new Page(id, ns, title, Revision.create(texts:_*))
 
   def withRevisions(id: Id, ns: Int, title: String, editToken: Option[String], revisions: Seq[Revision], missing: Option[String])
   = new Page(id, ns, title, revisions, Seq.empty, editToken, missing.fold(false)(_ => true))
@@ -60,7 +61,7 @@ object Page {
 
   def withEditToken(id: Option[Id], ns: Int, title: String, editToken:Option[String]) = new Page(id.getOrElse(0), ns, title, Seq.empty, Seq.empty, editToken)
 
-  def revisionsFromText(text: Option[String]) = text.fold(Seq.empty[Revision])(content => Seq(new Revision(content)))
+  def revisionsFromText(text: Option[String]) = text.fold(Seq.empty[Revision])(content => Revision.create(content))
 }
 
 

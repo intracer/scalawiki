@@ -64,7 +64,8 @@ object MwReads2 {
       (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) and
       (__ \ "comment").readNullable[String] and
       (__ \ "*").readNullable[String] and
-      (__ \ "size").readNullable[Int]
+      (__ \ "size").readNullable[Int] and
+      (__ \ "sha1").readNullable[String]
     )(Revision.apply _)
 
   implicit val imageInfoReads: Reads[ImageInfo] = (

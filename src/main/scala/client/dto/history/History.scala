@@ -1,24 +1,26 @@
-package client.dto
+package client.dto.history
 
-import client.dto.Page.Id
+import client.dto.{Page, Revision}
 import org.joda.time.DateTime
 
 class History(val page: Page) {
 
   def revisions = page.revisions
 
+  val annotation = Annotation.create(page)
+
   def users(from: Option[DateTime] = None, to: Option[DateTime] = None): Set[String] = {
-    val filtered = new HistoryFilter(from, to).apply(revisions)
+    val filtered = new RevisionFilter(from, to).apply(revisions)
     filtered.flatMap(_.user).toSet
   }
 
   def delta(from: Option[DateTime], to: Option[DateTime] = None): Option[Int] = {
-    val filtered = new HistoryFilter(from, to).apply(revisions)
+    val filtered = new RevisionFilter(from, to).apply(revisions)
     val sum = for (
       oldest <- filtered.lastOption;
-         newest <- filtered.headOption;
-         d1 <- delta(oldest);
-         d2 <- delta(oldest, newest))
+      newest <- filtered.headOption;
+      d1 <- delta(oldest);
+      d2 <- delta(oldest, newest))
     yield d1 + d2
     sum
   }
@@ -28,9 +30,9 @@ class History(val page: Page) {
       if (parentId == 0)
         revision.size
       else
-         revisions.find(_.revId.exists(_ == parentId)).flatMap {
-           parent => delta(parent, revision)
-         }
+        revisions.find(_.revId.exists(_ == parentId)).flatMap {
+          parent => delta(parent, revision)
+        }
     }
 
   def delta(from: Revision, to: Revision): Option[Int] =
@@ -41,20 +43,4 @@ class History(val page: Page) {
   def updated: Option[DateTime] = revisions.headOption.flatMap(_.timestamp)
 
   def createdAfter(from: Option[DateTime]) = created.exists(rev => from.forall(rev.isAfter))
-}
-
-class HistoryFilter(
-                     val from: Option[DateTime] = None,
-                     val to: Option[DateTime] = None,
-                     val user: Option[String] = None,
-                     val userId: Option[Id] = None) {
-
-  def apply(revisions: Seq[Revision]): Seq[Revision] = {
-    revisions.filter {
-      rev =>
-        rev.timestamp.forall(ts => from.forall(ts.isAfter) && to.forall(ts.isBefore)) &&
-        rev.user.forall(u => user.forall(u.equals)) &&
-        rev.userId.forall(u => userId.forall(u.equals))
-    }
-  }
 }

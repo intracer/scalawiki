@@ -59,8 +59,13 @@ object ScalaProjectBuild extends Build {
           "org.specs2" %% "specs2" % "2.3.12" % "test" withSources() withJavadoc(),
            "com.google.jimfs" % "jimfs" % "1.0" % "test" withSources() withJavadoc(),
           "com.google.guava" % "guava" % "16.0.1" withSources() withJavadoc(),
-          "com.github.nscala-time" %% "nscala-time" % "1.8.0"
+          "com.github.nscala-time" %% "nscala-time" % "1.8.0",
 
+          "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1" withSources() withJavadoc(),
+//          "org.xwiki.commons" % "xwiki-commons-blame-script" % "6.4.1" withSources() withJavadoc(),
+//          "org.xwiki.commons" % "xwiki-commons-diff-api" % "6.4.1" withSources() withJavadoc(),
+//          "org.xwiki.commons" % "xwiki-commons-diff-script" % "6.4.1" withSources() withJavadoc(),
+//          "org.xwiki.commons" % "xwiki-commons-diff-display" % "6.4.1" withSources() withJavadoc()
         )
       },
       publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath + "/.m2/repository")))
