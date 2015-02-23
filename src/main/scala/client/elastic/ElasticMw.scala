@@ -25,7 +25,6 @@ object ElasticMw {
   def connect(host: String = "localhost", port: Int = 9300) =
     ElasticClient.remote(host, port)
 
-
   def main(args: Array[String]) {
 //    val path = Files.createTempDirectory("elastic").toString
 //    start(path)

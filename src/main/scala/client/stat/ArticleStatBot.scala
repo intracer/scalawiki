@@ -57,8 +57,11 @@ class ArticleStatBot extends WithBot {
 
   def stat() = {
 
-    val from = Some(DateTime.parse("2015-01-06T00:00+02:00"))
-    val to = Some(DateTime.parse("2015-01-28T00:00+02:00"))
+    val from = Some(DateTime.parse("2015-01-21T00:00+02:00"))
+    val to = Some(DateTime.parse("2015-02-12T00:00+02:00"))
+
+//    val from = Some(DateTime.parse("2015-01-06T00:00+02:00"))
+//    val to = Some(DateTime.parse("2015-01-28T00:00+02:00"))
     for (newPagesIds <- pagesWithTemplate(ArticleStatBot.newTemplate);
          improvedPagesIds <- pagesWithTemplate(ArticleStatBot.improvedTemplate)) {
       println(s"New ${newPagesIds.size} $newPagesIds")
@@ -68,9 +71,10 @@ class ArticleStatBot extends WithBot {
 
       for (allPages <- pagesRevisions(allIds.toSeq)) {
 
-        val (created, improved) = allPages.partition(_.history.createdAfter(from))
+        val updatedPages = allPages.filter(_.history.editedIn(from, to))
+        val (created, improved) = updatedPages.partition(_.history.createdAfter(from))
 
-        val allStat = new ArticleStat(from, to, allPages, "All")
+        val allStat = new ArticleStat(from, to, updatedPages, "All")
         val createdStat = new ArticleStat(from, to, created, "created")
         val improvedStat = new ArticleStat(from, to, improved, "improved")
 
@@ -158,9 +162,11 @@ class NumericArrayStat(val name: String, val data: Seq[Int]) {
 
 object ArticleStatBot {
 
-  val newTemplate = "Kherson-week-new"
+  val newTemplate = "Architecture-week-new"
+    //"Kherson-week-new"
 
-  val improvedTemplate = "Kherson-week-improve"
+  val improvedTemplate = "Architecture-week-improve"
+    //"Kherson-week-improve"
 
   def main(args: Array[String]) {
     new ArticleStatBot().stat()

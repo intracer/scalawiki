@@ -43,4 +43,8 @@ class History(val page: Page) {
   def updated: Option[DateTime] = revisions.headOption.flatMap(_.timestamp)
 
   def createdAfter(from: Option[DateTime]) = created.exists(rev => from.forall(rev.isAfter))
+
+  def editedIn(from: Option[DateTime], to: Option[DateTime]) =
+    new RevisionFilter(from, to).apply(revisions).nonEmpty
+
 }

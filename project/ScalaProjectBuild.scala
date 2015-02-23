@@ -62,6 +62,7 @@ object ScalaProjectBuild extends Build {
           "com.github.nscala-time" %% "nscala-time" % "1.8.0",
 
           "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1" withSources() withJavadoc(),
+          "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % "2.5.1" withSources() withJavadoc()
 //          "org.xwiki.commons" % "xwiki-commons-blame-script" % "6.4.1" withSources() withJavadoc(),
 //          "org.xwiki.commons" % "xwiki-commons-diff-api" % "6.4.1" withSources() withJavadoc(),
 //          "org.xwiki.commons" % "xwiki-commons-diff-script" % "6.4.1" withSources() withJavadoc(),
