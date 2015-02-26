@@ -14,7 +14,7 @@ object WoodenArchitecture {
   def main(args: Array[String]) {
     val ukWiki = MwBot.get("uk.wikipedia.org")
 
-    val specialNomination = "бібліотеки"
+    val specialNomination = "національного значення"
 
     val contest = Contest.WLMUkraine(2014, "", "")
     val query = MonumentQuery.create(contest)
@@ -22,8 +22,8 @@ object WoodenArchitecture {
       monuments =>
 
         val wooden = monuments.filter { m =>
-          val name = m.name.toLowerCase
-          Set("бібліо" ).exists(name.contains)
+          val typ = m.typ.getOrElse("").toLowerCase
+          Set("нац" ).exists(typ.contains)
         }
 
         val byRegion = wooden.groupBy(m => Monument.getRegionId(m.id))
@@ -32,7 +32,14 @@ object WoodenArchitecture {
 
         val regionOnPage = false
 
-        regionsOnPage(ukWiki, specialNomination, contest, byRegion, regionIds)
+        try {
+          regionPerPage(ukWiki, specialNomination, contest, byRegion, regionIds)
+//          regionsOnPage(ukWiki, specialNomination, contest, byRegion, regionIds)
+        } catch {
+          case t:Throwable =>
+            println(t)
+            throw t
+        }
     }
 
   }
@@ -43,7 +50,7 @@ object WoodenArchitecture {
 
     for (regionId <- regionIds) {
 
-      val regionTitle = contest.country.regionById(regionId).name
+      val regionTitle = contest.country.regionById.get(regionId).fold("-")(_.name)
       val regionLink = "Вікіпедія:Вікі любить пам'ятки/" + regionTitle
 
       buf.append(s"\n== $regionTitle ==\n")
@@ -78,7 +85,7 @@ object WoodenArchitecture {
   def regionPerPage(ukWiki: MwBot, specialNomination: String, contest: Contest, byRegion: Map[String, Seq[Monument]], regionIds: SortedSet[String]) {
     for (regionId <- regionIds) {
 
-      val regionTitle = contest.country.regionById(regionId).name
+      val regionTitle = contest.country.regionById.get(regionId).fold("-")(_.name)
       val regionLink = "Вікіпедія:Вікі любить пам'ятки/" + regionTitle
 
       val regionMonuments = byRegion(regionId)

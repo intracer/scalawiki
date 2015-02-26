@@ -2,8 +2,8 @@ package client.elastic
 
 import client.dto.Page
 import com.fasterxml.jackson.annotation.JsonFilter
-import com.fasterxml.jackson.databind.{ObjectWriter, ObjectMapper}
-import com.fasterxml.jackson.databind.ser.impl.{SimpleFilterProvider, SimpleBeanPropertyFilter}
+import com.fasterxml.jackson.databind.ser.impl.{SimpleBeanPropertyFilter, SimpleFilterProvider}
+import com.fasterxml.jackson.databind.{ObjectMapper, ObjectWriter}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.source.DocumentSource
@@ -19,8 +19,8 @@ class ElasticSpec extends Specification with NoTimeConversions {
 
 
   val client = ElasticMw.connect()
-  val mapper = new ObjectMapper()
-  mapper.registerModule(DefaultScalaModule)
+//  val mapper = new ObjectMapper()
+//  mapper.registerModule(DefaultScalaModule)
 
   "Search page" should {
     "should find on page" in {
@@ -35,7 +35,7 @@ class ElasticSpec extends Specification with NoTimeConversions {
           val result = await(client.execute { search("uk.wikipedia/pages") })
 
           val strings = result.getHits.getHits.map(_.getSourceAsString)
-          val dtos =  strings.map(s => mapper.readValue(s, classOf[Page]))
+          val dtos =  strings.map(s => PageSource.mapper.readValue(s, classOf[Page]))
 
           dtos.size === 1
         }
@@ -56,7 +56,8 @@ object PageSource {
   val mapper = new ObjectMapper
   mapper.registerModule(DefaultScalaModule)
   mapper.addMixIn(classOf[Page], classOf[PageMixIn])
-  //  mapper.getSerializationConfig.withFilters(filters)
+  mapper.setConfig(mapper.getSerializationConfig.withFilters(filters))
+//  mapper.setConfig(mapper.getDeserializationConfig.withView(classOf[Page]))
 
   val writer = mapper.writer[ObjectWriter](filters)
 
@@ -64,4 +65,5 @@ object PageSource {
 }
 
 @JsonFilter("Page")
+//@JsonIgnoreProperties( "history" )
 trait PageMixIn

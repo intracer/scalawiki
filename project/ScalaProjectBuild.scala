@@ -51,7 +51,12 @@ object ScalaProjectBuild extends Build {
           "jp.skypencil.java-diff-utils" % "diffutils" % "1.5.0" withSources() withJavadoc(),
           "com.sksamuel.elastic4s" %% "elastic4s" % "1.4.11" withSources() withJavadoc(),
           "org.apache.lucene" % "lucene-expressions" % "4.10.3" withSources() withJavadoc(),
-
+          "commons-codec" % "commons-codec" % "1.10" withSources() withJavadoc(),
+          "net.jpountz.lz4" % "lz4" % "1.3.0" withSources() withJavadoc(),
+          "org.apache.kafka" % "kafka-clients" % "0.8.2.0",
+//          "com.fasterxml" % "aalto-xml" % "0.9.10",
+          "org.codehaus.woodstox" % "woodstox-core-asl" % "4.4.1",
+          "org.codehaus.woodstox" % "stax2-api" % "3.1.4",
 
         //          "nl.grons" %% "metrics-scala" % "3.3.0_a2.3",
           "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.2",
@@ -62,7 +67,8 @@ object ScalaProjectBuild extends Build {
           "com.github.nscala-time" %% "nscala-time" % "1.8.0",
 
           "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1" withSources() withJavadoc(),
-          "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % "2.5.1" withSources() withJavadoc()
+          "com.fasterxml.jackson.module" % "jackson-module-scala_2.10" % "2.5.1" withSources() withJavadoc(),
+          "nl.grons" %% "metrics-scala" % "3.3.0_a2.3" withSources() withJavadoc()
 //          "org.xwiki.commons" % "xwiki-commons-blame-script" % "6.4.1" withSources() withJavadoc(),
 //          "org.xwiki.commons" % "xwiki-commons-diff-api" % "6.4.1" withSources() withJavadoc(),
 //          "org.xwiki.commons" % "xwiki-commons-diff-script" % "6.4.1" withSources() withJavadoc(),

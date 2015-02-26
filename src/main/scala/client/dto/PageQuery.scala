@@ -118,6 +118,7 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
 
         site.system.log.info(s"pages: ${pages.size}, $continueParamName: $continue")
 
+//        future { pages }
         continue.fold( future {
           val result = previousPages ++ pages
           site.system.log.info(s"""query: ${toMap("id", "title")} , size: ${result.size}""")
