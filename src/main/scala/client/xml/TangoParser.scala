@@ -174,15 +174,16 @@ class TangoParser(val stripWhite: Boolean) {
       }
       else
       {
-        prefix = p[0 .. q - p];
-        p = ++q;
-        while (*q > 63 || text.attributeName[*q])
-        ++q;
-        localName = p[0 .. q - p];
+        prefix = text.slice(p, q)
+        q += 1
+        p = q
+        while (text(q) > 63 /*|| text.attributeName[*q]*/)
+          q+=1
+        localName = text.slice(p, q)
       }
 
-      text.point = q;
-      return type = XmlTokenType.StartElement;
+      point = q
+      return XmlTokenType.StartElement
     }
   }
 
