@@ -187,6 +187,115 @@ class TangoParser(val stripWhite: Boolean) {
     }
   }
 
+  def  doAttributeName()
+  {
+    var p = point
+    var q = p
+    var e = text.size
+
+    while (text(q) > 63 /*|| text.attributeName[*q]*/)
+      q+=1
+    if (q >= e)
+      return endOfInput()
+
+    if (text(q) == ':')
+    {
+      prefix = text.slice(p, q)
+      q +=1
+      p = q
+
+      while (text(q) > 63 /*|| text.attributeName[*q]*/)
+      q+=1;
+
+      localName = text.slice(p, q)
+    }
+    else
+    {
+      prefix = null;
+      localName = text.slice(p, q)
+    }
+
+    if (text(q) <= 32)
+    {
+      q += 1
+      while (text(q) <= 32) { q+=1}
+      if (q >= e)
+        return endOfInput()
+    }
+
+    if (text(q) == '=')
+    {
+      q+=1
+      while (text(q) <= 32) {q+=1}
+      if (q >= e)
+        return endOfInput()
+
+      val quote = text(q)
+      quote match
+      {
+        case '"' | '\'' =>
+            p = q + 1
+          q+=1
+        while (text(q) != quote) {q+=1}
+        if (q < e)
+        {
+          rawValue = text.slice(p, q - p)
+          point = q + 1;   // skip end quote
+          return XmlTokenType.Attribute
+        }
+        return endOfInput()
+
+        case _ =>
+        return doExpected("\' or \"", q)
+      }
+    }
+
+    return doExpected ("=", q)
+  }
+
+  def doEndEmptyElement()
+  {
+    if (text(point) == '/' && text(point + 1) == '>')
+    {
+      localName = null
+      prefix = null
+      point += 2
+      return XmlTokenType.EndEmptyElement
+    }
+    doExpected("/>", text.point)
+  }
+
+  /***********************************************************************
+
+    ***********************************************************************/
+
+  def doComment()
+  {
+    var e = text.size
+    var p = point
+    var q = p
+
+    while (p < e)
+    {
+      while (text(p) != '-') {
+        p+=1
+        if (p >= e)
+          return endOfInput()
+      }
+
+      if (text.slice(p, p+3) == ByteString("-->".getBytes("UTF-8")))
+      {
+        point = p + 3
+        rawValue = text.slice(q, p)
+        return XmlTokenType.Comment
+      }
+      p+=1
+    }
+
+    return endOfInput()
+  }
+
+
 }
 
 object Whitespace {
