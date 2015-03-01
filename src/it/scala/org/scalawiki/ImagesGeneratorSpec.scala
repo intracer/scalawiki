@@ -1,8 +1,6 @@
-package org.scalawiki.integration
+package org.scalawiki
 
 import java.util.concurrent.TimeUnit
-
-import org.scalawiki.util.BaseIntegrationSpec
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration

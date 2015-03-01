@@ -1,10 +1,10 @@
-package org.scalawiki.util
+package org.scalawiki
 
+import akka.actor.ActorSystem
 import org.scalawiki.http.HttpClientImpl
 import org.specs2.mutable.Specification
-import akka.actor.ActorSystem
-import org.scalawiki.{LoginInfo, MwBot}
-import scala.concurrent.{Future, Await}
+
+import scala.concurrent.{Await, Future}
 
 class BaseIntegrationSpec extends Specification {
 

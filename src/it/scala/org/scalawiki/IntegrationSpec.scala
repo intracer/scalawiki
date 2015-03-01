@@ -1,6 +1,4 @@
-package org.scalawiki.integration
-
-import org.scalawiki.util.BaseIntegrationSpec
+package org.scalawiki
 
 class IntegrationSpec extends BaseIntegrationSpec {
 
