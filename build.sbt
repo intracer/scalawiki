@@ -4,7 +4,7 @@ organization := "org.scalawiki"
 
 version := "0.3"
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.5"
 
 resolvers := Seq("spray repo" at "http://repo.spray.io",
   "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/")
