@@ -1,13 +1,13 @@
 package org.scalawiki.util
 
 import org.scalawiki.http.{CookiesAndBody, HttpClient}
-import org.specs2.mutable.Specification
-import spray.http._
-import scala.concurrent.{Promise, Future}
-import spray.http.HttpResponse
-import scala.collection.mutable
+import org.specs2.matcher.Matchers
+import spray.http.{HttpResponse, _}
 
-class TestHttpClient(val host: String, val commands: mutable.Queue[Command]) extends Specification with HttpClient {
+import scala.collection.mutable
+import scala.concurrent.{Future, Promise}
+
+class TestHttpClient(val host: String, val commands: mutable.Queue[Command]) extends Matchers with HttpClient {
 
   override def getResponse(url: String) = getResponse(Uri(url))
 
