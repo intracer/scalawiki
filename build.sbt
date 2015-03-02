@@ -10,7 +10,7 @@ resolvers := Seq("spray repo" at "http://repo.spray.io",
   "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/")
 
 libraryDependencies ++= {
-  val akkaV = "2.3.4"
+  val akkaV = "2.3.9"
   val sprayV = "1.3.2"
   Seq(
     "io.spray" %% "spray-client" % sprayV,
