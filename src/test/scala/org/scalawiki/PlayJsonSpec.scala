@@ -20,7 +20,7 @@ class PlayJsonSpec extends Specification {
       val json = Json.parse(pageStr)
       val pageOpt = json.validate[Page].asOpt
 
-      checkPage(pageOpt)
+      checkPageOpt(pageOpt)
     }
   }
 
@@ -29,10 +29,8 @@ class PlayJsonSpec extends Specification {
     val json = Json.parse(limitsStr)
 
     "contain page" in {
-      val pages = json.validate[Seq[Page]](pagesReads(queryType)).asOpt
-      pages must beSome
-      pages.get must have size 1
-      checkPage(pages.get(0))
+      val pagesOpt = json.validate[Seq[Page]](pagesReads(queryType)).asOpt
+      checkPages(pagesOpt)
     }
 
     "not have continue" in {
@@ -46,10 +44,8 @@ class PlayJsonSpec extends Specification {
     val json = Json.parse(queryContinueStr)
 
     "contain page" in {
-      val pages = json.validate[Seq[Page]](pagesReads(queryType)).asOpt
-      pages must beSome
-      pages.get must have size 1
-      checkPage(pages.get(0))
+      val pagesOpt = json.validate[Seq[Page]](pagesReads(queryType)).asOpt
+      checkPages(pagesOpt)
     }
 
     "have continue" in {
@@ -63,10 +59,8 @@ class PlayJsonSpec extends Specification {
     val json = Json.parse(queryContinueStr)
 
     "contain page" in {
-      val pages = json.validate[Seq[Page]](pagesReads(queryType)).asOpt
-      pages must beSome
-      pages.get must have size 1
-      checkPage(pages.get(0))
+      val pagesOpt = json.validate[Seq[Page]](pagesReads(queryType)).asOpt
+      checkPages(pagesOpt)
     }
 
     "have continue" in {
@@ -76,11 +70,18 @@ class PlayJsonSpec extends Specification {
     }
   }
 
-  def checkPage(pageOpt: Option[Page]): MatchResult[Any] = {
-    pageOpt must beSome
-    val page = pageOpt.get
+  def checkPages(pagesOpt: Option[Seq[Page]]): MatchResult[Any] = {
+    pagesOpt.map { pages =>
+      pages must have size 1
+      checkPage(pages(0))
+    }
+      .getOrElse(pagesOpt must beSome)
+  }
 
-    checkPage(page)
+  def checkPageOpt(pageOpt: Option[Page]): MatchResult[Any] = {
+
+    pageOpt.map(checkPage).getOrElse(pageOpt must beSome)
+
   }
 
   def checkPage(page: Page): MatchResult[Any] = {
