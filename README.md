@@ -11,5 +11,5 @@ Why [another client library for MediaWiki](https://www.mediawiki.org/wiki/API:Cl
 
 Well many of them are very basic, not to say primitive. For example JWBF [only recently] (https://github.com/eldur/jwbf/issues/21) got the ability to query more than 1 page at a time. I don't know any Java client that supports generators (fetching properties from articles listed by list query in a single request).
 
-When Wikipedia sites are real examples of Big Data it is just a show stopper. Fethcing information about Wiki Loves Monuments uploads in such ineffective way will take almost a day even for one country, when could be done in several minutes otherwise in batches of 5000 (recently Wikimedia decreased max limit to 500 and that really slowed thing down a bit, but anyway).
+When Wikipedia sites are real examples of Big Data it is just a show stopper. Fetching information about Wiki Loves Monuments uploads in such ineffective way will take almost a day even for one country, when could be done in several minutes otherwise in batches of 5000 (recently Wikimedia decreased max limit to 500 and that really slowed thing down a bit, but anyway).
 
