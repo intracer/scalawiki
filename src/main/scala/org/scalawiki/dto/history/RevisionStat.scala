@@ -1,7 +1,6 @@
 package org.scalawiki.dto.history
 
 import org.scalawiki.dto.{Page, Revision}
-import org.xwiki.blame.AnnotatedElement
 
 class RevisionStat(val page: Page, revFilter: RevisionFilter) {
 
@@ -10,8 +9,7 @@ class RevisionStat(val page: Page, revFilter: RevisionFilter) {
   val users = page.history.users(revFilter.from, revFilter.to)
   val delta = page.history.delta(revFilter.from, revFilter.to).getOrElse(0)
 
-  val annotatedElements = page.history.annotation
-    .fold(Seq.empty[AnnotatedElement[Revision, String]])(_.annotatedElements)
+  val annotatedElements = page.history.annotatedElements
     .filter(element => revFilter.predicate(element.getRevision))
 
   val byRevisionContent: Map[Revision, Seq[String]] = annotatedElements.groupBy(_.getRevision).mapValues(_.map(_.getElement))

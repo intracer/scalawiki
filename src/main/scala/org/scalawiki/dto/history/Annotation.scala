@@ -8,9 +8,9 @@ import org.xwiki.blame.{AnnotatedContent, AnnotatedElement}
 
 class Annotation(val page: Page) {
 
-  def revisions = page.revisions ++ Seq(Revision().withContent("").withIds(0, -1))
+  def revisions = page.revisions
 
-  val annotation = createAnnotation(revisions)
+  val annotation = createAnnotation(revisions :+ Annotation.revision0)
 
   import scala.collection.JavaConverters._
   val annotatedElements: Seq[AnnotatedElement[Revision, String]] = annotation.toSeq.flatMap(_.iterator().asScala.toSeq)
@@ -47,6 +47,9 @@ class Annotation(val page: Page) {
 }
 
 object Annotation {
+
+  val revision0: Revision = Revision().withContent("").withIds(0, -1)
+
   def create(page: Page): Option[Annotation] = {
     val contentSize = page.revisions.count(_.content.isDefined)
     if (contentSize > 0) {
