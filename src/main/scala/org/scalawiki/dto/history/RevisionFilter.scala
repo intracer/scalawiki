@@ -15,7 +15,11 @@ class RevisionFilter(
   }
 
   def predicate(rev: Revision):  Boolean = {
-        rev.timestamp.forall(ts => from.forall(ts.isAfter) && to.forall(ts.isBefore)) &&
+        rev.timestamp.forall{
+          ts =>
+            from.forall(f => ts.isAfter(f) || ts.isEqual(f)) &&
+            to.forall(t => ts.isBefore(t) || ts.isEqual(t))
+        } &&
         rev.user.forall(u => user.forall(u.equals)) &&
         rev.userId.forall(u => userId.forall(u.equals))
   }

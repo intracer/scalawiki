@@ -17,11 +17,11 @@ case class Revision(
 
   def withContent(content: String*) = copy(content = Some(content.mkString("\n")))
 
-  def withIds(revId: Id, parentId: Id) = copy(revId = Some(revId), parentId = Some(parentId))
+  def withIds(revId: Id, parentId: Id = 0) = copy(revId = Some(revId), parentId = Some(parentId))
 
   def withUser(userId: Id, user: String) = copy(userId = Some(userId), user = Some(user))
 
-  def withTimeStamp(timestamp: DateTime) = copy(timestamp = Some(timestamp))
+  def withTimeStamp(timestamp: DateTime = DateTime.now) = copy(timestamp = Some(timestamp))
 }
 
 object Revision {
