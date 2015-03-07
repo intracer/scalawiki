@@ -3,6 +3,7 @@ package org.scalawiki
 import java.util.concurrent.TimeUnit
 
 import akka.actor.ActorSystem
+import org.scalawiki.dto.{Page, Revision}
 import org.scalawiki.util.{Command, TestHttpClient}
 import org.specs2.mutable.Specification
 
@@ -46,9 +47,12 @@ class MwBotSpec extends Specification {
       val pageText2 = "more vandalism"
 
       val response =
-        s"""{"query":{"pages":{
-          |"569559":{"pageid":569559,"ns":1,"title":"Talk:Welfare reform", "revisions": [{"user": "u1", "comment":"c1", "*":"$pageText1"}]},
-          |"4571809":{"pageid":4571809,"ns":2,"title":"User:Formator", "revisions": [{"user": "u2", "comment":"c2","*":"$pageText2"}]} }}}""".stripMargin
+        s"""{"query": { "pages": {
+          | "569559": { "pageid": 569559, "ns": 1, "title": "Talk:Welfare reform",
+          |             "revisions": [{ "userid": 1, "user": "u1", "comment": "c1", "*": "$pageText1"}]},
+          |"4571809": { "pageid": 4571809, "ns": 2, "title": "User:Formator",
+          |             "revisions": [{ "userid": 2, "user": "u2", "comment": "c2", "*": "$pageText2"}]}
+          |}}}""".stripMargin
 
       val bot = getBot(new Command(
         Map(
@@ -60,9 +64,9 @@ class MwBotSpec extends Specification {
 
       val future = bot.pagesById(Set(569559, 4571809)).revisions(Set.empty, Set("content", "user", "comment"))
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
-      result must have size(2)
-     // result(0) === Page(569559, 1, "Talk:Welfare reform", Seq(Revision("u1","t1","c1",Some(pageText1))))
-    //  result(1) === Page(4571809, 2, "User:Formator", Seq(Revision("u2","t2","c2",Some(pageText2))))
+      result must have size 2
+      result(0) === Page(569559, 1, "Talk:Welfare reform", Seq(Revision().withUser(1, "u1").withComment("c1").withText(pageText1)))
+      result(1) === Page(4571809, 2, "User:Formator", Seq(Revision().withUser(2, "u2").withComment("c2").withText(pageText2)))
     }
   }
 
