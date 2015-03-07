@@ -13,7 +13,7 @@ class Annotation(val page: Page) {
   val annotation = createAnnotation(revisions)
 
   import scala.collection.JavaConverters._
-  val annotatedElements:Seq[AnnotatedElement[Revision, String]] = annotation.toSeq.flatMap(_.iterator().asScala.toSeq)
+  val annotatedElements: Seq[AnnotatedElement[Revision, String]] = annotation.toSeq.flatMap(_.iterator().asScala.toSeq)
     .filter(_.getRevision != null)
 
   val byRevisionContent: Map[Revision, Seq[String]] = annotatedElements.groupBy(_.getRevision).mapValues(_.map(_.getElement))
