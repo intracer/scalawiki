@@ -20,6 +20,10 @@ libraryDependencies ++= {
     "commons-codec" % "commons-codec" % "1.10",
     "com.github.nscala-time" %% "nscala-time" % "1.8.0",
     "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
+    "com.typesafe.slick" %% "slick" % "2.1.0",
+    "com.h2database" % "h2" % "1.3.175",
+    "com.github.wookietreiber" %% "scala-chart" % "0.4.2",
+    "org.jfree" % "jfreesvg" % "2.1",
     "org.specs2" %% "specs2" % "2.3.12" % "test")
 }
 
