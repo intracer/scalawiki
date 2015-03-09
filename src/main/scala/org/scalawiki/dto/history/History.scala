@@ -2,16 +2,10 @@ package org.scalawiki.dto.history
 
 import org.joda.time.DateTime
 import org.scalawiki.dto.{Page, Revision}
-import org.xwiki.blame.AnnotatedElement
 
 class History(val page: Page) {
 
   def revisions = page.revisions
-
-  val annotation: Option[Annotation] = Annotation.create(page)
-
-  def annotatedElements: Seq[AnnotatedElement[Revision, String]] =
-    annotation.fold(Seq.empty[AnnotatedElement[Revision, String]])(_.annotatedElements)
 
   def users(from: Option[DateTime] = None, to: Option[DateTime] = None): Set[String] = {
     val filtered = new RevisionFilter(from, to).apply(revisions)
