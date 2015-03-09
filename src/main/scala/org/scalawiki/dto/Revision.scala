@@ -14,6 +14,7 @@ case class Revision(
                      content: Option[String] = None,
                      size: Option[Int] = None,
                      sha1: Option[String] = None) {
+  def id = revId
 
   def withContent(content: String*) = copy(content = Some(content.mkString("\n")))
 

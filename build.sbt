@@ -24,6 +24,7 @@ libraryDependencies ++= {
     "com.h2database" % "h2" % "1.3.175",
     "com.github.wookietreiber" %% "scala-chart" % "0.4.2",
     "org.jfree" % "jfreesvg" % "2.1",
+    "com.fasterxml" % "aalto-xml" % "0.9.11",
     "org.specs2" %% "specs2" % "2.3.12" % "test")
 }
 
