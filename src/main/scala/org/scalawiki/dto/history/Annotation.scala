@@ -48,7 +48,7 @@ class Annotation(val page: Page) {
 
 object Annotation {
 
-  val revision0: Revision = Revision().withContent("").withIds(0, -1)
+  val revision0: Revision = Revision(0).withContent("")
 
   def create(page: Page): Option[Annotation] = {
     val contentSize = page.revisions.count(_.content.isDefined)

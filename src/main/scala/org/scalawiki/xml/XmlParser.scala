@@ -3,7 +3,8 @@ package org.scalawiki.xml
 import java.io.{StringReader, File}
 import javax.xml.stream.{XMLStreamReader, XMLStreamConstants, XMLInputFactory}
 
-import org.codehaus.stax2.XMLInputFactory2
+import org.codehaus.stax2.{XMLStreamReader2, XMLInputFactory2}
+import org.scalawiki.Timestamp
 import org.scalawiki.dto.{Page, Revision}
 
 import scala.collection.{Iterator, AbstractIterator}
@@ -27,6 +28,12 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
 
     }
   }
+
+  def close() =
+    parser match {
+      case stax2Parser: XMLStreamReader2 => stax2Parser.closeCompletely()
+      case _ => parser.close()
+    }
 
   private def readSiteInfo() = {
     if (findElementStart("siteinfo", "page")) {
@@ -66,54 +73,54 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
       None
 
 
-
-  private def readRevisions(): Seq[Revision]  = {
+  private def readRevisions(): Seq[Revision] = {
     // TODO streaming and filtering
     var revisions = Seq.empty[Revision]
     while (findElementStart("revision", parent = "page")) {
 
-      val id = readElement("id").map(_.toInt)
-      val parentId = readElement("parentid").map(_.toInt)
-      val timetamp = readElement("timestamp")
+      readElement("id").map(_.toInt).foreach { id =>
+        val parentId = readElement("parentid").map(_.toInt)
+        val timestamp = readElement("timestamp").map(Timestamp.parse)
 
-      findElementStart("contributor")
-      val user = readElement("username")
-      val userId = readElement("id").map(_.toInt)
+        findElementStart("contributor")
+        val user = readElement("username")
+        val userId = readElement("id").map(_.toInt)
 
-      val comment = readElement("comment")
-      val text = readElement("text")
-      val sha1 = readElement("sha1")
+        val comment = readElement("comment")
+        val text = readElement("text")
+        val sha1 = readElement("sha1")
 
-      findElementEnd("revision")
+        findElementEnd("revision")
 
-      revisions :+=
-        Revision(
-          revId = id,
-          parentId = parentId,
-          user = user,
-          userId = userId,
-          comment = comment,
-          content = text,
-          sha1 = sha1
-        )
-
+        revisions :+=
+          Revision(
+            revId = id,
+            parentId = parentId,
+            user = user,
+            userId = userId,
+            timestamp = timestamp,
+            comment = comment,
+            content = text,
+            sha1 = sha1
+          )
+      }
     }
     revisions
   }
 
   private def readElement(name: String): Option[String] = {
     while (parser.next() != XMLStreamConstants.START_ELEMENT ||
-      parser.getLocalName != name) { }
+      parser.getLocalName != name) {}
 
     if (parser.getLocalName == name)
       Some(parser.getElementText)
-     else
+    else
       None
   }
 
   private def findElementStart(name: String, next: String = "", parent: String = ""): Boolean = {
     if (parser.getEventType == XMLStreamConstants.START_ELEMENT &&
-        parser.getLocalName == name) {
+      parser.getLocalName == name) {
       true
     } else {
       while (parser.hasNext) {

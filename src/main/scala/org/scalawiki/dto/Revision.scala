@@ -5,7 +5,7 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.joda.time.DateTime
 
 case class Revision(
-                     revId: Option[Id] = None,
+                     revId: Id,
                      parentId: Option[Id] = None,
                      user: Option[String] = None,
                      userId: Option[Id] = None,
@@ -20,7 +20,7 @@ case class Revision(
 
   def withText(text: String*) = copy(content = Some(text.mkString("\n")))
 
-  def withIds(revId: Id, parentId: Id = 0) = copy(revId = Some(revId), parentId = Some(parentId))
+  def withIds(revId: Id, parentId: Id = 0) = copy(revId = revId, parentId = Some(parentId))
 
   def withUser(userId: Id, user: String) = copy(userId = Some(userId), user = Some(user))
 
@@ -35,7 +35,7 @@ object Revision {
     .zip(texts.size to 1 by -1)
     .map{ case (text, index) =>
     new Revision(
-      revId = Some(index),
+      revId = index,
       parentId = Some(index - 1),
       content = Some(text),
       size = Some(text.size),

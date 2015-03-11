@@ -99,7 +99,7 @@ class HttpClientImpl(val system: ActorSystem) extends HttpClient {
       addHeaders(
         Cookie(cookies),
         `Accept-Encoding`(HttpEncodings.gzip),
-        `User-Agent`("ScalaMwBot/0.1")) ~>
+        `User-Agent`("ScalaWiki/0.3")) ~>
         logRequest(log, Logging.InfoLevel)
         //      logRequest(r =>
         //        log.info(s"HttpRequest: h: ${r.headers} d:${r.entity.data.asString}")

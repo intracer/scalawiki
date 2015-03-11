@@ -74,7 +74,7 @@ object Parser {
   val jodaDateTimeReads = Reads.jodaDateReads("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
   implicit val revisonReads: Reads[Revision] = (
-    (__ \ "revid").readNullable[Id] and
+    (__ \ "revid").read[Id] and
       (__ \ "parentid").readNullable[Id] and
       (__ \ "user").readNullable[String] and
       (__ \ "userid").readNullable[Id] and

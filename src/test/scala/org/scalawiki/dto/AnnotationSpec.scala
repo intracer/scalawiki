@@ -21,7 +21,7 @@ class AnnotationSpec extends Specification {
 
   "annotation" should {
     "annotate 1 revision" in {
-      val r1 = Revision().withContent("a1", "b1").withUser(1, "u1")
+      val r1 = Revision(1).withContent("a1", "b1").withUser(1, "u1")
       val annotation = fromRevs(r1)
 
       val elements = annotation.annotatedElements
@@ -50,8 +50,8 @@ class AnnotationSpec extends Specification {
 
   "annotation" should {
     "annotate 2 revisions" in {
-      val r2 = Revision().withContent("a2", "b1", "c1").withUser(1, "u2")
-      val r1 = Revision().withContent("a1", "b1", "c1").withUser(1, "u1")
+      val r2 = Revision(2).withContent("a2", "b1", "c1").withUser(1, "u2")
+      val r1 = Revision(1).withContent("a1", "b1", "c1").withUser(1, "u1")
       val annotation = fromRevs(r2, r1)
 
       val elements = annotation.annotatedElements
