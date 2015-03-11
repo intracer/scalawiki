@@ -49,9 +49,9 @@ class MwBotSpec extends Specification {
       val response =
         s"""{"query": { "pages": {
           | "569559": { "pageid": 569559, "ns": 1, "title": "Talk:Welfare reform",
-          |             "revisions": [{ "userid": 1, "user": "u1", "comment": "c1", "*": "$pageText1"}]},
+          |             "revisions": [{ "revid": 1, "userid": 1, "user": "u1", "comment": "c1", "*": "$pageText1"}]},
           |"4571809": { "pageid": 4571809, "ns": 2, "title": "User:Formator",
-          |             "revisions": [{ "userid": 2, "user": "u2", "comment": "c2", "*": "$pageText2"}]}
+          |             "revisions": [{ "revid": 2, "userid": 2, "user": "u2", "comment": "c2", "*": "$pageText2"}]}
           |}}}""".stripMargin
 
       val bot = getBot(new Command(
@@ -60,9 +60,9 @@ class MwBotSpec extends Specification {
           "action" -> "query",
           "prop" -> "revisions",
           "continue" -> "",
-          "rvprop"->"content|user|comment"), response))
+          "rvprop"->"ids|content|user|comment"), response))
 
-      val future = bot.pagesById(Set(569559, 4571809)).revisions(Set.empty, Set("content", "user", "comment"))
+      val future = bot.pagesById(Set(569559, 4571809)).revisions(Set.empty, Set("ids", "content", "user", "comment"))
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2
       result(0) === Page(569559, 1, "Talk:Welfare reform", Seq(Revision(1).withUser(1, "u1").withComment("c1").withText(pageText1)))

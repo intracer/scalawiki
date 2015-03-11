@@ -18,28 +18,28 @@ class GeneratorSpec extends Specification with MockBotSpec {
 
       val response1 =
         s"""{"query":{"pages":{
-          |"569559":{"pageid":569559,"ns":1,"title":"Talk:Welfare reform", "revisions": [{"user": "u1", "comment":"c1", "*":"$pageText1"}] }}},
+          |"569559":{"pageid":569559,"ns":1,"title":"Talk:Welfare reform", "revisions": [{"revid": 1, "user": "u1", "comment":"c1", "*":"$pageText1"}] }}},
           | "continue":{"continue":"gcmcontinue||","gcmcontinue":"10|Stub|6674690"}}""".stripMargin
 
       val response2 =
         s"""{"query":{"pages":{
-          |"4571809":{"pageid":4571809,"ns":2,"title":"User:Formator", "revisions": [{"user": "u2", "comment":"c2","*":"$pageText2"}]} }}}""".stripMargin
+          |"4571809":{"pageid":4571809,"ns":2,"title":"User:Formator", "revisions": [{"revid": 2, "user": "u2", "comment":"c2","*":"$pageText2"}]} }}}""".stripMargin
 
 
       val commands = Seq(
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "content|user|comment",
+          "prop" -> "revisions", "rvprop" -> "ids|content|user|comment",
           "continue" -> ""), response1),
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "content|user|comment",
+          "prop" -> "revisions", "rvprop" -> "ids|content|user|comment",
           "continue" -> "gcmcontinue||", "gcmcontinue" -> "10|Stub|6674690"), response2)
       )
 
       val bot = getBot(commands: _*)
 
-      val future = bot.page("Category:SomeCategory").revisionsByGenerator("categorymembers", "cm", Set.empty, Set("content", "user", "comment"))
+      val future = bot.page("Category:SomeCategory").revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "comment"))
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2
      // result(0) === Page(569559, 1, "Talk:Welfare reform", Seq(Revision("u1", "t1", "c1", Some(pageText1))))

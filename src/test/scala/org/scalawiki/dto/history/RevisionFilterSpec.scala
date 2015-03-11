@@ -19,7 +19,7 @@ class RevisionFilterSpec extends Specification {
       val filtered = rf(Seq(r1,r2))
 
       filtered.size === 1
-      filtered.head.revId === Some(2)
+      filtered.head.revId === 2
     }
 
     "filter to" in {
@@ -31,7 +31,7 @@ class RevisionFilterSpec extends Specification {
       val filtered = rf(Seq(r1,r2))
 
       filtered.size === 1
-      filtered.head.revId === Some(1)
+      filtered.head.revId === 1
     }
 
     "filter from and to" in {
