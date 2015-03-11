@@ -19,7 +19,7 @@ This library uses [Scala Futures](http://docs.scala-lang.org/overviews/core/futu
 
 # Roadmap
 1. First goal is to 
-  * Fully support [MediaWiki API](https://www.mediawiki.org/wiki/API:Main_page), maybe without  [WikiData](https://meta.wikimedia.org/wiki/Wikidata) support at first. This means all the possible API parameters. Don't know if any other API client library supports MediaWiki API fully, maybe  [pywikibot](https://www.mediawiki.org/wiki/Manual:Pywikibot) does. Most others support only some very limited subset.
+  * Fully support [MediaWiki API](https://www.mediawiki.org/wiki/API:Main_page), maybe without  [WikiData](https://meta.wikimedia.org/wiki/Wikidata) support at first. This means all the possible API parameters. Don't know if any API client library supports MediaWiki API fully, maybe  [pywikibot](https://www.mediawiki.org/wiki/Manual:Pywikibot) does. Most others support only some very limited subset.
   * Support different backends - MediaWiki API, [xml dumps](https://meta.wikimedia.org/wiki/Data_dumps), [MediWiki database](https://www.mediawiki.org/wiki/Manual:Database_layout). Support coping data between backends (importing and exporting xml dumps to database, storing data retrived by MediaWiki API to xml dumps or database).
   * Excercise the library with different applications
 2. Next will come 
