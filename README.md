@@ -14,6 +14,9 @@ Well many of them are very basic, not to say primitive. For example JWBF [only r
 
 When Wikipedia sites are real examples of Big Data it is just a show stopper. Fetching information about Wiki Loves Monuments uploads in such ineffective way will take almost a day even for one country, when could be done in several minutes otherwise in batches of 5000 (recently Wikimedia decreased max limit to 500 and that really slowed thing down a bit, but anyway).
 
+This library uses [Scala Futures](http://docs.scala-lang.org/overviews/core/futures.html) for easy job parallelization, later may use [Akka actors](http://akka.io/docs/) and Akka Streams 
+
+
 # Roadmap
 1. First goal is to 
   * Fully support [MediaWiki API](https://www.mediawiki.org/wiki/API:Main_page), maybe without  [WikiData](https://meta.wikimedia.org/wiki/Wikidata) support at first. This means all the possible API parameters. Don't know if any other API client library supports MediaWiki API fully, maybe  [pywikibot](https://www.mediawiki.org/wiki/Manual:Pywikibot) does. Most others support only some very limited subset.
