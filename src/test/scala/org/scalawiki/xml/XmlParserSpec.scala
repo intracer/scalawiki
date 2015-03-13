@@ -8,6 +8,8 @@ import org.specs2.matcher.MatchResult
 import org.specs2.mutable.Specification
 import com.github.nscala_time.time.Imports._
 
+import scala.io.Source
+
 class XmlParserSpec extends Specification {
 
   "xml parser " should {
@@ -148,6 +150,48 @@ class XmlParserSpec extends Specification {
       revs2.size === 1
       checkRevision(revId2, parentId2, timestamp2, user2, userId2, comment2, text2, revs2(0))
     }
+  }
+
+  "parse mediwiki export-demo" in {
+    val is = getClass.getResourceAsStream("/org/scalawiki/xml/export-demo.xml")
+    is !== null
+    val s = Source.fromInputStream(is).mkString
+
+    val parser = XmlParser.parseString(s)
+
+    parser.siteInfo === Some(SiteInfo(
+      Some("DemoWiki"),
+      Some("demowiki"),
+      Some("MediaWiki 1.24")
+    ))
+
+    val namespaces = parser.namespaces
+    namespaces.size === 18
+
+    namespaces(-2) === "Media"
+    namespaces(-1) === "Special"
+    namespaces(0) === ""
+    namespaces(1) === "Talk"
+    namespaces(15) === "Category talk"
+
+    val pages = parser.iterator.toBuffer
+    pages.size === 3
+
+    val p1 = pages(0)
+    (p1.title, p1.ns, p1.id) === ("Page title", 0, 1)
+
+    val p1Revs = p1.revisions.toBuffer
+    p1Revs.size === 2
+    val p1r1 = p1Revs(0)
+    (p1r1.revId, p1r1.parentId) === (100, Some(99))
+    val p1r2 = p1Revs(1)
+    (p1r2.revId, p1r2.parentId) === (99, None)
+
+    val p2 = pages(1)
+    (p2.title, p2.ns, p2.id) === ("Talk:Page title", 1, 2)
+
+    val p3 = pages(2)
+    (p3.title, p3.ns, p3.id) === ("File:Some image.jpg", 6, 3)
 
   }
 

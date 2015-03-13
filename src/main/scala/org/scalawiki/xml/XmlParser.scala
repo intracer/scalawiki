@@ -1,6 +1,6 @@
 package org.scalawiki.xml
 
-import java.io.{StringReader, File}
+import java.io.{Reader, InputStream, StringReader, File}
 import javax.xml.stream.{XMLStreamReader, XMLStreamConstants, XMLInputFactory}
 
 import org.codehaus.stax2.{XMLStreamReader2, XMLInputFactory2}
@@ -13,8 +13,9 @@ case class SiteInfo(name: Option[String], db: Option[String], generator: Option[
 
 class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
 
-  var siteInfo: Option[SiteInfo] = None
-  var namespaces: Map[Int, String] = Map.empty
+  private var _siteInfo: Option[SiteInfo] = None
+  private var _namespaces: Map[Int, String] = Map.empty
+  private var parsedSiteInfo: Boolean = false
 
   override def iterator = {
 
@@ -29,6 +30,16 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
     }
   }
 
+  def siteInfo = {
+    readSiteInfo()
+    _siteInfo
+  }
+
+  def namespaces = {
+    readSiteInfo()
+    _namespaces
+  }
+
   def close() =
     parser match {
       case stax2Parser: XMLStreamReader2 => stax2Parser.closeCompletely()
@@ -36,13 +47,16 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
     }
 
   private def readSiteInfo() = {
-    if (findElementStart("siteinfo", "page")) {
-      val sitename = readElement("sitename")
-      val dbname = readElement("dbname")
-      val generator = readElement("generator")
+    if (!parsedSiteInfo) {
+      if (findElementStart("siteinfo", "page")) {
+        val sitename = readElement("sitename")
+        val dbname = readElement("dbname")
+        val generator = readElement("generator")
 
-      siteInfo = Some(SiteInfo(sitename, dbname, generator))
-      readNamespaces()
+        _siteInfo = Some(SiteInfo(sitename, dbname, generator))
+        readNamespaces()
+      }
+      parsedSiteInfo = true
     }
   }
 
@@ -54,7 +68,7 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
         val key = parser.getAttributeValue("", "key").toInt
         val prefix = parser.getElementText
 
-        namespaces += (key -> prefix)
+        _namespaces += (key -> prefix)
       }
       findElementEnd("namespaces")
     }
@@ -79,12 +93,13 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
     while (findElementStart("revision", parent = "page")) {
 
       readElement("id").map(_.toInt).foreach { id =>
-        val parentId = readElement("parentid").map(_.toInt)
+        val parentId = readElement("parentid", "timestamp").map(_.toInt)
         val timestamp = readElement("timestamp").map(Timestamp.parse)
 
         findElementStart("contributor")
-        val user = readElement("username")
-        val userId = readElement("id").map(_.toInt)
+        val user = readElement("username", "ip", "contributor")
+        val userId = readElement("id", "ip", "contributor").map(_.toInt)
+        val userIp = readElement("ip", parent = "contributor")
 
         val comment = readElement("comment")
         val text = readElement("text")
@@ -108,37 +123,30 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
     revisions
   }
 
-  private def readElement(name: String): Option[String] = {
-    while (parser.next() != XMLStreamConstants.START_ELEMENT ||
-      parser.getLocalName != name) {}
-
-    if (parser.getLocalName == name)
+  private def readElement(name: String, next: String = "", parent: String = ""): Option[String] = {
+    if (findElementStart(name, next, parent))
       Some(parser.getElementText)
     else
       None
   }
 
   private def findElementStart(name: String, next: String = "", parent: String = ""): Boolean = {
-    if (parser.getEventType == XMLStreamConstants.START_ELEMENT &&
-      parser.getLocalName == name) {
-      true
-    } else {
-      while (parser.hasNext) {
-        val event = parser.next()
-        event match {
-          case XMLStreamConstants.START_ELEMENT
-            if parser.getLocalName == name =>
-            return true
-          case XMLStreamConstants.START_ELEMENT
-            if parser.getLocalName == next =>
-            return false
-          case XMLStreamConstants.END_ELEMENT
-            if parser.getLocalName == parent =>
-            return false
-          case _ =>
+    val event = parser.getEventType
+    event match {
+      case XMLStreamConstants.START_ELEMENT if parser.getLocalName == name => true
+      case XMLStreamConstants.START_ELEMENT if parser.getLocalName == next => false
+      case XMLStreamConstants.END_ELEMENT if parser.getLocalName == parent => false
+      case _ =>
+        while (parser.hasNext) {
+          val event = parser.next()
+          event match {
+            case XMLStreamConstants.START_ELEMENT if parser.getLocalName == name => return true
+            case XMLStreamConstants.START_ELEMENT if parser.getLocalName == next => return false
+            case XMLStreamConstants.END_ELEMENT if parser.getLocalName == parent => return false
+            case _ =>
+          }
         }
-      }
-      false
+        false
     }
   }
 
@@ -153,18 +161,16 @@ object XmlParser {
 
   val xmlInputFactory = newXmlInputFactory
 
-  def parseFile(filename: String) = {
-    val file = new File(filename)
-    val xmlReader = xmlInputFactory.createXMLStreamReader(file)
-    new XmlParser(xmlReader)
-  }
+  def parseFile(filename: String) =
+    new XmlParser(xmlInputFactory.createXMLStreamReader(new File(filename)))
 
-  def parseString(data: String) = {
-    val reader = new StringReader(data)
-    val xmlReader = xmlInputFactory.createXMLStreamReader(reader)
-    new XmlParser(xmlReader)
-  }
+  //  def parseUrl(url: URL) = new XmlParser(xmlInputFactory.createXMLStreamReader(url))
 
+  def parseInputStream(is: InputStream) = new XmlParser(xmlInputFactory.createXMLStreamReader(is))
+
+  def parseReader(reader: Reader) = new XmlParser(xmlInputFactory.createXMLStreamReader(reader))
+
+  def parseString(data: String) = parseReader(new StringReader(data))
 
   def newXmlInputFactory: XMLInputFactory2 = {
     val xmlInputFactory = XMLInputFactory.newInstance().asInstanceOf[XMLInputFactory2]
