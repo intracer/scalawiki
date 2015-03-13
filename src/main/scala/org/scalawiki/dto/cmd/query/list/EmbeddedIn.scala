@@ -18,7 +18,7 @@ import org.scalawiki.dto.Page.Id
 
 case class EiTitle(override val arg: String)
   extends StringParameter("eititle", "Title to search. Cannot be used together with eipageid.") with EiParam[String]
-case class EiPageid(override val arg: Id)
+case class EiPageId(override val arg: Id)
   extends IntParameter("eipageid", "Page ID to search. Cannot be used together with eititle.") with EiParam[Int]
 case class EiLimit(override val arg: String)
   extends StringParameter("eilimit", "How many total pages to return.") with EiParam[String]

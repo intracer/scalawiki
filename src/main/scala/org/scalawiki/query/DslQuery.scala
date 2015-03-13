@@ -1,6 +1,7 @@
-package org.scalawiki.dto
+package org.scalawiki.query
 
 import org.scalawiki.MwBot
+import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.ActionParam
 import org.scalawiki.json.Parser
 
@@ -19,7 +20,7 @@ class DslQuery(action: ActionParam, site: MwBot) {
       body =>
         val parser = new Parser(action)
 
-        future {
+        Future {
           parser.parse(body)
         }
     }

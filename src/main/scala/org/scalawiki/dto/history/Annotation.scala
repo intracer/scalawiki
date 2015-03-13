@@ -17,7 +17,7 @@ class Annotation(val page: Page) {
     .filter(_.getRevision != null)
 
   val byRevisionContent: Map[Revision, Seq[String]] = annotatedElements.groupBy(_.getRevision).mapValues(_.map(_.getElement))
-  val byUserContent: Map[String, Seq[String]] = annotatedElements.groupBy(_.getRevision.user.getOrElse("")).mapValues(_.map(_.getElement))
+  val byUserContent: Map[String, Seq[String]] = annotatedElements.groupBy(_.getRevision.user.flatMap(_.name).getOrElse("")).mapValues(_.map(_.getElement))
 
   val byRevisionSize =  byRevisionContent.mapValues(_.map(_.size).sum)
   val byUserSize =  byUserContent.mapValues(_.map(_.size).sum)

@@ -1,4 +1,4 @@
-package org.scalawiki
+package org.scalawiki.query
 
 import java.util.concurrent.TimeUnit
 

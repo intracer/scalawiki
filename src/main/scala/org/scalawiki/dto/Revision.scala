@@ -7,8 +7,7 @@ import org.joda.time.DateTime
 case class Revision(
                      revId: Id,
                      parentId: Option[Id] = None,
-                     user: Option[String] = None,
-                     userId: Option[Id] = None,
+                     user: Option[Contributor] = None,
                      timestamp: Option[DateTime] = None,
                      comment: Option[String] = None,
                      content: Option[String] = None,
@@ -22,7 +21,7 @@ case class Revision(
 
   def withIds(revId: Id, parentId: Id = 0) = copy(revId = revId, parentId = Some(parentId))
 
-  def withUser(userId: Id, user: String) = copy(userId = Some(userId), user = Some(user))
+  def withUser(userId: Id, login: String) = copy(user = Some(new User(Some(userId), Some(login))))
 
   def withComment(comment: String) = copy(comment = Some(comment))
 

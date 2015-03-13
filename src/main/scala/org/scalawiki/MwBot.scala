@@ -3,7 +3,7 @@ package org.scalawiki
 import akka.actor.ActorSystem
 import akka.io.IO
 import akka.pattern.ask
-import org.scalawiki.dto._
+import org.scalawiki.query.PageQuery
 import org.scalawiki.http.{HttpClient, HttpClientImpl}
 import org.scalawiki.json.MwReads._
 import play.api.libs.json._

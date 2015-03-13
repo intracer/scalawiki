@@ -1,11 +1,13 @@
-package org.scalawiki
+package org.scalawiki.query
 
+import java.util.concurrent.TimeUnit
+
+import org.scalawiki.dto.Page
+import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.Specification
-import org.scalawiki.util.{MockBotSpec, Command}
+
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import java.util.concurrent.TimeUnit
-import org.scalawiki.dto.Page
 
 class PropEmbeddedInSpec extends Specification with MockBotSpec {
 

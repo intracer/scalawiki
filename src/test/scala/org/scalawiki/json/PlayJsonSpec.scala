@@ -1,10 +1,10 @@
-package org.scalawiki
+package org.scalawiki.json
 
 import org.scalawiki.dto.Page
+import org.scalawiki.json.MwReads._
 import org.specs2.matcher.MatchResult
 import org.specs2.mutable._
 import play.api.libs.json.Json
-import org.scalawiki.json.MwReads._
 
 class PlayJsonSpec extends Specification {
 

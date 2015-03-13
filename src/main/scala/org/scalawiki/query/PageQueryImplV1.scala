@@ -1,7 +1,6 @@
-package org.scalawiki.dto
+package org.scalawiki.query
 
-import java.nio.file.{Files, Paths}
-
+import org.scalawiki.dto.Page
 import org.scalawiki.json.MwReads._
 import org.scalawiki.json.MwReads2
 import org.scalawiki.{MwBot, MwUtils}
@@ -9,7 +8,7 @@ import play.api.libs.json.{JsObject, JsValue, Json}
 
 import scala.concurrent.Future
 
-class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
+class PageQueryImplV1(query: Either[Set[Long], Set[String]], site: MwBot) extends PageQuery {
 
   def toMap(paramNames:(String, String)): Map[String, String] = {
     val paramValues:Set[String] = query.fold(_.map(_.toString), identity)
@@ -44,11 +43,11 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
     queryProps(queryType = "info", queryPrefix = "", extraParams = Map("intoken" -> "edit"))
   }
 
-  def queryList(namespaces: Set[Int] = Set.empty, continueParam: Option[(String, String)], queryType: String, queryPrefix: String) = {
+  protected def queryList(namespaces: Set[Int] = Set.empty, continueParam: Option[(String, String)], queryType: String, queryPrefix: String) = {
     query(namespaces, continueParam, "list", queryType, queryPrefix)
   }
 
-  def queryProps(
+  protected def queryProps(
                   namespaces: Set[Int] = Set.empty,
                   props: Set[String] = Set.empty,
                   continueParam: Option[(String, String)] = None,
@@ -61,7 +60,7 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
     query(namespaces, continueParam, "prop", queryType, queryPrefix, limit, extraParams ++ propsParams)
   }
 
-  def queryByGenerator(generator: String, generatorPrefix: String,
+  protected def queryByGenerator(generator: String, generatorPrefix: String,
                        namespaces: Set[Int] = Set.empty,
                        props: Set[String] = Set.empty,
                        continueParam: Option[(String, String)],
@@ -73,7 +72,7 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
     query(namespaces, continueParam, "prop", queryType, queryPrefix, limit, extraParams, Some(generator), Option(generatorPrefix), titlePrefix = titlePrefix)
   }
 
-  def query(
+  protected def query(
              namespaces: Set[Int] = Set.empty,
              continueParam: Option[(String, String)],
              module: String,
@@ -113,7 +112,6 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
           case _ => Seq.empty
         }
 
-
         val continueParamName = generatorPrefix.fold(queryPrefix)(s => "g" + s) + "continue"
         val continue = json.validate(continueReads(continueParamName)).asOpt
 
@@ -130,7 +128,7 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
     }
   }
 
-  def makeParams(namespaces: Set[Int],
+  protected def makeParams(namespaces: Set[Int],
                   continueParam: Option[(String, String)],
                   module: String,
                   queryType: String,
@@ -177,55 +175,8 @@ class PageQuery(query: Either[Set[Long], Set[String]], site: MwBot) {
 
 }
 
-//class PagesQuery(query: Either[Set[Int], Set[String]]) extends PageQuery(query)
-class SinglePageQuery(query: Either[Long, String], site: MwBot) extends PageQuery(query.fold(id => Left(Set(id)), title => Right(Set(title))), site) {
-  def whatTranscludesHere(namespaces: Set[Int] = Set.empty, continueParam: Option[(String, String)] = None): Future[Seq[Page]] = {
-    queryList(namespaces, continueParam, "embeddedin", "ei")
-  }
-
-  def categoryMembers(namespaces: Set[Int] = Set.empty, continueParam: Option[(String, String)] = None): Future[Seq[Page]] = {
-    queryList(namespaces, continueParam, "categorymembers", "cm")
-  }
-
-  def edit(text: String, summary: String, token: Option[String] = None, multi:Boolean = true) = {
-    val fold: String = token.fold(site.token)(identity)
-    val params = Map("action" -> "edit",
-      "text" -> text,
-      "summary" -> summary,
-      "format" -> "json",
-      "bot" -> "x",
-      "token" -> fold) ++ toMap("pageid", "title")
-
-    if (multi)
-      site.postMultiPart(editResponseReads, params)
-    else
-      site.post(editResponseReads, params)
-  }
-
-  def upload(filename: String) {
-    val pagename = query.right.toOption.fold(filename)(identity)
-    val token = site.token
-    val fileContents = Files.readAllBytes(Paths.get(filename))
-    val params = Map(
-      "action" -> "upload",
-      "filename" -> pagename,
-      "token" -> token,
-      "format" -> "json",
-      "comment" -> "update",
-      "filesize" -> fileContents.size.toString,
-      "ignorewarnings" -> "true")
-    site.postFile(editResponseReads, params, "file", filename)
-  }
-}
 
 
-object PageQuery {
-  def byTitles(titles: Set[String], site: MwBot) = new PageQuery(Right(titles), site)
 
-  def byTitle(title: String, site: MwBot) = new SinglePageQuery(Right(title), site)
 
-  def byIds(ids: Set[Long], site: MwBot) = new PageQuery(Left(ids), site)
-
-  def byId(id: Long, site: MwBot) = new SinglePageQuery(Left(id), site)
-}
 

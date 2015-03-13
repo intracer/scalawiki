@@ -6,7 +6,7 @@ import javax.xml.stream.{XMLOutputFactory, XMLStreamWriter}
 import com.sun.xml.internal.txw2.output.IndentingXMLStreamWriter
 import org.codehaus.stax2.{XMLOutputFactory2, XMLStreamWriter2}
 import org.scalawiki.Timestamp
-import org.scalawiki.dto.{Page, Revision}
+import org.scalawiki.dto.{IpContributor, User, Page, Revision}
 import org.scalawiki.xml.XmlWriter._
 
 class XmlWriter(writer: XMLStreamWriter) {
@@ -57,13 +57,21 @@ class XmlWriter(writer: XMLStreamWriter) {
 
     writeElement("timestamp", rev.timestamp.map(Timestamp.format).getOrElse(""))
 
-    writer.writeStartElement("contributor")
-    rev.user.map(writeElement("username", _))
-    rev.userId.map(writeElement("id", _))
-    writer.writeEndElement()
+    for (contributor <- rev.user) {
+      writer.writeStartElement("contributor")
+      contributor match {
+        case user: User =>
+          user.login.map(writeElement("username", _))
+          user.id.map(writeElement("id", _))
+        case ip: IpContributor =>
+          writeElement("ip", ip.ip)
+      }
 
-//    if (rev.minor.exists(identity))
-//      writeEmptyElement("minor")
+      writer.writeEndElement()
+    }
+
+    //    if (rev.minor.exists(identity))
+    //      writeEmptyElement("minor")
 
     rev.comment.map(writeElement("comment", _))
 

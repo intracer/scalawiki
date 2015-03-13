@@ -19,7 +19,7 @@ class RevisionStat(val page: Page, revFilter: RevisionFilter) {
     .filter(element => revFilter.predicate(element.getRevision))
 
   val byRevisionContent: Map[Revision, Seq[String]] = annotatedElements.groupBy(_.getRevision).mapValues(_.map(_.getElement))
-  val byUserContent: Map[String, Seq[String]] = annotatedElements.groupBy(_.getRevision.user.getOrElse("")).mapValues(_.map(_.getElement))
+  val byUserContent: Map[String, Seq[String]] = annotatedElements.groupBy(_.getRevision.user.flatMap(_.name) getOrElse "").mapValues(_.map(_.getElement))
 
   val byRevisionSize = byRevisionContent.mapValues(_.map(_.getBytes.size).sum)
   val addedOrRewritten = byRevisionSize.values.sum

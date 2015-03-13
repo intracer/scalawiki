@@ -1,6 +1,6 @@
 package org.scalawiki.json
 
-import org.scalawiki.dto.{Revision, Page}
+import org.scalawiki.dto.{Contributor, User, Revision, Page}
 import org.scalawiki.dto.cmd.ActionParam
 import org.scalawiki.dto.cmd.query.Generator
 import org.scalawiki.dto.cmd.query.list.ListArg
@@ -76,8 +76,10 @@ object Parser {
   implicit val revisonReads: Reads[Revision] = (
     (__ \ "revid").read[Id] and
       (__ \ "parentid").readNullable[Id] and
-      (__ \ "user").readNullable[String] and
-      (__ \ "userid").readNullable[Id] and
+      (
+        (__ \ "userid").readNullable[Id] and
+          (__ \ "user").readNullable[String]
+        )(Contributor.apply _) and
       (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) and
       (__ \ "comment").readNullable[String] and
       (__ \ "*").readNullable[String] and

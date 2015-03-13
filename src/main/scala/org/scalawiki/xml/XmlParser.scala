@@ -5,7 +5,7 @@ import javax.xml.stream.{XMLStreamReader, XMLStreamConstants, XMLInputFactory}
 
 import org.codehaus.stax2.{XMLStreamReader2, XMLInputFactory2}
 import org.scalawiki.Timestamp
-import org.scalawiki.dto.{Page, Revision}
+import org.scalawiki.dto._
 
 import scala.collection.{Iterator, AbstractIterator}
 
@@ -81,6 +81,7 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
            id <- readElement("id").map(_.toInt)
       ) yield {
         val revisions = readRevisions()
+        val imageInfo = readImageInfo()
         new Page(id, ns, title, revisions.toSeq)
       }
     else
@@ -90,16 +91,13 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
   private def readRevisions(): Seq[Revision] = {
     // TODO streaming and filtering
     var revisions = Seq.empty[Revision]
-    while (findElementStart("revision", parent = "page")) {
+    while (findElementStart("revision", next = "upload", parent = "page")) {
 
       readElement("id").map(_.toInt).foreach { id =>
         val parentId = readElement("parentid", "timestamp").map(_.toInt)
         val timestamp = readElement("timestamp").map(Timestamp.parse)
 
-        findElementStart("contributor")
-        val user = readElement("username", "ip", "contributor")
-        val userId = readElement("id", "ip", "contributor").map(_.toInt)
-        val userIp = readElement("ip", parent = "contributor")
+        val user = readUser()
 
         val comment = readElement("comment")
         val text = readElement("text")
@@ -112,7 +110,6 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
             revId = id,
             parentId = parentId,
             user = user,
-            userId = userId,
             timestamp = timestamp,
             comment = comment,
             content = text,
@@ -123,6 +120,30 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
     revisions
   }
 
+  def readUser(): Option[Contributor] = {
+    findElementStart("contributor")
+
+    val user: Option[Contributor] = (
+      for (
+        username <- readElement("username", next = "ip", parent = "contributor");
+        userId <- readElement("id", "ip", "contributor").map(_.toInt))
+      yield new User(Some(userId), Some(username))
+      )
+      .orElse(
+        readElement("ip", parent = "contributor").map(new IpContributor(_))
+      )
+    user
+  }
+
+  private def readImageInfo(): Option[ImageInfo] = {
+//    // TODO seq
+//    if (findElementStart("upload", parent = "page")) {
+//      val user = readUser()
+//      Some(ImageInfo())
+//    } else
+  None
+  }
+
   private def readElement(name: String, next: String = "", parent: String = ""): Option[String] = {
     if (findElementStart(name, next, parent))
       Some(parser.getElementText)
@@ -131,8 +152,7 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
   }
 
   private def findElementStart(name: String, next: String = "", parent: String = ""): Boolean = {
-    val event = parser.getEventType
-    event match {
+    parser.getEventType match {
       case XMLStreamConstants.START_ELEMENT if parser.getLocalName == name => true
       case XMLStreamConstants.START_ELEMENT if parser.getLocalName == next => false
       case XMLStreamConstants.END_ELEMENT if parser.getLocalName == parent => false

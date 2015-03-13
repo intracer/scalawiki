@@ -5,7 +5,8 @@ import org.scalawiki.dto.cmd.ActionParam
 import org.scalawiki.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
-import org.scalawiki.dto.{DslQuery, Page}
+import org.scalawiki.query.DslQuery
+import org.scalawiki.dto.Page
 import org.scalawiki.{MwBot, WithBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
