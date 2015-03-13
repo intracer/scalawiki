@@ -1,5 +1,6 @@
 package org.scalawiki.dto.cmd
 
+import org.joda.time.DateTime
 import org.scalawiki.dto.cmd.query.Query
 
 trait Parameter[+T] {
@@ -60,9 +61,13 @@ abstract class SingleParameter[T] extends Parameter[T] {
 
 abstract class StringListParameter(val name: String, val summary: String) extends ListParameter[String]
 abstract class IntListParameter(val name: String, val summary: String) extends ListParameter[Int]
+abstract class LongListParameter(val name: String, val summary: String) extends ListParameter[Long]
 
 abstract class StringParameter(val name: String, val summary: String) extends SingleParameter[String]
 abstract class IntParameter(val name: String, val summary: String) extends SingleParameter[Int]
+abstract class LongParameter(val name: String, val summary: String) extends SingleParameter[Long]
+abstract class DateTimeParameter(val name: String, val summary: String) extends SingleParameter[DateTime]
+abstract class BooleanParameter(val name: String, val summary: String) extends SingleParameter[Boolean]
 
 trait ArgWithParams[P <: Parameter[Any], T <: EnumArg[T]] extends EnumArg[T] {
   def params: Seq[P] = Seq.empty

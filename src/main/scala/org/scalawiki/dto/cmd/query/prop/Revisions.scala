@@ -1,10 +1,12 @@
 package org.scalawiki.dto.cmd.query.prop
 
+import org.joda.time.DateTime
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.query.Module
 
 /**
  *  ?action=query&amp;prop=revisions
+ *  See more at https://www.mediawiki.org/wiki/API:Revisions
  *
  */
 case class Revisions(override val params: RvParam*) extends Module[PropArg]("rv", "revisions", "Get revision information.") with PropArg with ArgWithParams[RvParam, PropArg]
@@ -12,7 +14,7 @@ case class Revisions(override val params: RvParam*) extends Module[PropArg]("rv"
 /**
  * Marker trait for parameters used with prop=revisions
  */
-trait RvParam extends Parameter[AnyRef]
+trait RvParam extends Parameter[Any]
 
 /**
  *  ?action=query&amp;prop=info&amp;rvprop=
@@ -20,7 +22,6 @@ trait RvParam extends Parameter[AnyRef]
  */
 case class RvProp(override val args: RvPropArg*) extends EnumParameter[RvPropArg]("rvprop", "Which properties to get for each revision:") with RvParam
 
-case class RvLimit(override val arg: String) extends StringParameter("rvlimit", "") with RvParam
 /**
  *  Trait for rvprop= arguments
  *
@@ -44,3 +45,50 @@ object Comment extends EnumArgument[RvPropArg]("comment", "Comment by the user f
 object ParsedComment extends EnumArgument[RvPropArg]("parsedcomment", "Parsed comment by the user for the revision.") with RvPropArg
 object Content extends EnumArgument[RvPropArg]("content", "Text of the revision.") with RvPropArg
 object Tags extends EnumArgument[RvPropArg]("tags", "Tags for the revision.") with RvPropArg
+
+case class RvLimit(override val arg: String) extends StringParameter("rvlimit", "The maximum number of revisions to return.") with RvParam
+
+case class RvStartId(override val arg: Long) extends LongParameter("rvstartid", "Revision ID to start listing from.") with RvParam
+case class RvEndId(override val arg: Long) extends LongParameter("rvendid", "Revision ID to stop listing at.") with RvParam
+
+case class RvStart(override val arg: DateTime) extends DateTimeParameter("rvstart", "Timestamp to start listing from.") with RvParam
+case class RvEnd(override val arg: DateTime) extends DateTimeParameter("rvstart", "Timestamp to end listing at.") with RvParam
+
+case class RvDir(override val args: RvDirArg*) extends EnumParameter[RvDirArg]("rvprop", "Which properties to get for each revision:") with RvParam
+
+trait RvDirArg extends EnumArg[RvDirArg] { val param = RvDir }
+
+object Older extends EnumArgument[RvDirArg]("older", "List newest revisions first.") with RvDirArg
+object Newer extends EnumArgument[RvDirArg]("newer", "List oldest revisions first.") with RvDirArg
+
+case class RvUser(override val arg: String) extends StringParameter("rvuser", "Only list revisions made by this user.") with RvParam
+case class RvExcludeUser(override val arg: String) extends StringParameter("rvexcludeuser", "Do not list revisions made by this user.") with RvParam
+
+case class RvExpandTemplates(override val arg: Boolean = true) extends BooleanParameter("rvexpandtemplates", "Expand templates in rvprop=content output.") with RvParam
+case class RvGenerateXml(override val arg: Boolean = true) extends BooleanParameter("rvgeneratexml", "Generate XML parse tree for revision content.") with RvParam
+case class RvParse(override val arg: Boolean = true) extends BooleanParameter("rvparse", "Parse revision content.") with RvParam
+case class RvSection(override val arg: Int) extends IntParameter("rvsection", "If rvprop=content is set, only retrieve the contents of this section.") with RvParam
+
+// TODO single Enum value arg
+case class RvDiffTo(override val args: RvDiffToArg*) extends EnumParameter[RvDiffToArg]("rvdiffto", "Revision ID to diff each revision to.") with RvParam
+
+trait RvDiffToArg extends EnumArg[RvDiffToArg] { val param = RvDiffTo }
+
+object Prev extends EnumArgument[RvDiffToArg]("prev", "previous revision.") with RvDiffToArg
+object Next extends EnumArgument[RvDiffToArg]("next", "next revision.") with RvDiffToArg
+object Cur extends EnumArgument[RvDiffToArg]("cur", "current revision.") with RvDiffToArg
+
+case class RvDiffToText(override val arg: String) extends StringParameter("rvdifftotext", "Text to diff each revision to.") with RvParam
+case class RvTag(override val arg: String) extends StringParameter("rvtag", "Only list revisions tagged with this tag.") with RvParam
+
+// TODO single Enum value arg
+case class RvContentFormat(override val args: RvContentFormatArg*) extends EnumParameter[RvContentFormatArg]("rvcontentformat", "Serialization format used for difftotext and expected for output of content.") with RvParam
+
+trait RvContentFormatArg extends EnumArg[RvContentFormatArg] { val param = RvContentFormat }
+
+object TextXWiki extends EnumArgument[RvContentFormatArg]("text/x-wiki", "text/x-wiki") with RvContentFormatArg
+object TextJavaScript extends EnumArgument[RvContentFormatArg]("text/javascript", "text/javascript") with RvContentFormatArg
+object ApplicationJson extends EnumArgument[RvContentFormatArg]("application/json", "application/json") with RvContentFormatArg
+object TextCss extends EnumArgument[RvContentFormatArg]("text/css", "text/css") with RvContentFormatArg
+object TextPlain extends EnumArgument[RvContentFormatArg]("text/plain", "text/plain") with RvContentFormatArg
+
