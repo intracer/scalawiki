@@ -1,10 +1,9 @@
 package org.scalawiki.json
 
-import org.scalawiki.dto._
-import org.joda.time.DateTime
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
 import org.scalawiki.dto.Page.Id
+import org.scalawiki.dto._
+import play.api.libs.functional.syntax._
+import play.api.libs.json._
 
 
 object MwReads {
@@ -54,68 +53,5 @@ object MwReads {
 
 }
 
-object MwReads2 {
 
-  import org.scalawiki.dto.Page.Id
-  val jodaDateTimeReads = Reads.jodaDateReads("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
-  implicit val revisonReads: Reads[Revision] = (
-    (__ \ "revid").read[Id] and
-      (__ \ "parentid").readNullable[Id] and
-      (
-        (__ \ "userid").readNullable[Id] and
-          (__ \ "user").readNullable[String]
-        )(Contributor.apply _) and
-      (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) and
-      (__ \ "comment").readNullable[String] and
-      (__ \ "*").readNullable[String] and
-      (__ \ "size").readNullable[Int] and
-      (__ \ "sha1").readNullable[String]
-    )(Revision.apply _)
-
-  implicit val imageInfoReads: Reads[ImageInfo] = (
-    (__ \ "timestamp").read[String] and
-      (__ \ "user").read[String] and
-      (__ \ "size").read[Int] and
-      (__ \ "width").read[Int] and
-      (__ \ "height").read[Int] and
-      (__ \ "url").read[String] and
-      (__ \ "descriptionurl").read[String]
-    //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
-    //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
-    )(ImageInfo.basic _)
-
-  val pageWithRevisionReads: Reads[Page] = (
-    (__ \ "pageid").read[Id] and
-      (__ \ "ns").read[Int] and
-      (__ \ "title").read[String] and
-      (__ \ "edittoken").readNullable[String] and
-      (__ \ "revisions").read[Seq[Revision]] and
-      (__ \ "missing").readNullable[String]
-    )(Page.withRevisions _)
-
-  val pageInfoReads: Reads[Page] = (
-    (__ \ "pageid").readNullable[Id] and
-      (__ \ "ns").read[Int] and
-      (__ \ "title").read[String] and
-      (__ \ "edittoken").readNullable[String]
-    )(Page.withEditToken _)
-
-  val pageWithImageInfoReads: Reads[Page] = (
-    (__ \ "pageid").read[Id] and
-      (__ \ "ns").read[Int] and
-      (__ \ "title").read[String] and
-      (__ \ "imageinfo").read[Seq[ImageInfo]]
-    )(Page.withImageInfo _)
-
-  //  def pagesWithRevisionsReads(queryType:String): Reads[Seq[Page]] = (__ \ "query" \ "pages" ).read[Seq[Page]]
-
-}
-
-//"timestamp": "2014-05-20T20:54:33Z",
-//      "user": "Taras r",
-//      "size": 4270655,
-//      "width": 3648,
-//      "height": 2736,
-//      "url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/%22Dovbush-rocks%22_01.JPG",
-//      "descriptionurl": "https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_01.JPG"
