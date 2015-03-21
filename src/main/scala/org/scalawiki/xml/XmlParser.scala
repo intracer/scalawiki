@@ -6,12 +6,13 @@ import javax.xml.stream.{XMLStreamReader, XMLStreamConstants, XMLInputFactory}
 import org.codehaus.stax2.{XMLStreamReader2, XMLInputFactory2}
 import org.scalawiki.Timestamp
 import org.scalawiki.dto._
+import org.scalawiki.dto.filter.PageFilter
 
 import scala.collection.{Iterator, AbstractIterator}
 
 case class SiteInfo(name: Option[String], db: Option[String], generator: Option[String])
 
-class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
+class XmlParser(val parser: XMLStreamReader, val pageFilter: Page => Boolean = PageFilter.all) extends Iterable[Page] {
 
   private var _siteInfo: Option[SiteInfo] = None
   private var _namespaces: Map[Int, String] = Map.empty
@@ -21,13 +22,15 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
 
     readSiteInfo()
 
-    new AbstractIterator[Page] {
+    val iterator = new AbstractIterator[Page] {
 
       override def hasNext = findElementStart("page")
 
       override def next() = readPage().getOrElse(Iterator.empty.next())
 
     }
+
+    iterator.filter(pageFilter)
   }
 
   def siteInfo = {
@@ -78,7 +81,7 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
     if (findElementStart("page"))
       for (title <- readElement("title");
            ns <- readElement("ns").map(_.toInt);
-           id <- readElement("id").map(_.toInt)
+           id <- readElement("id").map(_.toLong)
       ) yield {
         val revisions = readRevisions()
         val imageInfo = readImageInfo()
@@ -127,7 +130,7 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
       for (
         username <- readElement("username", next = "ip", parent = "contributor");
         userId <- readElement("id", "ip", "contributor").map(_.toInt))
-      yield new User(Some(userId), Some(username))
+        yield new User(Some(userId), Some(username))
       )
       .orElse(
         readElement("ip", parent = "contributor").map(new IpContributor(_))
@@ -136,12 +139,12 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
   }
 
   private def readImageInfo(): Option[ImageInfo] = {
-//    // TODO seq
-//    if (findElementStart("upload", parent = "page")) {
-//      val user = readUser()
-//      Some(ImageInfo())
-//    } else
-  None
+    //    // TODO seq
+    //    if (findElementStart("upload", parent = "page")) {
+    //      val user = readUser()
+    //      Some(ImageInfo())
+    //    } else
+    None
   }
 
   private def readElement(name: String, next: String = "", parent: String = ""): Option[String] = {
@@ -181,16 +184,23 @@ object XmlParser {
 
   val xmlInputFactory = newXmlInputFactory
 
-  def parseFile(filename: String) =
-    new XmlParser(xmlInputFactory.createXMLStreamReader(new File(filename)))
+  def parseFile(filename: String,
+                pageFilter: Page => Boolean = PageFilter.all) =
+    new XmlParser(xmlInputFactory.createXMLStreamReader(new File(filename)), pageFilter)
+
+  def parseInputStream(is: InputStream,
+                       pageFilter: Page => Boolean = PageFilter.all) =
+    new XmlParser(xmlInputFactory.createXMLStreamReader(is), pageFilter)
+
+  def parseReader(reader: Reader,
+                  pageFilter: Page => Boolean = PageFilter.all) =
+    new XmlParser(xmlInputFactory.createXMLStreamReader(reader), pageFilter)
+
+  def parseString(data: String,
+                  pageFilter: Page => Boolean = PageFilter.all) =
+    parseReader(new StringReader(data), pageFilter)
 
   //  def parseUrl(url: URL) = new XmlParser(xmlInputFactory.createXMLStreamReader(url))
-
-  def parseInputStream(is: InputStream) = new XmlParser(xmlInputFactory.createXMLStreamReader(is))
-
-  def parseReader(reader: Reader) = new XmlParser(xmlInputFactory.createXMLStreamReader(reader))
-
-  def parseString(data: String) = parseReader(new StringReader(data))
 
   def newXmlInputFactory: XMLInputFactory2 = {
     val xmlInputFactory = XMLInputFactory.newInstance().asInstanceOf[XMLInputFactory2]

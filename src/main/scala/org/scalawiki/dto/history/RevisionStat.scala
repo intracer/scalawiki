@@ -1,5 +1,6 @@
 package org.scalawiki.dto.history
 
+import org.scalawiki.dto.filter.RevisionFilter
 import org.scalawiki.dto.{Page, Revision}
 import org.xwiki.blame.AnnotatedElement
 

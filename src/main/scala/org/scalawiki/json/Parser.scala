@@ -10,8 +10,6 @@ import play.api.libs.json._
 
 class Parser(val action: Action) {
 
-  // val query = action.
-
   var continue = Map.empty[String, String]
 
   def parse(s: String): Seq[Page] = {

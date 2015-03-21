@@ -2,7 +2,8 @@ package org.scalawiki.stat
 
 import org.joda.time.DateTime
 import org.scalawiki.dto.Page
-import org.scalawiki.dto.history.{RevisionFilter, RevisionStat}
+import org.scalawiki.dto.filter.RevisionFilter
+import org.scalawiki.dto.history.RevisionStat
 
 class ArticleStat(val from: Option[DateTime], val to: Option[DateTime], val pages: Seq[Page], label: String) {
 

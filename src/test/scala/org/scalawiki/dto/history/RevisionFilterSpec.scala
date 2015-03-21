@@ -1,6 +1,7 @@
 package org.scalawiki.dto.history
 
 import org.scalawiki.dto.Revision
+import org.scalawiki.dto.filter.RevisionFilter
 import org.specs2.mutable.Specification
 import com.github.nscala_time.time.Imports._
 

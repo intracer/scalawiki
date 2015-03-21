@@ -1,6 +1,7 @@
 package org.scalawiki.dto.history
 
 import org.joda.time.DateTime
+import org.scalawiki.dto.filter.RevisionFilter
 import org.scalawiki.dto.{Page, Revision}
 
 class History(val page: Page) {

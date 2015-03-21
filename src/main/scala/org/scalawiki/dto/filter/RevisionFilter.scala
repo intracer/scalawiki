@@ -1,8 +1,8 @@
-package org.scalawiki.dto.history
+package org.scalawiki.dto.filter
 
 import org.joda.time.DateTime
 import org.scalawiki.dto.Page.Id
-import org.scalawiki.dto.{User, Revision}
+import org.scalawiki.dto.{Revision, User}
 
 class RevisionFilter(
                       val from: Option[DateTime] = None,
