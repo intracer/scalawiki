@@ -8,9 +8,9 @@ import org.scalawiki.dto.cmd.{EnumArg, EnumParameter}
  *
  */
 
-trait PropArg extends EnumArg[PropArg] { val param = PropParam }
+trait PropArg extends EnumArg[PropArg] { val param = Prop }
 
 /**
  * ?action=query&amp;prop= parameter
  */
-case class PropParam(override val args: PropArg*) extends EnumParameter[PropArg]("prop", "") with QueryParam[PropArg]
+case class Prop(override val args: PropArg*) extends EnumParameter[PropArg]("prop", "") with QueryParam[PropArg]

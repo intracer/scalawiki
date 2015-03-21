@@ -7,16 +7,32 @@ import org.scalawiki.dto.cmd.query.Module
 case class CategoryMembers(override val params: CmParam[Any]*)
   extends Module[ListArg]("cm", "categorymembers", "List all pages in a given category.")
   with ListArg
-  with ArgWithParams[CmParam[Any], ListArg]
+  with ArgWithParams[CmParam[Any], ListArg] {
+
+  def this(title: Option[String], pageId: Option[Id], namespaces: Set[Int], limit: Option[String], params: CmParam[Any]*) = {
+    this(Seq(
+      title.map(CmTitle).toSeq,
+      pageId.map(CmPageId).toSeq,
+      Seq(CmNamespace(namespaces.toSeq)),
+      limit.map(CmLimit).toSeq
+    ).flatten ++ params:_*)
+  }
+}
 
 trait CmParam[+T] extends Parameter[T]
 
-case class CmTitle(override val arg: String) extends StringParameter("cmtitle", "Title to search. Cannot be used together with cmpageid.") with CmParam[String]
-case class CmPageId(override val arg: Id) extends IntParameter("cmpageid", "Page ID to search. Cannot be used together with cmtitle.") with CmParam[Id]
-case class CmLimit(override val arg: String) extends StringParameter("cmlimit", "How many total pages to return.") with CmParam[String]
+case class CmTitle(override val arg: String) extends StringParameter("cmtitle",
+  "Title to search. Cannot be used together with cmpageid.") with CmParam[String]
 
-//cmtitle Which category to enumerate (required).
-//cmpageid Page ID of the category to enumerate. Cannot be used together with cmtitle.
+case class CmPageId(override val arg: Id) extends IdParameter("cmpageid",
+  "Page ID to search. Cannot be used together with cmtitle.") with CmParam[Id]
+
+case class CmNamespace(override val args: Seq[Int]) extends IntListParameter("cmnamespace",
+  "Only include pages in these namespaces.") with CmParam[Int]  // TODO Seq[Int] ?
+
+case class CmLimit(override val arg: String) extends StringParameter("cmlimit",
+  "How many total pages to return.") with CmParam[String]
+
 //cmprop
 //Which pieces of information to include:
 //ids

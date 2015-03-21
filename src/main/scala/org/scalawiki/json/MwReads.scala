@@ -4,6 +4,8 @@ import org.scalawiki.dto._
 import org.joda.time.DateTime
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import org.scalawiki.dto.Page.Id
+
 
 object MwReads {
 
@@ -20,8 +22,9 @@ object MwReads {
       (__ \ "login" \ "sessionid").readNullable[String]
     )(LoginResponse.apply _)
 
+
   implicit val pageReads: Reads[Page] = (
-    (__ \ "pageid").read[Int] and
+    (__ \ "pageid").read[Id] and
       (__ \ "ns").read[Int] and
       (__ \ "title").read[String] and
       (__ \ "missing").readNullable[String]
@@ -83,7 +86,7 @@ object MwReads2 {
     )(ImageInfo.basic _)
 
   val pageWithRevisionReads: Reads[Page] = (
-    (__ \ "pageid").read[Int] and
+    (__ \ "pageid").read[Id] and
       (__ \ "ns").read[Int] and
       (__ \ "title").read[String] and
       (__ \ "edittoken").readNullable[String] and
@@ -92,14 +95,14 @@ object MwReads2 {
     )(Page.withRevisions _)
 
   val pageInfoReads: Reads[Page] = (
-    (__ \ "pageid").readNullable[Int] and
+    (__ \ "pageid").readNullable[Id] and
       (__ \ "ns").read[Int] and
       (__ \ "title").read[String] and
       (__ \ "edittoken").readNullable[String]
     )(Page.withEditToken _)
 
   val pageWithImageInfoReads: Reads[Page] = (
-    (__ \ "pageid").read[Int] and
+    (__ \ "pageid").read[Id] and
       (__ \ "ns").read[Int] and
       (__ \ "title").read[String] and
       (__ \ "imageinfo").read[Seq[ImageInfo]]

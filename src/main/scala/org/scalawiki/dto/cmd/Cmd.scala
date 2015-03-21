@@ -3,7 +3,7 @@ package org.scalawiki.dto.cmd
 import org.joda.time.DateTime
 import org.scalawiki.dto.cmd.query.Query
 
-trait Parameter[+T] {
+trait Parameter[+T] extends Equals {
   def name: String
   def summary: String
 
@@ -59,15 +59,21 @@ abstract class SingleParameter[T] extends Parameter[T] {
   }
 }
 
+import org.scalawiki.dto.Page.Id
+
 abstract class StringListParameter(val name: String, val summary: String) extends ListParameter[String]
 abstract class IntListParameter(val name: String, val summary: String) extends ListParameter[Int]
 abstract class LongListParameter(val name: String, val summary: String) extends ListParameter[Long]
+abstract class IdListParameter(val name: String, val summary: String) extends ListParameter[Id]
 
 abstract class StringParameter(val name: String, val summary: String) extends SingleParameter[String]
 abstract class IntParameter(val name: String, val summary: String) extends SingleParameter[Int]
 abstract class LongParameter(val name: String, val summary: String) extends SingleParameter[Long]
+abstract class IdParameter(val name: String, val summary: String) extends SingleParameter[Id]
+
 abstract class DateTimeParameter(val name: String, val summary: String) extends SingleParameter[DateTime]
 abstract class BooleanParameter(val name: String, val summary: String) extends SingleParameter[Boolean]
+abstract class ByteArrayParameter(val name: String, val summary: String) extends SingleParameter[Array[Byte]]
 
 trait ArgWithParams[P <: Parameter[Any], T <: EnumArg[T]] extends EnumArg[T] {
   def params: Seq[P] = Seq.empty
@@ -91,7 +97,7 @@ trait EnumArg[+T <: EnumArg[T]] {
 abstract class EnumArgument[T <: EnumArg[T]](val name: String, val summary: String) extends EnumArg[T]
 
 trait ActionArg extends EnumArg[ActionArg] { /*val param = ActionParam*/ }
-case class ActionParam(override val arg: ActionArg) extends EnumParameter[ActionArg]("action", "") {
+case class Action(override val arg: ActionArg) extends EnumParameter[ActionArg]("action", "") {
   def query: Option[Query] = byType(manifest[Query]).headOption
 }
 

@@ -1,15 +1,18 @@
 package org.scalawiki.dto.cmd.query.list
 
+import org.scalawiki.dto.Page.Id
+
 object ListArgs {
 
-  def toDsl(module: String, title: Option[String], pageId: Option[Int], limit: Option[String]): ListArg = {
+  def toDsl(module: String, title: Option[String], pageId: Option[Id], namespaces:Set[Int], limit: Option[String]): ListArg = {
+
+    val f = Seq(title.toSeq, pageId.toSeq, namespaces).flatten
+
     module match {
       case "categorymembers" =>
-        val params = Seq(title.map(CmTitle), pageId.map(CmPageId), limit.map(CmLimit)).flatten
-        CategoryMembers(params: _*)
+        new CategoryMembers(title, pageId, namespaces, limit)
       case "embeddedin" =>
-        val params = Seq(title.map(EiTitle), pageId.map(EiPageId), limit.map(EiLimit)).flatten
-        EmbeddedIn(params: _*)
+        new EmbeddedIn(title, pageId, namespaces, limit)
     }
   }
 }

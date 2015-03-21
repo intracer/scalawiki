@@ -13,6 +13,12 @@ case class Revision(
                      content: Option[String] = None,
                      size: Option[Int] = None,
                      sha1: Option[String] = None) {
+
+//  def this(revId: Int, parentId: Option[Int] = None, user: Option[Contributor] = None, timestamp: Option[DateTime] = None,
+//           comment: Option[String] = None, content: Option[String] = None,  size: Option[Int] = None,  sha1: Option[String] = None) = {
+//    this(revId.toLong, parentId.map(_.toLong), user, timestamp, comment, content, size, sha1)
+//  }
+
   def id = revId
 
   def withContent(content: String*) = copy(content = Some(content.mkString("\n")))

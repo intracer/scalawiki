@@ -1,48 +1,48 @@
 package org.scalawiki.json
 
-import org.scalawiki.dto.{Contributor, User, Revision, Page}
-import org.scalawiki.dto.cmd.ActionParam
+import org.joda.time.DateTime
+import org.scalawiki.dto._
+import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Generator
 import org.scalawiki.dto.cmd.query.list.ListArg
 import org.scalawiki.dto.cmd.query.prop.PropArg
-import org.joda.time.format.ISODateTimeFormat
-import org.joda.time.{LocalDateTime, DateTime}
 import play.api.libs.json._
 
-class Parser(val action: ActionParam) {
+class Parser(val action: Action) {
 
   // val query = action.
+
+  var continue = Map.empty[String, String]
 
   def parse(s: String): Seq[Page] = {
     val json = Json.parse(s)
 
     val queryChild = lists.headOption.fold("pages")(_.name)
 
-    val pagesJson = (json \ "query" \ queryChild).asInstanceOf[JsObject]
+    val pagesJson = json \ "query" \ queryChild
 
-    pagesJson.keys.map {
-      key =>
-        val pageJson = (pagesJson \ key).asInstanceOf[JsObject]
-        var page = pageJson.validate(Parser.pageReads).get
+    val jsons = (queryChild match {
+      case "pages" => pagesJson.asInstanceOf[JsObject].values
+      case _ => pagesJson.asInstanceOf[JsArray].value
+    }).map(_.asInstanceOf[JsObject])
 
-        if (pageJson.keys.contains("revisions")) {
-          val revisions:Seq[Revision] = pageJson.validate(Parser.revisionsReads).get
+    continue = json \ "continue" match {
+      case obj: JsObject => obj.fields.toMap.mapValues(_.toString())
+      case _ => Map.empty[String, String]
+    }
 
-          page =
-            try {
-              page.copy(revisions = revisions)
-            } catch {
-              case e: Throwable =>
-                println(e)
-                throw  e
-            }
-        }
-
-
-        page
-    }.toSeq
-
+    jsons.map(parsePage).toSeq
   }
+
+  def parsePage(pageJson: JsObject): Page = {
+    val page = pageJson.validate(Parser.pageReads).get
+
+    val revisions: Seq[Revision] = pageJson.validate(Parser.revisionsReads).getOrElse(Seq.empty)
+    val imageInfos: Seq[ImageInfo] = pageJson.validate(Parser.imageInfosReads).getOrElse(Seq.empty)
+
+    page.copy(revisions = revisions, imageInfo = imageInfos)
+  }
+
 
   def query = action.query.toSeq
 
@@ -57,7 +57,6 @@ class Parser(val action: ActionParam) {
 object Parser {
 
   import org.scalawiki.dto.Page.Id
-
   import play.api.libs.functional.syntax._
 
   val pageReads: Reads[Page] = (
@@ -69,11 +68,11 @@ object Parser {
       (__ \ "talkid").readNullable[Id]
     )(Page.full _)
 
- // implicit val DefaultJodaDateReads = jodaDateReads()
+  // implicit val DefaultJodaDateReads = jodaDateReads()
 
   val jodaDateTimeReads = Reads.jodaDateReads("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
-  implicit val revisonReads: Reads[Revision] = (
+  implicit val revisionReads: Reads[Revision] = (
     (__ \ "revid").read[Id] and
       (__ \ "parentid").readNullable[Id] and
       (
@@ -88,4 +87,19 @@ object Parser {
     )(Revision.apply _)
 
   val revisionsReads: Reads[Seq[Revision]] = (__ \ "revisions").read[Seq[Revision]]
+
+  implicit val imageInfoReads: Reads[ImageInfo] = (
+    (__ \ "timestamp").read[String] and
+      (__ \ "user").read[String] and
+      (__ \ "size").read[Int] and
+      (__ \ "width").read[Int] and
+      (__ \ "height").read[Int] and
+      (__ \ "url").read[String] and
+      (__ \ "descriptionurl").read[String]
+    //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
+    //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
+    )(ImageInfo.basic _)
+
+  val imageInfosReads: Reads[Seq[ImageInfo]] = (__ \ "imageinfo").read[Seq[ImageInfo]]
+
 }

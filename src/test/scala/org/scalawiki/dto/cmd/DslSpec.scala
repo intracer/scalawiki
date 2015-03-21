@@ -10,9 +10,9 @@ class DslSpec extends Specification  with ThrownMessages {
 
   "1" should {
     "23" in {
-      val action = ActionParam(
+      val action = Action(
         Query(
-          PropParam(
+          Prop(
             Info(InProp(SubjectId)),
             Revisions()
           )
@@ -27,9 +27,9 @@ class DslSpec extends Specification  with ThrownMessages {
 
   "1" should {
     "23" in {
-      val action = ActionParam(
+      val action = Action(
         Query(
-          PropParam(
+          Prop(
             Info(InProp(SubjectId)),
             Revisions()
           )
@@ -45,8 +45,8 @@ class DslSpec extends Specification  with ThrownMessages {
 
   "2" should {
     "34" in {
-      val action = ActionParam(Query(
-          PropParam(
+      val action = Action(Query(
+          Prop(
             Info(InProp(SubjectId)),
             Revisions()
           ),
@@ -65,9 +65,9 @@ class DslSpec extends Specification  with ThrownMessages {
 
   "3" should {
     "34" in {
-      val action = ActionParam(
+      val action = Action(
         Query(
-          PropParam(
+          Prop(
             Info(InProp(SubjectId)),
             Revisions()
           ),

@@ -27,7 +27,7 @@ case class Page(
 }
 
 object Page {
-  type Id = Int
+  type Id = Long
 
   def full(
             id: Id,

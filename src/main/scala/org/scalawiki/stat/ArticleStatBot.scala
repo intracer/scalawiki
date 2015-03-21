@@ -1,12 +1,12 @@
 package org.scalawiki.stat
 
 import org.joda.time.DateTime
-import org.scalawiki.dto.cmd.ActionParam
+import org.scalawiki.dto.Page
+import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
 import org.scalawiki.query.DslQuery
-import org.scalawiki.dto.Page
 import org.scalawiki.{MwBot, WithBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -17,8 +17,8 @@ class ArticleStatBot extends WithBot {
   val host = MwBot.ukWiki
 
   def pagesWithTemplate(template: String): Future[Seq[Page.Id]] = {
-    val action = ActionParam(Query(
-      PropParam(
+    val action = Action(Query(
+      Prop(
         Info(InProp(SubjectId)),
         Revisions()
       ),
@@ -28,7 +28,7 @@ class ArticleStatBot extends WithBot {
       ))
     ))
 
-    new DslQuery(action, bot).run.map {
+    new DslQuery(action, bot).run().map {
       pages =>
         pages.map(p => p.subjectId.getOrElse(p.id))
     }
@@ -39,9 +39,11 @@ class ArticleStatBot extends WithBot {
   }
 
   def pageRevisions(id: Page.Id): Future[Option[Page]] = {
-    val action = ActionParam(Query(
+    import org.scalawiki.dto.cmd.query.prop.rvprop._
+
+    val action = Action(Query(
       PageIdsParam(Seq(id)),
-      PropParam(
+      Prop(
         Info(),
         Revisions(
           RvProp(Content, Ids, Size, User, UserId, Timestamp),
@@ -50,7 +52,7 @@ class ArticleStatBot extends WithBot {
       )
     ))
 
-    new DslQuery(action, bot).run.map { pages =>
+    new DslQuery(action, bot).run().map { pages =>
       pages.headOption
     }
   }

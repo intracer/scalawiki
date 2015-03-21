@@ -13,6 +13,7 @@ import spray.util._
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import org.scalawiki.dto.Page.Id
 
 class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
@@ -113,11 +114,11 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
   def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)
 
-  def pagesById(ids: Set[Long]) = PageQuery.byIds(ids, this)
+  def pagesById(ids: Set[Id]) = PageQuery.byIds(ids, this)
 
   def page(title: String) = PageQuery.byTitle(title, this)
 
-  def page(id: Long) = PageQuery.byId(id, this)
+  def page(id: Id) = PageQuery.byId(id, this)
 
   def pageText(title: String): Future[String] = {
     val url = getIndexUri("title" -> encodeTitle(title), "action" -> "raw")

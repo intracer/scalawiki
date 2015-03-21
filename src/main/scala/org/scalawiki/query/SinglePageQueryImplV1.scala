@@ -20,7 +20,6 @@ class SinglePageQueryImplV1(query: Either[Long, String], site: MwBot)
   def categoryMembers(namespaces: Set[Int] = Set.empty, continueParam: Option[(String, String)] = None): Future[Seq[Page]] = {
     queryList(namespaces, continueParam, "categorymembers", "cm")
   }
-
   def edit(text: String, summary: String, token: Option[String] = None, multi:Boolean = true) = {
     val fold: String = token.fold(site.token)(identity)
     val params = Map("action" -> "edit",
@@ -50,4 +49,5 @@ class SinglePageQueryImplV1(query: Either[Long, String], site: MwBot)
       "ignorewarnings" -> "true")
     site.postFile(editResponseReads, params, "file", filename)
   }
+
 }

@@ -2,28 +2,34 @@ package org.scalawiki.query
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Page
-import org.scalawiki.dto.cmd.ActionParam
+import org.scalawiki.dto.cmd.Action
 import org.scalawiki.json.Parser
 
 import scala.concurrent.Future
 
-class DslQuery(action: ActionParam, site: MwBot) {
+class DslQuery(action: Action, site: MwBot) {
+  import site.system.dispatcher
 
-  def run: Future[Seq[Page]] = {
-    val params = action.pairs ++ Seq("format" -> "json", "continue" -> "")
+  def run(
+           continue: Map[String, String] = Map("continue" -> ""),
+           pages: Seq[Page] = Seq.empty[Page]
+           ): Future[Seq[Page]] = {
 
-    import site.system.dispatcher
+      val params = action.pairs ++ Seq("format" -> "json", "bot" -> "x") ++ continue
 
-    import scala.concurrent._
+      site.get(params.toMap) flatMap {
+        body =>
+          val parser = new Parser(action)
 
-    site.get(params.toMap) flatMap {
-      body =>
-        val parser = new Parser(action)
+          val newPages = parser.parse(body)
+          val allPages = pages ++ newPages
 
-        Future {
-          parser.parse(body)
-        }
-    }
-
+          val newContinue = parser.continue
+          if (newContinue.isEmpty) {
+            Future {allPages}
+          } else {
+           run(newContinue, allPages)
+          }
+      }
   }
 }

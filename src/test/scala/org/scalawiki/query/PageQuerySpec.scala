@@ -40,7 +40,7 @@ class PageQuerySpec extends Specification {
           "continue" -> "",
           "rvprop" -> "ids|content|user|comment"), response))
 
-      val future = bot.pagesById(Set(569559, 4571809)).revisions(Set.empty, Set("ids", "content", "user", "comment"))
+      val future = bot.pagesById(Set(569559L, 4571809L)).revisions(Set.empty[Int], Set("ids", "content", "user", "comment"))
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2
       result(0) === Page(569559, 1, "Talk:Welfare reform", Seq(Revision(1).withUser(1, "u1").withComment("c1").withText(pageText1)))

@@ -93,8 +93,8 @@ class XmlParser(val parser: XMLStreamReader) extends Iterable[Page] {
     var revisions = Seq.empty[Revision]
     while (findElementStart("revision", next = "upload", parent = "page")) {
 
-      readElement("id").map(_.toInt).foreach { id =>
-        val parentId = readElement("parentid", "timestamp").map(_.toInt)
+      readElement("id").map(_.toLong).foreach { id =>
+        val parentId = readElement("parentid", "timestamp").map(_.toLong)
         val timestamp = readElement("timestamp").map(Timestamp.parse)
 
         val user = readUser()
