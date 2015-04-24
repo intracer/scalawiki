@@ -1,6 +1,7 @@
-package org.scalawiki.dto.history
+package org.scalawiki.stat
 
 import org.scalawiki.dto.filter.RevisionFilter
+import org.scalawiki.dto.history.Annotation
 import org.scalawiki.dto.{Page, Revision}
 import org.xwiki.blame.AnnotatedElement
 
@@ -9,7 +10,7 @@ class RevisionStat(val page: Page, revFilter: RevisionFilter) {
   def revisions = revFilter(page.history.revisions)
 
   val users = page.history.users(revFilter.from, revFilter.to)
-  val delta = page.history.delta(revFilter.from, revFilter.to).getOrElse(0)
+  val delta = page.history.delta(revFilter.from, revFilter.to).getOrElse(0L)
 
   val annotation: Option[Annotation] = Annotation.create(page)
 
@@ -22,12 +23,12 @@ class RevisionStat(val page: Page, revFilter: RevisionFilter) {
   val byRevisionContent: Map[Revision, Seq[String]] = annotatedElements.groupBy(_.getRevision).mapValues(_.map(_.getElement))
   val byUserContent: Map[String, Seq[String]] = annotatedElements.groupBy(_.getRevision.user.flatMap(_.name) getOrElse "").mapValues(_.map(_.getElement))
 
-  val byRevisionSize = byRevisionContent.mapValues(_.map(_.getBytes.size).sum)
+  val byRevisionSize = byRevisionContent.mapValues(_.map(_.getBytes.size.toLong).sum)
   val addedOrRewritten = byRevisionSize.values.sum
 
-  private val _byUserSize: Map[String, Int] = byUserContent.mapValues(_.map(_.getBytes.size).sum)
+  private val _byUserSize: Map[String, Long] = byUserContent.mapValues(_.map(_.getBytes.size.toLong).sum)
 
-  def byUserSize(user: String) = _byUserSize.getOrElse(user, 0)
+  def byUserSize(user: String): Long = _byUserSize.getOrElse(user, 0L)
 
   val usersSorted = _byUserSize.toSeq.sortBy{
     case (user, size) => -size

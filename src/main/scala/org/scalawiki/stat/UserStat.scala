@@ -1,7 +1,5 @@
 package org.scalawiki.stat
 
-import org.scalawiki.dto.history.RevisionStat
-
 class UserStat(revisionStats: Seq[RevisionStat]) {
   val users = revisionStats.foldLeft(Set.empty[String]) {
     (users, stats) => users ++ stats.users

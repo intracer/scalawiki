@@ -1,6 +1,6 @@
 package org.scalawiki.stat
 
-class NumericArrayStat(val name: String, val data: Seq[Int]) {
+class NumericArrayStat(val name: String, val data: Seq[Long]) {
   val sum = data.sum
   val max = if (data.isEmpty) 0 else data.max
   val min = if (data.isEmpty) 0 else  data.min

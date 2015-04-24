@@ -1,6 +1,5 @@
 package org.scalawiki.stat
 
-import org.joda.time.DateTime
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
@@ -12,11 +11,11 @@ import org.scalawiki.{MwBot, WithBot}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ArticleStatBot extends WithBot {
+class ArticleStatBot(val event: ArticlesEvent) extends WithBot {
 
   val host = MwBot.ukWiki
 
-  def pagesWithTemplate(template: String): Future[Seq[Page.Id]] = {
+  def pagesWithTemplate(template: String): Future[Seq[Long]] = {
     val action = Action(Query(
       Prop(
         Info(InProp(SubjectId)),
@@ -30,15 +29,15 @@ class ArticleStatBot extends WithBot {
 
     new DslQuery(action, bot).run().map {
       pages =>
-        pages.map(p => p.subjectId.getOrElse(p.id))
+        pages.map(p => p.subjectId.getOrElse(p.id.get))
     }
   }
 
-  def pagesRevisions(ids: Seq[Page.Id]): Future[Seq[Page]] = {
+  def pagesRevisions(ids: Seq[Long]): Future[Seq[Page]] = {
     Future.traverse(ids)(pageRevisions).map(_.flatten)
   }
 
-  def pageRevisions(id: Page.Id): Future[Option[Page]] = {
+  def pageRevisions(id: Long): Future[Option[Page]] = {
     import org.scalawiki.dto.cmd.query.prop.rvprop._
 
     val action = Action(Query(
@@ -59,13 +58,11 @@ class ArticleStatBot extends WithBot {
 
   def stat() = {
 
-    val from = Some(DateTime.parse("2015-02-12T00:00+02:00"))
-    val to = Some(DateTime.parse("2015-02-27T00:00+02:00"))
+    val from = Some(event.start)
+    val to = Some(event.end)
 
-//    val from = Some(DateTime.parse("2015-01-06T00:00+02:00"))
-//    val to = Some(DateTime.parse("2015-01-28T00:00+02:00"))
-    for (newPagesIds <- pagesWithTemplate(ArticleStatBot.newTemplate);
-         improvedPagesIds <- pagesWithTemplate(ArticleStatBot.improvedTemplate)) {
+    for (newPagesIds <- pagesWithTemplate(event.newTemplate);
+         improvedPagesIds <- pagesWithTemplate(event.improvedTemplate)) {
       println(s"New ${newPagesIds.size} $newPagesIds")
       println(s"Improved ${improvedPagesIds.size} $improvedPagesIds")
 
@@ -86,22 +83,9 @@ class ArticleStatBot extends WithBot {
   }
 }
 
-
-
-
-
-
-
-
 object ArticleStatBot {
 
-  val newTemplate = "Zaporizhia2-week-new"
-    //"Kherson-week-new"
-
-  val improvedTemplate = "Zaporizhia2-week-improve"
-    //"Kherson-week-improve"
-
   def main(args: Array[String]) {
-    new ArticleStatBot().stat()
+    new ArticleStatBot(Events.Zaporizhia2Week).stat()
   }
 }
