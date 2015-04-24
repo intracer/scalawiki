@@ -3,9 +3,9 @@ package org.scalawiki
 import akka.actor.ActorSystem
 import akka.io.IO
 import akka.pattern.ask
-import org.scalawiki.query.PageQuery
 import org.scalawiki.http.{HttpClient, HttpClientImpl}
 import org.scalawiki.json.MwReads._
+import org.scalawiki.query.PageQuery
 import play.api.libs.json._
 import spray.can.Http
 import spray.http._
@@ -13,7 +13,6 @@ import spray.util._
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import org.scalawiki.dto.Page.Id
 
 class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
@@ -32,6 +31,9 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
   def log = system.log
 
   def login(user: String, password: String) = {
+    require(user != null, "User is null")
+    require(password != null, "Password is null")
+
     http.post(apiUrl, "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json") map http.cookiesAndBody map { cb =>
       http.setCookies(cb.cookies)
       val json = Json.parse(cb.body)
@@ -114,11 +116,11 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
 
   def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)
 
-  def pagesById(ids: Set[Id]) = PageQuery.byIds(ids, this)
+  def pagesById(ids: Set[Long]) = PageQuery.byIds(ids, this)
 
   def page(title: String) = PageQuery.byTitle(title, this)
 
-  def page(id: Id) = PageQuery.byId(id, this)
+  def page(id: Long) = PageQuery.byId(id, this)
 
   def pageText(title: String): Future[String] = {
     val url = getIndexUri("title" -> encodeTitle(title), "action" -> "raw")
