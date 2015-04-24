@@ -7,7 +7,7 @@ import org.scalawiki.MwBot
 
 case class Image(pageId: Long, title: String,
                  url: String, pageUrl: String,
-                 size: Int,
+                 size: Long,
                  width: Int,
                  height: Int,
                  monumentId: Option[String] = None,
@@ -33,7 +33,7 @@ object Image {
   def fromPageImageInfo(page: Page, monumentIdTemplate: String, year: String): Option[Image] = {
     page.imageInfo.headOption.map { ii =>
       Image(
-        pageId = page.id,
+        pageId = page.id.get,
         title = page.title,
         url = ii.url,
         pageUrl = ii.descriptionUrl,
@@ -61,7 +61,7 @@ object Image {
 
       //      val author = authorValue.split("\\|")(0).replace("[[User:", "").replace("[[user:", "")
 
-      new Image(page.id, page.title, "", "", 0, 0, 0, ipOpt, Some(author), None, Some(date))
+      new Image(page.id.get, page.title, "", "", 0, 0, 0, ipOpt, Some(author), None, Some(date))
     }
   }
 

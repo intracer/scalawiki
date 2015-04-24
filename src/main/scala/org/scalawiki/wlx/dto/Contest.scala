@@ -10,7 +10,7 @@ class Contest(
                val fileTemplate: String,
                val specialNominations: Seq[SpecialNomination]) {
 
-  def category: String = s"Category:Images from ${contestType.name} ${year} in ${country.name}".replaceAll(" ", "_")
+  def category: String = s"Category:Images from ${contestType.name} $year in ${country.name}".replaceAll(" ", "_")
 
 }
 
