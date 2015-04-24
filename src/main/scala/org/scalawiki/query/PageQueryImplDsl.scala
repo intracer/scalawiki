@@ -14,7 +14,7 @@ import org.scalawiki.json.MwReads._
 
 import scala.concurrent.Future
 
-class PageQueryImplDsl(query: Either[Set[Page.Id], Set[String]], bot: MwBot) extends PageQuery with SinglePageQuery {
+class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extends PageQuery with SinglePageQuery {
 
   override def revisions(namespaces: Set[Int], props: Set[String], continueParam: Option[(String, String)]): Future[Seq[Page]] = {
 
@@ -49,7 +49,7 @@ class PageQueryImplDsl(query: Either[Set[Page.Id], Set[String]], bot: MwBot) ext
                                      limit: String,
                                      titlePrefix: Option[String]): Future[Seq[Page]] = {
 
-    val pageId: Option[Page.Id] = query.left.toOption.map(_.head)
+    val pageId: Option[Long] = query.left.toOption.map(_.head)
     val title: Option[String] = query.right.toOption.map(_.head)
 
     val action = Action(Query(

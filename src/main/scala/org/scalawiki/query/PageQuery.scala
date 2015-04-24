@@ -4,7 +4,6 @@ import org.scalawiki.MwBot
 import org.scalawiki.dto.Page
 
 import scala.concurrent.Future
-import org.scalawiki.dto.Page.Id
 
 trait PageQuery {
 
@@ -18,7 +17,7 @@ object PageQuery {
 
   def byTitle(title: String, site: MwBot): SinglePageQuery = new PageQueryImplDsl(Right(Set(title)), site)
 
-  def byIds(ids: Set[Id], site: MwBot):PageQuery = new PageQueryImplDsl(Left(ids), site)
+  def byIds(ids: Set[Long], site: MwBot):PageQuery = new PageQueryImplDsl(Left(ids), site)
 
-  def byId(id: Id, site: MwBot): SinglePageQuery = new PageQueryImplDsl(Left(Set(id)), site)
+  def byId(id: Long, site: MwBot): SinglePageQuery = new PageQueryImplDsl(Left(Set(id)), site)
 }
