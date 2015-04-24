@@ -3,7 +3,7 @@ package org.scalawiki.xml
 import java.io.{Reader, InputStream, StringReader, File}
 import javax.xml.stream.{XMLStreamReader, XMLStreamConstants, XMLInputFactory}
 
-import org.codehaus.stax2.{XMLStreamReader2, XMLInputFactory2}
+import org.codehaus.stax2.{LocationInfo, XMLStreamReader2, XMLInputFactory2}
 import org.scalawiki.Timestamp
 import org.scalawiki.dto._
 import org.scalawiki.dto.filter.PageFilter
@@ -12,11 +12,16 @@ import scala.collection.{Iterator, AbstractIterator}
 
 case class SiteInfo(name: Option[String], db: Option[String], generator: Option[String])
 
-class XmlParser(val parser: XMLStreamReader, val pageFilter: Page => Boolean = PageFilter.all) extends Iterable[Page] {
+class XmlParser(
+                 val parser: XMLStreamReader2 with LocationInfo,
+                 val pageFilter: Page => Boolean = PageFilter.all) extends Iterable[Page] {
 
   private var _siteInfo: Option[SiteInfo] = None
   private var _namespaces: Map[Int, String] = Map.empty
   private var parsedSiteInfo: Boolean = false
+  private var _pageStartingByteOffset: Long = -1
+
+  def pageStartingByteOffset = _pageStartingByteOffset
 
   override def iterator = {
 
@@ -78,20 +83,22 @@ class XmlParser(val parser: XMLStreamReader, val pageFilter: Page => Boolean = P
   }
 
   private def readPage(): Option[Page] =
-    if (findElementStart("page"))
+    if (findElementStart("page")) {
+      _pageStartingByteOffset = parser.getStartingByteOffset
       for (title <- readElement("title");
            ns <- readElement("ns").map(_.toInt);
            id <- readElement("id").map(_.toLong)
       ) yield {
-        val revisions = readRevisions()
+        val revisions = readRevisions(id)
         val imageInfo = readImageInfo()
-        new Page(id, ns, title, revisions.toSeq)
+        new Page(Some(id), ns, title, revisions.toSeq)
       }
+    }
     else
       None
 
 
-  private def readRevisions(): Seq[Revision] = {
+  private def readRevisions(pageId: Long): Seq[Revision] = {
     // TODO streaming and filtering
     var revisions = Seq.empty[Revision]
     while (findElementStart("revision", next = "upload", parent = "page")) {
@@ -110,7 +117,8 @@ class XmlParser(val parser: XMLStreamReader, val pageFilter: Page => Boolean = P
 
         revisions :+=
           Revision(
-            revId = id,
+            revId = Some(id),
+            pageId = Some(pageId),
             parentId = parentId,
             user = user,
             timestamp = timestamp,
@@ -184,17 +192,21 @@ object XmlParser {
 
   val xmlInputFactory = newXmlInputFactory
 
+  def newXmlParser(xmlReader: XMLStreamReader, pageFilter: Page => Boolean = PageFilter.all) =
+    new XmlParser(xmlReader.asInstanceOf[XMLStreamReader2 with LocationInfo], pageFilter)
+
   def parseFile(filename: String,
-                pageFilter: Page => Boolean = PageFilter.all) =
-    new XmlParser(xmlInputFactory.createXMLStreamReader(new File(filename)), pageFilter)
+  pageFilter: Page => Boolean = PageFilter.all) =
+    newXmlParser(xmlInputFactory.createXMLStreamReader(new File(filename)), pageFilter)
+
 
   def parseInputStream(is: InputStream,
                        pageFilter: Page => Boolean = PageFilter.all) =
-    new XmlParser(xmlInputFactory.createXMLStreamReader(is), pageFilter)
+    newXmlParser(xmlInputFactory.createXMLStreamReader(is), pageFilter)
 
   def parseReader(reader: Reader,
                   pageFilter: Page => Boolean = PageFilter.all) =
-    new XmlParser(xmlInputFactory.createXMLStreamReader(reader), pageFilter)
+    newXmlParser(xmlInputFactory.createXMLStreamReader(reader), pageFilter)
 
   def parseString(data: String,
                   pageFilter: Page => Boolean = PageFilter.all) =

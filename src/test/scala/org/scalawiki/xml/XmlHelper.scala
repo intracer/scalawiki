@@ -7,6 +7,11 @@ import scala.xml.{Node, NodeSeq}
 
 object XmlHelper {
 
+  def parseExportDemo: XmlParser = {
+    val is = getClass.getResourceAsStream("/org/scalawiki/xml/export-demo.xml")
+    XmlParser.parseInputStream(is)
+  }
+
   def mediawiki(content: AnyRef) =
     <mediawiki xmlns="http://www.mediawiki.org/xml/export-0.10/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mediawiki.org/xml/export-0.10/ http://www.mediawiki.org/xml/export-0.10.xsd" version="0.10" xml:lang="en">
       {content}
@@ -14,7 +19,7 @@ object XmlHelper {
 
   def pageXml(title: String = "Page title",
               ns: Int = 0,
-              id: Int = 1,
+              id: Long = 1,
               revisions: NodeSeq): Node =
     <page>
       <title>{title}</title>
@@ -23,7 +28,7 @@ object XmlHelper {
       {revisions}
     </page>
 
-  def revisionXml(revId: Int, parentId: Int, timestamp: DateTime, user: String, userId: Int, comment: String, text: String, sha1: String): Node =
+  def revisionXml(revId: Long, parentId: Long, timestamp: DateTime, user: String, userId: Int, comment: String, text: String, sha1: String): Node =
     <revision>
       <id>{revId}</id>
       <parentid>{parentId}</parentid>

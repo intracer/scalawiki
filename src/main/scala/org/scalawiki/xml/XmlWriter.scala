@@ -41,7 +41,7 @@ class XmlWriter(writer: XMLStreamWriter) {
 
     writeElement("title", page.title)
     writeElement("ns", page.ns)
-    writeElement("id", page.id)
+    writeElement("id", page.id.get)
 
     page.revisions.foreach(writeRevision)
 
@@ -51,9 +51,9 @@ class XmlWriter(writer: XMLStreamWriter) {
   def writeRevision(rev: Revision) = {
     writer.writeStartElement("revision")
 
-    writeElement("id", rev.id)
+    writeElement("id", rev.id.get)
 
-    rev.parentId.map(writeElement("parentid", _))
+    rev.parentId.foreach(writeElement("parentid", _))
 
     writeElement("timestamp", rev.timestamp.map(Timestamp.format).getOrElse(""))
 
@@ -61,8 +61,8 @@ class XmlWriter(writer: XMLStreamWriter) {
       writer.writeStartElement("contributor")
       contributor match {
         case user: User =>
-          user.login.map(writeElement("username", _))
-          user.id.map(writeElement("id", _))
+          user.login.foreach(writeElement("username", _))
+          user.id.foreach(writeElement("id", _))
         case ip: IpContributor =>
           writeElement("ip", ip.ip)
       }
@@ -73,13 +73,13 @@ class XmlWriter(writer: XMLStreamWriter) {
     //    if (rev.minor.exists(identity))
     //      writeEmptyElement("minor")
 
-    rev.comment.map(writeElement("comment", _))
+    rev.comment.foreach(writeElement("comment", _))
 
     writeElement("model", "wikitext")
     writeElement("format", "text/x-wiki")
 
     writeElement("text", rev.content.getOrElse(""), Seq("xml:space" -> "preserve"))
-    rev.sha1.map(writeElement("sha1", _))
+    rev.sha1.foreach(writeElement("sha1", _))
 
     writer.writeEndElement()
   }

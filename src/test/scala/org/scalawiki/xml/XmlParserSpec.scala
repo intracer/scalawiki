@@ -1,13 +1,13 @@
 package org.scalawiki.xml
 
+import com.github.nscala_time.time.Imports._
 import org.joda.time.DateTime
 import org.scalawiki.Timestamp
 import org.scalawiki.dto.filter.PageFilter
-import org.scalawiki.dto.{IpContributor, User, Revision}
+import org.scalawiki.dto.{IpContributor, Revision, User}
 import org.scalawiki.xml.XmlHelper._
 import org.specs2.matcher.MatchResult
 import org.specs2.mutable.Specification
-import com.github.nscala_time.time.Imports._
 
 import scala.io.Source
 
@@ -55,7 +55,7 @@ class XmlParserSpec extends Specification {
       pages.size === 1
 
       val page = pages(0)
-      (page.id, page.ns, page.title) ===(pageId, ns, title)
+      (page.id, page.ns, page.title) ===(Some(pageId), ns, title)
 
       val revs = page.revisions
       revs.size === 1
@@ -79,7 +79,7 @@ class XmlParserSpec extends Specification {
       pages.size === 1
 
       val page = pages(0)
-      (page.id, page.ns, page.title) ===(pageId, ns, title)
+      (page.id, page.ns, page.title) ===(Some(pageId), ns, title)
 
       val revs = page.revisions
       revs.size === 1
@@ -108,7 +108,7 @@ class XmlParserSpec extends Specification {
       pages.size === 1
 
       val page1 = pages(0)
-      (page1.id, page1.ns, page1.title) ===(pageId1, ns1, title1)
+      (page1.id, page1.ns, page1.title) ===(Some(pageId1), ns1, title1)
 
       val revs1 = page1.revisions
       revs1.size === 2
@@ -138,14 +138,14 @@ class XmlParserSpec extends Specification {
       pages.size === 2
 
       val page1 = pages(0)
-      (page1.id, page1.ns, page1.title) ===(pageId1, ns1, title1)
+      (page1.id, page1.ns, page1.title) ===(Some(pageId1), ns1, title1)
 
       val revs1 = page1.revisions
       revs1.size === 1
       checkRevision(revId1, parentId1, timestamp1, user1, userId1, comment1, text1, revs1(0))
 
       val page2 = pages(1)
-      (page2.id, page2.ns, page2.title) ===(pageId2, ns2, title2)
+      (page2.id, page2.ns, page2.title) ===(Some(pageId2), ns2, title2)
 
       val revs2 = page2.revisions
       revs2.size === 1
@@ -153,12 +153,33 @@ class XmlParserSpec extends Specification {
     }
   }
 
-  "parse mediwiki export-demo" in {
-    val is = getClass.getResourceAsStream("/org/scalawiki/xml/export-demo.xml")
-    is !== null
-    val s = Source.fromInputStream(is).mkString
+  "parse a page with entities" in {
+    val (title, ns, pageId) = ("Page title", 0, 123)
 
-    val parser = XmlParser.parseString(s)
+    val (revId, parentId, timestamp, user, userId, comment, text, sha1) =
+      (345, 456, DateTime.now, "user", 567, "revision comment", "<span style=\"display:none\">Main page</span>", "sha1")
+
+    val revsXml = revisionXml(revId, parentId, timestamp, user, userId, comment, text, sha1)
+
+    val xml = mediawiki(pageXml(title, ns, pageId, revsXml))
+    val parser = XmlParser.parseString(xml)
+
+    val pages = parser.iterator.toSeq
+    pages.size === 1
+
+    val page = pages(0)
+    (page.id, page.ns, page.title) ===(Some(pageId), ns, title)
+
+    val revs = page.revisions
+    revs.size === 1
+    val rev = revs(0)
+
+    checkRevision(revId, parentId, timestamp, user, userId, comment, text, rev)
+  }
+
+
+  "parse mediawiki export-demo" in {
+    val parser = XmlHelper.parseExportDemo
 
     parser.siteInfo === Some(SiteInfo(
       Some("DemoWiki"),
@@ -179,32 +200,32 @@ class XmlParserSpec extends Specification {
     pages.size === 3
 
     val p1 = pages(0)
-    (p1.title, p1.ns, p1.id) ===("Page title", 0, 1)
+    (p1.title, p1.ns, p1.id) ===("Page title", 0, Some(1))
 
     val p1Revs = p1.revisions
     p1Revs.size === 2
     val p1r1 = p1Revs(0)
-    (p1r1.revId, p1r1.parentId, p1r1.comment, p1r1.content) ===(100, Some(99), Some("I have just one thing to say!"), Some("A bunch of [[text]] here."))
+    (p1r1.revId, p1r1.parentId, p1r1.comment, p1r1.content) ===(Some(100), Some(99), Some("I have just one thing to say!"), Some("A bunch of [[text]] here."))
     p1r1.user === Some(User(Some(42), Some("Foobar")))
 
     val p1r2 = p1Revs(1)
-    (p1r2.revId, p1r2.parentId, p1r2.comment, p1r2.content) ===(99, None, Some("new!"), Some("An earlier [[revision]]."))
+    (p1r2.revId, p1r2.parentId, p1r2.comment, p1r2.content) ===(Some(99), None, Some("new!"), Some("An earlier [[revision]]."))
     p1r2.user === Some(IpContributor("10.0.0.2"))
 
     val p2 = pages(1)
-    (p2.title, p2.ns, p2.id) ===("Talk:Page title", 1, 2)
+    (p2.title, p2.ns, p2.id) ===("Talk:Page title", 1, Some(2))
     val p2Revs = p2.revisions
     p2Revs.size === 1
     val p2r1 = p2Revs(0)
-    (p2r1.revId, p2r1.parentId, p2r1.comment, p2r1.content) ===(101, None, Some("hey"), Some("WHYD YOU LOCK PAGE??!!! i was editing that jerk"))
+    (p2r1.revId, p2r1.parentId, p2r1.comment, p2r1.content) ===(Some(101), None, Some("hey"), Some("WHYD YOU LOCK PAGE??!!! i was editing that jerk"))
     p2r1.user === Some(IpContributor("10.0.0.2"))
 
     val p3 = pages(2)
-    (p3.title, p3.ns, p3.id) ===("File:Some image.jpg", 6, 3)
+    (p3.title, p3.ns, p3.id) ===("File:Some image.jpg", 6, Some(3))
     val p3Revs = p3.revisions
     p3Revs.size === 1
     val p3r1 = p3Revs(0)
-    (p3r1.revId, p3r1.parentId, p3r1.comment, p3r1.content) ===(102, None, Some("My awesomeest image!"), Some("This is an awesome little imgae. I lurves it. {{PD}}"))
+    (p3r1.revId, p3r1.parentId, p3r1.comment, p3r1.content) ===(Some(102), None, Some("My awesomeest image!"), Some("This is an awesome little imgae. I lurves it. {{PD}}"))
     p3r1.user === Some(User(Some(42), Some("Foobar")))
 
     val ii = p3.imageInfo
@@ -222,22 +243,22 @@ class XmlParserSpec extends Specification {
     pages.size === 1
 
     val p1 = pages(0)
-    (p1.title, p1.ns, p1.id) ===("Page title", 0, 1)
+    (p1.title, p1.ns, p1.id) ===("Page title", 0, Some(1))
 
     val p1Revs = p1.revisions
     p1Revs.size === 2
     val p1r1 = p1Revs(0)
-    (p1r1.revId, p1r1.parentId, p1r1.comment, p1r1.content) ===(100, Some(99), Some("I have just one thing to say!"), Some("A bunch of [[text]] here."))
+    (p1r1.revId, p1r1.parentId, p1r1.comment, p1r1.content) === (Some(100), Some(99), Some("I have just one thing to say!"), Some("A bunch of [[text]] here."))
     p1r1.user === Some(User(Some(42), Some("Foobar")))
 
     val p1r2 = p1Revs(1)
-    (p1r2.revId, p1r2.parentId, p1r2.comment, p1r2.content) ===(99, None, Some("new!"), Some("An earlier [[revision]]."))
+    (p1r2.revId, p1r2.parentId, p1r2.comment, p1r2.content) === (Some(99), None, Some("new!"), Some("An earlier [[revision]]."))
     p1r2.user === Some(IpContributor("10.0.0.2"))
   }
 
-  def checkRevision(revId: Int, parentId: Int, timestamp: DateTime, user: String, userId: Int, comment: String, text: String, revision: Revision): MatchResult[Any] = {
+  def checkRevision(revId: Long, parentId: Long, timestamp: DateTime, user: String, userId: Long, comment: String, text: String, revision: Revision): MatchResult[Any] = {
     (revision.id, revision.parentId, revision.timestamp.map(Timestamp.format), revision.comment, revision.content) ===
-      (revId, Some(parentId), Some(Timestamp.format(timestamp)), Some(comment), Some(text))
+      (Some(revId), Some(parentId), Some(Timestamp.format(timestamp)), Some(comment), Some(text))
 
     revision.user === Some(User(Some(userId), Some(user)))
   }
