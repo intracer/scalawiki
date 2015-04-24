@@ -13,11 +13,11 @@ class Images(tag: Tag) extends Table[Image](tag, "IMAGES") {
   def date = column[String]("DATE")
   def width = column[Int]("WIDTH")
   def height = column[Int]("HEIGHT")
-  def size = column[Int]("SIZE")
+  def size = column[Long]("SIZE")
 
   def * = (pageId, title, monumentId.?, author.?, uploader.?, date.?, width, height, size) <> (fromDb, toDb)
 
-  def fromDb(t:(Long, String, Option[String], Option[String], Option[String], Option[String], Int, Int, Int)) =
+  def fromDb(t:(Long, String, Option[String], Option[String], Option[String], Option[String], Int, Int, Long)) =
     Image(
       pageId = t._1,
       title = t._2,
