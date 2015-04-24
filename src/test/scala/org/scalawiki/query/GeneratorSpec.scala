@@ -113,9 +113,9 @@ class GeneratorSpec extends Specification with MockBotSpec {
       val future = bot.page("Category:SomeCategory").imageInfoByGenerator("categorymembers", "cm", Set.empty, Set("content", "timestamp", "user", "comment"))
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2
-      result(0) === Page(32885574, 6, "File:\"Dovbush-rocks\" 01.JPG", Seq.empty, Seq(ImageInfo("2014-05-20T20:54:33Z", "Taras r", 4270655, 3648, 2736,
+      result(0) === Page(Some(32885574), 6, "File:\"Dovbush-rocks\" 01.JPG", Seq.empty, Seq(ImageInfo("2014-05-20T20:54:33Z", "Taras r", 4270655, 3648, 2736,
         "https://upload.wikimedia.org/wikipedia/commons/e/ea/%22Dovbush-rocks%22_01.JPG", "https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_01.JPG")))
-      result(1) === Page(32885597, 6, "File:\"Dovbush-rocks\" 02.JPG", Seq.empty, Seq(ImageInfo("2014-05-20T20:55:12Z", "Taras r", 4537737, 2736, 3648,
+      result(1) === Page(Some(32885597), 6, "File:\"Dovbush-rocks\" 02.JPG", Seq.empty, Seq(ImageInfo("2014-05-20T20:55:12Z", "Taras r", 4537737, 2736, 3648,
         "https://upload.wikimedia.org/wikipedia/commons/2/26/%22Dovbush-rocks%22_02.JPG", "https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_02.JPG")))
     }
   }

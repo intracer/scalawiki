@@ -43,8 +43,8 @@ class PageQuerySpec extends Specification {
       val future = bot.pagesById(Set(569559L, 4571809L)).revisions(Set.empty[Int], Set("ids", "content", "user", "comment"))
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2
-      result(0) === Page(569559, 1, "Talk:Welfare reform", Seq(Revision(1).withUser(1, "u1").withComment("c1").withText(pageText1)))
-      result(1) === Page(4571809, 2, "User:Formator", Seq(Revision(2).withUser(2, "u2").withComment("c2").withText(pageText2)))
+      result(0) === Page(Some(569559), 1, "Talk:Welfare reform", Seq(Revision(1, 569559).withUser(1, "u1").withComment("c1").withText(pageText1)))
+      result(1) === Page(Some(4571809), 2, "User:Formator", Seq(Revision(2, 4571809).withUser(2, "u2").withComment("c2").withText(pageText2)))
     }
   }
 
