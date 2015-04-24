@@ -1,14 +1,13 @@
 package org.scalawiki.dto.filter
 
 import org.joda.time.DateTime
-import org.scalawiki.dto.Page.Id
 import org.scalawiki.dto.{Revision, User}
 
 class RevisionFilter(
                       val from: Option[DateTime] = None,
                       val to: Option[DateTime] = None,
                       val userName: Option[String] = None,
-                      val userId: Option[Id] = None) {
+                      val userId: Option[Long] = None) {
 
   def apply(revisions: Seq[Revision]): Seq[Revision] = {
     revisions.filter(predicate)

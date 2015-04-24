@@ -1,7 +1,6 @@
 package org.scalawiki.dto.cmd.edit
 
 import org.joda.time.DateTime
-import org.scalawiki.dto.Page._
 import org.scalawiki.dto.cmd._
 
 
@@ -19,8 +18,8 @@ trait EditParam[+T] extends Parameter[T]
 case class Title(override val arg: String) extends StringParameter("title",
   "Title of the page you want to edit. Cannot be used together with pageid.") with EditParam[String]
 
-case class PageId(override val arg: Id) extends IdParameter("pageid",
-  "Page ID of the page you want to edit. Cannot be used together with title") with EditParam[Id]
+case class PageId(override val arg: Long) extends IdParameter("pageid",
+  "Page ID of the page you want to edit. Cannot be used together with title") with EditParam[Long]
 
 case class Section(override val arg: String) extends StringParameter("section",
   "Section number. 0 for the top section, 'new' for a new section. Omit to act on the entire page") with EditParam[String]
@@ -72,11 +71,11 @@ case class PrependText(override val arg: String) extends StringParameter("prepen
 case class AppendText(override val arg: String) extends StringParameter("appendtext",
   "Add this text to the end of the page. Overrides text. Use section=new to append a new section") with EditParam[String]
 
-case class Undo(override val arg: Id) extends IdParameter("appendtext",
-  "Revision ID to undo. Overrides text, prependtext and appendtext") with EditParam[Id]
+case class Undo(override val arg: Long) extends IdParameter("appendtext",
+  "Revision ID to undo. Overrides text, prependtext and appendtext") with EditParam[Long]
 
-case class UndoAfter(override val arg: Id) extends IdParameter("undoafter",
-  "Undo all revisions from undo up to but not including this one. If not set, just undo one revision") with EditParam[Id]
+case class UndoAfter(override val arg: Long) extends IdParameter("undoafter",
+  "Undo all revisions from undo up to but not including this one. If not set, just undo one revision") with EditParam[Long]
 
 case class Redirect(override val arg: Boolean = true) extends BooleanParameter("redirect",
   "Automatically resolve redirects") with EditParam[Boolean]

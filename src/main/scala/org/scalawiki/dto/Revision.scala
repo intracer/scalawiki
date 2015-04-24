@@ -1,18 +1,20 @@
 package org.scalawiki.dto
 
-import org.scalawiki.dto.Page.Id
 import org.apache.commons.codec.digest.DigestUtils
 import org.joda.time.DateTime
 
 case class Revision(
-                     revId: Id,
-                     parentId: Option[Id] = None,
+                     revId: Option[Long],
+                     pageId: Option[Long],
+                     parentId: Option[Long] = None,
                      user: Option[Contributor] = None,
                      timestamp: Option[DateTime] = None,
                      comment: Option[String] = None,
                      content: Option[String] = None,
-                     size: Option[Int] = None,
-                     sha1: Option[String] = None) {
+                     size: Option[Long] = None,
+                     sha1: Option[String] = None,
+                     textId: Option[Long] = None
+                     ) {
 
 //  def this(revId: Int, parentId: Option[Int] = None, user: Option[Contributor] = None, timestamp: Option[DateTime] = None,
 //           comment: Option[String] = None, content: Option[String] = None,  size: Option[Int] = None,  sha1: Option[String] = None) = {
@@ -25,9 +27,9 @@ case class Revision(
 
   def withText(text: String*) = copy(content = Some(text.mkString("\n")))
 
-  def withIds(revId: Id, parentId: Id = 0) = copy(revId = revId, parentId = Some(parentId))
+  def withIds(revId: Long, parentId: Long = 0) = copy(revId = Some(revId), parentId = Some(parentId))
 
-  def withUser(userId: Id, login: String) = copy(user = Some(new User(Some(userId), Some(login))))
+  def withUser(userId: Long, login: String) = copy(user = Some(new User(Some(userId), Some(login))))
 
   def withComment(comment: String) = copy(comment = Some(comment))
 
@@ -40,11 +42,25 @@ object Revision {
     .zip(texts.size to 1 by -1)
     .map{ case (text, index) =>
     new Revision(
-      revId = index,
+      revId = Some(index),
+      pageId = Some(1L),
       parentId = Some(index - 1),
       content = Some(text),
-      size = Some(text.size),
-      sha1 = Some(DigestUtils.shaHex(text))
+      size = Some(text.length),
+      sha1 = Some(DigestUtils.sha1Hex(text))
     )
   }
+
+  def create1(text: String) =
+    new Revision(
+      revId = None,
+      pageId = None,
+      parentId = None,
+      content = Some(text),
+      size = Some(text.length),
+      sha1 = Some(DigestUtils.sha1Hex(text))
+    )
+
+
+  def apply(revId: Long, pageId: Long) = new Revision(Some(revId), Some(pageId), None)
 }

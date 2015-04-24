@@ -8,7 +8,7 @@ trait Contributor {
 
 object Contributor {
 
-  def apply(id: Option[Page.Id], name: Option[String]): Option[Contributor] = {
+  def apply(id: Option[Long], name: Option[String]): Option[Contributor] = {
     // TODO detect IPs
       (id, name) match {
         case (None, None) => None

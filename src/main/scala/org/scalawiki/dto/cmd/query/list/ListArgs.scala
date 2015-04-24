@@ -1,10 +1,10 @@
 package org.scalawiki.dto.cmd.query.list
 
-import org.scalawiki.dto.Page.Id
+
 
 object ListArgs {
 
-  def toDsl(module: String, title: Option[String], pageId: Option[Id], namespaces:Set[Int], limit: Option[String]): ListArg = {
+  def toDsl(module: String, title: Option[String], pageId: Option[Long], namespaces:Set[Int], limit: Option[String]): ListArg = {
 
     val f = Seq(title.toSeq, pageId.toSeq, namespaces).flatten
 

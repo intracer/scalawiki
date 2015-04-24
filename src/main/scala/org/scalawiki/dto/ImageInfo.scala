@@ -2,7 +2,7 @@ package org.scalawiki.dto
 
 case class ImageInfo(timestamp: String,
                       uploader: String,
-                      size: Int,
+                      size: Long,
                       width: Int,
                       height: Int,
                       url: String,
@@ -18,7 +18,7 @@ case class ImageInfo(timestamp: String,
 object ImageInfo {
   def basic(timestamp: String,
                       uploader: String,
-                      size: Int,
+                      size: Long,
                       width: Int,
                       height: Int
                       ,url: String,

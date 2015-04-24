@@ -13,7 +13,7 @@ class History(val page: Page) {
     filtered.flatMap(_.user.flatMap(_.name)).toSet
   }
 
-  def delta(from: Option[DateTime], to: Option[DateTime] = None): Option[Int] = {
+  def delta(from: Option[DateTime], to: Option[DateTime] = None): Option[Long] = {
     val filtered = new RevisionFilter(from, to).apply(revisions)
     val sum = for (
       oldest <- filtered.lastOption;
@@ -24,17 +24,17 @@ class History(val page: Page) {
     sum
   }
 
-  def delta(revision: Revision): Option[Int] =
+  def delta(revision: Revision): Option[Long] =
     revision.parentId.flatMap { parentId =>
       if (parentId == 0)
         revision.size
       else
-        revisions.find(_.revId == parentId).flatMap {
+        revisions.find(_.revId == Some(parentId)).flatMap {
           parent => delta(parent, revision)
         }
     }
 
-  def delta(from: Revision, to: Revision): Option[Int] =
+  def delta(from: Revision, to: Revision): Option[Long] =
     for (fromSize <- from.size; toSize <- to.size) yield toSize - fromSize
 
   def created: Option[DateTime] = revisions.lastOption.filter(_.parentId.forall(_ == 0)).flatMap(_.timestamp)

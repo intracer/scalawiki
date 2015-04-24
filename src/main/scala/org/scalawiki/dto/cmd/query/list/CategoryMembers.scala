@@ -1,6 +1,5 @@
 package org.scalawiki.dto.cmd.query.list
 
-import org.scalawiki.dto.Page.Id
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.query.Module
 
@@ -9,7 +8,7 @@ case class CategoryMembers(override val params: CmParam[Any]*)
   with ListArg
   with ArgWithParams[CmParam[Any], ListArg] {
 
-  def this(title: Option[String], pageId: Option[Id], namespaces: Set[Int], limit: Option[String], params: CmParam[Any]*) = {
+  def this(title: Option[String], pageId: Option[Long], namespaces: Set[Int], limit: Option[String], params: CmParam[Any]*) = {
     this(Seq(
       title.map(CmTitle).toSeq,
       pageId.map(CmPageId).toSeq,
@@ -24,8 +23,8 @@ trait CmParam[+T] extends Parameter[T]
 case class CmTitle(override val arg: String) extends StringParameter("cmtitle",
   "Title to search. Cannot be used together with cmpageid.") with CmParam[String]
 
-case class CmPageId(override val arg: Id) extends IdParameter("cmpageid",
-  "Page ID to search. Cannot be used together with cmtitle.") with CmParam[Id]
+case class CmPageId(override val arg: Long) extends IdParameter("cmpageid",
+  "Page ID to search. Cannot be used together with cmtitle.") with CmParam[Long]
 
 case class CmNamespace(override val args: Seq[Int]) extends IntListParameter("cmnamespace",
   "Only include pages in these namespaces.") with CmParam[Int]  // TODO Seq[Int] ?

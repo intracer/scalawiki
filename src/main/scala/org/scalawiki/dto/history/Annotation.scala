@@ -19,8 +19,8 @@ class Annotation(val page: Page) {
   val byRevisionContent: Map[Revision, Seq[String]] = annotatedElements.groupBy(_.getRevision).mapValues(_.map(_.getElement))
   val byUserContent: Map[String, Seq[String]] = annotatedElements.groupBy(_.getRevision.user.flatMap(_.name).getOrElse("")).mapValues(_.map(_.getElement))
 
-  val byRevisionSize =  byRevisionContent.mapValues(_.map(_.size).sum)
-  val byUserSize =  byUserContent.mapValues(_.map(_.size).sum)
+  val byRevisionSize =  byRevisionContent.mapValues(_.map(_.length).sum)
+  val byUserSize =  byUserContent.mapValues(_.map(_.length).sum)
 
   def createAnnotation(revisions: Seq[Revision]): Option[AnnotatedContent[Revision, String]] = {
     val contentSize = revisions.count(_.content.isDefined)
@@ -48,7 +48,7 @@ class Annotation(val page: Page) {
 
 object Annotation {
 
-  val revision0: Revision = Revision(0).withContent("")
+  val revision0: Revision = Revision(0, 0).withContent("")
 
   def create(page: Page): Option[Annotation] = {
     val contentSize = page.revisions.count(_.content.isDefined)

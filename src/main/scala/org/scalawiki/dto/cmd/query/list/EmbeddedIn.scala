@@ -1,6 +1,5 @@
 package org.scalawiki.dto.cmd.query.list
 
-import org.scalawiki.dto.Page._
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.query.Module
 
@@ -13,7 +12,7 @@ case class EmbeddedIn(override val params: EiParam[Any]*)
   with ListArg
   with ArgWithParams[EiParam[Any], ListArg] {
 
-  def this(title: Option[String], pageId: Option[Id], namespaces:Set[Int], limit: Option[String], params: EiParam[Any]*) = {
+  def this(title: Option[String], pageId: Option[Long], namespaces:Set[Int], limit: Option[String], params: EiParam[Any]*) = {
     this(Seq(
       title.map(EiTitle).toSeq,
       pageId.map(EiPageId).toSeq,
@@ -26,12 +25,10 @@ case class EmbeddedIn(override val params: EiParam[Any]*)
 
 trait EiParam[+T] extends Parameter[T]
 
-import org.scalawiki.dto.Page.Id
-
 case class EiTitle(override val arg: String) extends StringParameter("eititle",
   "Title to search. Cannot be used together with eipageid.") with EiParam[String]
-case class EiPageId(override val arg: Id)  extends IdParameter("eipageid",
-  "Page ID to search. Cannot be used together with eititle.") with EiParam[Id]
+case class EiPageId(override val arg: Long)  extends IdParameter("eipageid",
+  "Page ID to search. Cannot be used together with eititle.") with EiParam[Long]
 
 case class EiNamespace(override val args: Seq[Int]) extends IntListParameter("einamespace",
   "Only include pages in these namespaces.") with EiParam[Int]

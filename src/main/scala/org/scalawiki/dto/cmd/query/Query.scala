@@ -3,7 +3,7 @@ package org.scalawiki.dto.cmd.query
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.query.list.{ListArg, ListParam}
 import org.scalawiki.dto.cmd.query.meta.{MetaArg, MetaParam}
-import org.scalawiki.dto.cmd.query.prop.{PropArg, Prop}
+import org.scalawiki.dto.cmd.query.prop.{Prop, PropArg}
 
 
 /**
@@ -27,14 +27,13 @@ case class Query(override val params: QueryParam[Any]*)
  */
 trait QueryParam[+T] extends Parameter[T]
 
-import org.scalawiki.dto.Page.Id
 
 case class TitlesParam(override val args: Seq[String])
   extends StringListParameter("titles", "A list of titles to work on") with QueryParam[String]
-case class PageIdsParam(override val args: Seq[Id])
-  extends IdListParameter("pageids", "A list of page IDs to work on") with QueryParam[Id]
-case class RevIdsParam(override val args: Seq[Id])
-  extends IdListParameter("revids", "A list of revision IDs to work on") with QueryParam[Id]
+case class PageIdsParam(override val args: Seq[Long])
+  extends IdListParameter("pageids", "A list of page IDs to work on") with QueryParam[Long]
+case class RevIdsParam(override val args: Seq[Long])
+  extends IdListParameter("revids", "A list of revision IDs to work on") with QueryParam[Long]
 
 
 //indexpageids Include an additional pageids section listing all returned page IDs.

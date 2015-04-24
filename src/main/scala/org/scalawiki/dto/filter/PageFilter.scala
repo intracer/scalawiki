@@ -6,7 +6,7 @@ object PageFilter {
 
   def titles(titles: Set[String]) = (p:Page) => titles.contains(p.title)
 
-  def ids(ids: Set[Page.Id]) = (p:Page) => ids.contains(p.id)
+  def ids(ids: Set[Long]) = (p:Page) => p.id.exists(ids.contains)
 
   def ns(namespaces: Set[Int]) = (p:Page) => namespaces.contains(p.ns)
 
