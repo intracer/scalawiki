@@ -7,7 +7,9 @@ import spray.http.{HttpResponse, _}
 import scala.collection.mutable
 import scala.concurrent.{Future, Promise}
 
-class TestHttpClient(val host: String, val commands: mutable.Queue[Command]) extends Matchers with HttpClient {
+class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matchers with HttpClient {
+
+  val commands = mutable.Queue(commandsParam: _*)
 
   override def getResponse(url: String) = getResponse(Uri(url))
 

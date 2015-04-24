@@ -1,0 +1,51 @@
+{
+  "status": "ok",
+  "meta": {
+    "time": 3.6942718029022217,
+    "queries": 1,
+    "cached": true,
+    "redirected": false,
+    "cache_time": "Apr 18, 2015 20:49:06 UTC"
+  },
+  "page": {
+    "title": "User:The Earwig/Sandbox/CopyvioExample",
+    "url": "https://en.wikipedia.org/wiki/User:The_Earwig/Sandbox/CopyvioExample"
+  },
+  "best": {
+    "url": "http://www.whitehouse.gov/administration/president-obama/",
+    "confidence": 0.9886608511242603,
+    "violation": "suspected"
+  },
+  "sources": [
+    {
+      "url": "http://www.whitehouse.gov/administration/president-obama/",
+      "confidence": 0.9886608511242603,
+      "violation": "suspected",
+      "skipped": false
+    },
+    {
+      "url": "http://www.usconsulate.org.hk/pas/kids/pr44.htm",
+      "confidence": 0.9872238039970398,
+      "violation": "suspected",
+      "skipped": false
+    },
+    {
+      "url": "http://www.britannica.com/EBchecked/topic/973560/Barack-Obama",
+      "confidence": 0.2063492089509964,
+      "violation": "none",
+      "skipped": false
+    },
+    {
+      "url": "http://www.ipl.org/div/potus/bhobama.html",
+      "confidence": 0.1304347813129425,
+      "violation": "none",
+      "skipped": false
+    },
+    {
+      "url": "https://www.whitehouse.gov/1600/presidents/barackobama",
+      "confidence": 0.0,
+      "violation": "none",
+      "skipped": true
+    }
+  ]
+}
