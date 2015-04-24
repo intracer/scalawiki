@@ -1,6 +1,5 @@
 package org.scalawiki.json
 
-import org.scalawiki.dto.Page.Id
 import org.scalawiki.dto._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -23,7 +22,7 @@ object MwReads {
 
 
   implicit val pageReads: Reads[Page] = (
-    (__ \ "pageid").read[Id] and
+    (__ \ "pageid").read[Long] and
       (__ \ "ns").read[Int] and
       (__ \ "title").read[String] and
       (__ \ "missing").readNullable[String]
