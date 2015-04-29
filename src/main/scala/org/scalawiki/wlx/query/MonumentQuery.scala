@@ -21,12 +21,21 @@ trait MonumentQuery {
 
 class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot {
 
-  val host = contest.country.languageCode + ".wikipedia.org"
+  val host = getHost
 
   val listTemplateNames = contest.uploadConfigs.head.listConfig.namesMap
 
+  def getHost = {
+    val langCode = contest.country.languageCode
+
+    if (langCode.contains("."))
+      langCode
+    else
+      langCode + ".wikipedia.org"
+  }
+
   override def byMonumentTemplateAsync(template: String): Future[Seq[Monument]] = {
-    bot.page("Template:" + template).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT_NAMESPACE), Set("content", "timestamp", "user", "comment"), None, "100") map {
+    bot.page("Template:" + template).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT_NAMESPACE, Namespace.MAIN), Set("content", "timestamp", "user", "comment"), None, "100") map {
       pages =>
         pages.flatMap(page =>
           Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listTemplateNames))

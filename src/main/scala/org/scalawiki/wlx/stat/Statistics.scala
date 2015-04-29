@@ -16,21 +16,26 @@ class Statistics {
 
   val slick = new Slick()
 
-  val contest = Contest.WLEUkraine(2015, "09-15", "10-15")
+  //  val contest = Contest.WLEUkraine(2015, "09-15", "10-15")
   val previousContests = (2012 to 2013).map(year => Contest.WLMUkraine(year, "09-01", "09-30"))
 
-  def init(): Unit = {
+  def init(contest: Contest): Unit = {
 
-    val monumentQuery = MonumentQuery.create(contest)
-    val allMonuments = monumentQuery.byMonumentTemplate(contest.uploadConfigs.head.listTemplate)
+    val monumentDb = getMonumentDb(contest)
 
-    //val wrongRegionMonuemnts = allMonuments.filterNot(monument => wlmContest.country.regionIds.contains(Monument.getRegionId(monument.id)))
-
-    val monumentDb = new MonumentDB(contest, allMonuments)
-
-    println(new MonumentDbStat().getStat(monumentDb))
     //articleStatistics(monumentDb)
     //    imagesStatistics(monumentQuery, monumentDb)
+  }
+
+  def getMonumentDb(contest: Contest): MonumentDB = {
+    val monumentQuery = MonumentQuery.create(contest)
+    var allMonuments = monumentQuery.byMonumentTemplate(contest.uploadConfigs.head.listTemplate)
+
+    if (contest.country.code == "ru"){
+      allMonuments = allMonuments.filter(_.page.contains("Природные памятники России"))
+    }
+
+    new MonumentDB(contest, allMonuments)
   }
 
   def articleStatistics(monumentDb: MonumentDB) = {
@@ -38,16 +43,16 @@ class Statistics {
     var allMonuments = 0
     var allArticles = 0
     for (regId <- regionIds) {
-      val monuments =  monumentDb.byRegion(regId)
-      val withArticles =  monuments.filter(_.article.isDefined)
+      val monuments = monumentDb.byRegion(regId)
+      val withArticles = monuments.filter(_.article.isDefined)
       val regionName = monumentDb.contest.country.regionById(regId).name
 
       allMonuments += monuments.size
       allArticles += withArticles.size
-      val percentage = withArticles.size*100 / monuments.size
+      val percentage = withArticles.size * 100 / monuments.size
       println(s"$regId - $regionName, Monuments: ${monuments.size}, Article - ${withArticles.size}, percentage - $percentage")
     }
-    val percentage = allArticles*100 / allMonuments
+    val percentage = allArticles * 100 / allMonuments
     println(s"Ukraine, Monuments: $allMonuments, Article - $allArticles, percentage - $percentage")
   }
 
@@ -55,31 +60,32 @@ class Statistics {
     val imageQueryDb = ImageQuery.create(db = true)
     val imageQueryApi = ImageQuery.create(db = false)
 
+    val contest = monumentDb.contest
     val imageDbFuture = ImageDB.create(contest, imageQueryApi, monumentDb)
 
     imageDbFuture onFailure {
       case f =>
-        println("Failure " +  f)
+        println("Failure " + f)
     }
 
     imageDbFuture onSuccess {
       case imageDb =>
 
-      authorsStat(monumentDb, imageDb)
-      byDayAndRegion(imageDb)
-      new SpecialNominations().specialNominations(contest, imageDb, monumentQuery)
-      wrongIds(contest, imageDb, monumentDb)
+        authorsStat(monumentDb, imageDb)
+        byDayAndRegion(imageDb)
+        new SpecialNominations().specialNominations(contest, imageDb, monumentQuery)
+        wrongIds(contest, imageDb, monumentDb)
 
-      val total = new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)
-      for (totalImages <- total) {
+        val total = new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)
+        for (totalImages <- total) {
 
-        val totalImageDb = new ImageDB(contest, totalImages, monumentDb)
+          val totalImageDb = new ImageDB(contest, totalImages, monumentDb)
 
-        regionalStat(contest, monumentDb, imageQueryDb, imageDb, totalImageDb)
+          regionalStat(contest, monumentDb, imageQueryDb, imageDb, totalImageDb)
 
-        Thread.sleep(5000)
-        fillLists(monumentDb, totalImageDb)
-      }
+          Thread.sleep(5000)
+          fillLists(monumentDb, totalImageDb)
+        }
     }
   }
 
@@ -87,7 +93,7 @@ class Statistics {
 
     val wrongIdImages = imageDb.images.filterNot(image => image.monumentId.fold(false)(monumentDb.ids.contains))
 
-    val text = wrongIdImages.map(_.title).mkString("<gallery>","\n", "</gallery>")
+    val text = wrongIdImages.map(_.title).mkString("<gallery>", "\n", "</gallery>")
     MwBot.get(MwBot.commons).page("Commons:Wiki Loves Monuments 2014 in Ukraine/Images with bad ids").edit(text, "updating")
   }
 
@@ -101,7 +107,7 @@ class Statistics {
 
     var text = ""
     val dayPage = "Commons:Wiki Loves Monuments 2014 in Ukraine/Day 2"
-    for (regionId <- SortedSet(byRegion.keySet.toSeq:_*)) {
+    for (regionId <- SortedSet(byRegion.keySet.toSeq: _*)) {
       val regionName: String = imageDb.monumentDb.contest.country.regionById(regionId).name
       val pageName = s"$dayPage Region $regionName"
       val gallery = byRegion(regionId).map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
@@ -155,7 +161,7 @@ class Statistics {
 
             MwBot.get(MwBot.commons).page("Commons:Wiki Loves Monuments in Ukraine/3 years total number of objects pictured by uploader").edit(authorsByRegionTotal, "updating")
 
-            val mostPopularMonuments  = output.mostPopularMonuments(imageDbs, totalImageDb, monumentDb)
+            val mostPopularMonuments = output.mostPopularMonuments(imageDbs, totalImageDb, monumentDb)
             MwBot.get(MwBot.commons).page("Commons:Wiki Loves Monuments in Ukraine/Most photographed objects").edit(mostPopularMonuments, "updating")
 
             val monumentQuery = MonumentQuery.create(wlmContest)
@@ -202,6 +208,12 @@ class Statistics {
 
 object Statistics {
   def main(args: Array[String]) {
-    new Statistics().init()
+    val stat = new Statistics()
+
+    val contests = Contest.allWLE
+    val dbs = contests.map(stat.getMonumentDb)
+
+    println(new MonumentDbStat().getStat(dbs))
+
   }
 }

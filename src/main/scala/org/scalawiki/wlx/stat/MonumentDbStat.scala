@@ -9,37 +9,40 @@ class MonumentDbStat {
 
   val format = NumberFormat.getPercentInstance
 
-  def getStat(monumentDb: MonumentDB) = {
-    val columns = Seq(
+  val columns = Seq(
     "country", 	"lang", 	"total", 	"name", "address",	"coordinates", 	"image", 	"commonscat", 	"article"
-    )
+  )
 
-    val country = monumentDb.contest.country.code
-    val lang = monumentDb.contest.country.languageCode
-    val total = monumentDb.ids.size
+  def getStat(monumentDbs: Seq[MonumentDB]) = {
+    val title = monumentDbs.head.contest.contestType.name + " database statistics"
 
-    val monuments = monumentDb.monuments
-    val name = monuments.count(_.name.nonEmpty)
-    val address = monuments.count(_.place.isDefined)
-    val coordinates = monuments.count(m => m.lat.isDefined && m.lon.isDefined)
-    val image = monuments.count(_.photo.isDefined)
-    val commonsCat = monuments.count(_.gallery.isDefined)
-    val article = monuments.count(_.article.isDefined)
+    val data = monumentDbs.map { db =>
+      val country = db.contest.country.code
+      val lang = db.contest.country.languageCode
+      val total = db.ids.size
 
-    def withPercentage(value: Int) =
-      s"$value <small>(${format.format(value.toDouble / total.toDouble)})</small>"
+      val monuments = db.monuments
+      val name = monuments.count(_.name.nonEmpty)
+      val address = monuments.count(_.place.isDefined)
+      val coordinates = monuments.count(m => m.lat.isDefined && m.lon.isDefined)
+      val image = monuments.count(_.photo.isDefined)
+      val commonsCat = monuments.count(_.gallery.isDefined)
+      val article = monuments.count(_.article.isDefined)
 
-    val data = Seq(country, lang, total.toString,
-      withPercentage(name),
-      withPercentage(address),
-      withPercentage(coordinates),
-      withPercentage(image),
-      withPercentage(commonsCat),
-      withPercentage(article)
-    )
+      def withPercentage(value: Int) =
+        s"$value <small>(${format.format(value.toDouble / total.toDouble)})</small>"
 
-    val title = monumentDb.contest.contestType.name + " database statistics"
-    val table = new Table(title, columns, Seq(data))
+      Seq(country, lang, total.toString,
+        withPercentage(name),
+        withPercentage(address),
+        withPercentage(coordinates),
+        withPercentage(image),
+        withPercentage(commonsCat),
+        withPercentage(article)
+      )
+    }
+
+    val table = new Table(title, columns, data)
 
     table.asWiki
   }

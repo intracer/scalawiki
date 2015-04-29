@@ -63,7 +63,19 @@ object Contest {
     new Contest(ContestType.WLE, Country.Switzerland, year, startDate, endDate,
       Seq(UploadConfig("wle-ch", "Naturalistic heritage CH row", "", lists.WleCh)))
 
-
+  def allWLE = {
+     val year = 2015
+     val (start, end) = ("01-05", "31-05")
+       Seq(
+//       WLEAustria(year, start, end),
+       WLECatalonia(year, start, end),
+       WLEEstonia(year, start, end),
+       WLENepal(year, start, end),
+       WLERussia(year, start, end),
+       WLESwitzerland(year, start, end),
+       WLEUkraine(year, start, end)
+    )
+  }
 
 
 }
