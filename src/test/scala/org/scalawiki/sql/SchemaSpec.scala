@@ -23,7 +23,8 @@ class SchemaSpec extends Specification with BeforeAfter {
   def createSchema() = MediaWiki.createTables()
 
   override def before = {
-    session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()
+//    session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()
+    session = Database.forURL("jdbc:h2:mem:test", driver = "org.h2.Driver").createSession()
   }
 
   "ddls" should {
