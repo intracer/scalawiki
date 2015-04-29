@@ -1,6 +1,7 @@
 package org.scalawiki.json
 
 import org.joda.time.DateTime
+import org.scalawiki.MwException
 import org.scalawiki.dto._
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Generator
@@ -8,28 +9,39 @@ import org.scalawiki.dto.cmd.query.list.ListArg
 import org.scalawiki.dto.cmd.query.prop.PropArg
 import play.api.libs.json._
 
+import scala.util.{Failure, Success, Try}
+
 class Parser(val action: Action) {
 
   var continue = Map.empty[String, String]
 
-  def parse(s: String): Seq[Page] = {
+  def parse(s: String): Try[Seq[Page]] = {
     val json = Json.parse(s)
 
-    val queryChild = lists.headOption.fold("pages")(_.name)
+    val jsonObj = json.asInstanceOf[JsObject]
+    if (jsonObj.value.contains("error")){
+      val error = jsonObj.value("error").asInstanceOf[JsObject]
+      val code = error.value("code").asInstanceOf[JsString].value
+      val info = error.value("info").asInstanceOf[JsString].value
+      Failure(MwException(code, info))
+    } else {
 
-    val pagesJson = json \ "query" \ queryChild
+      val queryChild = lists.headOption.fold("pages")(_.name)
 
-    val jsons = (queryChild match {
-      case "pages" => pagesJson.asInstanceOf[JsObject].values
-      case _ => pagesJson.asInstanceOf[JsArray].value
-    }).map(_.asInstanceOf[JsObject])
+      val pagesJson = json \ "query" \ queryChild
 
-    continue = json \ "continue" match {
-      case obj: JsObject => obj.fields.toMap.mapValues(_.toString())
-      case _ => Map.empty[String, String]
+      val jsons = (queryChild match {
+        case "pages" => pagesJson.asInstanceOf[JsObject].values
+        case _ => pagesJson.asInstanceOf[JsArray].value
+      }).map(_.asInstanceOf[JsObject])
+
+      continue = json \ "continue" match {
+        case obj: JsObject => obj.fields.toMap.mapValues(_.as[String])
+        case _ => Map.empty[String, String]
+      }
+
+      Success(jsons.map(parsePage).toSeq)
     }
-
-    jsons.map(parsePage).toSeq
   }
 
   def parsePage(pageJson: JsObject): Page = {

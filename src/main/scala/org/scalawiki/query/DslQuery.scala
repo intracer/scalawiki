@@ -1,13 +1,15 @@
 package org.scalawiki.query
 
-import org.scalawiki.MwBot
+import org.scalawiki.{MwException, MwBot}
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.json.Parser
 
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 class DslQuery(action: Action, site: MwBot) {
+
   import site.system.dispatcher
 
   def run(
@@ -15,21 +17,25 @@ class DslQuery(action: Action, site: MwBot) {
            pages: Seq[Page] = Seq.empty[Page]
            ): Future[Seq[Page]] = {
 
-      val params = action.pairs ++ Seq("format" -> "json", "bot" -> "x") ++ continue
+    val params = action.pairs ++ Seq("format" -> "json", "bot" -> "x") ++ continue
 
-      site.get(params.toMap) flatMap {
-        body =>
-          val parser = new Parser(action)
+    site.get(params.toMap) flatMap {
+      body =>
+        val parser = new Parser(action)
 
-          val newPages = parser.parse(body)
-          val allPages = pages ++ newPages
+        parser.parse(body) match {
+          case Success(newPages) =>
+            val allPages = pages ++ newPages
 
-          val newContinue = parser.continue
-          if (newContinue.isEmpty) {
-            Future {allPages}
-          } else {
-           run(newContinue, allPages)
-          }
-      }
+            val newContinue = parser.continue
+            if (newContinue.isEmpty) {
+              Future.successful(allPages)
+            } else {
+              run(newContinue, allPages)
+            }
+
+          case Failure(mwEx: MwException) => Future.failed(mwEx.copy(params = params.toMap))
+        }
+    }
   }
 }
