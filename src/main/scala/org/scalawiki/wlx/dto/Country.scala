@@ -6,7 +6,7 @@ class Country(
                val code: String,
                val name: String,
                val languageCode: String,
-               val regions: Seq[Region]) {
+               val regions: Seq[Region] = Seq.empty) {
 
   val regionIds = SortedSet(regions.map(_.code):_*)
   val regionNames = regions.sortBy(_.code).map(_.name)
@@ -45,6 +45,22 @@ object Country {
       "21" -> "Закарпатська область",
       "51" -> "Одеська область"
     ).map {case (code, name) => Region(code, name)}.toSeq
-
   )
+
+  val Armenia = new Country("am", "Armenia & Nagorno-Karabakh", "hy")
+
+  val Austria = new Country("au", "Austria", "de")
+
+  val Catalonia = new Country("ca", "Andorra & Catalan areas", "ca")
+
+  val Azerbaijan = new Country("az", "Azerbaijan", "az")
+
+  val Estonia = new Country("ee", "Estonia", "et")
+
+  val Nepal = new Country("np", "Nepal", "en")
+
+  val Russia = new Country("ru", "Russia", "ru.wikivoyage.org")
+
+  val Switzerland = new Country("ch", "Switzerland", "commons.wikimedia.org")
+
 }

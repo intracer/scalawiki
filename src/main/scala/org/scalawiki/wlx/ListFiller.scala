@@ -60,7 +60,7 @@ class ListFiller extends WithBot {
       if (index == 0)
         text
       else {
-        val monument = Monument.init(text, title)
+        val monument = Monument.init(text, title, monumentDb.contest.uploadConfigs.head.listConfig.namesMap)
 
         if (!ids.contains(monument.id))
           text

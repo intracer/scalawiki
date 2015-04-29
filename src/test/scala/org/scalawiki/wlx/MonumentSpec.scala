@@ -1,6 +1,7 @@
 package org.scalawiki.wlx
 
 import org.scalawiki.wlx.dto.Monument
+import org.scalawiki.wlx.dto.lists.WlmUa
 import org.specs2.mutable.Specification
 
 class MonumentSpec extends Specification {
@@ -65,7 +66,7 @@ class MonumentSpec extends Specification {
 
   "parse" should {
     "full" in {
-      val m = Monument.init(text1)
+      val m = Monument.init(text1, names = WlmUa.namesMap)
       "05-105-0001" === m.id
       "[[Козятин I|Козятинський залізничний вокзал]]" === m.name
       Some("Station2 2.jpg") ===  m.photo
@@ -73,7 +74,7 @@ class MonumentSpec extends Specification {
     }
 
     "empty" in {
-      val m = Monument.init(text2)
+      val m = Monument.init(text2, names = WlmUa.namesMap)
       "05-105-0012" === m.id
       "Братська могила 6 радянських воїнів, загиблих при звільненні міста" === m.name
       None === m.photo
@@ -84,7 +85,7 @@ class MonumentSpec extends Specification {
 
   "set" should {
     "photo" in  {
-          val m = Monument.init(text2)
+          val m = Monument.init(text2, names = WlmUa.namesMap)
           val photo = "Photo.jpg"
           val m2 = m.setTemplateParam("фото", photo).asInstanceOf[Monument]
           "05-105-0012" === m2.id
@@ -94,7 +95,7 @@ class MonumentSpec extends Specification {
         }
 
     "gallery" in  {
-      val m = Monument.init(text2)
+      val m = Monument.init(text2, names = WlmUa.namesMap)
       val m2 = m.setTemplateParam("галерея", "123").asInstanceOf[Monument]
       "05-105-0012" === m2.id
       "Братська могила 6 радянських воїнів, загиблих при звільненні міста" === m2.name
@@ -114,14 +115,14 @@ class MonumentSpec extends Specification {
 
   "monuments" should {
     "parse" in {
-      val list = Monument.monumentsFromText(listText, "page", "ВЛП-рядок").toSeq
+      val list = Monument.monumentsFromText(listText, "page", "ВЛП-рядок", names = WlmUa.namesMap).toSeq
       2 === list.size
       list(0).id === "05-105-0001"
       list(1).id === "05-105-0012"
     }
 
     "parse with rubbish" in {
-      val list = Monument.monumentsFromText("abcd\n" + listText + "\ndef", "page", "ВЛП-рядок").toSeq
+      val list = Monument.monumentsFromText("abcd\n" + listText + "\ndef", "page", "ВЛП-рядок", names = WlmUa.namesMap).toSeq
       2 === list.size
       list(0).id === "05-105-0001"
       list(1).id === "05-105-0012"

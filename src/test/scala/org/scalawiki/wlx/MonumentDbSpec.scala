@@ -1,5 +1,6 @@
 package org.scalawiki.wlx
 
+import org.scalawiki.wlx.dto.lists.WleUa
 import org.scalawiki.wlx.dto.{Contest, Country, Monument}
 import org.specs2.mutable.Specification
 
@@ -14,7 +15,8 @@ class MonumentDbSpec extends Specification {
           textParam = "",
           page = "",
           id = regionId + "-001-" + f"$i%04d",
-          name = "Monument in " +  Ukraine.regionById(regionId).name
+          name = "Monument in " +  Ukraine.regionById(regionId).name,
+          names = WleUa.namesMap
         )
       }
   }

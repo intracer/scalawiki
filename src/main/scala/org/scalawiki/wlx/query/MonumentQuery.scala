@@ -12,10 +12,10 @@ trait MonumentQuery {
 
   def contest: Contest
 
-  def byMonumentTemplateAsync(template: String = contest.listTemplate): Future[Seq[Monument]]
+  def byMonumentTemplateAsync(template: String = contest.uploadConfigs.head.listTemplate): Future[Seq[Monument]]
   def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false): Future[Seq[Monument]]
 
-  final def byMonumentTemplate(template: String = contest.listTemplate) = Await.result(byMonumentTemplateAsync(template), 15.minutes): Seq[Monument]
+  final def byMonumentTemplate(template: String = contest.uploadConfigs.head.listTemplate) = Await.result(byMonumentTemplateAsync(template), 15.minutes): Seq[Monument]
   final def byPage(page: String, template: String, pageIsTemplate: Boolean = false) = Await.result(byPageAsync(page, template, pageIsTemplate), 15.minutes): Seq[Monument]
 }
 
@@ -23,10 +23,13 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
 
   val host = contest.country.languageCode + ".wikipedia.org"
 
+  val listTemplateNames = contest.uploadConfigs.head.listConfig.namesMap
+
   override def byMonumentTemplateAsync(template: String): Future[Seq[Monument]] = {
     bot.page("Template:" + template).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT_NAMESPACE), Set("content", "timestamp", "user", "comment"), None, "100") map {
       pages =>
-        pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template))
+        pages.flatMap(page =>
+          Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listTemplateNames))
     }
   }
 
@@ -34,7 +37,8 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
     if (!page.startsWith("Template") || pageIsTemplate) {
       bot.page(page).revisions(Set.empty, Set("content", "timestamp", "user", "comment")).map {
         revs =>
-          revs.headOption.map(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template).toSeq).getOrElse(Seq.empty)
+          revs.headOption.map(page =>
+            Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listTemplateNames).toSeq).getOrElse(Seq.empty)
       }
     } else {
 //      bot.page(page).revisionsByGenerator("links", null, Set.empty, Set("content", "timestamp", "user", "comment")).map {
@@ -43,7 +47,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
 //      }
       bot.page(page).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT_NAMESPACE), Set("content", "timestamp", "user", "comment"), None, "100") map {
         pages =>
-          pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template))
+          pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listTemplateNames))
       }
 
     }

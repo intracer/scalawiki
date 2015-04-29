@@ -20,7 +20,7 @@ class Statistics {
   def init(): Unit = {
 
     val monumentQuery = MonumentQuery.create(wlmContest)
-    val allMonuments = monumentQuery.byMonumentTemplate(wlmContest.listTemplate)
+    val allMonuments = monumentQuery.byMonumentTemplate(wlmContest.uploadConfigs.head.listTemplate)
 
     val wrongRegionMonuemnts = allMonuments.filterNot(monument => wlmContest.country.regionIds.contains(Monument.getRegionId(monument.id)))
 
@@ -39,7 +39,26 @@ class Statistics {
     //    saveMonuments(monumentDb)
     //   new Output().monumentsByType(monumentDb)
 
-    imagesStatistics(monumentQuery, monumentDb)
+//    imagesStatistics(monumentQuery, monumentDb)
+    articleStatistics(monumentDb)
+  }
+
+  def articleStatistics(monumentDb: MonumentDB) = {
+    val regionIds = SortedSet(monumentDb._byRegion.keySet.toSeq: _*)
+    var allMonuments = 0
+    var allArticles = 0
+    for (regId <- regionIds) {
+      val monuments =  monumentDb.byRegion(regId)
+      val withArticles =  monuments.filter(_.article.isDefined)
+      val regionName = monumentDb.contest.country.regionById(regId).name
+
+      allMonuments += monuments.size
+      allArticles += withArticles.size
+      val percentage = withArticles.size*100 / monuments.size
+      println(s"$regId - $regionName, Monuments: ${monuments.size}, Article - ${withArticles.size}, percentage - $percentage")
+    }
+    val percentage = allArticles*100 / allMonuments
+    println(s"Ukraine, Monuments: $allMonuments, Article - $allArticles, percentage - $percentage")
   }
 
   def imagesStatistics(monumentQuery: MonumentQuery, monumentDb: MonumentDB) {
@@ -62,7 +81,7 @@ class Statistics {
       //wrongIds(wlmContest, imageDb, monumentDb)
      // fixWadco(imageDb, monumentDb)
 
-      val total = new ImageQueryApi().imagesWithTemplateAsync(wlmContest.fileTemplate, wlmContest)
+      val total = new ImageQueryApi().imagesWithTemplateAsync(wlmContest.uploadConfigs.head.fileTemplate, wlmContest)
       for (totalImages <- total) {
 
         val totalImageDb = new ImageDB(wlmContest, totalImages, monumentDb)
@@ -98,7 +117,7 @@ class Statistics {
     val images = imageDb.byId("99-999-9999")
     for (image <- images) {
       val title = image.title
-      if (title.size>=11) {
+      if (title.length >= 11) {
         val id = title.substring(0, 11)
         for (monument <-  monumentDb.byId(id)) {
          // image.

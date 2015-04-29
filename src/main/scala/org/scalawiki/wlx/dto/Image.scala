@@ -66,7 +66,7 @@ object Image {
   }
 
   def getAuthor(content: String): String = {
-    val template = new Template(content)
+    val template = new Template(content, names = Map.empty)
     val authorValue = template.getParamOpt("author").getOrElse(template.getParam("Author"))
 
     val i1: Int = authorValue.indexOf("User:")
@@ -77,8 +77,8 @@ object Image {
       val pipe = authorValue.indexOf("|", start)
       val end = if (pipe >= 0)
         pipe
-      else authorValue.size
-      authorValue.substring(start + "user:".size, end)
+      else authorValue.length
+      authorValue.substring(start + "user:".length, end)
     }
     else
       authorValue

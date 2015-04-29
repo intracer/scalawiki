@@ -1,6 +1,7 @@
 package org.scalawiki.wlx
 
 import org.scalawiki.wlx.dto._
+import org.scalawiki.wlx.dto.lists.WleUa
 import org.scalawiki.wlx.query.ImageQuerySeq
 import org.specs2.mutable.Specification
 
@@ -14,7 +15,8 @@ class ImageDbSpec extends Specification {
           textParam = "",
           page = "",
           id = regionId + "-001-" + f"$i%04d",
-          name = "Monument in " + Ukraine.regionById(regionId).name
+          name = "Monument in " + Ukraine.regionById(regionId).name,
+          names = WleUa.namesMap
         )
       }
   }

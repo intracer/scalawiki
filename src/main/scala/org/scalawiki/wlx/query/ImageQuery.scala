@@ -7,6 +7,7 @@ import org.scalawiki.{MwBot, WithBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, _}
+import scala.util.control.NonFatal
 
 trait ImageQuery {
 
@@ -35,15 +36,16 @@ class ImageQueryApi extends ImageQuery with WithBot {
     val revsFuture = query.revisionsByGenerator("categorymembers", "cm",
       Set.empty, Set("content", "timestamp", "user", "comment"), None, "500") map {
       pages =>
-          pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
+        pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
     }
 
     val imageInfoFuture = query.imageInfoByGenerator("categorymembers", "cm", Set(Namespace.FILE)) map {
       pages =>
         try {
-        pages.flatMap(page => Image.fromPageImageInfo(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
-        } catch {case e =>
-          throw e
+          pages.flatMap(page => Image.fromPageImageInfo(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
+        } catch {
+          case NonFatal(e) =>
+            throw e
         }
     }
 
@@ -67,7 +69,7 @@ class ImageQueryApi extends ImageQuery with WithBot {
     query.revisionsByGenerator("embeddedin", "ei",
       Set(Namespace.FILE), Set("content", "timestamp", "user", "comment"), None, "500") map {
       pages =>
-       val result =  pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, "")).sortBy(_.pageId)
+        val result = pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, "")).sortBy(_.pageId)
         result
     }
   }
@@ -131,7 +133,7 @@ object ImageQuery {
       new ImageQueryApi
 
     val wrapper = if (caching)
-      new ImageQueryCached(if (pickling) query else query)//          new ImageQueryPickling(api, contest)
+      new ImageQueryCached(if (pickling) query else query) //          new ImageQueryPickling(api, contest)
     else query
 
     wrapper

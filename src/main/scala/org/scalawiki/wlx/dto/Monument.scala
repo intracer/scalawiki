@@ -23,13 +23,14 @@ case class Monument(textParam: String, page: String,
                     gallery: Option[String] = None,
                     resolution: Option[String] = None,
                     stateId: Option[String] = None,
-                    contest: Option[Long] = None
-//                    otherParams: Map[String, String]
-                     ) extends Template(textParam, page) {
+                    contest: Option[Long] = None,
+//                    otherParams: Map[String, String],
+                      names: Map[String, String]
+                     ) extends Template(textParam, page, names) {
 
   def toUrls = Monument.wikiLinkToUrl(name +" * "  + place, "uk.wikipedia.org")
 
-  override def init(text: String, page:String):Monument = Monument.init(text, page)
+  override def init(text: String, page:String, names: Map[String, String]):Monument = Monument.init(text, page, names)
 
   def regionId = Monument.getRegionId(id)
 
@@ -46,28 +47,39 @@ case class Monument(textParam: String, page: String,
 
 object Monument {
 
-  def init(text: String, page: String = "") = {
-    val t = new Template(text)
-    val name: String = t.getParam("назва")
+  def init(text: String, page: String = "", names: Map[String, String]) = {
+    val t = new Template(text, page, names)
+    val name: String = t.getParam("name")
     new Monument(textParam = text,
       id = t.getParam("ID"),
       name = name,
-      year =  t.getParamOpt("рік"),
-      description =  t.getParamOpt("опис"),
-      article = None,
-      city = t.getParamOpt("нас_пункт"),
-      place =  t.getParamOpt("розташування").orElse(t.getParamOpt("адреса")),
-      user = t.getParamOpt("користувач"),
-      area = t.getParamOpt("площа"),
-      lat = t.getParamOpt("широта"),
-      lon = t.getParamOpt("довгота"),
-      typ = t.getParamOpt("тип"),
-      subType =  t.getParamOpt("підтип"),
-      photo = t.getParamOpt("фото"),
-      gallery = t.getParamOpt("галерея"),
-      resolution = t.getParamOpt("постанова"),
-      page = page
+      year =  t.getParamOpt("year"),
+      description =  t.getParamOpt("description"),
+      article = getArticle(name),
+      city = t.getParamOpt("city"),
+      place =  t.getParamOpt("place"),
+      user = t.getParamOpt("user"),
+      area = t.getParamOpt("area"),
+      lat = t.getParamOpt("lat"),
+      lon = t.getParamOpt("lon"),
+      typ = t.getParamOpt("type"),
+      subType =  t.getParamOpt("subType"),
+      photo = t.getParamOpt("photo"),
+      gallery = t.getParamOpt("gallery"),
+      resolution = t.getParamOpt("resolution"),
+      page = page,
+      names = names
     )
+  }
+
+  def getArticle(s: String): Option[String] = {
+    val start = s.indexOf("[[")
+    val end = s.indexOf("]]")
+
+    if (start >= 0 && end > start && end < s.length)
+      Some(s.substring(start + 2, end))
+    else
+      None
   }
 
   def wikiLinkToUrl(wikiText: Option[String], host: String):String =
@@ -91,8 +103,8 @@ object Monument {
     r2
   }
 
-  def monumentsFromText(text: String, page: String, template: String): Set[Monument] =
-    text.split("\\{\\{" + template).tail.map(text => init(text, page)).toSet
+  def monumentsFromText(text: String, page: String, template: String, names: Map[String, String]): Set[Monument] =
+    text.split("\\{\\{" + template).tail.map(text => init(text, page, names)).toSet
       //.filter(_.id.nonEmpty).toSet
 
   // test for "-" id
