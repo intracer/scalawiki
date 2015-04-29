@@ -23,12 +23,8 @@ class Charts extends WithBot {
   val color2012 = new Color(51, 102, 204)
 
   def init {
-    val dataset = createTotalDataset(1,2,3)
+    val dataset = createTotalDataset(Seq(2001, 2002, 2003),  Seq(1, 2, 3))
     val chart = createChart(dataset, "")
-
-//    val filename = "WikiLovesMonumentsInUkrainePicturedByYearTotal.png"
-//    saveAsPNG(chart, filename, 900, 200)
-//    bot.page(filename).upload(filename)
 
     saveAsPNG(createPieChart(createPieDataset(), "Унікальність фотографій пам'яток за роками"), "WikiLovesMonumentsInUkrainePicturedByYearPieTest.png", 900, 900)
   }
