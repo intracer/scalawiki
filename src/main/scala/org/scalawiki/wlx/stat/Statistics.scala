@@ -1,10 +1,12 @@
-package org.scalawiki.wlx
+package org.scalawiki.wlx.stat
 
-import java.nio.file.{Paths, Files}
-import org.scalawiki.slick.Slick
-import org.scalawiki.wlx.dto.{Monument, Contest, SpecialNomination}
-import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
+import java.nio.file.{Files, Paths}
+
 import org.scalawiki.MwBot
+import org.scalawiki.slick.Slick
+import org.scalawiki.wlx.dto.{Contest, Monument}
+import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
+import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
 
 import scala.collection.immutable.SortedSet
 
@@ -14,33 +16,21 @@ class Statistics {
 
   val slick = new Slick()
 
-  val wlmContest = Contest.WLMUkraine(2014, "09-15", "10-15")
+  val contest = Contest.WLEUkraine(2015, "09-15", "10-15")
   val previousContests = (2012 to 2013).map(year => Contest.WLMUkraine(year, "09-01", "09-30"))
 
   def init(): Unit = {
 
-    val monumentQuery = MonumentQuery.create(wlmContest)
-    val allMonuments = monumentQuery.byMonumentTemplate(wlmContest.uploadConfigs.head.listTemplate)
+    val monumentQuery = MonumentQuery.create(contest)
+    val allMonuments = monumentQuery.byMonumentTemplate(contest.uploadConfigs.head.listTemplate)
 
-    val wrongRegionMonuemnts = allMonuments.filterNot(monument => wlmContest.country.regionIds.contains(Monument.getRegionId(monument.id)))
+    //val wrongRegionMonuemnts = allMonuments.filterNot(monument => wlmContest.country.regionIds.contains(Monument.getRegionId(monument.id)))
 
-//    val libraries = allMonuments.filter(m => m.name.toLowerCase.contains("бібліо") || m.place.fold(false)(_.contains("бібліо")))
-    val monumentDb = new MonumentDB(wlmContest, allMonuments)
+    val monumentDb = new MonumentDB(contest, allMonuments)
 
-    //    val grouped: Map[String, Seq[Monument]] = monumentDb.wrongIdMonuments.groupBy(_.pageParam)
-    //    for ((page, monuments)  <- grouped) {
-    //      println(page)
-    //      for (monument <- monuments)
-    //      println(s"  id: ${monument.id}, name: ${monument.name},"
-    //+s" place ${monument.place}"
-    //      )
-    //    }
-
-    //    saveMonuments(monumentDb)
-    //   new Output().monumentsByType(monumentDb)
-
-//    imagesStatistics(monumentQuery, monumentDb)
-    articleStatistics(monumentDb)
+    println(new MonumentDbStat().getStat(monumentDb))
+    //articleStatistics(monumentDb)
+    //    imagesStatistics(monumentQuery, monumentDb)
   }
 
   def articleStatistics(monumentDb: MonumentDB) = {
@@ -65,7 +55,7 @@ class Statistics {
     val imageQueryDb = ImageQuery.create(db = true)
     val imageQueryApi = ImageQuery.create(db = false)
 
-    val imageDbFuture = ImageDB.create(wlmContest, imageQueryApi, monumentDb)
+    val imageDbFuture = ImageDB.create(contest, imageQueryApi, monumentDb)
 
     imageDbFuture onFailure {
       case f =>
@@ -75,28 +65,20 @@ class Statistics {
     imageDbFuture onSuccess {
       case imageDb =>
 
-     // authorsStat(monumentDb, imageDb)
-    //  byDayAndRegion(imageDb)
-     // specialNominations(wlmContest, imageDb, monumentQuery)
-      //wrongIds(wlmContest, imageDb, monumentDb)
-     // fixWadco(imageDb, monumentDb)
+      authorsStat(monumentDb, imageDb)
+      byDayAndRegion(imageDb)
+      new SpecialNominations().specialNominations(contest, imageDb, monumentQuery)
+      wrongIds(contest, imageDb, monumentDb)
 
-      val total = new ImageQueryApi().imagesWithTemplateAsync(wlmContest.uploadConfigs.head.fileTemplate, wlmContest)
+      val total = new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)
       for (totalImages <- total) {
 
-        val totalImageDb = new ImageDB(wlmContest, totalImages, monumentDb)
+        val totalImageDb = new ImageDB(contest, totalImages, monumentDb)
 
-//        val withWrongIdsKh  = totalImages.filter(_.monumentId.exists(id => id.startsWith("63-101-") && !monumentDb.ids.contains(id)))
-//        val text = withWrongIdsKh.map(image => s"${image.title}|${image.monumentId.getOrElse("")}").mkString("<gallery>", "\n", "</gallery>")
-//        MwBot.get(MwBot.commons).page("User:IlyaBot/KharkivBadIdImages").edit(text, "updating")
-
-  //      regionalStat(wlmContest, monumentDb, imageQueryDb, imageDb, totalImageDb)
+        regionalStat(contest, monumentDb, imageQueryDb, imageDb, totalImageDb)
 
         Thread.sleep(5000)
         fillLists(monumentDb, totalImageDb)
-
-        val badImages = totalImageDb.subSet(monumentDb.wrongIdMonuments, true)
-        val byId = badImages._byId
       }
     }
   }
@@ -178,8 +160,8 @@ class Statistics {
 
             val monumentQuery = MonumentQuery.create(wlmContest)
 
-            specialNominations(previousContests.find(_.year == 2012).get, firstYear, monumentQuery)
-            specialNominations(previousContests.find(_.year == 2013).get, lastYear, monumentQuery)
+            new SpecialNominations().specialNominations(previousContests.find(_.year == 2012).get, firstYear, monumentQuery)
+            new SpecialNominations().specialNominations(previousContests.find(_.year == 2013).get, lastYear, monumentQuery)
         }
     }
   }
@@ -213,24 +195,6 @@ class Statistics {
     slick.db.withSession { implicit session =>
       slick.images ++= imageDb.images
     }
-  }
-
-  def specialNominations(contest: Contest, imageDb: ImageDB, monumentQuery: MonumentQuery) {
-    val monumentsMap = SpecialNomination.nominations.map { nomination =>
-      val monuments = monumentQuery.byPage(nomination.pages.head, nomination.listTemplate)
-      (nomination, monuments)
-    }.toMap
-
-    val allMonuments = monumentsMap.values.flatMap(identity)
-
-    val imageDbs: Map[SpecialNomination, ImageDB] = SpecialNomination.nominations.map { nomination =>
-      (nomination, imageDb.subSet(monumentsMap(nomination)))
-    }.toMap
-
-    val output = new Output()
-    val stat = output.specialNomination(contest, imageDbs)
-
-    MwBot.get(MwBot.commons).page(s"Commons:Wiki Loves Monuments ${contest.year} in Ukraine/Special nominations statistics").edit(stat, "updating")
   }
 
 

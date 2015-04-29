@@ -2,7 +2,7 @@ package org.scalawiki.wlx
 
 import org.scalawiki.wlx.dto.{Contest, Monument}
 
-class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFalseIds: Boolean = false) {
+class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFalseIds: Boolean = true) {
 
   val monuments = allMonuments.filter(m => withFalseIds || isIdCorrect(m.id))
   val wrongIdMonuments = allMonuments.filterNot(m => isIdCorrect(m.id))

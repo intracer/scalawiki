@@ -1,4 +1,4 @@
-package org.scalawiki.wlx
+package org.scalawiki.wlx.stat
 
 import java.awt.{Color, Font, Rectangle}
 import java.io.File
