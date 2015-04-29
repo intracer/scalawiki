@@ -81,7 +81,6 @@ object SubsetCreator {
 
   }
 
-
   def regionPerPage(ukWiki: MwBot, specialNomination: String, contest: Contest, byRegion: Map[String, Seq[Monument]], regionIds: SortedSet[String]) {
     for (regionId <- regionIds) {
 
