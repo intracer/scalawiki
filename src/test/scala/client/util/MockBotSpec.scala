@@ -1,8 +1,8 @@
 package client.util
 
 import akka.actor.ActorSystem
+import org.scalawiki.MwBot
 import scala.collection.mutable
-import client.MwBot
 
 trait MockBotSpec {
 

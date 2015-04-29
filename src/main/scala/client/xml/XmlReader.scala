@@ -64,8 +64,9 @@ object XmlReader  {
 
     val s = System.currentTimeMillis
 
+//    val file = new File(filename)
     val file = new RandomAccessFile(filename, "r")
-    val read = file.length
+    val read =  file.length
     val channel = file.getChannel
     val is = Channels.newInputStream(channel)
     val xmlStreamReader = xmlInputFactory.createXMLStreamReader(is) //.asInstanceOf[XMLStreamReader2]
@@ -92,7 +93,7 @@ object XmlReader  {
   }
 
   def main(args: Array[String]) {
-    parseFile(filename_start)
+    parseFile(filename)
   }
 
 }

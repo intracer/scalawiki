@@ -3,8 +3,9 @@ package client
 import java.util.concurrent.TimeUnit
 
 import akka.actor.ActorSystem
-import client.dto.{Page, Revision}
+import org.scalawiki.dto.{Page, Revision}
 import client.util.{Command, TestHttpClient}
+import org.scalawiki.MwBot
 import org.specs2.mutable.Specification
 
 import scala.collection.mutable

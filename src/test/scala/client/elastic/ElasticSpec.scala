@@ -1,6 +1,6 @@
 package client.elastic
 
-import client.dto.Page
+import org.scalawiki.dto.Page
 import com.fasterxml.jackson.annotation.JsonFilter
 import com.fasterxml.jackson.databind.ser.impl.{SimpleBeanPropertyFilter, SimpleFilterProvider}
 import com.fasterxml.jackson.databind.{ObjectMapper, ObjectWriter}

@@ -1,6 +1,6 @@
 package client.board
 
-import client.dto.User
+import org.scalawiki.dto.User
 
 import scala.collection.immutable.SortedSet
 

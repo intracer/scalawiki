@@ -1,6 +1,6 @@
 package client.util
 
-import client.http.{CookiesAndBody, HttpClient}
+import org.scalawiki.http.{CookiesAndBody, HttpClient}
 import org.specs2.mutable.Specification
 import spray.http._
 import scala.concurrent.{Promise, Future}
@@ -38,11 +38,12 @@ class TestHttpClient(val host: String, val commands: mutable.Queue[Command]) ext
 
   override def postFile(url: String, params: Map[String, String], fileParam: String, filename: String): Future[HttpResponse] = ???
 
-  override def get(url: String): Future[String] = ???
+  override def get(url: String): Future[String] = getResponse(url) map getBody
 
-  override def getBody(response: HttpResponse): String = ???
+  override def get(url: Uri): Future[String] = getResponse(url) map getBody
 
-  override def get(url: Uri): Future[String] = ???
+  override def getBody(response: HttpResponse): String =
+    response.entity.asString(HttpCharsets.`UTF-8`)
 
   override def cookiesAndBody(response: HttpResponse): CookiesAndBody = ???
 }

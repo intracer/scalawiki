@@ -1,11 +1,11 @@
 package client.board
 
-import client.MwBot
-import client.dto.User
+import org.scalawiki.dto.User
 import client.sweble.{OrderedList, Section, WtTools}
 import client.xml.yaidom.YaiDomUtil
 import eu.cdevreeze.yaidom.queryapi.HasENameApi._
 import eu.cdevreeze.yaidom.simple.{Elem, Node, Text}
+import org.scalawiki.MwBot
 import org.sweble.wikitext.parser.nodes.WtBody
 
 import scala.collection.JavaConverters._

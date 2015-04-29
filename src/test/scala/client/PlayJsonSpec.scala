@@ -1,10 +1,10 @@
 package client
 
-import client.dto.Page
+import org.scalawiki.dto.Page
 import org.specs2.matcher.MatchResult
 import org.specs2.mutable._
 import play.api.libs.json.Json
-import client.json.MwReads._
+import org.scalawiki.json.MwReads._
 
 class PlayJsonSpec extends Specification {
 

@@ -1,0 +1,114 @@
+package org.scalawiki.stat
+
+import org.joda.time.DateTime
+import org.scalawiki.dto.cmd.ActionParam
+import org.scalawiki.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
+import org.scalawiki.dto.cmd.query.prop._
+import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
+import org.scalawiki.dto.{DslQuery, Page}
+import org.scalawiki.{MwBot, WithBot}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+class ArticleStatBot extends WithBot {
+
+  val host = MwBot.ukWiki
+
+  def pagesWithTemplate(template: String): Future[Seq[Page.Id]] = {
+    val action = ActionParam(Query(
+      PropParam(
+        Info(InProp(SubjectId)),
+        Revisions()
+      ),
+      Generator(EmbeddedIn(
+        EiTitle("Template:" + template),
+        EiLimit("500")
+      ))
+    ))
+
+    new DslQuery(action, bot).run.map {
+      pages =>
+        pages.map(p => p.subjectId.getOrElse(p.id))
+    }
+  }
+
+  def pagesRevisions(ids: Seq[Page.Id]): Future[Seq[Page]] = {
+    Future.traverse(ids)(pageRevisions).map(_.flatten)
+  }
+
+  def pageRevisions(id: Page.Id): Future[Option[Page]] = {
+    val action = ActionParam(Query(
+      PageIdsParam(Seq(id)),
+      PropParam(
+        Info(),
+        Revisions(
+          RvProp(Content, Ids, Size, User, UserId, Timestamp),
+          RvLimit("max")
+        )
+      )
+    ))
+
+    new DslQuery(action, bot).run.map { pages =>
+      pages.headOption
+    }
+  }
+
+  def stat() = {
+
+    val from = Some(DateTime.parse("2015-03-07T00:00+02:00"))
+    val to = Some(DateTime.parse("2015-04-05T00:00+02:00"))
+
+//    val from = Some(DateTime.parse("2015-01-06T00:00+02:00"))
+//    val to = Some(DateTime.parse("2015-01-28T00:00+02:00"))
+    for (newPagesIds <- pagesWithTemplate(ArticleStatBot.newTemplate);
+         improvedPagesIds <- pagesWithTemplate(ArticleStatBot.improvedTemplate)) {
+      println(s"New ${newPagesIds.size} $newPagesIds")
+      println(s"Improved ${improvedPagesIds.size} $improvedPagesIds")
+
+      val allIds = newPagesIds.toSet ++ improvedPagesIds.toSet
+
+      for (allPages <- pagesRevisions(allIds.toSeq)) {
+
+        val updatedPages = allPages.filter(_.history.editedIn(from, to))
+        val (created, improved) = updatedPages.partition(_.history.createdAfter(from))
+
+        val allStat = new ArticleStat(from, to, updatedPages, "All")
+        val createdStat = new ArticleStat(from, to, created, "created")
+        val improvedStat = new ArticleStat(from, to, improved, "improved")
+
+        println(Seq(allStat, createdStat, improvedStat).mkString("\n"))
+
+        val users = allStat.userStat.byUserAddedOrRemoved.filter{
+          case (user, size) => size > 2000
+        }.map{
+          case (user, size) =>
+          s"# {{#target:User talk:$user}})"
+        }.mkString("\n")
+
+        println(users)
+
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+object ArticleStatBot {
+
+  val newTemplate = "Вікіпедія любить пам'ятки"
+  //"Kherson-week-new"
+
+  val improvedTemplate = "Вікіпедія любить пам'ятки"
+    //"Kherson-week-improve"
+
+  def main(args: Array[String]) {
+    new ArticleStatBot().stat()
+  }
+}

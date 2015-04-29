@@ -1,7 +1,7 @@
 package client.finance
 
-import client.MwBot
 import client.sweble.{Section, WtTools}
+import org.scalawiki.MwBot
 import org.sweble.wikitext.parser.nodes._
 
 import scala.collection.JavaConverters._

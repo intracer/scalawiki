@@ -5,7 +5,7 @@ import client.util.{MockBotSpec, Command}
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
-import client.dto.Page
+import org.scalawiki.dto.Page
 
 class PropEmbeddedInSpec extends Specification with MockBotSpec {
 

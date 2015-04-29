@@ -2,7 +2,7 @@ package client
 
 import java.util.concurrent.TimeUnit
 
-import client.dto.{ImageInfo, Page}
+import org.scalawiki.dto.{ImageInfo, Page}
 import client.util.{Command, MockBotSpec}
 import org.specs2.mutable.Specification
 
