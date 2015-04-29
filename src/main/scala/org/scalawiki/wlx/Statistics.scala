@@ -109,23 +109,6 @@ class Statistics {
     MwBot.get(MwBot.commons).page("Commons:Wiki Loves Monuments 2014 in Ukraine/Images with bad ids").edit(text, "updating")
   }
 
-  def regionIdGallery(imageDb: ImageDB, monumentDb: MonumentDB): Unit = {
-
-  }
-
-  def fixWadco(imageDb: ImageDB, monumentDb: MonumentDB) {
-    val images = imageDb.byId("99-999-9999")
-    for (image <- images) {
-      val title = image.title
-      if (title.length >= 11) {
-        val id = title.substring(0, 11)
-        for (monument <-  monumentDb.byId(id)) {
-         // image.
-        }
-      }
-    }
-  }
-
   def byDayAndRegion(imageDb: ImageDB): Unit = {
 
     val byDay = imageDb.withCorrectIds.groupBy(_.date.getOrElse("2014-00-00").substring(8, 10))
@@ -168,10 +151,6 @@ class Statistics {
           lastYear =>
 
             val imageDbs = Seq(firstYear, lastYear, currentYear)
-            //      initImages()
-            //      for (imageDb <- imageDbs) {
-            //        saveImages(imageDb)
-            //      }
 
             val output = new Output()
 

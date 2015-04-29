@@ -20,10 +20,27 @@ class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Monu
   }
 
   val _authorsIds: Map[String, Set[String]] = _byAuthor.mapValues(images => images.groupBy(_.monumentId.getOrElse("")).keySet)
-  val _authorIdsByRegion =
-    _authorsIds.mapValues(ids => ids.groupBy(id => Monument.getRegionId(id)))
 
-    //  var allImages: Seq[Image] = Seq.empty
+  val _authorIdsByRegion = _authorsIds.mapValues(ids => ids.groupBy(id => Monument.getRegionId(id)))
+
+
+  def authorsCountById: Map[String, Int] = _byId.mapValues(_.flatMap(_.author).toSet.size)
+
+  def imageCountById: Map[String, Int] = _byId.mapValues(_.size)
+
+  def byNumberOfAuthors: Map[Int, Map[String, Seq[Image]]] = {
+    _byId.toSeq.groupBy {
+      case (id, photos) =>
+        val authors = photos.flatMap(_.author).toSet
+        authors.size
+    }.mapValues(_.toMap)
+  }
+
+  def byNumberOfPhotos: Map[Int, Map[String, Seq[Image]]] = {
+    _byId.toSeq.groupBy {
+      case (id, photos) => -photos.size
+    }.mapValues(_.toMap)
+  }
 
   def ids: Set[String] = _byId.keySet
 
@@ -45,7 +62,6 @@ class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Monu
 
 }
 
-
 object ImageDB {
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -55,7 +71,3 @@ object ImageDB {
     }
   }
 }
-
-
-//Error:(46, 70) Cannot find an implicit ExecutionContext, either import scala.concurrent.ExecutionContext.Implicits.global or use a custom one
-//imageQuery.imagesFromCategoryAsync(contest.category, contest).map{

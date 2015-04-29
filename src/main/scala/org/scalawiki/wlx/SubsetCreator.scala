@@ -6,7 +6,7 @@ import org.scalawiki.MwBot
 
 import scala.collection.immutable.SortedSet
 
-object WoodenArchitecture {
+object SubsetCreator {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -21,12 +21,12 @@ object WoodenArchitecture {
     query.byMonumentTemplateAsync(contest.listTemplate).map {
       monuments =>
 
-        val wooden = monuments.filter { m =>
+        val subset = monuments.filter { m =>
           val typ = m.typ.getOrElse("").toLowerCase
           Set("нац" ).exists(typ.contains)
         }
 
-        val byRegion = wooden.groupBy(m => Monument.getRegionId(m.id))
+        val byRegion = subset.groupBy(m => Monument.getRegionId(m.id))
 
         val regionIds = SortedSet(byRegion.keys.toSeq: _*)
 

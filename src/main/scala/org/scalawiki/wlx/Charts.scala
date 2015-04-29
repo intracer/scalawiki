@@ -31,7 +31,6 @@ class Charts extends WithBot {
 //    bot.page(filename).upload(filename)
 
     saveAsPNG(createPieChart(createPieDataset(), "Унікальність фотографій пам'яток за роками"), "WikiLovesMonumentsInUkrainePicturedByYearPieTest.png", 900, 900)
-
   }
 
   def saveAsJPEG(chart: JFreeChart, filename: String, width: Int, height: Int) {
@@ -45,9 +44,6 @@ class Charts extends WithBot {
   def saveAsSVG(chart: JFreeChart, filename: String, width: Int, height: Int) {
     val g2 = new SVGGraphics2D(width, height)
     chart.draw(g2, new Rectangle(width, height))
-
-//    val svg = g2.getSVGElement
-//    Files.write(Paths.get(filename), svg.getBytes)
 
     SVGUtils.writeToSVG(new File(filename), g2.getSVGElement)
   }
@@ -75,9 +71,9 @@ class Charts extends WithBot {
   def createPieChart(dataset: PieDataset, title: String) = {
 
     val chart = ChartFactory.createPieChart(
-      title,  // chart title
-      dataset,             // data
-      false,               // include legend
+      title, // chart title
+      dataset, // data
+      false, // include legend
       true,
       false
     )
@@ -98,7 +94,7 @@ class Charts extends WithBot {
     plot.setSectionPaint("2013 & 2014", blend(color2013, color2014))
     plot.setSectionPaint("2014", color2014)
     plot.setSectionPaint("2012 & 2014", blend(color2012, color2014))
-    plot.setSectionPaint("2012 & 2013 & 2014",  new Color(0x99CC00))
+    plot.setSectionPaint("2012 & 2013 & 2014", new Color(0x99CC00))
 
     val gen = new StandardPieSectionLabelGenerator("{0}:\n{1} ({2})", new DecimalFormat("0"), new DecimalFormat("0%"))
     plot.setLabelGenerator(gen)
@@ -118,24 +114,13 @@ class Charts extends WithBot {
    *
    * @return The dataset.
    */
-  def createTotalDataset(n2014: Int, n2013: Int, n2012: Int) = {
+  def createTotalDataset(years: Seq[Int], values: Seq[Int]) = {
 
-    // row keys...
-    val series1 = "2014"
-    val series2 = "2013"
-    val series3 = "2012"
-
-    // column keys...
     val category1 = "Всього"
 
-    // create the dataset...
     val dataset = new DefaultCategoryDataset()
 
-    dataset.addValue(n2014, series1, category1)
-
-    dataset.addValue(n2013, series2, category1)
-
-    dataset.addValue(n2012, series3, category1)
+    years.zip(values).foreach { case (year, value) => dataset.addValue(value, year, category1) }
 
     dataset
   }
@@ -164,9 +149,6 @@ class Charts extends WithBot {
       false // URLs?
     )
 
-
-    // NOW DO SOME OPTIONAL CUSTOMISATION OF THE CHART...
-
     // set the background color for the chart...
     //    chart.setBackgroundPaint(Color.white)
 
@@ -192,11 +174,10 @@ class Charts extends WithBot {
     renderer.setSeriesPaint(1, color2013)
     renderer.setSeriesPaint(2, color2012)
 
-//    val domainAxis = plot.getDomainAxis
-//    domainAxis.setCategoryLabelPositions(
-//      CategoryLabelPositions.createUpRotationLabelPositions(Math.PI / 6.0)
-//    )
-    // OPTIONAL CUSTOMISATION COMPLETED.
+    //    val domainAxis = plot.getDomainAxis
+    //    domainAxis.setCategoryLabelPositions(
+    //      CategoryLabelPositions.createUpRotationLabelPositions(Math.PI / 6.0)
+    //    )
 
     chart
   }

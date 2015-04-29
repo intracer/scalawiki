@@ -4,7 +4,7 @@ package org.scalawiki.dto.markup
 class Table(
              val title: String,
              val headers: Seq[String],
-             val data: Seq[Seq[String]],
+             val data: Iterable[Iterable[String]],
              val cssClass: String = "wikitable sortable") {
 
 

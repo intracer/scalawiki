@@ -30,6 +30,8 @@ case class Monument(textParam: String, page: String,
 
   def toUrls = Monument.wikiLinkToUrl(name +" * "  + place, "uk.wikipedia.org")
 
+  def galleryLink = gallery.fold("") { title => s" [[:Category:$title|$title]]"  }
+
   override def init(text: String, page:String, names: Map[String, String]):Monument = Monument.init(text, page, names)
 
   def regionId = Monument.getRegionId(id)
