@@ -1,11 +1,11 @@
 package org.scalawiki.dto.markup
 
 
-class Table(
-             val title: String,
-             val headers: Seq[String],
-             val data: Iterable[Iterable[String]],
-             val cssClass: String = "wikitable sortable") {
+case class Table(
+                  title: String,
+                  headers: Iterable[String],
+                  data: Iterable[Iterable[String]],
+                  cssClass: String = "wikitable sortable") {
 
 
   def asWiki = {
@@ -21,6 +21,8 @@ class Table(
         }.mkString("\n|-\n", "\n|-\n", "")
       }) +
       "\n|}"
+
+
   }
 
 
