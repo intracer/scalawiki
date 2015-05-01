@@ -16,9 +16,9 @@ object TableParser {
     val dataLines = rowsLines.map(_.filter(_.startsWith("|"))).filter(_.nonEmpty)
 
     val headers = headersLines.headOption.toSeq.flatMap(_.head.substring(1).split("\\!\\!").map(_.trim).toSeq)
-    val data = dataLines.map(_.head.substring(1).split("\\|\\|").map(_.trim).toSeq)
+    val data = dataLines.map(_.head.substring(1).split("\\|\\|", -1).map(_.trim).toSeq)
 
-    new Table("", headers, data, "")
+    new Table(headers, data, "", "")
   }
 
 }

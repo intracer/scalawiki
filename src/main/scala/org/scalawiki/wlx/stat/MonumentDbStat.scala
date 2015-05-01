@@ -42,7 +42,7 @@ class MonumentDbStat {
       )
     }
 
-    val table = new Table(title, columns, data)
+    val table = new Table(columns, data, title)
 
     table.asWiki
   }

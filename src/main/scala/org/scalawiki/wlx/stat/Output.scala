@@ -48,7 +48,7 @@ class Output {
       ) ++ counts.map(_.getOrElse(id, 0).toString)
     }
 
-    val table = new Table("Most photographed objects", columns, rows)
+    val table = new Table(columns, rows, "Most photographed objects")
 
     val header = "\n==Most photographed objects==\n"
     val category = s"\n[[Category:Wiki Loves Monuments in Ukraine]]"
@@ -134,7 +134,7 @@ class Output {
     intersectionDiagram(charts, "Унікальність фотографій пам'яток за роками", intersectionFile, yearSeq, ids, 900, 800)
     MwBot.get(MwBot.commons).page(intersectionFile + ".png").upload(intersectionFile + ".png")
 
-    val table = new Table("Objects pictured", columns, rows)
+    val table = new Table(columns, rows, "Objects pictured")
 
     header + table.asWiki + total
   }
@@ -228,7 +228,7 @@ class Output {
 
     intersectionDiagram(charts, "Унікальність авторів за роками", "WikiLovesMonumentsInUkraineAuthorsByYearPie", yearSeq, authors, 900, 900)
 
-    val table = new Table("Authors contributed", columns, rows)
+    val table = new Table(columns, rows, "Authors contributed")
 
     header + table.asWiki
   }

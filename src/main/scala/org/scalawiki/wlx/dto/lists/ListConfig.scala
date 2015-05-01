@@ -74,6 +74,17 @@ object WleRu extends ListConfig {
     "gallery" -> "commonscat")
 }
 
+object WleTh extends ListConfig {
+  override val namesMap = Map(
+    "ID" -> "ลำดับ",
+    "name" -> "อุทยานแห่งชาติ",
+    "area" -> "พื้นที่",
+    "year" -> "ปีที่จัดตั้ง",
+    "photo" -> "ไฟล์",
+    "gallery" -> "commonscat")
+}
+
+
 object WleCh extends ListConfig {
   override val namesMap = Map(
     "ID" -> "Nr",
@@ -90,7 +101,7 @@ object WleAu extends ListConfig {
     "ID" -> "number",
     "name" -> "Name",
     "date" -> "Datum",
-    "place" ->  "Bundesland", // "Bezirk" , "Gemeinde", "Anzeige-Gemeinde"
+    "place" -> "Bundesland", // "Bezirk" , "Gemeinde", "Anzeige-Gemeinde"
     "description" -> "Beschreibung",
     "article" -> "Artikel",
     "area" -> "Fläche",
@@ -108,7 +119,7 @@ object WleEe extends ListConfig {
     "name" -> "nimi",
     "type" -> "tüüp",
     "photo" -> "pilt"
-    )
+  )
 }
 
 object WleCat extends ListConfig {

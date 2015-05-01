@@ -27,8 +27,6 @@ class ListFiller extends WithBot {
     val titles = SortedSet(monumentsByPage.keys.toSeq: _*)
     println(s"pages: ${titles.size}")
 
-    //val bot = MwBot.get()
-    //val javaBot = bot.getJavaWiki
     val results = titles.zipWithIndex.map {
       case (title, index) =>
       println(s"adding monuments to page: $title, $index of ${titles.size}")

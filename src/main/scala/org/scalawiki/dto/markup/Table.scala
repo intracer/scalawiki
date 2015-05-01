@@ -2,9 +2,9 @@ package org.scalawiki.dto.markup
 
 
 case class Table(
-                  title: String,
                   headers: Iterable[String],
                   data: Iterable[Iterable[String]],
+                  title: String = "",
                   cssClass: String = "wikitable sortable") {
 
 
