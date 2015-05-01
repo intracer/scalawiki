@@ -28,6 +28,9 @@ libraryDependencies ++= {
 //    "org.codehaus.woodstox" % "woodstox-core-asl" % "4.4.1",
     "org.apache.commons" % "commons-compress" % "1.9",
     "ch.qos.logback" % "logback-classic" % "1.1.3",
+    "org.sweble.wikitext" % "swc-engine" % "2.0.0",
+    //          "org.sweble.engine" % "sweble-engine-serialization" % "2.0.0",
+    "org.sweble.wom3" % "sweble-wom3-swc-adapter" % "2.0.0",
     "org.specs2" %% "specs2" % "2.3.12" % "test",
     "com.google.jimfs" % "jimfs" % "1.0" % "test"
   )
