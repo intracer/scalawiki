@@ -67,63 +67,63 @@ class MonumentSpec extends Specification {
   "parse" should {
     "full" in {
       val m = Monument.init(text1, names = WlmUa.namesMap)
-      "05-105-0001" === m.id
-      "[[Козятин I|Козятинський залізничний вокзал]]" === m.name
-      Some("Station2 2.jpg") ===  m.photo
-      Some("Koziatyn-1 Railway Station") === m.gallery
+      m.id === "05-105-0001"
+      m.name === "[[Козятин I|Козятинський залізничний вокзал]]"
+      m.photo === Some("Station2 2.jpg")
+      m.gallery === Some("Koziatyn-1 Railway Station")
     }
 
     "empty" in {
       val m = Monument.init(text2, names = WlmUa.namesMap)
-      "05-105-0012" === m.id
-      "Братська могила 6 радянських воїнів, загиблих при звільненні міста" === m.name
-      None === m.photo
-      None === m.gallery
+      m.id === "05-105-0012"
+      m.name === "Братська могила 6 радянських воїнів, загиблих при звільненні міста"
+      m.photo === None
+      m.gallery === None
     }
 
   }
 
   "set" should {
-    "photo" in  {
-          val m = Monument.init(text2, names = WlmUa.namesMap)
-          val photo = "Photo.jpg"
-          val m2 = m.setTemplateParam("фото", photo).asInstanceOf[Monument]
-          "05-105-0012" === m2.id
-          "Братська могила 6 радянських воїнів, загиблих при звільненні міста" === m2.name
-          Some(photo) === m2.photo
-          None === m2.gallery
-        }
+    "photo" in {
+      val m = Monument.init(text2, names = WlmUa.namesMap)
+      val photo = "Photo.jpg"
+      val m2 = m.setTemplateParam("фото", photo).asInstanceOf[Monument]
+      m2.id === "05-105-0012"
+      m2.name === "Братська могила 6 радянських воїнів, загиблих при звільненні міста"
+      m2.photo === Some(photo)
+      m2.gallery === None
+    }
 
-    "gallery" in  {
+    "gallery" in {
       val m = Monument.init(text2, names = WlmUa.namesMap)
       val m2 = m.setTemplateParam("галерея", "123").asInstanceOf[Monument]
-      "05-105-0012" === m2.id
-      "Братська могила 6 радянських воїнів, загиблих при звільненні міста" === m2.name
-      None === m2.photo
-      Some("123") === m2.gallery
+      m2.id === "05-105-0012"
+      m2.name === "Братська могила 6 радянських воїнів, загиблих при звільненні міста"
+      m2.photo === None
+      m2.gallery === Some("123")
     }
 
   }
 
-      //  @Test def testSetResolution1 {
-      //    val m: Monument = Monument.init(withResolution1)
-      //    m.addResolution
-      //    "Vinn-3", m.id)
-      //    "[[Іллінецький заказник|Іллінецький]]", m.name)
-      //    "<ref name=\"500n\"/>", m.getTemplateParam("постанова"))
-      //  }
+  //  @Test def testSetResolution1 {
+  //    val m: Monument = Monument.init(withResolution1)
+  //    m.addResolution
+  //    "Vinn-3", m.id)
+  //    "[[Іллінецький заказник|Іллінецький]]", m.name)
+  //    "<ref name=\"500n\"/>", m.getTemplateParam("постанова"))
+  //  }
 
   "monuments" should {
     "parse" in {
       val list = Monument.monumentsFromText(listText, "page", "ВЛП-рядок", names = WlmUa.namesMap).toSeq
-      2 === list.size
+      list.size === 2
       list(0).id === "05-105-0001"
       list(1).id === "05-105-0012"
     }
 
     "parse with rubbish" in {
       val list = Monument.monumentsFromText("abcd\n" + listText + "\ndef", "page", "ВЛП-рядок", names = WlmUa.namesMap).toSeq
-      2 === list.size
+      list.size === 2
       list(0).id === "05-105-0001"
       list(1).id === "05-105-0012"
     }
