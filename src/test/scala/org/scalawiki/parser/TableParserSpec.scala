@@ -43,6 +43,18 @@ class TableParserSpec extends Specification {
       parser.parse(wiki) === new Table(Seq.empty, Seq(Seq("data11", "data12")), "", "")
     }
 
+    "parse table with formatted data" in {
+      val data = Seq(
+        "[[article1]], [[article2|link2]]",
+        "{{template|param}}",
+        "[http://link title]",
+        "a<ref name=\"b\">c</ref>")
+
+      val wiki = "{|\n|-\n|" + data.mkString(" || ") + "\n|}"
+
+      parser.parse(wiki) === new Table(Seq.empty, Seq(data), "", "")
+    }
+
     "parse table with empty columns" in {
       val wiki = "{|\n|-\n| data11 || || data13\n|}"
       parser.parse(wiki) === new Table(Seq.empty, Seq(Seq("data11", "", "data13")), "", "")
