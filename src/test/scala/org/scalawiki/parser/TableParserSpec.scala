@@ -5,7 +5,7 @@ import org.specs2.mutable.Specification
 
 class TableParserSpec extends Specification {
   
-  val parser = SwebleTableParser
+  val parser = TableParser
 
   "table parser" should {
     "parse empty table" in {

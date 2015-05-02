@@ -23,14 +23,21 @@ object TemplateParser extends SwebleParser {
 
         val params = args.zipWithIndex.map {
           case (arg, index) =>
-            val name = if (arg.hasName) getText(arg.getName).trim else (index + 1).toString
+
+            val name =
+              if (arg.hasName)
+                getText(arg.getName).trim
+              else
+                (index + 1).toString
+
             val value = getText(arg.getValue).trim
+
             name -> value
         }
 
         new Template2(
           getText(template.getName).trim,
-          mutable.LinkedHashMap(params:_*)
+          mutable.LinkedHashMap(params: _*)
         )
     }.getOrElse(new Template2("", mutable.LinkedHashMap.empty))
 

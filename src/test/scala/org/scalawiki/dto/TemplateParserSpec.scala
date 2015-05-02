@@ -121,7 +121,6 @@ class TemplateParserSpec extends Specification {
       template.params === Map("1" -> "param1")
     }
 
-
     "parse two named positional parameters" in {
       val template = parser.parse("{{TemplateName|1=param1|2=param2}}")
       template.templateName === "TemplateName"

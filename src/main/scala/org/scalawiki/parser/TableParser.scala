@@ -5,15 +5,7 @@ import org.sweble.wikitext.engine.config.WikiConfig
 import org.sweble.wikitext.engine.utils.DefaultConfigEnWp
 import org.sweble.wikitext.parser.nodes._
 
-
-trait TableParser {
-
-  def parse(wiki: String): Table
-
-}
-
-// TODO is it thread safe?
-object SwebleTableParser extends TableParser with SwebleParser {
+object TableParser extends SwebleParser {
 
   val config: WikiConfig = DefaultConfigEnWp.generate
 
@@ -25,10 +17,13 @@ object SwebleTableParser extends TableParser with SwebleParser {
       tableBody =>
         val rows = collectNodes(tableBody,  { case r: WtTableRow => r })
 
-        val headers = rows.headOption.toSeq.flatMap(head => collectNodes(head, { case h: WtTableHeader => h }).map(h => getText(h).trim))
+        val headers = rows.headOption.toSeq.flatMap {
+          head =>
+            collectNodes(head, { case h: WtTableHeader => h }).map(getTextTrimmed)
+        }
 
         val items = rows.map {
-          row => collectNodes(row, { case c: WtTableCell => c }).map(c => getText(c).trim)
+          row => collectNodes(row, { case c: WtTableCell => c }).map(getTextTrimmed)
         }.filter(_.nonEmpty)
 
         new Table(headers, items, "", "")

@@ -1,13 +1,13 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.parser.SwebleTableParser
+import org.scalawiki.parser.TableParser
 import org.scalawiki.wlx.dto.Monument
 import org.scalawiki.wlx.dto.lists.ListConfig
 
 class WlxTableParser(val config: ListConfig) {
 
   def parse(wiki: String): Iterable[Monument] = {
-    val table = SwebleTableParser.parse(wiki)
+    val table = TableParser.parse(wiki)
 
     val headers = table.headers.toIndexedSeq
 

@@ -34,6 +34,8 @@ trait SwebleParser {
       node.asScala.flatMap(child => collectNodes(child, pf))
   }
 
+  def getTextTrimmed(node: WtNode) = getText(node).trim
+
   def getText(node: WtNode): String =
     node match {
 
