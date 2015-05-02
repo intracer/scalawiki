@@ -1,7 +1,7 @@
 package org.scalawiki.wlx.dto
 
 import java.nio.file.{Paths, Files}
-import org.scalawiki.dto.{Template, Page}
+import org.scalawiki.dto.{Template1, Page}
 import org.scalawiki.MwBot
 
 
@@ -54,7 +54,7 @@ object Image {
 
       val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
       val content = revision.content.getOrElse("")
-      val id = Template.getDefaultParam(content, monumentIdTemplate)
+      val id = Template1.getDefaultParam(content, monumentIdTemplate)
       val ipOpt = if (id.matches(idRegex)) Some(id) else None
 
       val author = getAuthor(content)
@@ -66,7 +66,7 @@ object Image {
   }
 
   def getAuthor(content: String): String = {
-    val template = new Template(content, names = Map.empty)
+    val template = new Template1(content, names = Map.empty)
     val authorValue = template.getParamOpt("author").getOrElse(template.getParam("Author"))
 
     val i1: Int = authorValue.indexOf("User:")

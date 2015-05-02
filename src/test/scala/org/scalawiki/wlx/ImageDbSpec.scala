@@ -12,7 +12,7 @@ class ImageDbSpec extends Specification {
     regionId =>
       (1 to regionId.toInt).map { i =>
         Monument(
-          textParam = "",
+          text = "",
           page = "",
           id = regionId + "-001-" + f"$i%04d",
           name = "Monument in " + Ukraine.regionById(regionId).name,

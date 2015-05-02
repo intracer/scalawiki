@@ -1,0 +1,177 @@
+{| border="1" cellpadding="3" cellspacing="0" style="margin: 1em 1em 1em 0; background: #f9f9f9; border-collapse:collapse;" class="sortable"
+|-
+! style="background: #cbfb95;" | National park
+! style="background: #cbfb95;" | Established
+! style="background: #cbfb95;" | Area
+! style="background: #cbfb95;" class="unsortable" | [[Districts of Pakistan|District(s)]]
+! style="background: #cbfb95;" | [[Provinces of Pakistan|Province]]
+! style="background: #cbfb95;" class="unsortable" | Coordinates
+|-
+| [[Ayub National Park|Ayub]]
+| {{center|—}}
+| style="text-align: right;" | {{sort|{{commas|931}}|{{convert|931|ha|acre|0|abbr=on}}}}<ref name="wdpa_ayub"/>
+| [[Rawalpindi District|Rawalpindi]] || [[Punjab (Pakistan)|Punjab]]
+| <small>{{coord|33.566700|N|73.499998|E|name=Ayub National Park|type:landmark}}</small>
+|-
+| [[Shandure-Phander National Park]]
+| 2012<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|3312}}|{{convert|3312|ha|acre|0|abbr=on}}}}<ref name="wwf_panda"/>
+| [[Ghizer District|Ghizer]] || [[Gilgit Baltistan]]
+| <small>{{coord|33.865231|N|73.138768|E|name=Shandure-Phander National Park|type:landmark}}</small>
+|-
+| [[Broghil Valley National Park|Broghil Valley]]
+| 2010<ref name="pakwildlife">{{cite web|url=http://www.pakwildlife.org/pakistan-wildlife/national-parks/national-parks-in-pakistan/|title=List of National Parks in Pakistan|date= |work=pakwildlife.org |publisher= |location= |accessdate=December 7, 2012}}</ref>
+| style="text-align: right;" | {{sort|{{commas|134744}}|{{convert|134744|ha|acre|0|abbr=on}}}}<ref name="pakwildlife"/>
+| [[Chitral District|Chitral]] || [[Khyber Pakhtunkhwa]]
+| <small>{{coord|36.841164|N|73.335697|E|name=Broghil Valley National Park|type:landmark}}</small>
+|-
+| [[Central Karakoram National Park|Central Karakoram]]
+| 1993<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|1390100}}|{{convert|1390100|ha|acre|0|abbr=on}}}}<ref name="review_PAS"/>
+| [[Gilgit District|Gilgit]] and [[Skardu District|Skardu]] || [[Gilgit Baltistan]]
+| <small>{{coord|36.897708|N|75.093545|E|name=Central Karakoram National Park|type:landmark}}</small>
+|-
+| [[Chinji National Park|Chinji]]
+| 1987<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|6095}}|{{convert|6095|ha|acre|0|abbr=on}}}}<ref name="review_PAS"/>
+| [[Chakwal District|Chakwal]] || [[Punjab (Pakistan)|Punjab]]
+| <small>{{coord|33.010242|N|72.491940|E|name=Chinji National Park|type:landmark}}</small>
+|-
+| [[Chitral Gol National Park|Chitral Gol]]
+| 1984<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|7750}}|{{convert|7750|ha|acre|0|abbr=on}}}}<ref name="review_PAS"/>
+| [[Chitral District|Chitral]] || [[Khyber Pakhtunkhwa]]
+| <small>{{coord|35.933082|N|71.670693|E|name=Chitral Gol National Park|type:landmark}}</small>
+|-
+| [[Deosai National Park|Deosai]]
+| 1993<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|358400}}|{{convert|358400|ha|acre|0|abbr=on}}}}<ref name="review_PAS"/>
+| [[Skardu District|Skardu]] || [[Gilgit Baltistan]]
+| <small>{{coord|34.972626|N|75.396423|E|name=Deosai National Park|type:landmark}}</small>
+|-
+| [[Deva Vatala National Park|Deva Vatala]]
+| 2009<ref name="cjpas_june_2010"/>
+| style="text-align: right;" | {{sort|{{commas|2993}}|{{convert|2993|ha|acre|0|abbr=on}}}}<ref name="government_ajk"/>
+| [[Bhimber District|Bhimber]] || [[Azad Kashmir]]
+| <small>{{coord|32.892583|N|74.303172|E|name=Deva Vatala National Park|type:landmark}}</small>
+|-
+| [[Ghamot National Park|Ghamot]]
+| 2004<ref name="cbd_pakistan"/>
+| style="text-align: right;" | {{sort|{{commas|27271}}|{{convert|27271|ha|acre|0|abbr=on}}}}<ref name="government_ajk"/>
+| [[Neelum District|Neelum]] || [[Azad Kashmir]]
+| <small>{{coord|35.006943|N|74.200287|E|name=Ghamot National Park|type:landmark}}</small>
+|-
+| [[Gurez 'musk deer' National Park|Gurez]]
+| 2009<ref name="guraiz_musk_deer"/>
+| style="text-align: right;" | {{sort|{{commas|52815}}|{{convert|52815|ha|acre|0|abbr=on}}}}<ref name="government_ajk"/>
+| [[Neelum District|Neelum]] || [[Azad Kashmir]]
+| <small>{{coord|34.731456|N|74.786682|E|name=Gurez National Park|type:landmark}}</small>
+|-
+| [[Hazarganji-Chiltan National Park|Hazarganji-Chiltan]]
+| 1980<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|15555}}|{{convert|15555|ha|acre|0|abbr=on}}}}<ref name="review_PAS"/>
+| [[Quetta District|Quetta]] || [[Balochistan (Pakistan)|Balochistan]]
+| <small>{{coord|30.285695|N|67.202298|E|name=Hazarganji-Chiltan National Park|type:landmark}}</small>
+|-
+| [[Hingol National Park|Hingol]]
+| 1988<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|165004}}|{{convert|165004|ha|acre|0|abbr=on}}}}<ref name="review_PAS"/>
+| [[Awaran District|Awaran]], [[Gwadar District|Gwadar]]<br>and [[Lasbela District|Lasbela]] || [[Balochistan (Pakistan)|Balochistan]]
+| <small>{{coord|25.526246|N|65.085996|E|name=Hingol National Park|type:landmark}}</small>
+|-
+| [[K2 National Park|K2]]
+| {{center|—}}
+| style="text-align: right;" | {{sort|{{commas|233468}}|{{convert|233468|ha|acre|0|abbr=on}}}}<ref name="wdpa_K2"/>
+| [[Gilgit District|Gilgit]] || [[Gilgit Baltistan]]
+| <small>{{coord|35.788171|N|76.182888|E|name=K2 National Park|type:landmark}}</small>
+|-
+| [[Kala Chitta National Park|Kala Chitta]]
+| 2009<ref name="cjpas_june_2010"/>
+| style="text-align: right;" | {{sort|{{commas|36965}}|{{convert|36965|ha|acre|0|abbr=on}}}}<ref name="pakwildlife">{{cite web|url=http://www.pakwildlife.org/pakistan-wildlife/parks/national-parks-in-pakistan/|title=List of National Parks of Pakistan|work=pakwildlife.org|accessdate=January 16, 2012}}</ref>
+| [[Attock District|Attock]] || [[Punjab, Pakistan|Punjab]]
+| <small>{{coord|33.642685|N|72.400824|E|name=Kala Chitta National Park|type:landmark}}</small>
+|-
+| [[Khunjerab National Park|Khunjerab]]
+| 1975<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|226913}}|{{convert|226913|ha|acre|0|abbr=on}}}}<ref name="review_PAS"/>
+| [[Gilgit District|Gilgit]] || [[Gilgit Baltistan]]
+| <small>{{coord|36.500805|N|75.643616|E|name=Khunjerab National Park|type:landmark}}</small>
+|-
+| [[Kirthar National Park|Kirthar]]
+| 1974<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|308733}}|{{convert|308733|ha|acre|0|abbr=on}}}}<ref name="review_PAS"/>
+| [[Dadu District|Dadu]] || [[Sindh]]
+| <small>{{coord|25.658107|N|67.548975|E|name=Kirthar National Park|type:landmark}}</small>
+|-
+| [[Lal Suhanra National Park|Lal Suhanra]]
+| 1972<ref name="cjpas_june_2010"/>
+| style="text-align: right;" | {{sort|{{commas|87426}}|{{convert|87426|ha|acre|0|abbr=on}}}}<ref name="review_PAS"/>
+| [[Bahawalpur District|Bahawalpur]] || [[Punjab (Pakistan)|Punjab]]
+| <small>{{coord|29.397409|N|72.025811|E|name=Lal Suhanra National Park|type:landmark}}</small>
+|-
+| [[Lulusar-Dudipatsar National Park|Lulusar-Dudipatsar]]
+| 2003<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|30375}}|{{convert|30375|ha|acre|0|abbr=on}}}}<ref name="parc_gov_report"/>
+| [[Mansehra District|Mansehra]] || [[Khyber Pakhtunkhwa]]
+| <small>{{coord|35.090698|N|73.929749|E|name=Lulusar-Dudipatsar National Park|type:landmark}}</small>
+|-
+| [[Machiara National Park|Machiara]]
+| 1996<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|13532}}|{{convert|13532|ha|acre|0|abbr=on}}}}<ref name="government_ajk"/>
+| [[Muzaffarabad District|Muzaffarabad]] || [[Azad Kashmir]]
+| <small>{{coord|34.506557|N|73.565140|E|name=Machiara National Park|type:landmark}}</small>
+|-
+| [[Margalla Hills National Park|Margalla Hills]]
+| 1980<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|17386}}|{{convert|17386|ha|acre|0|abbr=on}}}}<ref name="review_PAS"/>
+| [[Rawalpindi District|Rawalpindi]] || [[Punjab (Pakistan)|Punjab]]
+| <small>{{coord|33.754317|N|72.956429|E|name=Margalla Hills National Park|type:landmark}}</small>
+|-
+| [[Murree-Kotli Sattian-Kahuta National Park|Murree-Kotli Sattian-Kahuta]]
+| 2009<ref name="pakwildlife"/>
+| style="text-align: right;" | {{sort|{{commas| }}|{{convert|57581|ha|acre|0|abbr=on}}}}<ref>{{cite web|url=http://cybervision.com.pk/na/uploads/documents/questions/1304385722_964.pdf|title=National Assembly Secretariat - "Questions for oral answers and their replies"|date=April 20, 2011|page=26 |publisher=cybervision.com |accessdate=December 7, 2012}}</ref>
+| [[Rawalpindi District|Rawalpindi]] || [[Punjab (Pakistan)|Punjab]]
+| ?
+|-
+| [[Pir Lasura National Park|Pir Lasura]]
+| 2005<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|5625}}|{{convert|5625|ha|acre|0|abbr=on}}}}<ref name="review_PAS"/>
+| [[Kotli District|Kotli]] || [[Azad Kashmir]]
+| <small>{{coord|33.639204|N|73.846664|E|name=Pir Lasura National Park|type:landmark}}</small>
+|-
+| [[Poonch River Mahaseer National Park|Poonch River Mahaseer]]
+| 2010<ref name="pakwildlife"/>
+| style="text-align: right;" | {{sort|{{commas|4500}}|{{convert|4500|ha|acre|0|abbr=on}}}}<ref name="pakwildlife"/>
+| [[Kotli District|Kotli]], [[Mirpur District|Mirpur]] and<br>[[Poonch District (Azad Kashmir)|Poonch]] || [[Azad Kashmir]]
+| <small>{{coord|33.555272|N|73.91599|E|name=Poonch River Mahaseer National Park|type:landmark}}</small>
+|-
+| [[Qurumber National Park|Qurumber]]
+| 2011<ref name="pakwildlife"/>
+| style="text-align: right;" | {{sort|{{commas|74000}}|{{convert|74000|ha|acre|0|abbr=on}}}}<ref name="pakwildlife"/>
+| [[Ghizer District|Ghizer]] || [[Gilgit-Baltistan]]
+| <small>{{coord|36.863141|N|73.781038|E|name=Qurumber National Park|type:landmark}}</small>
+|-
+| [[Saiful Muluk National Park|Saiful Muluk]]
+| 2003<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|4867}}|{{convert|4867|ha|acre|0|abbr=on}}}}<ref name="parc_gov_report"/>
+| [[Mansehra District|Mansehra]] || [[Khyber Pakhtunkhwa]]
+| <small>{{coord|34.880862|N|73.698349|E|name=Saiful Muluk National Park|type:landmark}}</small>
+|-
+| [[Sheikh Buddin National Park|Sheikh Buddin]]
+| 1993<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|15540}}|{{convert|15540|ha|acre|0|abbr=on}}}}<ref name="review_PAS"/>
+| [[Dera Ismail Khan District|Dera Ismail Khan]] || [[Khyber Pakhtunkhwa]]
+| <small>{{coord|32.382281|N|70.949707|E|name=Sheikh Buddin National Park|type:landmark}}</small>
+|-
+| [[Toli Pir National Park|Toli Pir]]
+| 2005<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|5045}}|{{convert|5045|ha|acre|0|abbr=on}}}}<ref name="review_PAS"/>
+| [[Poonch District (Azad Kashmir)|Poonch]] || [[Azad Kashmir]]
+| <small>{{coord|34.12090|N|73.633118|E|name=Toli Pir National Park|type:landmark}}</small>
+|-
+| [[Panjal Mastan]]
+| 2005<ref name="parc_gov_report"/>
+| style="text-align: right;" | {{sort|{{commas|5045}}|{{convert|5045|ha|acre|0|abbr=on}}}}<ref name="review_PAS"/>
+| [[Bagh District (Azad Kashmir)|Bagh District]] || [[Azad Kashmir]]
+| <small>{{coord|34.0574|N|73.7381|E|name=Panjal Mastan National Park|type:landmark}}</small>
+|}

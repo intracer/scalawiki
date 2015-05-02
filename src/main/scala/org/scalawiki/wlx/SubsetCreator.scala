@@ -58,7 +58,7 @@ object SubsetCreator {
       buf.append("{{WLM-шапка}}")
       val regionMonuments = byRegion(regionId)
 
-      val byPage = regionMonuments.groupBy(_.containingPage)
+      val byPage = regionMonuments.groupBy(_.page)
       val pages = SortedSet(byPage.keys.toSeq: _*)
 
       for (page <- pages) {
@@ -66,7 +66,7 @@ object SubsetCreator {
         buf.append(s"|-\n|colspan=9 bgcolor=lightyellow|\n=== [[$page|$title]] ===\n|-\n")
         byPage(page).foreach {
           monument =>
-            val text = monument.textParam.split("\\|\\}")(0)
+            val text = monument.text.split("\\|\\}")(0)
             buf.append(s"{{WLM-рядок$text")
         }
       }
@@ -89,7 +89,7 @@ object SubsetCreator {
 
       val regionMonuments = byRegion(regionId)
 
-      val byPage = regionMonuments.groupBy(_.containingPage)
+      val byPage = regionMonuments.groupBy(_.page)
       val pages = SortedSet(byPage.keys.toSeq: _*)
 
       val buf = new StringBuffer
@@ -101,7 +101,7 @@ object SubsetCreator {
         buf.append(s"|-\n|colspan=9 bgcolor=lightyellow|\n=== [[$page|$title]] ===\n|-\n")
         byPage(page).foreach {
           monument =>
-            val text = monument.textParam.split("\\|\\}")(0)
+            val text = monument.text.split("\\|\\}")(0)
             buf.append(s"{{WLM-рядок$text")
         }
       }

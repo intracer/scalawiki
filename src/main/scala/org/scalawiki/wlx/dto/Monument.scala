@@ -2,9 +2,9 @@ package org.scalawiki.wlx.dto
 
 import java.net.URLEncoder
 
-import org.scalawiki.dto.Template
+import org.scalawiki.dto.Template1
 
-case class Monument(textParam: String, page: String,
+case class Monument(text: String, page: String,
                     id: String,
                     name: String,
                     year: Option[String] = None,
@@ -26,14 +26,18 @@ case class Monument(textParam: String, page: String,
                     contest: Option[Long] = None,
                     source: Option[String] = None,
                     otherParams: Map[String, String] = Map.empty,
-                      names: Map[String, String]
-                     ) extends Template(textParam, page, names) {
+                    names: Map[String, String]
+                     )  {
+
+  val template = new Template1(text, page, names)
+
+  def setTemplateParam(name: String, value: String) = init(template.setTemplateParam(name, value).text, page, names)
 
   def toUrls = Monument.wikiLinkToUrl(name +" * "  + place, "uk.wikipedia.org")
 
   def galleryLink = gallery.fold("") { title => s" [[:Category:$title|$title]]"  }
 
-  override def init(text: String, page:String, names: Map[String, String]):Monument = Monument.init(text, page, names)
+  def init(text: String, page:String, names: Map[String, String]):Monument = Monument.init(text, page, names)
 
   def regionId = Monument.getRegionId(id)
 
@@ -51,9 +55,9 @@ case class Monument(textParam: String, page: String,
 object Monument {
 
   def init(text: String, page: String = "", names: Map[String, String]) = {
-    val t = new Template(text, page, names)
+    val t = new Template1(text, page, names)
     val name: String = t.getParam("name")
-    new Monument(textParam = text,
+    new Monument(text = text,
       id = t.getParam("ID"),
       name = name,
       year =  t.getParamOpt("year"),
