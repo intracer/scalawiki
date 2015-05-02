@@ -4,7 +4,7 @@ import org.scalawiki.dto.markup.Table
 import org.specs2.mutable.Specification
 
 class TableParserSpec extends Specification {
-  
+
   val parser = TableParser
 
   "table parser" should {
@@ -45,10 +45,12 @@ class TableParserSpec extends Specification {
 
     "parse table with formatted data" in {
       val data = Seq(
+        "'''bold''' ''italic''",
         "[[article1]], [[article2|link2]]",
-        "{{template|param}}",
-        "[http://link title]",
-        "a<ref name=\"b\">c</ref>")
+        "{{template|param}} {{template|name=param}}",
+        "[http://link title] [http://link] http://link",
+        "a<ref name=\"b\">c</ref> <ref name=\"d\"/> <br /> <small>sm</small>" // +  "<!-- comments -->"
+      )
 
       val wiki = "{|\n|-\n|" + data.mkString(" || ") + "\n|}"
 

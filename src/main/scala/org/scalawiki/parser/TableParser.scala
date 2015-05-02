@@ -19,17 +19,16 @@ object TableParser extends SwebleParser {
 
         val headers = rows.headOption.toSeq.flatMap {
           head =>
-            collectNodes(head, { case h: WtTableHeader => h }).map(getTextTrimmed)
+            collectNodes(head, { case h: WtTableHeader => h }).map(c => getText(c.getBody).trim)
         }
 
         val items = rows.map {
-          row => collectNodes(row, { case c: WtTableCell => c }).map(getTextTrimmed)
+          row => collectNodes(row, { case c: WtTableCell => c }).map(c => getText(c.getBody).trim)
         }.filter(_.nonEmpty)
 
         new Table(headers, items, "", "")
 
     }.getOrElse(new Table(Seq.empty, Seq.empty, "", ""))
-
   }
 
 }
