@@ -9,6 +9,7 @@ import org.scalawiki.wlx.dto._
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 import scala.collection.immutable.SortedSet
+import scala.util.control.NonFatal
 
 class Output {
 
@@ -17,6 +18,9 @@ class Output {
   def mostPopularMonuments(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB) = {
 
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
+    val contest = monumentDb.contest
+    val categoryName =  contest.contestType.name + " in " + contest.country.name
+
 
     val yearSeq = imageDbsByYear.keys.toSeq.sorted
     val numYears = yearSeq.size
@@ -51,7 +55,7 @@ class Output {
     val table = new Table(columns, rows, "Most photographed objects")
 
     val header = "\n==Most photographed objects==\n"
-    val category = s"\n[[Category:Wiki Loves Monuments in Ukraine]]"
+    val category = s"\n[[Category:$categoryName]]"
 
     header + table.asWiki + category
   }
@@ -60,83 +64,95 @@ class Output {
 
   def monumentsPictured(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB) = {
 
-    val imageDbsByYear = imageDbs.groupBy(_.contest.year)
-    val yearSeq = imageDbsByYear.keys.toSeq.sorted
-    val numYears = yearSeq.size
+    try {
 
-    val columns = Seq("Region", "Objects in lists",
-      s"$numYears years total", s"$numYears years percentage") ++
-      yearSeq.map(_.toString)
+      val contest = monumentDb.contest
+      val filenamePrefix = contest.contestType.name.split(" ").mkString + "In" + contest.country.name
+      val categoryName = contest.contestType.name + " in " + contest.country.name
 
-    val dataset = new DefaultCategoryDataset()
+      val imageDbsByYear = imageDbs.groupBy(_.contest.year)
+      val yearSeq = imageDbsByYear.keys.toSeq.sorted
+      val numYears = yearSeq.size
 
-    val header = "\n==Objects pictured==\n"
+      val columns = Seq("Region", "Objects in lists",
+        s"$numYears years total", s"$numYears years percentage") ++
+        yearSeq.map(_.toString)
 
-    val regionIds = SortedSet(monumentDb._byRegion.keySet.toSeq: _*)
+      val dataset = new DefaultCategoryDataset()
 
-    val withPhotoInLists = monumentDb.monuments.filter(_.photo.isDefined).map(_.id).toSet
+      val header = "\n==Objects pictured==\n"
 
-    var withPhotoInListsFromRegions = Set.empty[String]
+      val regionIds = SortedSet(monumentDb._byRegion.keySet.toSeq: _*).filter(monumentDb.contest.country.regionIds.contains)
 
-    val ids = yearSeq.map(year => imageDbsByYear(year).head.ids)
-    val idsSize = ids.map(_.size)
+      val withPhotoInLists = monumentDb.monuments.filter(_.photo.isDefined).map(_.id).toSet
 
-    val rows = regionIds.map { regionId =>
+      var withPhotoInListsFromRegions = Set.empty[String]
 
-      val withPhotoInListsCurrentRegion = withPhotoInLists.filter(id => Monument.getRegionId(id) == regionId)
-      val picturedMonumentsInRegionSet = (totalImageDb.idsByRegion(regionId) ++ withPhotoInListsCurrentRegion).toSet
-      val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
-      val allMonumentsInRegion: Int = monumentDb.byRegion(regionId).size
+      val ids = yearSeq.map(year => imageDbsByYear(year).head.ids)
+      val idsSize = ids.map(_.size)
 
-      val pictured = yearSeq.map(year => imageDbsByYear(year).head.idsByRegion(regionId).toSet.size)
+      val rows = regionIds.map { regionId =>
 
-      val regionName = monumentDb.contest.country.regionById(regionId).name
-      val columnData = (Seq(
-        regionName,
-        allMonumentsInRegion,
-        picturedMonumentsInRegion,
-        100 * picturedMonumentsInRegion / allMonumentsInRegion) ++ pictured).map(_.toString)
+        val withPhotoInListsCurrentRegion = withPhotoInLists.filter(id => Monument.getRegionId(id) == regionId)
+        val picturedMonumentsInRegionSet = (totalImageDb.idsByRegion(regionId) ++ withPhotoInListsCurrentRegion).toSet
+        val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
+        val allMonumentsInRegion: Int = monumentDb.byRegion(regionId).size
 
-      val shortRegionName = regionName.replaceAll("область", "").replaceAll("Автономна Республіка", "АР")
-      pictured.zipWithIndex.foreach { case (n, i) => dataset.addValue(n, yearSeq(i), shortRegionName) }
+        val pictured = yearSeq.map(year => imageDbsByYear(year).head.idsByRegion(regionId).toSet.size)
 
-      withPhotoInListsFromRegions ++= picturedMonumentsInRegionSet
+        val regionName = monumentDb.contest.country.regionById(regionId).name
+        val columnData = (Seq(
+          regionName,
+          allMonumentsInRegion,
+          picturedMonumentsInRegion,
+          100 * picturedMonumentsInRegion / allMonumentsInRegion) ++ pictured).map(_.toString)
 
-      columnData
+        val shortRegionName = regionName.replaceAll("область", "").replaceAll("Автономна Республіка", "АР")
+        pictured.zipWithIndex.foreach { case (n, i) => dataset.addValue(n, yearSeq(i), shortRegionName) }
+
+        withPhotoInListsFromRegions ++= picturedMonumentsInRegionSet
+
+        columnData
+      }
+
+      val allMonuments = monumentDb.monuments.size
+      val picturedMonuments = (totalImageDb.ids ++ withPhotoInLists).size
+      val totalData = Seq(
+        "Total",
+        allMonuments,
+        picturedMonuments,
+        100 * picturedMonuments / allMonuments) ++ idsSize
+
+      val total = totalData.mkString("|-\n| ", " || ", "\n|}") +
+        s"\n[[File:${filenamePrefix}PicturedByYearTotal.png|$categoryName, monuments pictured by year overall|left]]" +
+        s"\n[[File:${filenamePrefix}PicturedByYearPie.png|$categoryName, monuments pictured by year pie chart|left]]" +
+        s"\n[[File:${filenamePrefix}PicturedByYear.png|$categoryName, monuments pictured by year by regions|left]]" +
+        "\n<br clear=\"all\">"
+
+      val chart = charts.createChart(dataset, "Регіон")
+      val byRegionFile = filenamePrefix + "PicturedByYear"
+      saveCharts(charts, chart, byRegionFile, 900, 1200)
+      MwBot.get(MwBot.commons).page(byRegionFile + ".png").upload(byRegionFile + ".png")
+
+      val chartTotal = charts.createChart(charts.createTotalDataset(yearSeq, idsSize), "")
+
+      val chartTotalFile = filenamePrefix + "PicturedByYearTotal.png"
+      charts.saveAsPNG(chartTotal, chartTotalFile, 900, 200)
+      MwBot.get(MwBot.commons).page(chartTotalFile).upload(chartTotalFile)
+
+      val intersectionFile = filenamePrefix + "PicturedByYearPie"
+      intersectionDiagram(charts, "Унікальність фотографій пам'яток за роками", intersectionFile, yearSeq, ids, 900, 800)
+      MwBot.get(MwBot.commons).page(intersectionFile + ".png").upload(intersectionFile + ".png")
+
+      val table = new Table(columns, rows, "Objects pictured")
+
+      header + table.asWiki + total
+    } catch {
+      case NonFatal(e) =>
+        println(e)
+        e.printStackTrace()
+        throw  e
     }
-
-    val allMonuments = monumentDb.monuments.size
-    val picturedMonuments = (totalImageDb.ids ++ withPhotoInLists).size
-    val totalData = Seq(
-      "Total",
-      allMonuments,
-      picturedMonuments,
-      100 * picturedMonuments / allMonuments) ++ idsSize
-
-    val total = totalData.mkString("|-\n| ", " || ", "\n|}") +
-      "\n[[File:WikiLovesMonumentsInUkrainePicturedByYearTotal.png|Wiki Loves Monuments in Ukraine, monuments pictured by year overall|left]]" +
-      "\n[[File:WikiLovesMonumentsInUkrainePicturedByYearPie.png|Wiki Loves Monuments in Ukraine, monuments pictured by year pie chart|left]]" +
-      "\n[[File:WikiLovesMonumentsInUkrainePicturedByYear.png|Wiki Loves Monuments in Ukraine, monuments pictured by year by regions|left]]" +
-      "\n<br clear=\"all\">"
-
-    val chart = charts.createChart(dataset, "Регіон")
-    val byRegionFile = "WikiLovesMonumentsInUkrainePicturedByYear"
-    saveCharts(charts, chart, byRegionFile, 900, 1200)
-    MwBot.get(MwBot.commons).page(byRegionFile + ".png").upload(byRegionFile + ".png")
-
-    val chartTotal = charts.createChart(charts.createTotalDataset(yearSeq, idsSize), "")
-
-    val chartTotalFile = "WikiLovesMonumentsInUkrainePicturedByYearTotal.png"
-    charts.saveAsPNG(chartTotal, chartTotalFile, 900, 200)
-    MwBot.get(MwBot.commons).page(chartTotalFile).upload(chartTotalFile)
-
-    val intersectionFile = "WikiLovesMonumentsInUkrainePicturedByYearPie"
-    intersectionDiagram(charts, "Унікальність фотографій пам'яток за роками", intersectionFile, yearSeq, ids, 900, 800)
-    MwBot.get(MwBot.commons).page(intersectionFile + ".png").upload(intersectionFile + ".png")
-
-    val table = new Table(columns, rows, "Objects pictured")
-
-    header + table.asWiki + total
   }
 
   // up to 3 years
@@ -226,7 +242,9 @@ class Output {
 
     val authors = yearSeq.map(year => imageDbsByYear(year).head.authors)
 
-    intersectionDiagram(charts, "Унікальність авторів за роками", "WikiLovesMonumentsInUkraineAuthorsByYearPie", yearSeq, authors, 900, 900)
+    val contest = monumentDb.contest
+    val filename = contest.contestType.name.split(" ").mkString + "In" + contest.country.name + "AuthorsByYearPie"
+    intersectionDiagram(charts, "Унікальність авторів за роками", filename, yearSeq, authors, 900, 900)
 
     val table = new Table(columns, rows, "Authors contributed")
 
@@ -235,7 +253,8 @@ class Output {
 
   def authorsMonuments(imageDb: ImageDB) = {
 
-    val country = imageDb.contest.country
+    val contest = imageDb.contest
+    val country = contest.country
     val columns = Seq("User", "Objects pictured", "Photos uploaded") ++ country.regionNames
 
     val header = "{| class='wikitable sortable'\n" +
@@ -262,9 +281,10 @@ class Output {
       text += columnData.mkString("|-\n| ", " || ", "\n")
     }
 
-    val total = "|}" + "\n[[Category:Wiki Loves Monuments 2014 in Ukraine]]"
+    val total = "|}" + s"\n[[Category:${contest.contestType.name} ${contest.year} in ${country.name}]]"
 
     header + text + total
+
   }
 
 }

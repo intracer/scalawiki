@@ -1,12 +1,21 @@
 package org.scalawiki.wlx.dto.lists
 
 trait ListConfig {
+  def templateName: String
 
   def namesMap: Map[String, String]
 
 }
 
+object EmptyListConfig extends ListConfig {
+  override def templateName: String = "???"
+
+  override def namesMap: Map[String, String] = Map.empty
+}
+
 object WleUa extends ListConfig {
+
+
   override val namesMap = Map(
     "ID" -> "ID",
     "name" -> "назва",
@@ -24,6 +33,8 @@ object WleUa extends ListConfig {
     "gallery" -> "галерея",
     "resolution" -> "постанова"
   )
+
+  override val templateName: String = "ВЛЗ-рядок"
 }
 
 object WlmUa extends ListConfig {
@@ -44,6 +55,9 @@ object WlmUa extends ListConfig {
     "gallery" -> "галерея",
     "resolution" -> "постанова"
   )
+
+  override val templateName: String = "ВЛП-рядок"
+
 }
 
 object WleAm extends ListConfig {
@@ -51,6 +65,9 @@ object WleAm extends ListConfig {
     "ID" -> "համարանիշ",
     "photo" -> "պատկեր",
     "gallery" -> "կատեգորիա")
+
+  override val templateName: String = "Բնության հուշարձան ցանկ"
+
 }
 
 object WleNp extends ListConfig {
@@ -58,6 +75,8 @@ object WleNp extends ListConfig {
     "ID" -> "number",
     "photo" -> "image",
     "gallery" -> "gallery")
+
+  override val templateName: String = "Nepal Monument row WLE"
 }
 
 object WleRu extends ListConfig {
@@ -72,6 +91,7 @@ object WleRu extends ListConfig {
     "photo" -> "image",
     "regionCode" -> "region",
     "gallery" -> "commonscat")
+  override val templateName: String = "monument"
 }
 
 object WleTh extends ListConfig {
@@ -82,6 +102,7 @@ object WleTh extends ListConfig {
     "year" -> "ปีที่จัดตั้ง",
     "photo" -> "ไฟล์",
     "gallery" -> "commonscat")
+  override val templateName: String = "อุทยานแห่งชาติในประเทศไทย WLE"
 }
 
 
@@ -94,6 +115,7 @@ object WleCh extends ListConfig {
     "photo" -> "Photo",
     "place" -> "Canton1",
     "gallery" -> "Commonscat")
+  override val templateName: String = "Naturalistic heritage CH row"
 }
 
 object WleAu extends ListConfig {
@@ -111,6 +133,7 @@ object WleAu extends ListConfig {
     "photo" -> "Foto",
     "regionCode" -> "Region-ISO",
     "gallery" -> "Commonscat")
+  override val templateName: String = "Naturdenkmal Österreich Tabellenzeile"
 }
 
 object WleEe extends ListConfig {
@@ -120,6 +143,7 @@ object WleEe extends ListConfig {
     "type" -> "tüüp",
     "photo" -> "pilt"
   )
+  override val templateName: String = "KKR rida"
 }
 
 object WleCat extends ListConfig {
@@ -132,6 +156,7 @@ object WleCat extends ListConfig {
     "photo" -> "imatge",
     "regionCode" -> "regió",
     "gallery" -> "commonscat")
+  override val templateName: String = "filera patrimoni naturalк"
 }
 
 

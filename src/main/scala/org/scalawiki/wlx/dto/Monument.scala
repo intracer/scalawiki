@@ -2,9 +2,13 @@ package org.scalawiki.wlx.dto
 
 import java.net.URLEncoder
 
-import org.scalawiki.dto.Template1
+import org.scalawiki.dto.Template2
+import org.scalawiki.wlx.WlxTemplateParser
+import org.scalawiki.wlx.dto.lists.ListConfig
 
-case class Monument(text: String, page: String,
+import scala.collection.mutable
+
+case class Monument(page: String,
                     id: String,
                     name: String,
                     year: Option[String] = None,
@@ -26,18 +30,12 @@ case class Monument(text: String, page: String,
                     contest: Option[Long] = None,
                     source: Option[String] = None,
                     otherParams: Map[String, String] = Map.empty,
-                    names: Map[String, String]
+                    listConfig: ListConfig
                      )  {
-
-  val template = new Template1(text, page, names)
-
-  def setTemplateParam(name: String, value: String) = init(template.setTemplateParam(name, value).text, page, names)
 
   def toUrls = Monument.wikiLinkToUrl(name +" * "  + place, "uk.wikipedia.org")
 
   def galleryLink = gallery.fold("") { title => s" [[:Category:$title|$title]]"  }
-
-  def init(text: String, page:String, names: Map[String, String]):Monument = Monument.init(text, page, names)
 
   def regionId = Monument.getRegionId(id)
 
@@ -50,33 +48,59 @@ case class Monument(text: String, page: String,
     else str.split(",").map(_.trim).toSet
   }
 
+  def text = {
+    
+    val params =
+      mutable.LinkedHashMap("name" -> Option(name),
+      "ID" -> Option(id),
+      "year" -> year,
+      "description" ->  description,
+      "article" -> article,
+      "city" -> city,
+      "place" -> place,
+      "user" -> user,
+      "area" -> area,
+      "lat" -> lat,
+      "lon" -> lon,
+      "type" -> typ,
+      "subType" -> subType,
+      "photo" -> photo,
+      "gallery" -> gallery,
+      "resolution" -> resolution).collect {case (k, Some(v)) => k -> v}
+
+    params ++= otherParams
+
+    val template = new Template2(listConfig.templateName, params)
+
+    template.text
+  }
+
 }
 
 object Monument {
 
-  def init(text: String, page: String = "", names: Map[String, String]) = {
-    val t = new Template1(text, page, names)
-    val name: String = t.getParam("name")
-    new Monument(text = text,
-      id = t.getParam("ID"),
-      name = name,
-      year =  t.getParamOpt("year"),
-      description =  t.getParamOpt("description"),
-      article = getArticle(name),
-      city = t.getParamOpt("city"),
-      place =  t.getParamOpt("place"),
-      user = t.getParamOpt("user"),
-      area = t.getParamOpt("area"),
-      lat = t.getParamOpt("lat"),
-      lon = t.getParamOpt("lon"),
-      typ = t.getParamOpt("type"),
-      subType =  t.getParamOpt("subType"),
-      photo = t.getParamOpt("photo"),
-      gallery = t.getParamOpt("gallery"),
-      resolution = t.getParamOpt("resolution"),
-      page = page,
-      names = names
-    )
+  def init(text: String, page: String = "", listConfig: ListConfig ) = {
+     new WlxTemplateParser(listConfig).parse(text)
+//    val name: String = t.getParam("name")
+//    new Monument(
+//      id = t.getParam("ID"),
+//      name = name,
+//      year =  t.getParamOpt("year"),
+//      description =  t.getParamOpt("description"),
+//      article = getArticle(name),
+//      city = t.getParamOpt("city"),
+//      place =  t.getParamOpt("place"),
+//      user = t.getParamOpt("user"),
+//      area = t.getParamOpt("area"),
+//      lat = t.getParamOpt("lat"),
+//      lon = t.getParamOpt("lon"),
+//      typ = t.getParamOpt("type"),
+//      subType =  t.getParamOpt("subType"),
+//      photo = t.getParamOpt("photo"),
+//      gallery = t.getParamOpt("gallery"),
+//      resolution = t.getParamOpt("resolution"),
+//      page = page,
+//    listConfig = listConfig)
   }
 
   def getArticle(s: String): Option[String] = {
@@ -110,8 +134,8 @@ object Monument {
     r2
   }
 
-  def monumentsFromText(text: String, page: String, template: String, names: Map[String, String]): Set[Monument] =
-    text.split("\\{\\{" + template).tail.map(text => init(text, page, names)).toSet
+  def monumentsFromText(text: String, page: String, template: String, listConfig: ListConfig): Set[Monument] =
+    init(text, page, listConfig).toSet
       //.filter(_.id.nonEmpty).toSet
 
   // test for "-" id

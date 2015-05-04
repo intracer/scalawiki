@@ -36,6 +36,8 @@ object MwReads {
 
   def editResponseReads: Reads[String] = (__ \ "edit" \ "result").read[String]
 
+  def uploadResponseReads: Reads[String] = (__ \ "upload" \ "result").read[String]
+
   def errorReads: Reads[MwError] = (
     (__ \ "code").read[String] and
       (__ \ "info").read[String]

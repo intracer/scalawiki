@@ -19,7 +19,7 @@ class SpecialNominations {
 
     val stat = specialNomination(contest, imageDbs)
 
-    MwBot.get(MwBot.commons).page(s"Commons:Wiki Loves Monuments ${contest.year} in Ukraine/Special nominations statistics").edit(stat, "updating")
+    MwBot.get(MwBot.commons).page(s"Commons:Wiki Loves ${contest.contestType.name} ${contest.year} in ${contest.country.name}/Special nominations statistics").edit(stat, "updating")
   }
 
   def specialNomination(contest: Contest, imageDbs: Map[SpecialNomination, ImageDB]) = {
@@ -34,7 +34,7 @@ class SpecialNominations {
     val nominations: Seq[SpecialNomination] = imageDbs.keySet.toSeq.sortBy(_.name)
     for (nomination <- nominations) {
 
-      val imagesPage = s"Commons:Images from Wiki Loves Monuments ${contest.year} in Ukraine special nomination ${nomination.name}"
+      val imagesPage = s"Commons:Images from Wiki Loves ${contest.contestType.name} ${contest.year} in ${contest.country.name} special nomination ${nomination.name}"
 
       val imageDb = imageDbs(nomination)
       val columnData = Seq(
@@ -59,7 +59,7 @@ class SpecialNominations {
       text += columnData.mkString("|-\n| ", " || ", "\n")
     }
 
-    val total = "|}" + s"\n[[Category:Wiki Loves Monuments ${contest.year} in Ukraine]]"
+    val total = "|}" + s"\n[[Category:Wiki Loves ${contest.contestType.name} ${contest.year} in ${contest.country.name}]]"
 
     header + text + total
   }

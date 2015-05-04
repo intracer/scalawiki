@@ -23,7 +23,6 @@ class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Monu
 
   val _authorIdsByRegion = _authorsIds.mapValues(ids => ids.groupBy(id => Monument.getRegionId(id)))
 
-
   def authorsCountById: Map[String, Int] = _byId.mapValues(_.flatMap(_.author).toSet.size)
 
   def imageCountById: Map[String, Int] = _byId.mapValues(_.size)

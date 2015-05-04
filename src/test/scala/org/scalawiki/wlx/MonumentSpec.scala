@@ -1,7 +1,7 @@
 package org.scalawiki.wlx
 
 import org.scalawiki.wlx.dto.Monument
-import org.scalawiki.wlx.dto.lists.WlmUa
+import org.scalawiki.wlx.dto.lists.{WleUa, WlmUa}
 import org.specs2.mutable.Specification
 
 class MonumentSpec extends Specification {
@@ -66,7 +66,7 @@ class MonumentSpec extends Specification {
 
   "parse" should {
     "full" in {
-      val m = Monument.init(text1, names = WlmUa.namesMap)
+      val m = Monument.init(text1, listConfig = WleUa).head
       m.id === "05-105-0001"
       m.name === "[[Козятин I|Козятинський залізничний вокзал]]"
       m.photo === Some("Station2 2.jpg")
@@ -74,7 +74,7 @@ class MonumentSpec extends Specification {
     }
 
     "empty" in {
-      val m = Monument.init(text2, names = WlmUa.namesMap)
+      val m = Monument.init(text2, listConfig = WleUa).head
       m.id === "05-105-0012"
       m.name === "Братська могила 6 радянських воїнів, загиблих при звільненні міста"
       m.photo === None
@@ -85,9 +85,10 @@ class MonumentSpec extends Specification {
 
   "set" should {
     "photo" in {
-      val m = Monument.init(text2, names = WlmUa.namesMap)
+      val m = Monument.init(text2, listConfig = WleUa).head
+      
       val photo = "Photo.jpg"
-      val m2 = m.setTemplateParam("фото", photo).asInstanceOf[Monument]
+      val m2 = m.copy(photo = Some(photo))
       m2.id === "05-105-0012"
       m2.name === "Братська могила 6 радянських воїнів, загиблих при звільненні міста"
       m2.photo === Some(photo)
@@ -95,8 +96,8 @@ class MonumentSpec extends Specification {
     }
 
     "gallery" in {
-      val m = Monument.init(text2, names = WlmUa.namesMap)
-      val m2 = m.setTemplateParam("галерея", "123").asInstanceOf[Monument]
+      val m = Monument.init(text2, listConfig = WleUa).head
+      val m2 = m.copy(gallery = Some("123"))
       m2.id === "05-105-0012"
       m2.name === "Братська могила 6 радянських воїнів, загиблих при звільненні міста"
       m2.photo === None
@@ -115,14 +116,14 @@ class MonumentSpec extends Specification {
 
   "monuments" should {
     "parse" in {
-      val list = Monument.monumentsFromText(listText, "page", "ВЛП-рядок", names = WlmUa.namesMap).toSeq
+      val list = Monument.monumentsFromText(listText, "page", "ВЛП-рядок", listConfig = WlmUa).toSeq
       list.size === 2
       list(0).id === "05-105-0001"
       list(1).id === "05-105-0012"
     }
 
     "parse with rubbish" in {
-      val list = Monument.monumentsFromText("abcd\n" + listText + "\ndef", "page", "ВЛП-рядок", names = WlmUa.namesMap).toSeq
+      val list = Monument.monumentsFromText("abcd\n" + listText + "\ndef", "page", "ВЛП-рядок", listConfig = WlmUa).toSeq
       list.size === 2
       list(0).id === "05-105-0001"
       list(1).id === "05-105-0012"

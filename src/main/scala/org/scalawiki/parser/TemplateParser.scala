@@ -12,34 +12,36 @@ object TemplateParser extends SwebleParser {
 
   val config: WikiConfig = DefaultConfigEnWp.generate
 
-  def parse(wiki: String): Template2 = {
-
+  def parseOne(wiki: String): Option[Template2] = {
     val page = parse("Some title", wiki).getPage
+    findNode(page, { case t: WtTemplate => t }).map(nodeToTemplate)
+  }
 
-    findNode(page, { case t: WtTemplate => t }).map {
-      template =>
+  def parse(wiki: String): Seq[Template2] = {
+    val page = parse("Some title", wiki).getPage
+    collectNodes(page, { case t: WtTemplate => t }).map(nodeToTemplate)
+  }
 
-        val args = template.getArgs.asScala.collect { case arg: WtTemplateArgument => arg }
+  def nodeToTemplate(template: WtTemplate): Template2 = {
+    val args = template.getArgs.asScala.collect { case arg: WtTemplateArgument => arg }
 
-        val params = args.zipWithIndex.map {
-          case (arg, index) =>
+    val params = args.zipWithIndex.map {
+      case (arg, index) =>
 
-            val name =
-              if (arg.hasName)
-                getText(arg.getName).trim
-              else
-                (index + 1).toString
+        val name =
+          if (arg.hasName)
+            getText(arg.getName).trim
+          else
+            (index + 1).toString
 
-            val value = getText(arg.getValue).trim
+        val value = getText(arg.getValue).trim
 
-            name -> value
-        }
+        name -> value
+    }
 
-        new Template2(
-          getText(template.getName).trim,
-          mutable.LinkedHashMap(params: _*)
-        )
-    }.getOrElse(new Template2("", mutable.LinkedHashMap.empty))
-
+    new Template2(
+      getText(template.getName).trim,
+      mutable.LinkedHashMap(params: _*)
+    )
   }
 }

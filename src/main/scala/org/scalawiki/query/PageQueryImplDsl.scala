@@ -9,7 +9,7 @@ import org.scalawiki.dto.cmd.edit._
 import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
-import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query, TitlesParam}
+import org.scalawiki.dto.cmd.query._
 import org.scalawiki.json.MwReads._
 
 import scala.concurrent.Future
@@ -73,19 +73,17 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
                                      titlePrefix: Option[String]): Future[Seq[Page]] = {
     import org.scalawiki.dto.cmd.query.prop.iiprop._
 
-    val pages = query.fold(
-      ids => PageIdsParam(ids.toSeq),
-      titles => TitlesParam(titles.toSeq)
-    )
+    val pageId: Option[Long] = query.left.toOption.map(_.head)
+    val title: Option[String] = query.right.toOption.map(_.head)
 
     val action = Action(Query(
-      pages,
       Prop(
         ImageInfo(
           IiProp(IiPropArgs.byNames(props.toSeq):_*),
           IiLimit("max")
         )
-      )
+      ),
+       Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
     ))
 
     new DslQuery(action, bot).run()
@@ -129,7 +127,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       "comment" -> "update",
       "filesize" -> fileContents.size.toString,
       "ignorewarnings" -> "true")
-    bot.postFile(editResponseReads, params, "file", filename)
+    bot.postFile(uploadResponseReads, params, "file", filename)
   }
 
   override def whatTranscludesHere(namespaces: Set[Int], continueParam: Option[(String, String)]): Future[Seq[Page]] = {

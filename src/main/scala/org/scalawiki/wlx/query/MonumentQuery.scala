@@ -23,7 +23,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
 
   val host = getHost
 
-  val listTemplateNames = contest.uploadConfigs.head.listConfig.namesMap
+  val listConfig = contest.uploadConfigs.head.listConfig
 
   def getHost = {
     val langCode = contest.country.languageCode
@@ -38,7 +38,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
     bot.page("Template:" + template).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT_NAMESPACE, Namespace.MAIN), Set("content", "timestamp", "user", "comment"), None, "100") map {
       pages =>
         pages.flatMap(page =>
-          Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listTemplateNames))
+          Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig))
     }
   }
 
@@ -47,7 +47,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
       bot.page(page).revisions(Set.empty, Set("content", "timestamp", "user", "comment")).map {
         revs =>
           revs.headOption.map(page =>
-            Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listTemplateNames).toSeq).getOrElse(Seq.empty)
+            Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig).toSeq).getOrElse(Seq.empty)
       }
     } else {
 //      bot.page(page).revisionsByGenerator("links", null, Set.empty, Set("content", "timestamp", "user", "comment")).map {
@@ -56,7 +56,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
 //      }
       bot.page(page).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT_NAMESPACE), Set("content", "timestamp", "user", "comment"), None, "100") map {
         pages =>
-          pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listTemplateNames))
+          pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig))
       }
 
     }

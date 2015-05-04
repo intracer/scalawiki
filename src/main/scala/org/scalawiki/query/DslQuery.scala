@@ -1,9 +1,9 @@
 package org.scalawiki.query
 
-import org.scalawiki.{MwException, MwBot}
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.json.Parser
+import org.scalawiki.{MwBot, MwException}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -34,7 +34,10 @@ class DslQuery(action: Action, site: MwBot) {
               run(newContinue, allPages)
             }
 
-          case Failure(mwEx: MwException) => Future.failed(mwEx.copy(params = params.toMap))
+          case Failure(mwEx: MwException) =>
+            Future.failed(mwEx.copy(params = params.toMap))
+          case Failure(ex) =>
+            Future.failed(ex)
         }
     }
   }

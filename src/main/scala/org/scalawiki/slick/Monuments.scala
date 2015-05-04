@@ -1,6 +1,7 @@
 package org.scalawiki.slick
 
 import org.scalawiki.wlx.dto.Monument
+import org.scalawiki.wlx.dto.lists.EmptyListConfig
 import scala.slick.driver.H2Driver.simple._
 
 class Monuments(tag: Tag) extends Table[Monument](tag, "MONUMENTS") {
@@ -14,7 +15,7 @@ class Monuments(tag: Tag) extends Table[Monument](tag, "MONUMENTS") {
   def * = (id, page, name, photo.?, gallery.?) <> (fromDb, toDb)
 
   def fromDb(t:(String, String, String, Option[String], Option[String])) =
-    Monument(text = "", id = t._1, page = t._2, name = t._3, photo = t._4, gallery = t._5, names = Map.empty)
+    Monument(id = t._1, page = t._2, name = t._3, photo = t._4, gallery = t._5, listConfig = EmptyListConfig)
 
   def toDb(m:Monument) = Some((m.id, m.page, m.name, m.photo, m.gallery))
 

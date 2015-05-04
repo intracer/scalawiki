@@ -44,7 +44,7 @@ class WlxTableParser(val config: ListConfig) {
 
         val otherParams = otherParamNames.map { name => name -> rowSeq(otherParamIndexes(name)) }.toMap
 
-        new Monument("", "",
+        new Monument(page = "",
           id = byIndex(id).getOrElse((index + 1).toString),
           name = byIndex(name).get,
           year = byIndex(year),
@@ -54,7 +54,7 @@ class WlxTableParser(val config: ListConfig) {
           photo = byIndex(image),
           gallery = byIndex(gallery),
           otherParams = otherParams,
-          names = config.namesMap)
+        listConfig =  config)
     }
   }
 }

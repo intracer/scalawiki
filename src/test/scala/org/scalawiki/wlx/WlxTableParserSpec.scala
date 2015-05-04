@@ -1,7 +1,7 @@
 package org.scalawiki.wlx
 
 import org.scalawiki.dto.markup.Table
-import org.scalawiki.wlx.dto.lists.{ListConfig, WleTh}
+import org.scalawiki.wlx.dto.lists.WleTh
 import org.specs2.mutable.Specification
 
 import scala.io.Source
@@ -79,18 +79,5 @@ class WlxTableParserSpec extends Specification {
       monuments.map(_.id) === (1 to 148).map(_.toString)
     }
   }
-}
-
-object IdNameConfig extends ListConfig {
-  override val namesMap = Map(
-    "ID" -> "_ID",
-    "name" -> "_name"
-  )
-}
-
-object NameConfig extends ListConfig {
-  override val namesMap = Map(
-    "name" -> "_name"
-  )
 }
 

@@ -58,12 +58,12 @@ class ListFiller extends WithBot {
       if (index == 0)
         text
       else {
-        val monument = Monument.init(text, title, monumentDb.contest.uploadConfigs.head.listConfig.namesMap)
+        val monument = Monument.init("{{" + monumentDb.contest.listTemplate + "\n" +text, title, monumentDb.contest.uploadConfigs.head.listConfig).head
 
         if (!ids.contains(monument.id))
           text
         else {
-          monument.setTemplateParam("фото", " " + bestImage(imageDb.byId(monument.id)).title).text.replaceFirst("File:", "")
+          monument.copy(photo = Some(bestImage(imageDb.byId(monument.id)).title.replaceFirst("File:", "")))
         }
       }
     }

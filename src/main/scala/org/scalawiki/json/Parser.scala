@@ -15,15 +15,17 @@ class Parser(val action: Action) {
 
   var continue = Map.empty[String, String]
 
-  def parse(s: String): Try[Seq[Page]] = {
-    val json = Json.parse(s)
+  def parse(str: String): Try[Seq[Page]] = {
+    val json = Json.parse(str)
 
     val jsonObj = json.asInstanceOf[JsObject]
-    if (jsonObj.value.contains("error")){
+    if (jsonObj.value.contains("error")) {
       val error = jsonObj.value("error").asInstanceOf[JsObject]
       val code = error.value("code").asInstanceOf[JsString].value
       val info = error.value("info").asInstanceOf[JsString].value
-      Failure(MwException(code, info))
+      val mwex = MwException(code, info)
+      println(mwex)
+      Failure(mwex)
     } else {
 
       val queryChild = lists.headOption.fold("pages")(_.name)
@@ -35,12 +37,29 @@ class Parser(val action: Action) {
         case _ => pagesJson.asInstanceOf[JsArray].value
       }).map(_.asInstanceOf[JsObject])
 
-      continue = json \ "continue" match {
-        case obj: JsObject => obj.fields.toMap.mapValues(_.as[String])
-        case _ => Map.empty[String, String]
+
+      val continueJson = json \ "continue"
+      val continueJsonToString = continueJson.toString()
+      val tryContinue = Try {
+        continueJson match {
+          case obj: JsObject => obj.fields.toMap.mapValues[String] {
+            case JsNumber(n) => n.toString()
+            case JsString(s) => s
+            case _ => "???"
+          }
+          case _ => Map.empty[String, String]
+        }
       }
 
-      Success(jsons.map(parsePage).toSeq)
+      tryContinue match {
+        case Success(c) =>
+          continue = c
+          Success(jsons.map(parsePage).toSeq)
+        case Failure(e) =>
+          val re = new RuntimeException(e.getMessage + ", " + continueJsonToString, e)
+          println(re)
+          Failure(re)
+      }
     }
   }
 
