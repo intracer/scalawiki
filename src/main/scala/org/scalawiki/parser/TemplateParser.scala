@@ -11,14 +11,14 @@ object TemplateParser extends SwebleParser {
 
   val config: WikiConfig = DefaultConfigEnWp.generate
 
-  def parseOne(wiki: String): Option[Template2] = {
+  def parseOne(wiki: String, templateName: Option[String] = None): Option[Template2] = {
     val page = parsePage("Some title", wiki).getPage
-    findNode(page, { case t: WtTemplate => t }).map(nodeToTemplate)
+    findNode(page, { case t: WtTemplate if templateName.forall(getTemplateName(t).equals)  => nodeToTemplate(t) })
   }
 
   def parse(wiki: String, templateName: String): Seq[Template2] = {
     val page = parsePage("Some title", wiki).getPage
-    collectNodes(page, { case t: WtTemplate => t }).filter(t => getTemplateName(t) == templateName).map(nodeToTemplate)
+    collectNodes(page, { case t: WtTemplate if getTemplateName(t) == templateName => nodeToTemplate(t) })
   }
 
   def nodeToTemplate(template: WtTemplate): Template2 = {

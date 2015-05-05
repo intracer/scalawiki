@@ -1,8 +1,10 @@
 package org.scalawiki.wlx.dto
 
-import java.nio.file.{Paths, Files}
-import org.scalawiki.dto.{Template1, Page}
+import java.nio.file.{Files, Paths}
+
 import org.scalawiki.MwBot
+import org.scalawiki.dto.{Page, Template1}
+import org.scalawiki.parser.TemplateParser
 
 
 case class Image(pageId: Long, title: String,
@@ -57,7 +59,7 @@ object Image {
       val id = Template1.getDefaultParam(content, monumentIdTemplate)
       val ipOpt = if (id.matches(idRegex)) Some(id) else None
 
-      val author = getAuthor(content)
+      val author = getAuthorFromPage(content)
 
       //      val author = authorValue.split("\\|")(0).replace("[[User:", "").replace("[[user:", "")
 
@@ -65,9 +67,9 @@ object Image {
     }
   }
 
-  def getAuthor(content: String): String = {
-    val template = new Template1(content, names = Map.empty)
-    val authorValue = template.getParamOpt("author").getOrElse(template.getParam("Author"))
+  def getAuthorFromPage(content: String): String = {
+    val template = TemplateParser.parseOne(content, Some("Information"))
+    val authorValue = template.flatMap(t => t.getParamOpt("author").orElse(t.getParamOpt("Author"))).getOrElse("")
 
     val i1: Int = authorValue.indexOf("User:")
     val i2: Int = authorValue.indexOf("user:")
