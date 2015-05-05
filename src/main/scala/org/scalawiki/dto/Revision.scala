@@ -38,7 +38,7 @@ case class Revision(
 
 object Revision {
 
-  def create(texts: String*) = texts
+  def many(texts: String*) = texts
     .zip(texts.size to 1 by -1)
     .map{ case (text, index) =>
     new Revision(
@@ -51,7 +51,7 @@ object Revision {
     )
   }
 
-  def create1(text: String) =
+  def one(text: String) =
     new Revision(
       revId = None,
       pageId = None,

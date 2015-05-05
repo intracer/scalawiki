@@ -2,7 +2,7 @@ package org.scalawiki.wlx.dto
 
 import java.net.URLEncoder
 
-import org.scalawiki.dto.Template2
+import org.scalawiki.dto.Template
 import org.scalawiki.wlx.WlxTemplateParser
 import org.scalawiki.wlx.dto.lists.ListConfig
 
@@ -75,7 +75,7 @@ case class Monument(page: String,
       names.toSeq.map { case (englName, mappedName) => mappedName -> paramValues(englName).getOrElse("") } ++
         otherParams.toSeq
 
-    val template = new Template2(listConfig.templateName, ListMap(params: _*))
+    val template = new Template(listConfig.templateName, ListMap(params: _*))
 
     template.text + "\n"
   }

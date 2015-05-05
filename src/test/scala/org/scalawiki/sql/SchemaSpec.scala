@@ -56,7 +56,7 @@ class SchemaSpec extends Specification with BeforeAfter {
       createSchema()
 
       val text = "revision text"
-      val revision = Revision.create1(text)
+      val revision = Revision.one(text)
 
       val page = Page(None, 0, "title", Seq(revision))
 

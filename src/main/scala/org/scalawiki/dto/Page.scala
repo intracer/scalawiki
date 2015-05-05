@@ -47,7 +47,7 @@ object Page {
   def withText(id: Long, ns: Int, title: String, text: Option[String]) = new Page(Some(id), ns, title, revisionsFromText(text))
 
   def withRevisionsText(id: Long, ns: Int, title: String, texts: Seq[String])
-  = new Page(Some(id), ns, title, Revision.create(texts:_*))
+  = new Page(Some(id), ns, title, Revision.many(texts:_*))
 
   def withRevisions(id: Long, ns: Int, title: String, editToken: Option[String], revisions: Seq[Revision], missing: Option[String])
   = new Page(Some(id), ns, title, revisions, Seq.empty, editToken, missing.fold(false)(_ => true))
@@ -64,7 +64,7 @@ object Page {
     new Page(id, ns, title, Seq.empty, Seq.empty, editToken)
   }
 
-  def revisionsFromText(text: Option[String]) = text.fold(Seq.empty[Revision])(content => Revision.create(content))
+  def revisionsFromText(text: Option[String]) = text.fold(Seq.empty[Revision])(content => Revision.many(content))
 }
 
 

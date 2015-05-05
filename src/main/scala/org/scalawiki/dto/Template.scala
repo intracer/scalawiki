@@ -1,15 +1,20 @@
 package org.scalawiki.dto
 
-trait Template {
+case class Template(
+                     templateName: String,
+                     params: Map[String, String] = Map.empty) {
 
-  def getParam(name: String, withoutComments: Boolean = true): String
+  def hasTemplateParam(name: String): Boolean = params.contains(name)
 
-  def getParamOpt(name: String): Option[String]
+  def getParam(name: String): String = params.getOrElse(name, "")
 
-  def hasTemplateParam(name: String): Boolean
+  def getParamOpt(name: String): Option[String] = params.get(name)
 
-  def setTemplateParam(name: String, value: String): Template
+  def text: String = "{{" + templateName + params.map { case (k, v) => s"\n|$k = $v" }.mkString + "\n}}"
 
-  def text: String
-
+  def setTemplateParam(name: String, value: String): Template = {
+    copy(params = params + (name -> value))
   }
+
+}
+

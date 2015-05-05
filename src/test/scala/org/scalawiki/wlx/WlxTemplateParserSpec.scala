@@ -1,13 +1,13 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.dto.Template2
+import org.scalawiki.dto.Template
 import org.specs2.mutable.Specification
 
 class WlxTemplateParserSpec extends Specification {
 
   def dataToWiki(data: Seq[Seq[(String, String)]]): String = {
     val templates = data.map {
-      params => new Template2("templateName", params.toMap)
+      params => new Template("templateName", params.toMap)
     }
 
     templates.map(_.text).mkString("\n")

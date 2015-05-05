@@ -3,7 +3,7 @@ package org.scalawiki.wlx.dto
 import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
-import org.scalawiki.dto.{Page, Template1}
+import org.scalawiki.dto.Page
 import org.scalawiki.parser.TemplateParser
 
 
@@ -56,14 +56,12 @@ object Image {
 
       val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
       val content = revision.content.getOrElse("")
-      val id = Template1.getDefaultParam(content, monumentIdTemplate)
-      val ipOpt = if (id.matches(idRegex)) Some(id) else None
+      val idOpt = TemplateParser.parseOne(content, Some(monumentIdTemplate)).flatMap(_.getParamOpt("1"))
+      //val ipOpt = if (id.matches(idRegex)) Some(id) else None
 
       val author = getAuthorFromPage(content)
 
-      //      val author = authorValue.split("\\|")(0).replace("[[User:", "").replace("[[user:", "")
-
-      new Image(page.id.get, page.title, "", "", 0, 0, 0, ipOpt, Some(author), None, Some(date))
+      new Image(page.id.get, page.title, "", "", 0, 0, 0, idOpt, Some(author), None, Some(date))
     }
   }
 
