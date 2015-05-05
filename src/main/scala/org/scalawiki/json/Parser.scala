@@ -27,16 +27,20 @@ class Parser(val action: Action) {
       println(mwex)
       Failure(mwex)
     } else {
+      val pagesTry: Try[Seq[Page]] = Try {
+        val queryChild = lists.headOption.fold("pages")(_.name)
 
-      val queryChild = lists.headOption.fold("pages")(_.name)
+        val pagesJson = json \ "query" \ queryChild
 
-      val pagesJson = json \ "query" \ queryChild
+        val jsons = (queryChild match {
+          case "pages" => pagesJson.asInstanceOf[JsObject].values
+          case _ => pagesJson.asInstanceOf[JsArray].value
+        }).map(_.asInstanceOf[JsObject])
 
-      val jsons = (queryChild match {
-        case "pages" => pagesJson.asInstanceOf[JsObject].values
-        case _ => pagesJson.asInstanceOf[JsArray].value
-      }).map(_.asInstanceOf[JsObject])
 
+
+        jsons.map(parsePage).toSeq
+      }
 
       val continueJson = json \ "continue"
       val continueJsonToString = continueJson.toString()
@@ -51,15 +55,23 @@ class Parser(val action: Action) {
         }
       }
 
-      tryContinue match {
-        case Success(c) =>
-          continue = c
-          Success(jsons.map(parsePage).toSeq)
+      pagesTry match {
+        case (Success(pages)) =>
+          tryContinue match {
+            case Success(c) =>
+              continue = c
+              Success(pages)
+            case Failure(e) =>
+              val re = new RuntimeException(e.getMessage + ", " + continueJsonToString, e)
+              println(re)
+              Failure(re)
+          }
         case Failure(e) =>
-          val re = new RuntimeException(e.getMessage + ", " + continueJsonToString, e)
+          val re = new RuntimeException(e.getMessage, e)
           println(re)
           Failure(re)
       }
+
     }
   }
 

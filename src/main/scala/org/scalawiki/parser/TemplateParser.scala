@@ -6,20 +6,19 @@ import org.sweble.wikitext.engine.utils.DefaultConfigEnWp
 import org.sweble.wikitext.parser.nodes.{WtTemplate, WtTemplateArgument}
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 object TemplateParser extends SwebleParser {
 
   val config: WikiConfig = DefaultConfigEnWp.generate
 
   def parseOne(wiki: String): Option[Template2] = {
-    val page = parse("Some title", wiki).getPage
+    val page = parsePage("Some title", wiki).getPage
     findNode(page, { case t: WtTemplate => t }).map(nodeToTemplate)
   }
 
-  def parse(wiki: String): Seq[Template2] = {
-    val page = parse("Some title", wiki).getPage
-    collectNodes(page, { case t: WtTemplate => t }).map(nodeToTemplate)
+  def parse(wiki: String, templateName: String): Seq[Template2] = {
+    val page = parsePage("Some title", wiki).getPage
+    collectNodes(page, { case t: WtTemplate => t }).filter(t => getTemplateName(t) == templateName).map(nodeToTemplate)
   }
 
   def nodeToTemplate(template: WtTemplate): Template2 = {
@@ -39,9 +38,13 @@ object TemplateParser extends SwebleParser {
         name -> value
     }
 
+    val name = getTemplateName(template)
     new Template2(
-      getText(template.getName).trim,
-      mutable.LinkedHashMap(params: _*)
+      name,
+      params.toMap
     )
   }
+
+  def getTemplateName(template: WtTemplate): String = getText(template.getName).trim
+
 }

@@ -11,7 +11,7 @@ object TableParser extends SwebleParser {
 
   def parse(wiki: String): Table = {
 
-    val page = parse("Some title", wiki).getPage
+    val page = parsePage("Some title", wiki).getPage
 
     findNode(page, { case t: WtTableImplicitTableBody => t }).map {
       tableBody =>

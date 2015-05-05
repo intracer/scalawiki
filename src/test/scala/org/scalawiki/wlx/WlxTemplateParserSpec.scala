@@ -3,13 +3,11 @@ package org.scalawiki.wlx
 import org.scalawiki.dto.Template2
 import org.specs2.mutable.Specification
 
-import scala.collection.mutable
-
 class WlxTemplateParserSpec extends Specification {
 
   def dataToWiki(data: Seq[Seq[(String, String)]]): String = {
     val templates = data.map {
-      params => new Template2("templateName", mutable.LinkedHashMap(params: _*))
+      params => new Template2("templateName", params.toMap)
     }
 
     templates.map(_.text).mkString("\n")
@@ -26,10 +24,11 @@ class WlxTemplateParserSpec extends Specification {
 
       val text = dataToWiki(data)
 
-      val parser = new WlxTemplateParser(IdNameConfig)
+      val parser = new WlxTemplateParser(IdNameConfig, "page")
       val monuments = parser.parse(text)
 
       monuments.size === 2
+      monuments.map(_.page).toSet === Set("page")
       monuments.map(m => Seq(m.id, m.name)) === data.map(_.toMap.values.toSeq)
     }
 
@@ -42,10 +41,11 @@ class WlxTemplateParserSpec extends Specification {
 
       val text = dataToWiki(data)
 
-      val parser = new WlxTemplateParser(IdNameConfig)
+      val parser = new WlxTemplateParser(IdNameConfig, "page")
       val monuments = parser.parse(text)
 
       monuments.size === 2
+      monuments.map(_.page).toSet === Set("page")
       monuments.map(m => Seq(m.id, m.name, m.otherParams("_f1"), m.otherParams("_f2"))) === data.map(_.toMap.values.toSeq)
     }
   }

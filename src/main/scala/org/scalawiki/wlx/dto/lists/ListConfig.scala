@@ -1,5 +1,7 @@
 package org.scalawiki.wlx.dto.lists
 
+import scala.collection.immutable.ListMap
+
 trait ListConfig {
   def templateName: String
 
@@ -16,12 +18,10 @@ object EmptyListConfig extends ListConfig {
 object WleUa extends ListConfig {
 
 
-  override val namesMap = Map(
+  override val namesMap = ListMap(
     "ID" -> "ID",
     "name" -> "назва",
-    "year" -> "рік",
-    "description" -> "опис",
-    "city" -> "нас_пункт",
+    "resolution" -> "постанова",
     "place" -> "розташування",
     "user" -> "користувач",
     "area" -> "площа",
@@ -30,15 +30,14 @@ object WleUa extends ListConfig {
     "type" -> "тип",
     "subType" -> "підтип",
     "photo" -> "фото",
-    "gallery" -> "галерея",
-    "resolution" -> "постанова"
+    "gallery" -> "галерея"
   )
 
   override val templateName: String = "ВЛЗ-рядок"
 }
 
 object WlmUa extends ListConfig {
-  override val namesMap = Map(
+  override val namesMap = ListMap(
     "ID" -> "ID",
     "name" -> "назва",
     "year" -> "рік",
@@ -61,7 +60,7 @@ object WlmUa extends ListConfig {
 }
 
 object WleAm extends ListConfig {
-  override val namesMap = Map(
+  override val namesMap = ListMap(
     "ID" -> "համարանիշ",
     "photo" -> "պատկեր",
     "gallery" -> "կատեգորիա")
@@ -71,7 +70,7 @@ object WleAm extends ListConfig {
 }
 
 object WleNp extends ListConfig {
-  override val namesMap = Map(
+  override val namesMap = ListMap(
     "ID" -> "number",
     "photo" -> "image",
     "gallery" -> "gallery")
@@ -80,7 +79,7 @@ object WleNp extends ListConfig {
 }
 
 object WleRu extends ListConfig {
-  override val namesMap = Map(
+  override val namesMap = ListMap(
     "ID" -> "knid",
     "name" -> "name",
     "description" -> "description",
@@ -95,7 +94,7 @@ object WleRu extends ListConfig {
 }
 
 object WleTh extends ListConfig {
-  override val namesMap = Map(
+  override val namesMap = ListMap(
     "ID" -> "ลำดับ",
     "name" -> "อุทยานแห่งชาติ",
     "area" -> "พื้นที่",
@@ -107,7 +106,7 @@ object WleTh extends ListConfig {
 
 
 object WleCh extends ListConfig {
-  override val namesMap = Map(
+  override val namesMap = ListMap(
     "ID" -> "Nr",
     "name" -> "Object",
     "article" -> "enlink",
@@ -119,7 +118,7 @@ object WleCh extends ListConfig {
 }
 
 object WleAu extends ListConfig {
-  override val namesMap = Map(
+  override val namesMap = ListMap(
     "ID" -> "number",
     "name" -> "Name",
     "date" -> "Datum",
@@ -137,7 +136,7 @@ object WleAu extends ListConfig {
 }
 
 object WleEe extends ListConfig {
-  override val namesMap = Map(
+  override val namesMap = ListMap(
     "ID" -> "kood",
     "name" -> "nimi",
     "type" -> "tüüp",
@@ -147,7 +146,7 @@ object WleEe extends ListConfig {
 }
 
 object WleCat extends ListConfig {
-  override val namesMap = Map(
+  override val namesMap = ListMap(
     "ID" -> "codi",
     "name" -> "nom",
     "area" -> "dimensions",

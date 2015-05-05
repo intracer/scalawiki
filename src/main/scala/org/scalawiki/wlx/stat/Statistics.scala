@@ -27,7 +27,7 @@ class Statistics {
     val monumentDb = getMonumentDb(contest)
 
     //articleStatistics(monumentDb)
-    imagesStatistics(monumentQuery, monumentDb)
+   imagesStatistics(monumentQuery, monumentDb)
   }
 
   def getMonumentDb(contest: Contest): MonumentDB = {
@@ -87,7 +87,7 @@ class Statistics {
           regionalStat(contest, monumentDb, imageQueryDb, imageDb, totalImageDb)
 
           Thread.sleep(5000)
-          // fillLists(monumentDb, totalImageDb)
+          fillLists(monumentDb, totalImageDb)
         }
     }
   }

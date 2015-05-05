@@ -63,7 +63,9 @@ class ListFiller extends WithBot {
         if (!ids.contains(monument.id))
           text
         else {
-          monument.copy(photo = Some(bestImage(imageDb.byId(monument.id)).title.replaceFirst("File:", "")))
+          monument.copy(
+            photo = Some(bestImage(imageDb.byId(monument.id)).title.replaceFirst("File:", ""))
+          ).asWiki.replaceFirst("\\{\\{" + monumentDb.contest.listTemplate, "")
         }
       }
     }

@@ -13,7 +13,7 @@ trait SwebleParser {
 
   def config: WikiConfig
 
-  def parse(title: String, text: String): EngProcessedPage = {
+  def parsePage(title: String, text: String): EngProcessedPage = {
     val engine = new WtEngineImpl(config)
     engine.postprocess(getPageId(title), text, null)
   }

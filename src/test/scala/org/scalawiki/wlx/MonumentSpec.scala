@@ -66,7 +66,7 @@ class MonumentSpec extends Specification {
 
   "parse" should {
     "full" in {
-      val m = Monument.init(text1, listConfig = WleUa).head
+      val m = Monument.init(text1, listConfig = WlmUa).head
       m.id === "05-105-0001"
       m.name === "[[Козятин I|Козятинський залізничний вокзал]]"
       m.photo === Some("Station2 2.jpg")
@@ -74,7 +74,7 @@ class MonumentSpec extends Specification {
     }
 
     "empty" in {
-      val m = Monument.init(text2, listConfig = WleUa).head
+      val m = Monument.init(text2, listConfig = WlmUa).head
       m.id === "05-105-0012"
       m.name === "Братська могила 6 радянських воїнів, загиблих при звільненні міста"
       m.photo === None
@@ -85,8 +85,8 @@ class MonumentSpec extends Specification {
 
   "set" should {
     "photo" in {
-      val m = Monument.init(text2, listConfig = WleUa).head
-      
+      val m = Monument.init(text2, listConfig = WlmUa).head
+
       val photo = "Photo.jpg"
       val m2 = m.copy(photo = Some(photo))
       m2.id === "05-105-0012"
@@ -96,15 +96,47 @@ class MonumentSpec extends Specification {
     }
 
     "gallery" in {
-      val m = Monument.init(text2, listConfig = WleUa).head
+      val m = Monument.init(text2, listConfig = WlmUa).head
       val m2 = m.copy(gallery = Some("123"))
       m2.id === "05-105-0012"
       m2.name === "Братська могила 6 радянських воїнів, загиблих при звільненні міста"
       m2.photo === None
       m2.gallery === Some("123")
     }
-
   }
+
+  "asWiki" should {
+    "1" in {
+      val m = new Monument("page1", "id1", "name1", photo = Some("Image.jpg"), gallery = Some("category1"), listConfig = WleUa)
+
+      val longest = WleUa.namesMap.values.map(_.length).max
+
+      val names = WleUa.namesMap.mapValues(_.padTo(longest, ' '))
+      val keys = names.filterKeys(Set("ID", "name", "year", "description", "photo", "gallery").contains)
+      val text = m.asWiki
+      val lines = text.split("\\n", -1).toSeq
+      lines ===
+        Seq(
+          "{{ВЛЗ-рядок",
+          s"|${names("ID")} = id1",
+          s"|${names("name")} = name1",
+          s"|${names("resolution")} = ",
+          s"|${names("place")} = ",
+          s"|${names("user")} = ",
+          s"|${names("area")} = ",
+          s"|${names("lat")} = ",
+          s"|${names("lon")} = ",
+          s"|${names("type")} = ",
+          s"|${names("subType")} = ",
+          s"|${names("photo")} = Image.jpg",
+          s"|${names("gallery")} = category1",
+          s"}}",
+          ""
+        )
+
+    }
+  }
+
 
   //  @Test def testSetResolution1 {
   //    val m: Monument = Monument.init(withResolution1)
