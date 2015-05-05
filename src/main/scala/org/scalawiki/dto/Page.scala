@@ -12,7 +12,8 @@ case class Page(
                  missing: Boolean = false,
                  length: Option[Int] = None,
                  subjectId: Option[Long] = None,
-                 talkId: Option[Long] = None
+                 talkId: Option[Long] = None,
+                  langLinks: Map[String, String] = Map.empty
                  ) /*extends HasId[Page]*/ {
   val history = new History(this)
 

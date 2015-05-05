@@ -1,0 +1,38 @@
+{
+  "query": {
+    "pages": {
+      "19378550": {
+        "pageid": 19378550,
+        "ns": 0,
+        "title": "Article",
+        "langlinks": [
+          {
+            "lang": "de",
+            "*": "Artikel"
+          },
+          {
+            "lang": "eo",
+            "*": "Artikolo"
+          },
+          {
+            "lang": "fr",
+            "*": "Article"
+          },
+          {
+            "lang": "it",
+            "*": "Articolo"
+          },
+          {
+            "lang": "nl",
+            "*": "Artikel"
+          },
+          {
+            "lang": "pt",
+            "*": "Artigo"
+          }
+        ]
+      }
+    }
+  },
+  "limits": {"langlinks": 500}
+}

@@ -20,39 +20,38 @@ class Parser(val action: Action) {
 
     val jsonObj = json.asInstanceOf[JsObject]
     if (jsonObj.value.contains("error")) {
-      val error = jsonObj.value("error").asInstanceOf[JsObject]
-      val code = error.value("code").asInstanceOf[JsString].value
-      val info = error.value("info").asInstanceOf[JsString].value
-      val mwex = MwException(code, info)
-      println(mwex)
-      Failure(mwex)
+      Failure(mwException(jsonObj))
     } else {
       val pagesTry: Try[Seq[Page]] = Try {
         val queryChild = lists.headOption.fold("pages")(_.name)
 
-        val pagesJson = json \ "query" \ queryChild
+        if (jsonObj.value.contains("query")) {
 
-        val jsons = (queryChild match {
-          case "pages" => pagesJson.asInstanceOf[JsObject].values
-          case _ => pagesJson.asInstanceOf[JsArray].value
-        }).map(_.asInstanceOf[JsObject])
+          val pagesJson = json \ "query" \ queryChild
 
+          val jsons = (queryChild match {
+            case "pages" => pagesJson.asInstanceOf[JsObject].values
+            case _ => pagesJson.asInstanceOf[JsArray].value
+          }).map(_.asInstanceOf[JsObject])
 
-
-        jsons.map(parsePage).toSeq
+          jsons.map(parsePage).toSeq
+        } else Seq.empty
       }
 
-      val continueJson = json \ "continue"
-      val continueJsonToString = continueJson.toString()
       val tryContinue = Try {
-        continueJson match {
-          case obj: JsObject => obj.fields.toMap.mapValues[String] {
-            case JsNumber(n) => n.toString()
-            case JsString(s) => s
-            case _ => "???"
+        if (jsonObj.value.contains("continue")) {
+
+          val continueJson = json \ "continue"
+          //val continueJsonToString = continueJson.toString()
+          continueJson match {
+            case obj: JsObject => obj.fields.toMap.mapValues[String] {
+              case JsNumber(n) => n.toString()
+              case JsString(s) => s
+              case _ => "???"
+            }
+            case _ => Map.empty[String, String]
           }
-          case _ => Map.empty[String, String]
-        }
+        } else Map.empty[String, String]
       }
 
       pagesTry match {
@@ -62,7 +61,7 @@ class Parser(val action: Action) {
               continue = c
               Success(pages)
             case Failure(e) =>
-              val re = new RuntimeException(e.getMessage + ", " + continueJsonToString, e)
+              val re = new RuntimeException(e.getMessage, e)
               println(re)
               Failure(re)
           }
@@ -75,13 +74,43 @@ class Parser(val action: Action) {
     }
   }
 
+  def mwException(jsonObj: JsObject): MwException = {
+    val error = jsonObj.value("error").asInstanceOf[JsObject]
+    val code = error.value("code").asInstanceOf[JsString].value
+    val info = error.value("info").asInstanceOf[JsString].value
+    val mwex = MwException(code, info)
+    println(mwex)
+    mwex
+  }
+
+  def getLangLinks(pageJson: JsObject): Map[String, String] = {
+
+    def parseArray(arr: JsArray): Seq[(String, String)] = {
+      arr.value.collect {
+        case ll: JsObject =>
+          val lang = ll.value.get("lang").map { case s: JsString => s.value }
+          val page = ll.value.get("*").map { case s: JsString => s.value }
+          lang.get -> page.get
+      }
+    }
+
+    pageJson.value.get("langlinks").toSeq.flatMap {
+      case arr: JsArray => parseArray(arr)
+      case _ => Seq.empty[(String, String)]
+    }.toMap
+
+  }
+
   def parsePage(pageJson: JsObject): Page = {
     val page = pageJson.validate(Parser.pageReads).get
 
     val revisions: Seq[Revision] = pageJson.validate(Parser.revisionsReads(page.id.get)).getOrElse(Seq.empty)
     val imageInfos: Seq[ImageInfo] = pageJson.validate(Parser.imageInfosReads).getOrElse(Seq.empty)
+    val langLinks: Map[String, String] = getLangLinks(pageJson)
 
-    page.copy(revisions = revisions, imageInfo = imageInfos)
+    //    pageJson.validate(Parser.langLinksReads).getOrElse(Map.empty)
+
+    page.copy(revisions = revisions, imageInfo = imageInfos, langLinks = langLinks)
   }
 
 
@@ -155,5 +184,13 @@ object Parser {
     )(ImageInfo.basic _)
 
   val imageInfosReads: Reads[Seq[ImageInfo]] = (__ \ "imageinfo").read[Seq[ImageInfo]]
+
+  //  val langLinkRead: Reads[(String, String)] = (
+  //    (__ \ "lang").read[String] and
+  //      (__ \ "*").read[String]
+  //    )(_ -> _)
+  //
+  //  val langLinksReads: Reads[Seq[String, String]] =
+  //    (__ \ "langlinks").read[Seq[(String, String)]](langLinkRead)
 
 }
