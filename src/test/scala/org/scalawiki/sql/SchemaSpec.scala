@@ -83,12 +83,9 @@ class SchemaSpec extends Specification with BeforeAfter {
       val dbPage = pageDao.withText(pageId.get).get
 
       dbPage.text === Some(texts.head)
-
       dbPage.revisions.size === 1
-      val lastRevision = dbPage.revisions.head
 
       val withRevisions = pageDao.withRevisions(pageId.get).get
-
       withRevisions.text === Some(texts.head)
 
       val allRevisions = withRevisions.revisions
@@ -97,6 +94,90 @@ class SchemaSpec extends Specification with BeforeAfter {
       allRevisions.flatMap(_.content.toSeq) === texts
     }
 
+    "find pages by id" in {
+      createSchema()
+
+      val names = Seq("page1", "page2", "page3")
+      val texts = Seq("page1Text", "page2Text", "page3Text")
+      //      val revisions = texts.map(Revision.one)
+      val pages = names.zip(texts).map {
+        case (n, t) => Page(None, 0, n, Seq(Revision.one(t)))
+      }
+
+      val pageIds = pages.flatMap(p => pageDao.insert(p))
+      pageIds.size === 3
+
+      val dbPages = pageDao.find(Set(pageIds.head, pageIds.last))
+      dbPages.size === 2
+      dbPages.map(_.title) === Seq("page1", "page3")
+    }
+
+    "find pages with text by id" in {
+      createSchema()
+
+      val names = Seq("page1", "page2", "page3")
+      val texts = Seq("page1Text", "page2Text", "page3Text")
+      //      val revisions = texts.map(Revision.one)
+      val pages = names.zip(texts).map {
+        case (n, t) => Page(None, 0, n, Seq(Revision.one(t)))
+      }
+
+      val pageIds = pages.flatMap(p => pageDao.insert(p))
+      pageIds.size === 3
+
+      val dbPages = pageDao.findWithText(Set(pageIds.head, pageIds.last))
+      dbPages.size === 2
+      dbPages.map(_.title) === Seq("page1", "page3")
+      dbPages.flatMap(_.text.toSeq) === Seq("page1Text", "page3Text")
+    }
+
+    "find pages with text by id" in {
+      createSchema()
+
+      val names = Seq("page1", "page2", "page3")
+      val texts = Seq("page1Text", "page2Text", "page3Text")
+      //      val revisions = texts.map(Revision.one)
+      val pages = names.zip(texts).map {
+        case (n, t) => Page(None, 0, n, Seq(Revision.one(t)))
+      }
+
+      val pageIds = pages.flatMap(p => pageDao.insert(p))
+      pageIds.size === 3
+
+      val dbPages = pageDao.findWithText(Set(pageIds.head, pageIds.last))
+      dbPages.size === 2
+      dbPages.map(_.title) === Seq("page1", "page3")
+      dbPages.flatMap(_.text.toSeq) === Seq("page1Text", "page3Text")
+    }
+
+    "find pages by revIds" in {
+      createSchema()
+
+      val names = Seq("page1", "page2", "page3")
+      val texts = Seq(
+        Seq("page1Text2", "page1Text1"),
+        Seq("page2Text2", "page2Text1"),
+        Seq("page3Text2", "page3Text1")
+      )
+      //      val revisions = texts.map(Revision.one)
+      val pages = names.zip(texts).map {
+        case (n, t) => Page(None, 0, n, t.map(Revision.one))
+      }
+
+      val pageIds = pages.flatMap(p => pageDao.insert(p).toSeq)
+      pageIds.size === 3
+
+      val withRevisions = pageIds.flatMap(id => pageDao.withRevisions(id))
+
+      withRevisions.map(_.revisions.size) === Seq(2, 2, 2)
+
+      val revIds = withRevisions.flatMap(_.revisions.last.id)
+
+      val dbPages = pageDao.findByRevIds(Set(pageIds.head, pageIds.last), Set(revIds.head, revIds.last))
+      dbPages.size === 2
+      dbPages.map(_.title) === Seq("page1", "page3")
+      dbPages.flatMap(_.text.toSeq) === Seq("page1Text1", "page3Text1")
+    }
   }
 
   "user" should {
