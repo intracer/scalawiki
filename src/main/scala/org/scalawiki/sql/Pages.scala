@@ -64,6 +64,8 @@ class Pages(tag: Tag) extends Table[Page](tag, "page") {
 
   def lang = column[String]("page_lang")
 
+  def nameTitle = index("name_title", (namespace, title), unique = true)
+
 //  def revision = foreignKey("revisionFK", pageLatest, MediaWiki.revisions)(_.id)
 
   def * = (id, namespace, title, pageLatest) <>(fromDb, toDb)
