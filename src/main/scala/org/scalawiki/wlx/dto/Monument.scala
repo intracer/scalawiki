@@ -86,26 +86,6 @@ object Monument {
 
   def init(text: String, page: String = "", listConfig: ListConfig) = {
     new WlxTemplateParser(listConfig, page).parse(text)
-    //    val name: String = t.getParam("name")
-    //    new Monument(
-    //      id = t.getParam("ID"),
-    //      name = name,
-    //      year =  t.getParamOpt("year"),
-    //      description =  t.getParamOpt("description"),
-    //      article = getArticle(name),
-    //      city = t.getParamOpt("city"),
-    //      place =  t.getParamOpt("place"),
-    //      user = t.getParamOpt("user"),
-    //      area = t.getParamOpt("area"),
-    //      lat = t.getParamOpt("lat"),
-    //      lon = t.getParamOpt("lon"),
-    //      typ = t.getParamOpt("type"),
-    //      subType =  t.getParamOpt("subType"),
-    //      photo = t.getParamOpt("photo"),
-    //      gallery = t.getParamOpt("gallery"),
-    //      resolution = t.getParamOpt("resolution"),
-    //      page = page,
-    //    listConfig = listConfig)
   }
 
   def getArticle(s: String): Option[String] = {
@@ -142,9 +122,6 @@ object Monument {
   def monumentsFromText(text: String, page: String, template: String, listConfig: ListConfig): Set[Monument] =
     init(text, page, listConfig).toSet
 
-  //.filter(_.id.nonEmpty).toSet
-
-  // test for "-" id
   def getRegionId(monumentId: String): String = monumentId.split("\\-").headOption.getOrElse("")
 
   def getRegionId(monumentId: Option[String]): String = monumentId.fold("")(getRegionId)

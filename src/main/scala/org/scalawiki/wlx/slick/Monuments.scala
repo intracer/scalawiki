@@ -1,4 +1,4 @@
-package org.scalawiki.slick
+package org.scalawiki.wlx.slick
 
 import org.scalawiki.wlx.dto.Monument
 import org.scalawiki.wlx.dto.lists.EmptyListConfig

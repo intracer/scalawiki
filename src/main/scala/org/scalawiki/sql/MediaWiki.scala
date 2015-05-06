@@ -27,8 +27,11 @@ object MediaWiki {
 
   def createIfNotExists(tables: TableQuery[_ <: Table[_]]*)(implicit session: Session) {
     tables foreach { table =>
-      if (MTable.getTables(table.baseTableRow.tableName).list.isEmpty)
-        table.ddl.create
+      if (MTable.getTables(table.baseTableRow.tableName).list.nonEmpty) {
+        table.ddl.drop
+      }
+      table.ddl.create
+
     }
   }
 

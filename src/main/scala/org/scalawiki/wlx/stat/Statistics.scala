@@ -3,7 +3,7 @@ package org.scalawiki.wlx.stat
 import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
-import org.scalawiki.slick.Slick
+import org.scalawiki.wlx.slick.Slick
 import org.scalawiki.wlx.dto.{Contest, Monument}
 import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
 import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}

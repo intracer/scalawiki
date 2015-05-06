@@ -1,4 +1,4 @@
-package org.scalawiki.slick
+package org.scalawiki.wlx.slick
 
 import org.scalawiki.wlx.dto.{Country, Monument}
 

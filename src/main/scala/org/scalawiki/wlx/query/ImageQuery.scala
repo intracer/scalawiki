@@ -1,6 +1,6 @@
 package org.scalawiki.wlx.query
 
-import org.scalawiki.slick.Slick
+import org.scalawiki.wlx.slick.Slick
 import org.scalawiki.wlx.dto.{Contest, Image}
 import org.scalawiki.dto.Namespace
 import org.scalawiki.{MwBot, WithBot}

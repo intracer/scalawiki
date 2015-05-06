@@ -1,4 +1,4 @@
-package org.scalawiki.slick
+package org.scalawiki.wlx.slick
 
 import org.scalawiki.wlx.dto.Image
 import scala.slick.driver.H2Driver.simple._
