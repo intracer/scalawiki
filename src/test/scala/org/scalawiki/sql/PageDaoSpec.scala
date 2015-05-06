@@ -2,7 +2,7 @@ package org.scalawiki.sql
 
 import java.sql.SQLException
 
-import org.scalawiki.dto.{Page, Revision}
+import org.scalawiki.dto.{Namespace, Page, Revision}
 import org.scalawiki.sql.dao.{PageDao, RevisionDao, TextDao}
 import org.specs2.mutable.{BeforeAfter, Specification}
 
@@ -54,6 +54,25 @@ class PageDaoSpec extends Specification with BeforeAfter {
       dbPage.revisions.size === 1
     }
 
+    "insert with the same id should fail" in {
+      createSchema()
+
+      val text = "revision text"
+      val revision = Revision.one(text)
+
+      val page = Page(None, 0, "title", Seq(revision))
+
+      val pageId = pageDao.insert(page)
+
+      val dbPage = pageDao.withText(pageId.get).get
+
+      pageDao.insert(dbPage) must throwA[SQLException]
+
+      pageDao.list.size === 1
+      revisionDao.list.size === 1
+      textDao.list.size === 1
+    }
+
     "insert with the same title should fail" in {
       createSchema()
 
@@ -66,6 +85,32 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val pageId = pageDao.insert(page1)
 
       pageDao.insert(page2) must throwA[SQLException]
+
+      pageDao.list.size === 1
+      revisionDao.list.size === 1
+      textDao.list.size === 1
+    }
+
+    "insert with the same title different namespace is possible" in {
+      createSchema()
+
+      val title = "title"
+      val (text1, text2) = ("text1", "text2")
+
+      val page1 = Page(None, Namespace.MAIN, title, Seq(Revision.one(text1)))
+      val page2 = Page(None, Namespace.FILE, title, Seq(Revision.one(text2)))
+
+      val pageId1 = pageDao.insert(page1)
+      val pageId2 = pageDao.insert(page2)
+
+      val dbPage1 = pageDao.withText(pageId1.get).get
+      val dbPage2 = pageDao.withText(pageId2.get).get
+
+      dbPage1.title === "title"
+      dbPage2.title === "title"
+
+      dbPage1.text === Some(text1)
+      dbPage2.text === Some(text2)
     }
 
     "insert with two revisions" in {
@@ -178,6 +223,5 @@ class PageDaoSpec extends Specification with BeforeAfter {
       dbPages.flatMap(_.text.toSeq) === Seq("page1Text1", "page3Text1")
     }
   }
-
 
 }
