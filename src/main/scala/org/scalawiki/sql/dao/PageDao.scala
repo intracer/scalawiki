@@ -43,13 +43,13 @@ class PageDao(val driver: JdbcProfile) {
     pages.filter(_.id === id).firstOption
 
   def find(ids: Set[Long])(implicit session: Session): Seq[Page] =
-    pages.filter(_.id inSet ids).run
+    pages.filter(_.id inSet ids).sortBy(_.id).run
 
   def findWithText(ids: Set[Long])(implicit session: Session): Seq[Page] =
     (pages.filter(_.id inSet ids)
       join revisions on (_.pageLatest === _.id)
       join texts on (_._2.textId === _.id)
-      ).run.map {
+      ).sortBy { case ((p, r), t) => p.id }.run.map {
       case ((p, r), t) => p.copy(revisions = Seq(r.copy(content = Some(t.text))))
     }
 
@@ -57,7 +57,7 @@ class PageDao(val driver: JdbcProfile) {
     (pages.filter(_.id inSet ids)
       join revisions.filter(_.id inSet revIds) on (_.id === _.pageId)
       join texts on (_._2.textId === _.id)
-      ).run.map {
+      ).sortBy { case ((p, r), t) => p.id }.run.map {
       case ((p, r), t) => p.copy(revisions = Seq(r.copy(content = Some(t.text))))
     }
 
