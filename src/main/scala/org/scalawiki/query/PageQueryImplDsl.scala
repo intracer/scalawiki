@@ -30,7 +30,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       Prop(
         Info(),
         Revisions(
-          RvProp(RvPropArgs.byNames(props.toSeq):_*),
+          RvProp(RvPropArgs.byNames(props.toSeq): _*),
           RvLimit("max")
         )
       )
@@ -55,7 +55,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
     val action = Action(Query(
       Prop(
         Info(),
-        Revisions(RvProp(RvPropArgs.byNames(props.toSeq):_*))
+        Revisions(RvProp(RvPropArgs.byNames(props.toSeq): _*))
       ),
       Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
     ))
@@ -79,17 +79,17 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
     val action = Action(Query(
       Prop(
         ImageInfo(
-          IiProp(IiPropArgs.byNames(props.toSeq):_*),
+          IiProp(IiPropArgs.byNames(props.toSeq): _*),
           IiLimit("max")
         )
       ),
-       Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
+      Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
     ))
 
     new DslQuery(action, bot).run()
   }
 
-  def edit(text: String, summary: String, token: Option[String] = None, multi:Boolean = true) = {
+  def edit(text: String, summary: String, token: Option[String] = None, multi: Boolean = true) = {
 
     val page = query.fold(
       ids => PageId(ids.head),
@@ -101,13 +101,15 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       Text(text),
       Summary(summary),
       Token(token.fold(bot.token)(identity))
-      )
+    )
     )
 
     val params = action.pairs.toMap ++
       Map("action" -> "edit",
-      "format" -> "json",
-      "bot" -> "x")
+        "format" -> "json",
+        "bot" -> "x",
+        "assert" -> "user",
+        "assert" -> "bot")
 
     if (multi)
       bot.postMultiPart(editResponseReads, params)
@@ -126,7 +128,10 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       "format" -> "json",
       "comment" -> "update",
       "filesize" -> fileContents.size.toString,
-      "ignorewarnings" -> "true")
+      "ignorewarnings" -> "true",
+      "assert" -> "user",
+      "assert" -> "bot")
+
     bot.postFile(uploadResponseReads, params, "file", filename)
   }
 
