@@ -5,9 +5,11 @@ import org.scalawiki.dto.cmd.query.Query
 
 trait Parameter[+T] extends Equals {
   def name: String
+
   def summary: String
 
   def pairs: Seq[(String, String)]
+
   def flatten: Seq[Parameter[Any]] = Seq(this)
 }
 
@@ -23,21 +25,9 @@ abstract class EnumParameter[ARG <: EnumArg[ARG]](val name: String, val summary:
     Seq(name -> args.map(_.name).mkString("|")) ++ args.flatMap(_.pairs)
   }
 
-  def byType[X : Manifest]: Seq[X] =
-    args.collect {
-      case x if manifest[X].runtimeClass.isInstance(x) => x.asInstanceOf[X]
-    }
+  def byPF[T](pf: PartialFunction[EnumArg[ARG], T]) = args.collect(pf).headOption
 
-
-  override def flatten = {
-    //Seq(this) ++
-
-//    val x = args.collect {
-//      case awp: ArgWithParams[Parameter[Any], EnumArg[AnyRef]] => awp.params //.flatMap(_.flatten)
-//    }
-
-    Seq(this)
-  }
+  override def flatten = Seq(this)
 
 }
 
@@ -61,17 +51,25 @@ abstract class SingleParameter[T] extends Parameter[T] {
 
 
 abstract class StringListParameter(val name: String, val summary: String) extends ListParameter[String]
+
 abstract class IntListParameter(val name: String, val summary: String) extends ListParameter[Int]
+
 abstract class LongListParameter(val name: String, val summary: String) extends ListParameter[Long]
+
 abstract class IdListParameter(val name: String, val summary: String) extends ListParameter[Long]
 
 abstract class StringParameter(val name: String, val summary: String) extends SingleParameter[String]
+
 abstract class IntParameter(val name: String, val summary: String) extends SingleParameter[Int]
+
 abstract class LongParameter(val name: String, val summary: String) extends SingleParameter[Long]
+
 abstract class IdParameter(val name: String, val summary: String) extends SingleParameter[Long]
 
 abstract class DateTimeParameter(val name: String, val summary: String) extends SingleParameter[DateTime]
+
 abstract class BooleanParameter(val name: String, val summary: String) extends SingleParameter[Boolean]
+
 abstract class ByteArrayParameter(val name: String, val summary: String) extends SingleParameter[Array[Byte]]
 
 trait ArgWithParams[P <: Parameter[Any], T <: EnumArg[T]] extends EnumArg[T] {
@@ -82,12 +80,15 @@ trait ArgWithParams[P <: Parameter[Any], T <: EnumArg[T]] extends EnumArg[T] {
       case x if manifest[X].runtimeClass.isInstance(x) => x.asInstanceOf[X]
     }
 
- override def pairs: Seq[(String, String)] = params.flatMap(_.pairs)
+  def byPF[P1](pf: PartialFunction[P, P1]): Seq[P1] = params.collect(pf)
+
+  override def pairs: Seq[(String, String)] = params.flatMap(_.pairs)
 }
 
 trait EnumArg[+T <: EnumArg[T]] {
-//  def param: EnumParameter[T]
+  //  def param: EnumParameter[T]
   def name: String
+
   def summary: String
 
   def pairs: Seq[(String, String)] = Seq.empty
@@ -95,9 +96,12 @@ trait EnumArg[+T <: EnumArg[T]] {
 
 abstract class EnumArgument[T <: EnumArg[T]](val name: String, val summary: String) extends EnumArg[T]
 
-trait ActionArg extends EnumArg[ActionArg] { /*val param = ActionParam*/ }
+trait ActionArg extends EnumArg[ActionArg] {
+  /*val param = ActionParam*/
+}
+
 case class Action(override val arg: ActionArg) extends EnumParameter[ActionArg]("action", "") {
-  def query: Option[Query] = byType(manifest[Query]).headOption
+  def query: Option[Query] = args.collect { case q: Query => q }.headOption
 }
 
 

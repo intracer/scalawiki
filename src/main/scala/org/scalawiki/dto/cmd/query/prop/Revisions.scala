@@ -3,6 +3,7 @@ package org.scalawiki.dto.cmd.query.prop
 import org.joda.time.DateTime
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.query.Module
+import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
 
 /**
  *  ?action=query&amp;prop=revisions
@@ -10,7 +11,23 @@ import org.scalawiki.dto.cmd.query.Module
  *
  */
 case class Revisions(override val params: RvParam*)
-  extends Module[PropArg]("rv", "revisions", "Get revision information.") with PropArg with ArgWithParams[RvParam, PropArg]
+  extends Module[PropArg]("rv", "revisions", "Get revision information.")
+  with PropArg
+  with ArgWithParams[RvParam, PropArg] {
+
+  def withoutContent = {
+    val filtered: Seq[RvParam] = params.map {
+      case p: RvProp => p.withoutContent
+      case other => other
+    }
+    Revisions(filtered:_*)
+  }
+
+  def hasContent: Boolean = prop.exists(_.hasContent)
+
+  def prop = byPF({case p: RvProp => p }).headOption
+
+}
 
 /**
  * Marker trait for parameters used with prop=revisions
@@ -23,7 +40,13 @@ package rvprop {
  * ?action=query&amp;prop=revisions&amp;rvprop=
  *
  */
-case class RvProp(override val args: RvPropArg*) extends EnumParameter[RvPropArg]("rvprop", "Which properties to get for each revision:") with RvParam
+case class RvProp(override val args: RvPropArg*)
+  extends EnumParameter[RvPropArg]("rvprop", "Which properties to get for each revision:") with RvParam {
+
+  def hasContent: Boolean = args.contains(Content)
+
+  def withoutContent: RvProp = RvProp(args.filter(_ != Content):_*)
+}
 
 /**
  * Trait for rvprop= arguments

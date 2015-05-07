@@ -1,6 +1,6 @@
 package org.scalawiki.sql.dao
 
-import org.scalawiki.dto.Page
+import org.scalawiki.dto.{Revision, Page}
 import org.scalawiki.sql.MediaWiki
 
 import scala.language.higherKinds
@@ -24,17 +24,22 @@ class PageDao(val driver: JdbcProfile) {
 
     val pageId = autoInc += page
 
-    val newRevs = page.revisions.filter(_.revId.isEmpty)
+    val newRevs = page.revisions //.filter(_.revId.isEmpty)
+
+    addRevisions(pageId.get, newRevs)
+
+    pageId
+  }
+
+  def addRevisions(pageId: Long, newRevs: Seq[Revision])(implicit session: Session) = {
     val revIds = newRevs.reverse.flatMap { rev =>
-      val withPage = rev.copy(pageId = pageId)
+      val withPage = rev.copy(pageId = Some(pageId))
       revisionDao.insert(withPage)
     }
 
     pages.filter(_.id === pageId)
       .map(p => p.pageLatest)
       .update(revIds.last)
-
-    pageId
   }
 
   def list(implicit session: Session) = query.run

@@ -8,14 +8,17 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, _}
 
 trait MonumentQuery {
+
   import scala.concurrent.duration._
 
   def contest: Contest
 
   def byMonumentTemplateAsync(template: String = contest.uploadConfigs.head.listTemplate): Future[Seq[Monument]]
+
   def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false): Future[Seq[Monument]]
 
   final def byMonumentTemplate(template: String = contest.uploadConfigs.head.listTemplate) = Await.result(byMonumentTemplateAsync(template), 15.minutes): Seq[Monument]
+
   final def byPage(page: String, template: String, pageIsTemplate: Boolean = false) = Await.result(byPageAsync(page, template, pageIsTemplate), 15.minutes): Seq[Monument]
 }
 
@@ -50,10 +53,10 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
             Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig).toSeq).getOrElse(Seq.empty)
       }
     } else {
-//      bot.page(page).revisionsByGenerator("links", null, Set.empty, Set("content", "timestamp", "user", "comment")).map {
-//        pages =>
-//          pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template).toSeq)
-//      }
+      //      bot.page(page).revisionsByGenerator("links", null, Set.empty, Set("content", "timestamp", "user", "comment")).map {
+      //        pages =>
+      //          pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template).toSeq)
+      //      }
       bot.page(page).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT_NAMESPACE), Set("content", "timestamp", "user", "comment"), None, "100") map {
         pages =>
           pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig))
@@ -61,14 +64,6 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
 
     }
   }
-}
-
-
-class MonumentQuerySeq(val contest: Contest, monuments: Seq[Monument]) extends MonumentQuery {
-
-  override def byMonumentTemplateAsync(template: String): Future[Seq[Monument]] = future { monuments }
-
-  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false): Future[Seq[Monument]] = future { monuments }
 }
 
 class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
@@ -118,15 +113,15 @@ class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
 
 object MonumentQuery {
 
-  def create(contest: Contest, caching: Boolean = true, pickling: Boolean = false):MonumentQuery = {
+  def create(contest: Contest, caching: Boolean = true, pickling: Boolean = false): MonumentQuery = {
     val api = new MonumentQueryApi(contest)
 
     val query = if (caching)
       new MonumentQueryCached(
-//        if (pickling)
-//          new MonumentQueryPickling(api)
-//        else
-          api
+        //        if (pickling)
+        //          new MonumentQueryPickling(api)
+        //        else
+        api
       )
     else api
 
