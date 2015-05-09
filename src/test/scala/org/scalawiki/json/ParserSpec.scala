@@ -1,14 +1,15 @@
 package org.scalawiki.json
 
-import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list.{EmbeddedIn, ListParam}
-import org.scalawiki.dto.cmd.query.prop.{LangLinks, LlLimit, Prop}
-import org.scalawiki.dto.cmd.query.{Query, TitlesParam}
+import org.scalawiki.dto.cmd.query.prop.{LangLinks, LlLimit, Prop, Revisions}
+import org.scalawiki.dto.cmd.query.{PageIdsParam, Query, TitlesParam}
+import org.scalawiki.dto.{MwException, Page}
 import org.specs2.matcher.MatchResult
 import org.specs2.mutable.Specification
 
 import scala.io.Source
+import scala.util.Failure
 
 class ParserSpec extends Specification {
 
@@ -50,6 +51,22 @@ class ParserSpec extends Specification {
     }
   }
 
+  "Legacy Multipage query" should {
+    // TODO query-continue is not supported, but we should report it then
+    val queryContinueStr = s"""{"query-continue": {"$queryType": {"$queryContinue": "qcValue" }}, $queryStr}"""
+
+    val parser = new Parser(emptyAction)
+    val pagesOpt = parser.parse(queryContinueStr).toOption
+
+    "contain page" in {
+      checkPages(pagesOpt)
+    }
+
+    "have continue" in {
+      parser.continue === Map.empty
+    }
+  }
+
   def checkPages(pagesOpt: Option[Seq[Page]]): MatchResult[Any] = {
     pagesOpt.map { pages =>
       pages must have size 1
@@ -67,7 +84,6 @@ class ParserSpec extends Specification {
     page.ns === 4
     page.title === "PageTitle"
   }
-
 
   "parser" should {
     "parse page with lang links" in {
@@ -96,6 +112,30 @@ class ParserSpec extends Specification {
         "nl" -> "Artikel",
         "pt" -> "Artigo")
     }
-  }
 
+    "parse mwerror" in {
+      val action = Action(Query(Prop(Revisions()),
+        TitlesParam(Seq("PageTitle")),
+        PageIdsParam(Seq(123456))
+      ))
+
+      val json =
+      """{
+        "servedby": "mw1202",
+        "error": {
+          "code": "multisource",
+          "info": "Cannot use 'pageids' at the same time as 'titles'",
+          "*": "See https://en.wikipedia.org/w/api.php for API usage"
+        }
+      }"""
+
+      val parser = new Parser(action)
+      val result = parser.parse(json)
+
+      result.isFailure === true
+      val mw = result match { case Failure(mw:MwException) => mw }
+      mw.code === "multisource"
+      mw.info === "Cannot use 'pageids' at the same time as 'titles'"
+    }
+  }
 }

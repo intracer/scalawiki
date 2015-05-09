@@ -1,9 +1,9 @@
 package org.scalawiki.query
 
-import org.scalawiki.dto.Page
+import org.scalawiki.dto.{MwException, Page}
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.json.Parser
-import org.scalawiki.{MwBot, MwException}
+import org.scalawiki.MwBot
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}

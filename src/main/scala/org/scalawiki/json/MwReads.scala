@@ -20,16 +20,6 @@ object MwReads {
       (__ \ "login" \ "sessionid").readNullable[String]
     )(LoginResponse.apply _)
 
-
-  implicit val pageReads: Reads[Page] = (
-    (__ \ "pageid").read[Long] and
-      (__ \ "ns").read[Int] and
-      (__ \ "title").read[String] and
-      (__ \ "missing").readNullable[String]
-    )(Page.noText _)
-
-  def pagesReads(queryType: String): Reads[Seq[Page]] = (__ \ "query" \ queryType).read[Seq[Page]]
-
   def tokenReads: Reads[String] = (__ \ "query" \ "tokens" \ "csrftoken").read[String]
 
   def tokensReads: Reads[String] = (__ \ "tokens" \ "edittoken").read[String]
@@ -38,20 +28,12 @@ object MwReads {
 
   def uploadResponseReads: Reads[String] = (__ \ "upload" \ "result").read[String]
 
-  def errorReads: Reads[MwError] = (
-    (__ \ "code").read[String] and
-      (__ \ "info").read[String]
-    )(MwError.apply _)
-
-  def continueReads(continue: String): Reads[Continue] = (
-    (__ \ "continue" \ "continue").readNullable[String] and
-      (__ \ "continue" \ continue).readNullable[String]
-    )(Continue.apply _)
-
-
-  // for https://www.mediawiki.org/wiki/API:Legacy_Query_Continue, not supported for now
-  def queryContinueReads(queryType: String, continue: String): Reads[String] = (__ \ "query-continue" \ queryType \ continue).read[String]
-
+  def errorReads: Reads[MwException] = (
+    (__ \ "error" \ "code").read[String] and
+      (__ \ "error" \ "info").read[String]
+    )(
+      (code, info) => MwException.apply(code, info)
+    )
 }
 
 

@@ -1,7 +1,6 @@
 package org.scalawiki.json
 
 import org.joda.time.DateTime
-import org.scalawiki.MwException
 import org.scalawiki.dto._
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Generator
@@ -9,21 +8,23 @@ import org.scalawiki.dto.cmd.query.list.ListArg
 import org.scalawiki.dto.cmd.query.prop.PropArg
 import play.api.libs.json._
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 class Parser(val action: Action) {
 
   var continue = Map.empty[String, String]
 
   def parse(str: String): Try[Seq[Page]] = {
-    val json = Json.parse(str)
+    Try {
+      val json = Json.parse(str)
 
-    val jsonObj = json.asInstanceOf[JsObject]
-    if (jsonObj.value.contains("error")) {
-      Failure(mwException(jsonObj))
-    } else {
-      val pagesTry: Try[Seq[Page]] = Try {
+      val jsonObj = json.asInstanceOf[JsObject]
+      if (jsonObj.value.contains("error")) {
+        throw mwException(jsonObj)
+      } else {
         val queryChild = lists.headOption.fold("pages")(_.name)
+
+        continue = getContinue(json, jsonObj)
 
         if (jsonObj.value.contains("query")) {
 
@@ -37,50 +38,11 @@ class Parser(val action: Action) {
           jsons.map(parsePage).toSeq
         } else Seq.empty
       }
-
-      val tryContinue = Try {
-        if (jsonObj.value.contains("continue")) {
-
-          val continueJson = json \ "continue"
-          //val continueJsonToString = continueJson.toString()
-          continueJson match {
-            case obj: JsObject => obj.fields.toMap.mapValues[String] {
-              case JsNumber(n) => n.toString()
-              case JsString(s) => s
-              case _ => "???"
-            }
-            case _ => Map.empty[String, String]
-          }
-        } else Map.empty[String, String]
-      }
-
-      pagesTry match {
-        case (Success(pages)) =>
-          tryContinue match {
-            case Success(c) =>
-              continue = c
-              Success(pages)
-            case Failure(e) =>
-              val re = new RuntimeException(e.getMessage, e)
-              println(re)
-              Failure(re)
-          }
-        case Failure(e) =>
-          val re = new RuntimeException(e.getMessage, e)
-          println(re)
-          Failure(re)
-      }
-
     }
   }
 
   def mwException(jsonObj: JsObject): MwException = {
-    val error = jsonObj.value("error").asInstanceOf[JsObject]
-    val code = error.value("code").asInstanceOf[JsString].value
-    val info = error.value("info").asInstanceOf[JsString].value
-    val mwex = MwException(code, info)
-    println(mwex)
-    mwex
+    jsonObj.validate(MwReads.errorReads).get
   }
 
   def getLangLinks(pageJson: JsObject): Map[String, String] = {
@@ -113,6 +75,19 @@ class Parser(val action: Action) {
     page.copy(revisions = revisions, imageInfo = imageInfos, langLinks = langLinks)
   }
 
+  def getContinue(json: JsValue, jsonObj: JsObject): Map[String, String] = {
+    if (jsonObj.value.contains("continue")) {
+      val continueJson = json \ "continue"
+      continueJson match {
+        case obj: JsObject => obj.fields.toMap.mapValues[String] {
+          case JsNumber(n) => n.toString()
+          case JsString(s) => s
+          case _ => throw new scala.IllegalArgumentException(obj.toString())
+        }
+        case _ => Map.empty[String, String]
+      }
+    } else Map.empty[String, String]
+  }
 
   def query = action.query.toSeq
 
