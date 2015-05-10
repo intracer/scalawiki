@@ -2,7 +2,7 @@ package org.scalawiki.query
 
 import java.util.concurrent.TimeUnit
 
-import org.scalawiki.dto.{ImageInfo, Page}
+import org.scalawiki.dto.{User, Revision, ImageInfo, Page}
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.Specification
 
@@ -17,14 +17,15 @@ class GeneratorSpec extends Specification with MockBotSpec {
       val pageText2 = "more vandalism"
 
       val response1 =
-        s"""{"query":{"pages":{
-          |"569559":{"pageid":569559,"ns":1,"title":"Talk:Welfare reform", "revisions": [{"revid": 1, "user": "u1", "comment":"c1", "*":"$pageText1"}] }}},
-          | "continue":{"continue":"gcmcontinue||","gcmcontinue":"10|Stub|6674690"}}""".stripMargin
+        s"""{"query": {"pages": {
+          |"569559": {"pageid": 569559, "ns": 1, "title": "Talk:Welfare reform",
+          |"revisions": [{"revid": 1, "user": "u1", "comment": "c1", "*": "$pageText1"}] }}},
+          |"continue": {"continue": "gcmcontinue||", "gcmcontinue": "10|Stub|6674690"}}""".stripMargin
 
       val response2 =
-        s"""{"query":{"pages":{
-          |"4571809":{"pageid":4571809,"ns":2,"title":"User:Formator", "revisions": [{"revid": 2, "user": "u2", "comment":"c2","*":"$pageText2"}]} }}}""".stripMargin
-
+        s"""{"query": {"pages": {
+          |"4571809": {"pageid": 4571809, "ns": 2, "title": "User:Formator",
+          |"revisions": [{"revid": 2, "user": "u2", "comment": "c2", "*": "$pageText2"}]} }}}""".stripMargin
 
       val commands = Seq(
         new Command(Map("action" -> "query",
@@ -39,11 +40,19 @@ class GeneratorSpec extends Specification with MockBotSpec {
 
       val bot = getBot(commands: _*)
 
-      val future = bot.page("Category:SomeCategory").revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "comment"))
+      val future = bot.page("Category:SomeCategory")
+        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "comment"))
+
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+
       result must have size 2
-     // result(0) === Page(569559, 1, "Talk:Welfare reform", Seq(Revision("u1", "t1", "c1", Some(pageText1))))
-     // result(1) === Page(4571809, 2, "User:Formator", Seq(Revision("u2", "t2", "c2", Some(pageText2))))
+
+      result(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
+          Seq(Revision(Some(1L), Some(569559L), None, Some(User(None, Some("u1"))), None, Some("c1"), Some(pageText1)))
+      )
+      result(1) === Page(Some(4571809L), 2, "User:Formator",
+        Seq(Revision(Some(2L), Some(4571809L), None, Some(User(None, Some("u2"))), None, Some("c2"), Some(pageText2)))
+      )
     }
   }
 
@@ -72,7 +81,9 @@ class GeneratorSpec extends Specification with MockBotSpec {
           |      "url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/%22Dovbush-rocks%22_01.JPG",
           |      "descriptionurl": "https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_01.JPG"
           |    }]}}},
-          |    "continue":{"gcmcontinue":"file|44454d45524749373631312e4a50470a44454d45524749373631312e4a5047|32763876","continue":"gcmcontinue||"}}
+          |    "continue": {
+          |    "gcmcontinue": "file|44454d45524749373631312e4a50470a44454d45524749373631312e4a5047|32763876",
+          |    "continue": "gcmcontinue||"}}
         """.stripMargin
 
       val response2 =
@@ -105,18 +116,28 @@ class GeneratorSpec extends Specification with MockBotSpec {
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "imageinfo", "iiprop" -> "content|timestamp|user|comment",
-          "continue" -> "gcmcontinue||", "gcmcontinue" -> "file|44454d45524749373631312e4a50470a44454d45524749373631312e4a5047|32763876"), response2)
+          "continue" -> "gcmcontinue||",
+          "gcmcontinue" -> "file|44454d45524749373631312e4a50470a44454d45524749373631312e4a5047|32763876"),
+          response2)
       )
 
       val bot = getBot(commands: _*)
 
-      val future = bot.page("Category:SomeCategory").imageInfoByGenerator("categorymembers", "cm", Set.empty, Set("content", "timestamp", "user", "comment"))
+      val future = bot.page("Category:SomeCategory")
+        .imageInfoByGenerator("categorymembers", "cm", Set.empty, Set("content", "timestamp", "user", "comment"))
+
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+
       result must have size 2
-      result(0) === Page(Some(32885574), 6, "File:\"Dovbush-rocks\" 01.JPG", Seq.empty, Seq(ImageInfo("2014-05-20T20:54:33Z", "Taras r", 4270655, 3648, 2736,
-        "https://upload.wikimedia.org/wikipedia/commons/e/ea/%22Dovbush-rocks%22_01.JPG", "https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_01.JPG")))
-      result(1) === Page(Some(32885597), 6, "File:\"Dovbush-rocks\" 02.JPG", Seq.empty, Seq(ImageInfo("2014-05-20T20:55:12Z", "Taras r", 4537737, 2736, 3648,
-        "https://upload.wikimedia.org/wikipedia/commons/2/26/%22Dovbush-rocks%22_02.JPG", "https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_02.JPG")))
+
+      result(0) === Page(Some(32885574), 6, "File:\"Dovbush-rocks\" 01.JPG", Seq.empty,
+        Seq(ImageInfo("2014-05-20T20:54:33Z", "Taras r", 4270655, 3648, 2736,
+        "https://upload.wikimedia.org/wikipedia/commons/e/ea/%22Dovbush-rocks%22_01.JPG",
+          "https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_01.JPG")))
+      result(1) === Page(Some(32885597), 6, "File:\"Dovbush-rocks\" 02.JPG", Seq.empty,
+        Seq(ImageInfo("2014-05-20T20:55:12Z", "Taras r", 4537737, 2736, 3648,
+        "https://upload.wikimedia.org/wikipedia/commons/2/26/%22Dovbush-rocks%22_02.JPG",
+          "https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_02.JPG")))
     }
   }
 }

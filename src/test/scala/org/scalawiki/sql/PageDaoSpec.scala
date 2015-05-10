@@ -34,7 +34,6 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val page = new Page(None, 0, "title")
       pageDao.insert(page) must throwA[IllegalArgumentException]
-
     }
 
     "insert with revision" in {

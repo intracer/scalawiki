@@ -63,7 +63,6 @@ class QuerySpec extends Specification {
           Revisions(RvProp(Ids))
         )
       )
-
     }
   }
 }

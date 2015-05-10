@@ -45,24 +45,6 @@ class Parser(val action: Action) {
     jsonObj.validate(MwReads.errorReads).get
   }
 
-  def getLangLinks(pageJson: JsObject): Map[String, String] = {
-
-    def parseArray(arr: JsArray): Seq[(String, String)] = {
-      arr.value.collect {
-        case ll: JsObject =>
-          val lang = ll.value.get("lang").map { case s: JsString => s.value }
-          val page = ll.value.get("*").map { case s: JsString => s.value }
-          lang.get -> page.get
-      }
-    }
-
-    pageJson.value.get("langlinks").toSeq.flatMap {
-      case arr: JsArray => parseArray(arr)
-      case _ => Seq.empty[(String, String)]
-    }.toMap
-
-  }
-
   def parsePage(pageJson: JsObject): Page = {
     val page = pageJson.validate(Parser.pageReads).get
 
@@ -89,6 +71,23 @@ class Parser(val action: Action) {
     } else Map.empty[String, String]
   }
 
+  def getLangLinks(pageJson: JsObject): Map[String, String] = {
+
+    def parseArray(arr: JsArray): Seq[(String, String)] = {
+      arr.value.collect {
+        case ll: JsObject =>
+          val lang = ll.value.get("lang").map { case s: JsString => s.value }
+          val page = ll.value.get("*").map { case s: JsString => s.value }
+          lang.get -> page.get
+      }
+    }
+
+    pageJson.value.get("langlinks").toSeq.flatMap {
+      case arr: JsArray => parseArray(arr)
+      case _ => Seq.empty[(String, String)]
+    }.toMap
+  }
+
   def query = action.query.toSeq
 
   def lists: Seq[ListArg] = query.flatMap(_.lists)
@@ -98,7 +97,6 @@ class Parser(val action: Action) {
   def generator: Option[Generator] = query.flatMap(_.byType(manifest[Generator])).headOption
 
 }
-
 
 object Parser {
 
