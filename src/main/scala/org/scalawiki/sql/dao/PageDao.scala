@@ -47,10 +47,10 @@ class PageDao(val driver: JdbcProfile) {
   def get(id: Long)(implicit session: Session): Option[Page] =
     pages.filter(_.id === id).firstOption
 
-  def find(ids: Set[Long])(implicit session: Session): Seq[Page] =
+  def find(ids: Iterable[Long])(implicit session: Session): Seq[Page] =
     pages.filter(_.id inSet ids).sortBy(_.id).run
 
-  def findWithText(ids: Set[Long])(implicit session: Session): Seq[Page] =
+  def findWithText(ids: Iterable[Long])(implicit session: Session): Seq[Page] =
     (pages.filter(_.id inSet ids)
       join revisions on (_.pageLatest === _.id)
       join texts on (_._2.textId === _.id)
@@ -58,7 +58,7 @@ class PageDao(val driver: JdbcProfile) {
       case ((p, r), t) => p.copy(revisions = Seq(r.copy(content = Some(t.text))))
     }
 
-  def findByRevIds(ids: Set[Long], revIds: Set[Long])(implicit session: Session): Seq[Page] =
+  def findByRevIds(ids: Iterable[Long], revIds: Iterable[Long])(implicit session: Session): Seq[Page] =
     (pages.filter(_.id inSet ids)
       join revisions.filter(_.id inSet revIds) on (_.id === _.pageId)
       join texts on (_._2.textId === _.id)

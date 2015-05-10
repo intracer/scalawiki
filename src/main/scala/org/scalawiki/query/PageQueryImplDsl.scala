@@ -14,7 +14,7 @@ import org.scalawiki.json.MwReads._
 
 import scala.concurrent.Future
 
-class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extends PageQuery with SinglePageQuery {
+class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot, dbCache: Boolean = false) extends PageQuery with SinglePageQuery {
 
   override def revisions(namespaces: Set[Int], props: Set[String], continueParam: Option[(String, String)]): Future[Seq[Page]] = {
 
@@ -36,9 +36,8 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       )
     ))
 
-    new DslQuery(action, bot).run()
+    new DslQueryDbCache(new DslQuery(action, bot), dbCache).run()
   }
-
 
   override def revisionsByGenerator(
                                      generator: String,
@@ -60,7 +59,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
     ))
 
-    new DslQuery(action, bot).run()
+    new DslQueryDbCache(new DslQuery(action, bot), dbCache).run()
   }
 
   override def imageInfoByGenerator(

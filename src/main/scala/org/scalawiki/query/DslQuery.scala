@@ -8,9 +8,9 @@ import org.scalawiki.MwBot
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-class DslQuery(action: Action, site: MwBot) {
+class DslQuery(val action: Action, val bot: MwBot) {
 
-  import site.system.dispatcher
+  import bot.system.dispatcher
 
   def run(
            continue: Map[String, String] = Map("continue" -> ""),
@@ -19,7 +19,7 @@ class DslQuery(action: Action, site: MwBot) {
 
     val params = action.pairs ++ Seq("format" -> "json", "bot" -> "x") ++ continue
 
-    site.get(params.toMap) flatMap {
+    bot.get(params.toMap) flatMap {
       body =>
         val parser = new Parser(action)
 

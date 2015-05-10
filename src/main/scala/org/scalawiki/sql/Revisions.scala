@@ -104,6 +104,13 @@ class Revisions(tag: Tag) extends Table[Revision](tag, "revision") {
 
   def contentFormat = column[String]("rev_content_format")
 
+  def pageRevId = index("rev_page_id", (pageId, id), unique = true)
+//  def timestampIndex = index("rev_timestamp", timestamp)
+//  def pageTampstamp = index("page_timestamp", (pageId, timestamp))
+//  def userTimestamp = index("user_timestamp", (userId, timestamp))
+//  def userTextTimestamp = index("usertext_timestamp", (userText, timestamp))
+//  def pageUserTimestamp = index("page_user_timestamp", (pageId, userId, timestamp))
+
 //  def page = foreignKey("pageFK", pageId, MediaWiki.pages)(_.id)
 //
 //  def text = foreignKey("textFK", textId, MediaWiki.pages)(_.id)
