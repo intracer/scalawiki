@@ -123,6 +123,8 @@ class Users(tag: Tag) extends Table[User](tag, "user") {
    */
   def userPasswordExpires = column[String]("user_password_expires")
 
+  def nameIndex = index("user_name", name, unique = true)
+
   def * = (id, name) <>(fromDb, toDb)
 
   def fromDb(t: (Option[Long], String)) =

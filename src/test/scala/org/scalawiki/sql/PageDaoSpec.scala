@@ -64,8 +64,10 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val pageId = pageDao.insert(page)
 
       val dbPage = pageDao.withText(pageId.get).get
+      dbPage.id.isDefined === true
+      dbPage.id === pageId
 
-      pageDao.insert(dbPage)
+      pageDao.insert(dbPage.copy(title = "other title"))
 
       pageDao.list.size === 1
       revisionDao.list.size === 1
