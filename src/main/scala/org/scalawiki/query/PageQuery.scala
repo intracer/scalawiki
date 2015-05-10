@@ -14,13 +14,11 @@ trait PageQuery {
 
 object PageQuery {
 
-  var dbCache = false
+  def byTitles(titles: Set[String], bot: MwBot): PageQuery = new PageQueryImplDsl(Right(titles), bot, bot.dbCache)
 
-  def byTitles(titles: Set[String], site: MwBot): PageQuery = new PageQueryImplDsl(Right(titles), site, dbCache)
+  def byTitle(title: String, bot: MwBot): SinglePageQuery = new PageQueryImplDsl(Right(Set(title)), bot, bot.dbCache)
 
-  def byTitle(title: String, site: MwBot): SinglePageQuery = new PageQueryImplDsl(Right(Set(title)), site, dbCache)
+  def byIds(ids: Set[Long], bot: MwBot):PageQuery = new PageQueryImplDsl(Left(ids), bot, bot.dbCache)
 
-  def byIds(ids: Set[Long], site: MwBot):PageQuery = new PageQueryImplDsl(Left(ids), site, dbCache)
-
-  def byId(id: Long, site: MwBot): SinglePageQuery = new PageQueryImplDsl(Left(Set(id)), site, dbCache)
+  def byId(id: Long, bot: MwBot): SinglePageQuery = new PageQueryImplDsl(Left(Set(id)), bot, bot.dbCache)
 }

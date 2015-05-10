@@ -14,6 +14,9 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
   override def getResponse(url: String) = getResponse(Uri(url))
 
   override def getResponse(url: Uri): Future[HttpResponse] = {
+
+    require(commands.nonEmpty, "Unexpected query: " + url.toString())
+
     val command = commands.dequeue()
 
     url.scheme === "https"

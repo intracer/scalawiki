@@ -1,7 +1,7 @@
 package org.scalawiki.sql.dao
 
 import org.scalawiki.dto.Revision
-import org.scalawiki.sql.{Text, MediaWiki}
+import org.scalawiki.sql.{MediaWiki, Text}
 
 import scala.language.higherKinds
 import scala.slick.driver.JdbcProfile
@@ -9,9 +9,8 @@ import scala.slick.driver.JdbcProfile
 
 class RevisionDao(val driver: JdbcProfile) {
 
-  import driver.simple._
-
   import MediaWiki.{revisions, texts}
+  import driver.simple._
   val query = MediaWiki.revisions
 
   val textDao = new TextDao(driver)
@@ -22,7 +21,16 @@ class RevisionDao(val driver: JdbcProfile) {
     val text = Text(None, revision.content.getOrElse(""))
     val textId = textDao.insert(text)
 //    revision.textId = textId
-    autoInc += revision.copy(textId = textId)
+    val withText: Revision = revision.copy(textId = textId)
+
+    val revId = if (withText.id.isDefined) {
+      query.forceInsert(withText)
+      withText.id
+    }
+    else {
+      autoInc += withText
+    }
+    revId
   }
 
   def list(implicit session: Session) = query.run

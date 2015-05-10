@@ -22,7 +22,13 @@ class PageDao(val driver: JdbcProfile) {
 
     require(page.revisions.nonEmpty, "page has no revisions")
 
-    val pageId = autoInc += page
+    val pageId = if (page.id.isDefined) {
+      pages.forceInsert(page)
+      page.id
+    }
+    else {
+      autoInc += page
+    }
 
     val newRevs = page.revisions //.filter(_.revId.isEmpty)
 
@@ -42,7 +48,7 @@ class PageDao(val driver: JdbcProfile) {
       .update(revIds.last)
   }
 
-  def list(implicit session: Session) = query.run
+  def list(implicit session: Session) = query.sortBy(_.id).run
 
   def get(id: Long)(implicit session: Session): Option[Page] =
     pages.filter(_.id === id).firstOption

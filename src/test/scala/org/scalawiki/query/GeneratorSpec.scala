@@ -11,7 +11,7 @@ import scala.concurrent.duration.Duration
 
 class GeneratorSpec extends Specification with MockBotSpec {
 
-  "get revisions text in generator" should {
+  "get revisions text in generator with continue" should {
     "return a page text" in {
       val pageText1 = "some vandalism"
       val pageText2 = "more vandalism"

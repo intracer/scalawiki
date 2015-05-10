@@ -14,7 +14,7 @@ import spray.util._
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class MwBot(val http: HttpClient, val system: ActorSystem, val host: String) {
+class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, var dbCache: Boolean = false) {
 
   implicit val sys = system
 
