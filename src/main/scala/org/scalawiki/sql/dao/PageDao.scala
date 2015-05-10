@@ -23,7 +23,9 @@ class PageDao(val driver: JdbcProfile) {
     require(page.revisions.nonEmpty, "page has no revisions")
 
     val pageId = if (page.id.isDefined) {
-      pages.forceInsert(page)
+      if (get(page.id.get).isEmpty) {
+        pages.forceInsert(page)
+      }
       page.id
     }
     else {

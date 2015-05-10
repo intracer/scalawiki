@@ -57,7 +57,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       createSchema()
 
       val text = "revision text"
-      val revision = Revision.one(text)
+      val revision = Revision.one(text).copy(revId = Some(1))
 
       val page = Page(None, 0, "title", Seq(revision))
 
