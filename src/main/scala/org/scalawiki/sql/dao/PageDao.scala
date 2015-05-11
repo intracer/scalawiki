@@ -2,9 +2,10 @@ package org.scalawiki.sql.dao
 
 import org.scalawiki.dto.{Revision, Page}
 import org.scalawiki.sql.MediaWiki
+import org.scalawiki.wlx.dto.Image
 
 import scala.language.higherKinds
-import scala.slick.driver.JdbcProfile
+import scala.slick.driver.{H2Driver, JdbcProfile}
 
 class PageDao(val driver: JdbcProfile) {
 
@@ -15,6 +16,7 @@ class PageDao(val driver: JdbcProfile) {
   import MediaWiki.{pages, revisions, texts}
 
   val revisionDao = new RevisionDao(driver)
+  val imageDao = new ImageDao(H2Driver)
 
   private val autoInc = query returning query.map(_.id)
 
@@ -35,6 +37,7 @@ class PageDao(val driver: JdbcProfile) {
     val newRevs = page.revisions //.filter(_.revId.isEmpty)
 
     addRevisions(pageId.get, newRevs)
+    addImages(pageId.get, page.images)
 
     pageId
   }
@@ -48,6 +51,13 @@ class PageDao(val driver: JdbcProfile) {
     pages.filter(_.id === pageId)
       .map(p => p.pageLatest)
       .update(revIds.last)
+  }
+
+  def addImages(pageId: Long, images: Seq[Image])(implicit session: Session) = {
+     images.reverse.foreach { image =>
+      val withPage = image.copy(pageId = Some(pageId))
+      imageDao.insert(withPage)
+    }
   }
 
   def list(implicit session: Session) = query.sortBy(_.id).run

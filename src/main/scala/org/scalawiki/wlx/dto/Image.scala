@@ -17,7 +17,8 @@ case class Image(title: String,
                  uploader: Option[User] = None,
                  year: Option[String] = None,
                  date: Option[String] = None,
-                 monumentId: Option[String] = None
+                 monumentId: Option[String] = None,
+                 pageId: Option[Long] = None
                   ) extends Ordered[Image] {
 
   def compare(that: Image) = title.compareTo(that.title)
@@ -52,7 +53,8 @@ object Image {
       new Image(page.title,
         author = Some(author),
         date = Some(date),
-        monumentId = idOpt)
+        monumentId = idOpt,
+        pageId = page.id)
     }
   }
 

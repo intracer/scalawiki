@@ -3,7 +3,8 @@ package org.scalawiki.sql
 import java.sql.SQLException
 
 import org.scalawiki.dto.{User, Namespace, Page, Revision}
-import org.scalawiki.sql.dao.{UserDao, PageDao, RevisionDao, TextDao}
+import org.scalawiki.wlx.dto.Image
+import org.scalawiki.sql.dao._
 import org.specs2.mutable.{BeforeAfter, Specification}
 
 import scala.slick.driver.H2Driver
@@ -19,6 +20,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
   val textDao = new TextDao(H2Driver)
   val revisionDao = new RevisionDao(H2Driver)
   val userDao = new UserDao(H2Driver)
+  val imageDao = new ImageDao(H2Driver)
 
   def createSchema() = MediaWiki.createTables()
 
@@ -54,7 +56,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       dbPage.revisions.size === 1
     }
 
-    "insert with revision and user" in {
+    "insert with user" in {
       createSchema()
 
       val username = Some("username")
@@ -69,13 +71,13 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val dbRev = dbPage.revisions.head
       val contributor = dbRev.user
       contributor.isDefined === true
-      val dbUser = contributor.map({case u: User => u}).get
+      val dbUser = contributor.map({ case u: User => u }).get
 
       dbUser.name === username
       dbUser.id === Some(5)
     }
 
-    "insert with revision fill user by id" in {
+    "insert fill user by id" in {
       createSchema()
 
       val username = Some("username")
@@ -92,13 +94,13 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val dbRev = dbPage.revisions.head
       val contributor = dbRev.user
       contributor.isDefined === true
-      val dbUser = contributor.map({case u: User => u}).get
+      val dbUser = contributor.map({ case u: User => u }).get
 
       dbUser.name === username
       dbUser.id === Some(5)
     }
 
-    "insert with revision fill user by name" in {
+    "insert fill user by name" in {
       createSchema()
 
       val username = Some("username")
@@ -115,13 +117,39 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val dbRev = dbPage.revisions.head
       val contributor = dbRev.user
       contributor.isDefined === true
-      val dbUser = contributor.map({case u: User => u}).get
+      val dbUser = contributor.map({ case u: User => u }).get
 
       dbUser.name === username
       dbUser.id === Some(5)
     }
 
-    "insert with the same id should fail" in { // maybe it should, bit now just skips saving
+    "insert with image" in {
+      createSchema()
+
+      val user = User(Some(5), Some("username"))
+      val title = "Image.jpg"
+      val image = new Image(
+        title,
+        Some("http://Image.jpg"), None,
+        Some(1000 * 1000), Some(800), Some(600),
+        user.name, Some(user)
+      )
+      val revision: Revision = new Revision(user = Some(user), content = Some("revision text"))
+
+      val page = Page(None, 0, title, Seq(revision), Seq(image))
+
+      val pageId = pageDao.insert(page)
+
+      val images = imageDao.list
+      images.size === 1
+      images.head === image.copy(pageId = pageId)
+
+      val dbImage = imageDao.get(title)
+      dbImage === Some(image.copy(pageId = pageId))
+    }
+
+    "insert with the same id should fail" in {
+      // maybe it should, bit now just skips saving
       createSchema()
 
       val text = "revision text"

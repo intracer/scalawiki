@@ -1,5 +1,6 @@
 package org.scalawiki.sql
 
+import org.scalawiki.dto.{User, Contributor}
 import org.scalawiki.wlx.dto.Image
 
 import scala.slick.driver.H2Driver.simple._
@@ -97,21 +98,36 @@ class Images(tag: Tag) extends Table[Image](tag, "image") {
    */
   def sha1 = column[String]("img_sha1")
 
-  def * = (name, size, width, height) <>(fromDb, toDb)
+  def url = column[Option[String]]("img_url")
 
-  def fromDb(t: (String, Long, Int, Int)) =
+  def author = column[Option[String]]("img_author")
+
+  def pageId = column[Option[Long]]("img_page_id")
+
+  def * = (name, size, width, height, url, userId, userText, author, pageId) <>(fromDb, toDb)
+
+  def fromDb(t: (String, Long, Int, Int, Option[String], Long, String, Option[String], Option[Long])) =
     new Image(
       title = t._1,
       size = Some(t._2),
       width = Some(t._3),
-      height = Some(t._4)
+      height = Some(t._4),
+      url = t._5,
+      uploader = Contributor(Option(t._6), Option(t._7)).collect { case u: User => u },
+      author = t._8,
+      pageId = t._9
     )
 
   def toDb(i: Image) = Some((
     i.title,
     i.size.getOrElse(0L),
     i.width.getOrElse(0),
-    i.height.getOrElse(0)
+    i.height.getOrElse(0),
+    i.url,
+    i.uploader.flatMap(_.id).getOrElse(0L),
+    i.uploader.flatMap(_.name).getOrElse(""),
+    i.author,
+    i.pageId
     ))
 
 }
