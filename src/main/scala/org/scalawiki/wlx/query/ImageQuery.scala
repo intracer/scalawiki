@@ -1,13 +1,17 @@
 package org.scalawiki.wlx.query
 
-import org.scalawiki.wlx.slick.Slick
-import org.scalawiki.wlx.dto.{Contest, Image}
 import org.scalawiki.dto.Namespace
+import org.scalawiki.dto.cmd.Action
+import org.scalawiki.dto.cmd.query.list.{CategoryMembers, CmTitle}
+import org.scalawiki.dto.cmd.query.prop.iiprop.{IiProp, Timestamp}
+import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
+import org.scalawiki.dto.cmd.query.{Generator, Query}
+import org.scalawiki.query.DslQuery
+import org.scalawiki.wlx.dto.{Contest, Image}
 import org.scalawiki.{MwBot, WithBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, _}
-import scala.util.control.NonFatal
 
 trait ImageQuery {
 
@@ -31,33 +35,33 @@ class ImageQueryApi extends ImageQuery with WithBot {
   val host = MwBot.commons
 
   override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]] = {
-    val query = bot.page(category)
 
-    val revsFuture = query.revisionsByGenerator("categorymembers", "cm",
-      Set.empty, Set("content", "timestamp", "user", "comment"), None, "500") map {
-      pages =>
-        pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
-    }
+    import org.scalawiki.dto.cmd.query.prop._
 
-    val imageInfoFuture = query.imageInfoByGenerator("categorymembers", "cm", Set(Namespace.FILE)) map {
-      pages =>
-        try {
-          pages.flatMap(page => Image.fromPageImages(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
-        } catch {
-          case NonFatal(e) =>
-            throw e
-        }
-    }
+    val action = Action(Query(
+      Prop(
+        Info(),
+        Revisions(RvProp(rvprop.Content, rvprop.Timestamp, rvprop.User, rvprop.User)),
+        ImageInfo(
+          IiProp(Timestamp, iiprop.User, iiprop.Size, iiprop.Url),
+          IiLimit("max")
+        )
+      ),
+      Generator(CategoryMembers(CmTitle(category)))
+    ))
 
-    for (revs <- revsFuture;
-         imageInfos <- imageInfoFuture) yield {
-      val revsByPageId = revs.groupBy(_.pageId)
-      imageInfos.map {
-        ii =>
-          val revImage = revsByPageId.get(ii.pageId).map(_.head)
-          ii.copy(
-            monumentId = revImage.flatMap(_.monumentId),
-            author = revImage.flatMap(_.author)
+    val future = new DslQuery(action, bot).run()
+
+    future.map {
+      pages => pages.map {
+        page =>
+
+          val fromRev = Image.fromPageRevision(page, contest.fileTemplate, contest.year.toString)
+          val fromImage = Image.fromPageImages(page, contest.fileTemplate, contest.year.toString)
+
+          fromImage.get.copy(
+            monumentId = fromRev.flatMap(_.monumentId),
+            author = fromRev.flatMap(_.author)
           )
       }
     }
@@ -69,8 +73,7 @@ class ImageQueryApi extends ImageQuery with WithBot {
     query.revisionsByGenerator("embeddedin", "ei",
       Set(Namespace.FILE), Set("content", "timestamp", "user", "comment"), None, "500") map {
       pages =>
-        val result = pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, "")).sortBy(_.pageId)
-        result
+        pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, "")).sortBy(_.title)
     }
   }
 }
@@ -92,43 +95,12 @@ class ImageQueryCached(underlying: ImageQuery) extends ImageQuery {
     }
 }
 
-class ImageQuerySlick extends ImageQuery {
-
-  import scala.slick.driver.H2Driver.simple._
-
-  val slick = new Slick()
-
-  override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]] =
-    future {
-      slick.db.withSession { implicit session =>
-        slick.images.list.filter(_.year == Some(contest.year.toString))
-      }
-    }
-
-  override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]] = ???
-
-}
-
-class ImageQuerySeq(
-                     imagesByCategory: Map[String, Seq[Image]],
-                     imagesWithTemplate: Seq[Image]
-                     ) extends ImageQuery {
-
-  override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]] = future {
-    imagesByCategory.getOrElse(category, Seq.empty)
-  }
-
-  override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]] = future {
-    imagesWithTemplate
-  }
-
-}
 
 object ImageQuery {
 
   def create(db: Boolean = true, caching: Boolean = true, pickling: Boolean = false): ImageQuery = {
     val query = if (db)
-      new ImageQuerySlick
+      new ImageQueryApi
     else
       new ImageQueryApi
 
@@ -139,58 +111,3 @@ object ImageQuery {
     wrapper
   }
 }
-
-
-//private def imagesFromCategoryAsyncFull(category:String, contest: Contest):Future[Seq[Image]] = {
-//val query = bot.page(category)
-//query.imageInfoByGenerator("categorymembers", "cm", Set(Namespace.FILE_NAMESPACE)).map {
-//filesInCategory =>
-//val newImages: Seq[Image] = filesInCategory.flatMap(page => Image.fromPageImages(page)).sortBy(_.pageId)
-//
-//Some(contest.fileTemplate).fold(newImages) { monumentIdTemplate =>
-//bot.await(query.revisionsByGenerator("categorymembers", "cm",
-//Set.empty, Set("content", "timestamp", "user", "comment")) map {
-//pages =>
-//
-//val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
-//val ids: Seq[Option[String]] = pages.sortBy(_.pageid)
-//.flatMap(_.text.map(Template.getDefaultParam(_, monumentIdTemplate)))
-////                .map(id => if (id.matches(idRegex)) Some(id) else Some(id))
-//.map(id => if (id.isEmpty) None else Some(id))
-//
-//val imagesWithIds = newImages.zip(ids).map {
-//case (image, Some(id)) => image.copy(monumentId = Some(id))
-//case (image, None) => image
-//}
-//imagesWithIds
-//})
-//}
-//}
-//}
-//
-//private def imagesWithTemplateAsyncFull(template:String, contest: Contest):Future[Seq[Image]] = {
-//val query = bot.page("Template:" + template)
-//query.imageInfoByGenerator("embeddedin", "ei", Set(Namespace.FILE_NAMESPACE)).map {
-//filesInCategory =>
-//val newImages: Seq[Image] = filesInCategory.flatMap(page => Image.fromPageImages(page)).sortBy(_.pageId)
-//
-//Some(contest.fileTemplate).fold(newImages) { monumentIdTemplate =>
-//bot.await(query.revisionsByGenerator("embeddedin", "ei",
-//Set.empty, Set("content", "timestamp", "user", "comment")) map {
-//pages =>
-//
-//val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
-//val ids: Seq[Option[String]] = pages.sortBy(_.pageid)
-//.flatMap(_.text.map(Template.getDefaultParam(_, monumentIdTemplate)))
-////                .map(id => if (id.matches(idRegex)) Some(id) else Some(id))
-//.map(id => if (id.isEmpty) None else Some(id))
-//
-//val imagesWithIds = newImages.zip(ids).map {
-//case (image, Some(id)) => image.copy(monumentId = Some(id))
-//case (image, None) => image
-//}
-//imagesWithIds
-//})
-//}
-//}
-//}

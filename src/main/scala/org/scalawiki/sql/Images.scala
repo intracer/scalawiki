@@ -101,20 +101,17 @@ class Images(tag: Tag) extends Table[Image](tag, "image") {
 
   def fromDb(t: (String, Long, Int, Int)) =
     new Image(
-      pageId = -1,
       title = t._1,
-      size = t._2,
-      width = t._3,
-      height = t._4,
-      url = "",
-      pageUrl = ""
+      size = Some(t._2),
+      width = Some(t._3),
+      height = Some(t._4)
     )
 
   def toDb(i: Image) = Some((
     i.title,
-    i.size,
-    i.width,
-    i.height
+    i.size.getOrElse(0L),
+    i.width.getOrElse(0),
+    i.height.getOrElse(0)
     ))
 
 }

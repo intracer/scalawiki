@@ -76,7 +76,7 @@ class ListFiller extends WithBot {
   }
 
   def bestImage(images: Seq[Image]) =
-    images.sortBy(image => image.size + image.width * image.height).last
+    images.sortBy(image => image.size.get + image.width.get * image.height.get).last
 
 
 }

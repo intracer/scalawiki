@@ -216,26 +216,6 @@ class Statistics {
     }
   }
 
-  def initImages() {
-
-    slick.db.withSession {
-      implicit session =>
-      //      slick.images.ddl.drop
-      //      slick.images.ddl.create
-    }
-  }
-
-  def saveImages(imageDb: ImageDB) {
-
-    import scala.slick.driver.H2Driver.simple._
-
-    slick.db.withSession {
-      implicit session =>
-        slick.images ++= imageDb.images
-    }
-  }
-
-
 }
 
 object Statistics {

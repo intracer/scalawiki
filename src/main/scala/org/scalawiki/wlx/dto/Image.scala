@@ -3,32 +3,34 @@ package org.scalawiki.wlx.dto
 import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
-import org.scalawiki.dto.Page
+import org.scalawiki.dto.{User, Page}
 import org.scalawiki.parser.TemplateParser
 
 
-case class Image(pageId: Long, title: String,
-                 url: String, pageUrl: String,
-                 size: Long,
-                 width: Int,
-                 height: Int,
-                 monumentId: Option[String] = None,
+case class Image(title: String,
+                 url: Option[String] = None,
+                 pageUrl: Option[String] = None,
+                 size: Option[Long] = None,
+                 width: Option[Int] = None,
+                 height: Option[Int] = None,
                  author: Option[String] = None,
-                 uploader: Option[String] = None,
+                 uploader: Option[User] = None,
                  year: Option[String] = None,
-                 date: Option[String] = None) extends Ordered[Image] {
+                 date: Option[String] = None,
+                 monumentId: Option[String] = None
+                  ) extends Ordered[Image] {
 
-  def compare(that: Image) = (this.pageId - that.pageId).signum
+  def compare(that: Image) = title.compareTo(that.title)
 
   //  def region: Option[String] = monumentId.map(_.split("-")(0))
 
   def download(filename: String) {
     import scala.concurrent.ExecutionContext.Implicits.global
-    for (bytes <- MwBot.get(MwBot.commons).getByteArray(url))
+    for (bytes <- MwBot.get(MwBot.commons).getByteArray(url.get))
       Files.write(Paths.get(filename), bytes)
   }
 
-  def pixels = width * height
+  def pixels = width.get * height.get
 
 }
 
@@ -47,7 +49,10 @@ object Image {
 
       val author = getAuthorFromPage(content)
 
-      new Image(page.id.get, page.title, "", "", 0, 0, 0, idOpt, Some(author), None, Some(date))
+      new Image(page.title,
+        author = Some(author),
+        date = Some(date),
+        monumentId = idOpt)
     }
   }
 
@@ -78,13 +83,12 @@ object Image {
             url: String,
             pageUrl: String)
   = new Image(
-    pageId = 0,
     title = "",
     date = Option(timestamp),
-    uploader = Option(uploader),
-    size = size,
-    width = width,
-    height = height,
-    url = url,
-    pageUrl = pageUrl)
+    uploader = Some(User(None, Some(uploader))),
+    size = Some(size),
+    width = Some(width),
+    height = Some(height),
+    url = Option(url),
+    pageUrl = Option(pageUrl))
 }
