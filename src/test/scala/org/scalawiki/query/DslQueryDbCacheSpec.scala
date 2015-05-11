@@ -123,10 +123,10 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
 
       result must have size 2
       result(0) === Page(Some(4571809L), 2, "User:Formator",
-        Seq(Revision(Some(12L), Some(4571809L), None, emptyUser, None, None, Some(pageText2)))
+        Seq(Revision(Some(12L), Some(4571809L), None, None, None, None, Some(pageText2)))
       )
       result(1) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), None, emptyUser, None, None, Some(pageText1)))
+        Seq(Revision(Some(11L), Some(569559L), None, None, None, None, Some(pageText1)))
       )
 
       pageDao.list.size must be_==(2).eventually
@@ -193,7 +193,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
 
       result must have size 1
       result(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), None, emptyUser, None, None, Some(pageText1)))
+        Seq(Revision(Some(11L), Some(569559L), None, None, None, None, Some(pageText1)))
       )
 
       pageDao.list.size must be_==(1).eventually
@@ -213,7 +213,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
           textId = plus1(0).revisions.head.textId))
       )
       plus1(1) === Page(Some(4571809L), 2, "User:Formator",
-        Seq(Revision(Some(12L), Some(4571809L), None, emptyUser, None, None, Some(pageText2)))
+        Seq(Revision(Some(12L), Some(4571809L), None, None, None, None, Some(pageText2)))
       )
 
       pageDao.list.size must be_==(2).eventually
@@ -279,7 +279,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
 
       result must have size 1
       result(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), None, emptyUser, None, None, Some(pageText1)))
+        Seq(Revision(Some(11L), Some(569559L), None, None, None, None, Some(pageText1)))
       )
 
       pageDao.list.size must be_==(1).eventually
@@ -294,7 +294,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       val plus1 = Await.result(plus1Future, Duration(2, TimeUnit.SECONDS))
       plus1 must have size 1
       plus1(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(12L), Some(569559L), None, emptyUser, None, None, Some(pageText2)))
+        Seq(Revision(Some(12L), Some(569559L), None, None, None, None, Some(pageText2)))
       )
 
       revisionDao.list.size must be_==(2).eventually
