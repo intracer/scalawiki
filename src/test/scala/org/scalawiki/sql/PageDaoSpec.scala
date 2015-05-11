@@ -2,8 +2,8 @@ package org.scalawiki.sql
 
 import java.sql.SQLException
 
-import org.scalawiki.dto.{Namespace, Page, Revision}
-import org.scalawiki.sql.dao.{PageDao, RevisionDao, TextDao}
+import org.scalawiki.dto.{User, Namespace, Page, Revision}
+import org.scalawiki.sql.dao.{UserDao, PageDao, RevisionDao, TextDao}
 import org.specs2.mutable.{BeforeAfter, Specification}
 
 import scala.slick.driver.H2Driver
@@ -18,6 +18,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
   val pageDao = new PageDao(H2Driver)
   val textDao = new TextDao(H2Driver)
   val revisionDao = new RevisionDao(H2Driver)
+  val userDao = new UserDao(H2Driver)
 
   def createSchema() = MediaWiki.createTables()
 
@@ -51,6 +52,73 @@ class PageDaoSpec extends Specification with BeforeAfter {
       dbPage.text === Some(text)
 
       dbPage.revisions.size === 1
+    }
+
+    "insert with revision and user" in {
+      createSchema()
+
+      val username = Some("username")
+      val user = User(Some(5), username)
+      val revision: Revision = new Revision(user = Some(user), content = Some("revision text"))
+
+      val page = Page(None, 0, "title", Seq(revision))
+
+      val pageId = pageDao.insert(page)
+      val dbPage = pageDao.withText(pageId.get).get
+
+      val dbRev = dbPage.revisions.head
+      val contributor = dbRev.user
+      contributor.isDefined === true
+      val dbUser = contributor.map({case u: User => u}).get
+
+      dbUser.name === username
+      dbUser.id === Some(5)
+    }
+
+    "insert with revision fill user by id" in {
+      createSchema()
+
+      val username = Some("username")
+      val user = User(Some(5), username)
+      userDao.insert(user)
+
+      val revision: Revision = new Revision(user = Some(user.copy(login = None)), content = Some("revision text"))
+
+      val page = Page(None, 0, "title", Seq(revision))
+
+      val pageId = pageDao.insert(page)
+      val dbPage = pageDao.withText(pageId.get).get
+
+      val dbRev = dbPage.revisions.head
+      val contributor = dbRev.user
+      contributor.isDefined === true
+      val dbUser = contributor.map({case u: User => u}).get
+
+      dbUser.name === username
+      dbUser.id === Some(5)
+    }
+
+    "insert with revision fill user by name" in {
+      createSchema()
+
+      val username = Some("username")
+      val user = User(Some(5), username)
+      userDao.insert(user)
+
+      val revision: Revision = new Revision(user = Some(user.copy(id = None)), content = Some("revision text"))
+
+      val page = Page(None, 0, "title", Seq(revision))
+
+      val pageId = pageDao.insert(page)
+      val dbPage = pageDao.withText(pageId.get).get
+
+      val dbRev = dbPage.revisions.head
+      val contributor = dbRev.user
+      contributor.isDefined === true
+      val dbUser = contributor.map({case u: User => u}).get
+
+      dbUser.name === username
+      dbUser.id === Some(5)
     }
 
     "insert with the same id should fail" in { // maybe it should, bit now just skips saving

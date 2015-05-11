@@ -6,7 +6,6 @@ import org.scalawiki.sql.MediaWiki
 import scala.language.higherKinds
 import scala.slick.driver.JdbcProfile
 
-
 class UserDao(val driver: JdbcProfile) {
 
   import driver.simple._
@@ -30,8 +29,10 @@ class UserDao(val driver: JdbcProfile) {
   def find(ids: Iterable[Long])(implicit session: Session): Seq[User] =
     query.filter(_.id inSet ids).sortBy(_.id).run
 
-  def get(id: Long)(implicit session: Session): Option[User] = query.filter {
-    _.id === id
-  }.firstOption
+  def get(id: Long)(implicit session: Session): Option[User] =
+    query.filter(_.id === id).firstOption
+
+  def get(name: String)(implicit session: Session): Option[User] =
+    query.filter(_.name === name).firstOption
 
 }

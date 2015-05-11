@@ -1,6 +1,6 @@
 package org.scalawiki.sql
 
-import org.scalawiki.dto.Revision
+import org.scalawiki.dto.{Contributor, Revision}
 
 import scala.slick.driver.H2Driver.simple._
 
@@ -105,33 +105,38 @@ class Revisions(tag: Tag) extends Table[Revision](tag, "revision") {
   def contentFormat = column[String]("rev_content_format")
 
   def pageRevId = index("rev_page_id", (pageId, id), unique = true)
-//  def timestampIndex = index("rev_timestamp", timestamp)
-//  def pageTampstamp = index("page_timestamp", (pageId, timestamp))
-//  def userTimestamp = index("user_timestamp", (userId, timestamp))
-//  def userTextTimestamp = index("usertext_timestamp", (userText, timestamp))
-//  def pageUserTimestamp = index("page_user_timestamp", (pageId, userId, timestamp))
 
-//  def page = foreignKey("pageFK", pageId, MediaWiki.pages)(_.id)
-//
-//  def text = foreignKey("textFK", textId, MediaWiki.pages)(_.id)
-//
-//  def user = foreignKey("userFK", userId, MediaWiki.users)(_.id)
+  //  def timestampIndex = index("rev_timestamp", timestamp)
+  //  def pageTampstamp = index("page_timestamp", (pageId, timestamp))
+  //  def userTimestamp = index("user_timestamp", (userId, timestamp))
+  //  def userTextTimestamp = index("usertext_timestamp", (userText, timestamp))
 
-  def * = (id, pageId, parentId, textId) <>(fromDb, toDb)
+  //def pageUserTimestamp = index("page_user_timestamp", (pageId, userId, timestamp))
 
-  def fromDb(t: (Option[Long], Long, Long, Long)) =
+  //  def page = foreignKey("pageFK", pageId, MediaWiki.pages)(_.id)
+  //
+  //  def text = foreignKey("textFK", textId, MediaWiki.pages)(_.id)
+  //
+  //  def user = foreignKey("userFK", userId, MediaWiki.users)(_.id)
+
+  def * = (id, pageId, parentId, textId, userId, userText) <>(fromDb, toDb)
+
+  def fromDb(t: (Option[Long], Long, Long, Long, Long, String)) =
     Revision(
       revId = t._1,
       pageId = Option(t._2),
       parentId = Option(t._3),
-      textId = Option(t._4)
+      textId = Option(t._4),
+      user = Contributor(Option(t._5), Option(t._6))
     )
 
   def toDb(r: Revision) = Some((
     r.id,
     r.pageId.get,
     r.parentId.getOrElse(0L),
-    r.textId.get
+    r.textId.get,
+    r.user.flatMap(_.id).getOrElse(0L),
+    r.user.flatMap(_.name).getOrElse("")
     ))
 }
 

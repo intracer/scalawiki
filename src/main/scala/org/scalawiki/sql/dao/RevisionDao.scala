@@ -1,6 +1,6 @@
 package org.scalawiki.sql.dao
 
-import org.scalawiki.dto.Revision
+import org.scalawiki.dto.{User, Revision}
 import org.scalawiki.sql.{MediaWiki, Text}
 
 import scala.language.higherKinds
@@ -15,30 +15,61 @@ class RevisionDao(val driver: JdbcProfile) {
   val query = MediaWiki.revisions
 
   val textDao = new TextDao(driver)
+  val userDao = new UserDao(driver)
 
   private val autoInc = query returning query.map(_.id)
 
   def insert(revision: Revision)(implicit session: Session): Option[Long] = {
     val revId = if (revision.id.isDefined) {
       if (get(revision.id.get).isEmpty) {
-        query.forceInsert(addText(revision))
+        query.forceInsert(addUser(addText(revision)))
       }
 
       revision.id
     }
     else {
-      autoInc += addText(revision)
+      autoInc += addUser(addText(revision))
     }
     revId
   }
 
   def addText(revision: Revision)(implicit session: Session): Revision = {
     val text = Text(None, revision.content.getOrElse(""))
-    //    revision.textId = textId
     val textId = textDao.insert(text)
-    val withText: Revision = revision.copy(textId = textId)
-    withText
+    revision.copy(textId = textId)
   }
+
+  def addUser(revision: Revision)(implicit session: Session): Revision = {
+    revision.user.fold(revision) { case user: User =>
+      if (user.id.isDefined && user.login.isDefined) {
+        if (userDao.get(user.id.get).isEmpty) {
+          userDao.insert(user)
+        }
+        revision
+      } else {
+        if (user.id.isDefined) {
+          val userId = user.id.get
+          val dbUser = userDao.get(userId)
+          if (dbUser.isDefined) {
+            revision.copy(user = dbUser)
+          } else {
+            throw new IllegalArgumentException(s"No user with id $userId exists")
+          }
+        } else if (user.name.isDefined) {
+          val username = user.name.get
+          val dbUser = userDao.get(username)
+          if (dbUser.isDefined) {
+            revision.copy(user = dbUser)
+          } else {
+            throw new IllegalArgumentException(s"No user with name $username exists")
+          }
+        } else {
+          revision
+        }
+      }
+    }
+  }
+
 
   def list(implicit session: Session) = query.run
 

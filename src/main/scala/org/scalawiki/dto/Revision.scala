@@ -4,8 +4,8 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.joda.time.DateTime
 
 case class Revision(
-                     revId: Option[Long],
-                     pageId: Option[Long],
+                     revId: Option[Long] = None,
+                     pageId: Option[Long] = None,
                      parentId: Option[Long] = None,
                      user: Option[Contributor] = None,
                      timestamp: Option[DateTime] = None,

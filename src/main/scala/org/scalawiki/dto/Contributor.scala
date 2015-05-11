@@ -2,18 +2,26 @@ package org.scalawiki.dto
 
 trait Contributor {
 
+  def id: Option[Long]
+
   def name: Option[String]
 
 }
 
 object Contributor {
 
-  def apply(id: Option[Long], name: Option[String]): Option[Contributor] = {
-    // TODO detect IPs
-      (id, name) match {
-        case (None, None) => None
-        case _ => Some(User(id, name))
-      }
+  def apply(idOpt: Option[Long], nameOpt: Option[String]): Option[Contributor] = {
+    (idOpt, nameOpt) match {
+      case (None, None) => None
+      case (Some(id), Some(name)) => Some(User(idOpt, nameOpt))
+      case (Some(id), None) => Some(User(idOpt, nameOpt))
+      case (None, Some(name)) =>
+        val chars = name.toSet
+        if ((chars -- "123456789.".toSet).isEmpty)
+          Some(IpContributor(name))
+        else
+          Some(User(idOpt, nameOpt))
+    }
   }
 
 }

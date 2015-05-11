@@ -6,7 +6,7 @@ import org.scalawiki.dto.cmd.query.list.EmbeddedIn
 import org.scalawiki.dto.cmd.query.prop.rvprop.{Content, Ids, RvProp}
 import org.scalawiki.dto.cmd.query.prop.{Info, Prop, Revisions}
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
-import org.scalawiki.dto.{Page, Revision}
+import org.scalawiki.dto.{User, Page, Revision}
 import org.scalawiki.sql.MediaWiki
 import org.scalawiki.sql.dao.{RevisionDao, PageDao}
 import org.scalawiki.util.{Command, MockBotSpec}
@@ -39,6 +39,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
 
   val pageText1 = "some vandalism"
   val pageText2 = "more vandalism"
+  val emptyUser = Some(User(Some(0), Some("")))
 
   def revisionContent(content: Option[String]) = content.fold("") {
     text => s""", "*": "$text" """
@@ -122,10 +123,10 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
 
       result must have size 2
       result(0) === Page(Some(4571809L), 2, "User:Formator",
-        Seq(Revision(Some(12L), Some(4571809L), None, None, None, None, Some(pageText2)))
+        Seq(Revision(Some(12L), Some(4571809L), None, emptyUser, None, None, Some(pageText2)))
       )
       result(1) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), None, None, None, None, Some(pageText1)))
+        Seq(Revision(Some(11L), Some(569559L), None, emptyUser, None, None, Some(pageText1)))
       )
 
       pageDao.list.size must be_==(2).eventually
@@ -141,11 +142,11 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       val resultDb = Await.result(futureDb, Duration(2, TimeUnit.SECONDS))
       resultDb must have size 2
       resultDb(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), Some(0), None, None, None, Some(pageText1),
+        Seq(Revision(Some(11L), Some(569559L), Some(0), emptyUser, None, None, Some(pageText1),
           textId = resultDb(0).revisions.head.textId))
       )
       resultDb(1) === Page(Some(4571809L), 2, "User:Formator",
-        Seq(Revision(Some(12L), Some(4571809L), Some(0), None, None, None, Some(pageText2),
+        Seq(Revision(Some(12L), Some(4571809L), Some(0), emptyUser, None, None, Some(pageText2),
           textId = resultDb(1).revisions.head.textId))
       )
     }
@@ -192,7 +193,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
 
       result must have size 1
       result(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), None, None, None, None, Some(pageText1)))
+        Seq(Revision(Some(11L), Some(569559L), None, emptyUser, None, None, Some(pageText1)))
       )
 
       pageDao.list.size must be_==(1).eventually
@@ -208,11 +209,11 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       val plus1 = Await.result(plus1Future, Duration(2, TimeUnit.SECONDS))
       plus1 must have size 2
       plus1(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), Some(0), None, None, None, Some(pageText1),
+        Seq(Revision(Some(11L), Some(569559L), Some(0), emptyUser, None, None, Some(pageText1),
           textId = plus1(0).revisions.head.textId))
       )
       plus1(1) === Page(Some(4571809L), 2, "User:Formator",
-        Seq(Revision(Some(12L), Some(4571809L), None, None, None, None, Some(pageText2)))
+        Seq(Revision(Some(12L), Some(4571809L), None, emptyUser, None, None, Some(pageText2)))
       )
 
       pageDao.list.size must be_==(2).eventually
@@ -227,11 +228,11 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       val resultFinal = Await.result(futureFinal, Duration(2, TimeUnit.SECONDS))
       resultFinal must have size 2
       resultFinal(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), Some(0), None, None, None, Some(pageText1),
+        Seq(Revision(Some(11L), Some(569559L), Some(0), emptyUser, None, None, Some(pageText1),
           textId = resultFinal(0).revisions.head.textId))
       )
       resultFinal(1) === Page(Some(4571809L), 2, "User:Formator",
-        Seq(Revision(Some(12L), Some(4571809L), Some(0), None, None, None, Some(pageText2),
+        Seq(Revision(Some(12L), Some(4571809L), Some(0), emptyUser, None, None, Some(pageText2),
           textId = resultFinal(1).revisions.head.textId))
       )
     }
@@ -278,7 +279,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
 
       result must have size 1
       result(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), None, None, None, None, Some(pageText1)))
+        Seq(Revision(Some(11L), Some(569559L), None, emptyUser, None, None, Some(pageText1)))
       )
 
       pageDao.list.size must be_==(1).eventually
@@ -293,7 +294,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       val plus1 = Await.result(plus1Future, Duration(2, TimeUnit.SECONDS))
       plus1 must have size 1
       plus1(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(12L), Some(569559L), None, None, None, None, Some(pageText2)))
+        Seq(Revision(Some(12L), Some(569559L), None, emptyUser, None, None, Some(pageText2)))
       )
 
       revisionDao.list.size must be_==(2).eventually
@@ -308,7 +309,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       val resultFinal = Await.result(futureFinal, Duration(2, TimeUnit.SECONDS))
       resultFinal must have size 1
       resultFinal(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(12L), Some(569559L), Some(0), None, None, None, Some(pageText2),
+        Seq(Revision(Some(12L), Some(569559L), Some(0), emptyUser, None, None, Some(pageText2),
           textId = resultFinal(0).revisions.head.textId))
       )
     }

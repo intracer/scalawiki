@@ -39,6 +39,36 @@ class UserDaoSpec extends Specification with BeforeAfter {
       dbUser.login === username
     }
 
+    "insert with id" in {
+      createSchema()
+      val username = Some("username")
+      val user = User(Some(5), username)
+
+      val userId = userDao.insert(user).get
+
+      val dbUser = userDao.get(userId).get
+      dbUser.id === Some(5)
+      dbUser.login === username
+    }
+
+    "insert empty user should fail" in {
+      createSchema()
+      val user = User(None, None)
+
+      userDao.insert(user) must throwA[SQLException]
+
+      userDao.list.isEmpty === true
+    }
+
+    "insert user without name should fail" in {
+      createSchema()
+      val user = User(Some(6), None)
+
+      userDao.insert(user) must throwA[SQLException]
+
+      userDao.list.isEmpty === true
+    }
+
     "insert with the same id should fail" in {
       createSchema()
 
