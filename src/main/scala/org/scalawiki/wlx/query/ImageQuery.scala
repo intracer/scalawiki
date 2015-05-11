@@ -42,7 +42,7 @@ class ImageQueryApi extends ImageQuery with WithBot {
     val imageInfoFuture = query.imageInfoByGenerator("categorymembers", "cm", Set(Namespace.FILE)) map {
       pages =>
         try {
-          pages.flatMap(page => Image.fromPageImageInfo(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
+          pages.flatMap(page => Image.fromPageImages(page, contest.fileTemplate, contest.year.toString)).sortBy(_.pageId)
         } catch {
           case NonFatal(e) =>
             throw e
@@ -145,7 +145,7 @@ object ImageQuery {
 //val query = bot.page(category)
 //query.imageInfoByGenerator("categorymembers", "cm", Set(Namespace.FILE_NAMESPACE)).map {
 //filesInCategory =>
-//val newImages: Seq[Image] = filesInCategory.flatMap(page => Image.fromPageImageInfo(page)).sortBy(_.pageId)
+//val newImages: Seq[Image] = filesInCategory.flatMap(page => Image.fromPageImages(page)).sortBy(_.pageId)
 //
 //Some(contest.fileTemplate).fold(newImages) { monumentIdTemplate =>
 //bot.await(query.revisionsByGenerator("categorymembers", "cm",
@@ -172,7 +172,7 @@ object ImageQuery {
 //val query = bot.page("Template:" + template)
 //query.imageInfoByGenerator("embeddedin", "ei", Set(Namespace.FILE_NAMESPACE)).map {
 //filesInCategory =>
-//val newImages: Seq[Image] = filesInCategory.flatMap(page => Image.fromPageImageInfo(page)).sortBy(_.pageId)
+//val newImages: Seq[Image] = filesInCategory.flatMap(page => Image.fromPageImages(page)).sortBy(_.pageId)
 //
 //Some(contest.fileTemplate).fold(newImages) { monumentIdTemplate =>
 //bot.await(query.revisionsByGenerator("embeddedin", "ei",

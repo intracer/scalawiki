@@ -228,7 +228,7 @@ class XmlParserSpec extends Specification {
     (p3r1.revId, p3r1.parentId, p3r1.comment, p3r1.content) ===(Some(102), None, Some("My awesomeest image!"), Some("This is an awesome little imgae. I lurves it. {{PD}}"))
     p3r1.user === Some(User(Some(42), Some("Foobar")))
 
-    val ii = p3.imageInfo
+    val ii = p3.images
     ii.size === 0
   }
 

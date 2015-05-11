@@ -6,6 +6,7 @@ import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Generator
 import org.scalawiki.dto.cmd.query.list.ListArg
 import org.scalawiki.dto.cmd.query.prop.PropArg
+import org.scalawiki.wlx.dto.Image
 import play.api.libs.json._
 
 import scala.util.Try
@@ -49,12 +50,12 @@ class Parser(val action: Action) {
     val page = pageJson.validate(Parser.pageReads).get
 
     val revisions: Seq[Revision] = pageJson.validate(Parser.revisionsReads(page.id.get)).getOrElse(Seq.empty)
-    val imageInfos: Seq[ImageInfo] = pageJson.validate(Parser.imageInfosReads).getOrElse(Seq.empty)
+    val images: Seq[Image] = pageJson.validate(Parser.imagesReads).getOrElse(Seq.empty)
     val langLinks: Map[String, String] = getLangLinks(pageJson)
 
     //    pageJson.validate(Parser.langLinksReads).getOrElse(Map.empty)
 
-    page.copy(revisions = revisions, imageInfo = imageInfos, langLinks = langLinks)
+    page.copy(revisions = revisions, images = images, langLinks = langLinks)
   }
 
   def getContinue(json: JsValue, jsonObj: JsObject): Map[String, String] = {
@@ -144,7 +145,7 @@ object Parser {
     (__ \ "revisions").read[Seq[Revision]]
   }
 
-  implicit val imageInfoReads: Reads[ImageInfo] = (
+  implicit val imageReads: Reads[Image] = (
     (__ \ "timestamp").read[String] and
       (__ \ "user").read[String] and
       (__ \ "size").read[Long] and
@@ -154,9 +155,9 @@ object Parser {
       (__ \ "descriptionurl").read[String]
     //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
     //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
-    )(ImageInfo.basic _)
+    )(Image.basic _)
 
-  val imageInfosReads: Reads[Seq[ImageInfo]] = (__ \ "imageinfo").read[Seq[ImageInfo]]
+  val imagesReads: Reads[Seq[Image]] = (__ \ "imageinfo").read[Seq[Image]]
 
   //  val langLinkRead: Reads[(String, String)] = (
   //    (__ \ "lang").read[String] and

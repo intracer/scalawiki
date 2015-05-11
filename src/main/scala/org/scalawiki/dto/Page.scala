@@ -1,13 +1,14 @@
 package org.scalawiki.dto
 
 import org.scalawiki.dto.history.History
+import org.scalawiki.wlx.dto.Image
 
 case class Page(
                  id: Option[Long],
                  ns: Int,
                  title: String,
                  revisions: Seq[Revision] = Seq.empty,
-                 imageInfo: Seq[ImageInfo] = Seq.empty,
+                 images: Seq[Image] = Seq.empty,
                  editToken: Option[String] = None,
                  missing: Boolean = false,
                  length: Option[Int] = None,
@@ -52,7 +53,7 @@ object Page {
   def withRevisions(id: Long, ns: Int, title: String, editToken: Option[String], revisions: Seq[Revision], missing: Option[String])
   = new Page(Some(id), ns, title, revisions, Seq.empty, editToken, missing.fold(false)(_ => true))
 
-  def withImageInfo(id: Long, ns: Int, title: String, imageInfo: Seq[ImageInfo])  = new Page(Some(id), ns, title, Seq.empty, imageInfo)
+  def withImages(id: Long, ns: Int, title: String, images: Seq[Image])  = new Page(Some(id), ns, title, Seq.empty, images)
 
   def apply(title: String) = new Page(Some(0L), 0, title)
 

@@ -7,6 +7,7 @@ import org.codehaus.stax2.{LocationInfo, XMLStreamReader2, XMLInputFactory2}
 import org.scalawiki.Timestamp
 import org.scalawiki.dto._
 import org.scalawiki.dto.filter.PageFilter
+import org.scalawiki.wlx.dto.Image
 
 import scala.collection.{Iterator, AbstractIterator}
 
@@ -90,7 +91,7 @@ class XmlParser(
            id <- readElement("id").map(_.toLong)
       ) yield {
         val revisions = readRevisions(id)
-        val imageInfo = readImageInfo()
+        val images = readImageInfo()
         new Page(Some(id), ns, title, revisions.toSeq)
       }
     }
@@ -146,11 +147,11 @@ class XmlParser(
     user
   }
 
-  private def readImageInfo(): Option[ImageInfo] = {
+  private def readImageInfo(): Option[Image] = {
     //    // TODO seq
     //    if (findElementStart("upload", parent = "page")) {
     //      val user = readUser()
-    //      Some(ImageInfo())
+    //      Some(Image())
     //    } else
     None
   }

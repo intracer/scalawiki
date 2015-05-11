@@ -28,28 +28,14 @@ case class Image(pageId: Long, title: String,
       Files.write(Paths.get(filename), bytes)
   }
 
+  def pixels = width * height
+
 }
 
 object Image {
 
-  def fromPageImageInfo(page: Page, monumentIdTemplate: String, year: String): Option[Image] = {
-    page.imageInfo.headOption.map { ii =>
-      Image(
-        pageId = page.id.get,
-        title = page.title,
-        url = ii.url,
-        pageUrl = ii.descriptionUrl,
-        size = ii.size,
-        width = ii.width,
-        height = ii.height,
-        monumentId = None,
-        author = None,
-        Some(ii.uploader),
-        Some(year),
-        Some(ii.timestamp)
-      )
-    }
-  }
+  def fromPageImages(page: Page, monumentIdTemplate: String, year: String): Option[Image] =
+    page.images.headOption.map(_.copy(year = Option(year)))
 
   def fromPageRevision(page: Page, monumentIdTemplate: String, date: String): Option[Image] = {
     page.revisions.headOption.map { revision =>
@@ -83,4 +69,22 @@ object Image {
     else
       authorValue
   }
+
+  def basic(timestamp: String,
+            uploader: String,
+            size: Long,
+            width: Int,
+            height: Int,
+            url: String,
+            pageUrl: String)
+  = new Image(
+    pageId = 0,
+    title = "",
+    date = Option(timestamp),
+    uploader = Option(uploader),
+    size = size,
+    width = width,
+    height = height,
+    url = url,
+    pageUrl = pageUrl)
 }
