@@ -1,21 +1,17 @@
 package org.scalawiki.sql
 
 
-import org.scalawiki.dto.User
-import org.scalawiki.sql.dao.UserDao
 import org.specs2.mutable.{BeforeAfter, Specification}
 
-import scala.slick.driver.H2Driver
 import scala.slick.driver.H2Driver.simple._
 import scala.slick.jdbc.meta.MTable
+import scala.slick.lifted.TableQuery
 
 class SchemaSpec extends Specification with BeforeAfter {
 
   sequential
 
   implicit var session: Session = _
-
-  val userDao = new UserDao(H2Driver)
 
   def createSchema() = MediaWiki.createTables()
 
@@ -30,33 +26,31 @@ class SchemaSpec extends Specification with BeforeAfter {
     "create schema" in {
       createSchema()
 
-      val tables = MTable.getTables.list
-      val tableNames = tables.map(_.name.name.toLowerCase).toSet
-
-      tableNames === Set("category",
+      getTableNames === Set("category",
         "image",
         "page",
         "revision",
         "text",
         "user")
     }
-  }
 
-  "user" should {
-    "insert" in {
-      createSchema()
+    "create table with custom prefix" in {
 
-      val user = User(None, Some("Username"))
-      val userId = userDao.insert(user)
+      import scala.slick.lifted.Tag
+      val ukWikiPages = TableQuery[Pages]((tag: Tag) => new Pages(tag, Some("ukwiki")))
 
-      val users = userDao.list
+      MediaWiki.dropTables()
+      MediaWiki.createIfNotExists(ukWikiPages)
 
-      users.size === 1
-      val dbUser = users.head
+      val names = getTableNames
+      ukWikiPages.ddl.drop
 
-      dbUser === user.copy(id = userId)
+      names === Set("ukwiki_page")
     }
+   }
+
+  def getTableNames: Set[String] = {
+    val tables = MTable.getTables.list
+    tables.map(_.name.name.toLowerCase).toSet
   }
-
-
 }

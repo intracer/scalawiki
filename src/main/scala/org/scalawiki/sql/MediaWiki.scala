@@ -21,18 +21,23 @@ object MediaWiki {
       revisions,
       pages,
       texts
-      )
+    )
 
-  def createTables()(implicit session: Session) = createIfNotExists(tables: _*)
+  def createTables()(implicit session: Session) {
+    dropTables()
+    createIfNotExists(tables: _*)
+  }
 
-  def createIfNotExists(tables: TableQuery[_ <: Table[_]]*)(implicit session: Session) {
+  def dropTables()(implicit session: Session) {
     tables foreach { table =>
       if (MTable.getTables(table.baseTableRow.tableName).list.nonEmpty) {
         table.ddl.drop
       }
-      table.ddl.create
-
     }
+  }
+
+  def createIfNotExists(tables: TableQuery[_ <: Table[_]]*)(implicit session: Session) {
+    tables foreach (_.ddl.create)
   }
 
 }

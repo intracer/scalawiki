@@ -14,8 +14,11 @@ import scala.slick.driver.H2Driver.simple._
  * When a page is deleted, the revisions are moved to the archive table
  * @param tag
  */
-class Pages(tag: Tag) extends Table[Page](tag, "page") {
+class Pages(tag: Tag,
+            val dbPrefix: Option[String] = None)
+  extends Table[Page](tag, dbPrefix.fold("")(_ + "_") + "page") {
 
+  def withPrefix(name: String) = dbPrefix.fold("")(_ + "_") + name
   /**
    * Uniquely identifying primary key. This value is preserved across edits and renames.
    * There is an analogous field in the archive table to preserve this value in MediaWiki 1.11 and later; however,
@@ -64,7 +67,7 @@ class Pages(tag: Tag) extends Table[Page](tag, "page") {
 
   def lang = column[String]("page_lang")
 
-  def nameTitle = index("name_title", (namespace, title), unique = true)
+  def nameTitle = index(withPrefix("name_title"), (namespace, title), unique = true)
 
 //  def revision = foreignKey("revisionFK", pageLatest, MediaWiki.revisions)(_.id)
 
