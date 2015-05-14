@@ -14,9 +14,7 @@ import scala.slick.driver.H2Driver.simple._
  * When a page is deleted, the revisions are moved to the archive table
  * @param tag
  */
-class Pages(tag: Tag,
-            val dbPrefix: Option[String] = None)
-  extends Table[Page](tag, dbPrefix.fold("")(_ + "_") + "page") {
+class Pages(tag: Tag, tableName: String, dbPrefix: Option[String]) extends Table[Page](tag, tableName) {
 
   def withPrefix(name: String) = dbPrefix.fold("")(_ + "_") + name
   /**

@@ -7,7 +7,7 @@ import org.scalawiki.dto.cmd.query.prop.rvprop.{Content, Ids, RvProp}
 import org.scalawiki.dto.cmd.query.prop.{Info, Prop, Revisions}
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
 import org.scalawiki.dto.{User, Page, Revision}
-import org.scalawiki.sql.MediaWiki
+import org.scalawiki.sql.MwDatabase
 import org.scalawiki.sql.dao.{RevisionDao, PageDao}
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.{BeforeAfter, Specification}
@@ -22,10 +22,13 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
   sequential
 
   implicit var session: Session = _
-  val pageDao = new PageDao(H2Driver)
-  val revisionDao = new RevisionDao(H2Driver)
 
-  def createSchema() = MediaWiki.createTables()
+  val mwDb = new MwDatabase()
+
+  val pageDao = mwDb.pageDao
+  val revisionDao = mwDb.revisionDao
+
+  def createSchema() = mwDb.createTables()
 
   override def before = {
     // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()

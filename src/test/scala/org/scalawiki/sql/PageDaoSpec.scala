@@ -16,13 +16,15 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
   implicit var session: Session = _
 
-  val pageDao = new PageDao(H2Driver)
-  val textDao = new TextDao(H2Driver)
-  val revisionDao = new RevisionDao(H2Driver)
-  val userDao = new UserDao(H2Driver)
-  val imageDao = new ImageDao(H2Driver)
+  val mwDb = new MwDatabase()
 
-  def createSchema() = MediaWiki.createTables()
+  val pageDao = mwDb.pageDao
+  val textDao = mwDb.textDao
+  val revisionDao = mwDb.revisionDao
+  val userDao = mwDb.userDao
+  val imageDao = mwDb.imageDao
+
+  def createSchema() = mwDb.createTables()
 
   override def before = {
     // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()

@@ -3,11 +3,10 @@ package org.scalawiki.query
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query, TitlesParam}
-import org.scalawiki.sql.dao.PageDao
-import scala.concurrent.duration._
+import org.scalawiki.sql.MwDatabase
 
+import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.slick.driver.H2Driver
 
 class DslQueryDbCache(val dslQuery: DslQuery, dbCache: Boolean = true) {
 
@@ -71,10 +70,9 @@ object DslQueryDbCache {
   import scala.slick.driver.H2Driver.simple._
 
   implicit var session: Session = _
-  //Database.forURL("jdbc:h2:~/scalawiki", driver = "org.h2.Driver").createSession()
-  //  MediaWiki.createTables()
 
-  val pageDao = new PageDao(H2Driver)
+  val mwDb = new MwDatabase()
+  val pageDao = mwDb.pageDao
 
   def notInDBQuery(query: Query, ids: Iterable[Long]): Query = {
     val params = query.params.filterNot { p =>

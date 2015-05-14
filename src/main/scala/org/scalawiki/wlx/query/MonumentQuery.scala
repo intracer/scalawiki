@@ -83,46 +83,13 @@ class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
   }
 }
 
-
-//class MonumentQueryPickling(underlying: MonumentQuery) extends MonumentQuery {
-//
-//  import scala.pickling._
-////  import scala.pickling.json._   // :( Slow parsing
-//  import java.nio.file.Files
-//
-//import scala.pickling.binary._  // :( exception with unpickling
-//
-//  override def contest = underlying.contest
-//
-//  override def byMonumentTemplateAsync(template: String): Future[Seq[Monument]]
-//  = future {
-//      val file = new File(s"cache/monuments_${contest.contestType.code}_${contest.country.code}_${contest.year}.bin")
-//      if (file.exists()) {
-//        val data = Files.readAllBytes(file.toPath)
-//        data.unpickle[Seq[Monument]]
-//      } else {
-//        val list = underlying.byMonumentTemplate(template)
-//        val data = list.pickle.value
-//        Files.write(file.toPath, data)
-//        list
-//      }
-//  }
-//
-//  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false): Future[Seq[Monument]] = ???
-//}
-
 object MonumentQuery {
 
   def create(contest: Contest, caching: Boolean = true, pickling: Boolean = false): MonumentQuery = {
     val api = new MonumentQueryApi(contest)
 
     val query = if (caching)
-      new MonumentQueryCached(
-        //        if (pickling)
-        //          new MonumentQueryPickling(api)
-        //        else
-        api
-      )
+      new MonumentQueryCached(api)
     else api
 
     query

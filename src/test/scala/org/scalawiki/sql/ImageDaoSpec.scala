@@ -1,11 +1,9 @@
 package org.scalawiki.sql
 
 import org.scalawiki.dto.User
-import org.scalawiki.sql.dao.ImageDao
 import org.scalawiki.wlx.dto.Image
 import org.specs2.mutable.{BeforeAfter, Specification}
 
-import scala.slick.driver.H2Driver
 import scala.slick.driver.H2Driver.simple._
 
 class ImageDaoSpec extends Specification with BeforeAfter {
@@ -14,9 +12,11 @@ class ImageDaoSpec extends Specification with BeforeAfter {
 
   implicit var session: Session = _
 
-  val imageDao = new ImageDao(H2Driver)
+  val mwDb = new MwDatabase()
 
-  def createSchema() = MediaWiki.createTables()
+  val imageDao = mwDb.imageDao
+
+  def createSchema() = mwDb.createTables()
 
   override def before = {
     // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()

@@ -1,24 +1,24 @@
 package org.scalawiki.sql.dao
 
-import org.scalawiki.dto.{Revision, Page}
-import org.scalawiki.sql.MediaWiki
+import org.scalawiki.dto.{Page, Revision}
+import org.scalawiki.sql.MwDatabase
 import org.scalawiki.wlx.dto.Image
 
 import scala.language.higherKinds
-import scala.slick.driver.{H2Driver, JdbcProfile}
+import scala.slick.driver.JdbcProfile
 
-class PageDao(val driver: JdbcProfile) {
+class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
   import driver.simple._
 
-  val query = MediaWiki.pages
+  val pages = mwDb.pages
+  val revisions = mwDb.revisions
+  val texts = mwDb.texts
 
-  import MediaWiki.{pages, revisions, texts}
+  val revisionDao = mwDb.revisionDao
+  val imageDao = mwDb.imageDao
 
-  val revisionDao = new RevisionDao(driver)
-  val imageDao = new ImageDao(H2Driver)
-
-  private val autoInc = query returning query.map(_.id)
+  private val autoInc = pages returning pages.map(_.id)
 
   def insert(page: Page)(implicit session: Session): Option[Long] = {
 
@@ -60,7 +60,7 @@ class PageDao(val driver: JdbcProfile) {
     }
   }
 
-  def list(implicit session: Session) = query.sortBy(_.id).run
+  def list(implicit session: Session) = pages.sortBy(_.id).run
 
   def get(id: Long)(implicit session: Session): Option[Page] =
     pages.filter(_.id === id).firstOption

@@ -3,10 +3,8 @@ package org.scalawiki.sql
 import java.sql.SQLException
 
 import org.scalawiki.dto.User
-import org.scalawiki.sql.dao.UserDao
 import org.specs2.mutable.{BeforeAfter, Specification}
 
-import scala.slick.driver.H2Driver
 import scala.slick.driver.H2Driver.simple._
 
 class UserDaoSpec extends Specification with BeforeAfter {
@@ -15,9 +13,10 @@ class UserDaoSpec extends Specification with BeforeAfter {
 
   implicit var session: Session = _
 
-  val userDao = new UserDao(H2Driver)
+  val mwDb = new MwDatabase()
+  val userDao = mwDb.userDao
 
-  def createSchema() = MediaWiki.createTables()
+  def createSchema() = mwDb.createTables()
 
   override def before = {
     // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()

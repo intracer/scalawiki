@@ -9,7 +9,7 @@ import scala.slick.driver.H2Driver.simple._
  * The user table is where MediaWiki stores information about users. If using Postgres, this table is named mwuser.
  * @param tag
  */
-class Users(tag: Tag) extends Table[User](tag, "user") {
+class Users(tag: Tag, tableName: String) extends Table[User](tag, tableName) {
 
   def id = column[Option[Long]]("user_id", O.PrimaryKey, O.AutoInc)
 

@@ -1,16 +1,15 @@
 package org.scalawiki.sql.dao
 
-import org.scalawiki.sql.{MediaWiki, Text}
+import org.scalawiki.sql.{Text, Texts}
 
 import scala.language.higherKinds
 import scala.slick.driver.JdbcProfile
+import scala.slick.lifted.TableQuery
 
 
-class TextDao(val driver: JdbcProfile) {
+class TextDao(val query: TableQuery[Texts], val driver: JdbcProfile) {
 
   import driver.simple._
-
-  val query = MediaWiki.texts
 
   private val autoInc = query returning query.map(_.id)
 
@@ -18,6 +17,5 @@ class TextDao(val driver: JdbcProfile) {
     autoInc += text
 
   def list(implicit session: Session) = query.run
-
 
 }

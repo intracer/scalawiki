@@ -1,16 +1,15 @@
 package org.scalawiki.sql.dao
 
 import org.scalawiki.dto.User
-import org.scalawiki.sql.MediaWiki
+import org.scalawiki.sql.Users
 
 import scala.language.higherKinds
 import scala.slick.driver.JdbcProfile
+import scala.slick.lifted.TableQuery
 
-class UserDao(val driver: JdbcProfile) {
+class UserDao(val query: TableQuery[Users], val driver: JdbcProfile) {
 
   import driver.simple._
-
-  val query = MediaWiki.users
 
   private val autoInc = query returning query.map(_.id)
 

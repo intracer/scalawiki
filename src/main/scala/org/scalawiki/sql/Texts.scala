@@ -9,7 +9,7 @@ import scala.slick.driver.H2Driver.simple._
  * Field names are a holdover from the 'old' revisions table in MediaWiki 1.4 and earlier.
  * @param tag
  */
-class Texts(tag: Tag) extends Table[Text](tag, "text") {
+class Texts(tag: Tag, tableName: String) extends Table[Text](tag, tableName) {
   /**
    * revision.rev_text_id in revision table is a key to this column.
    * (In MediaWiki 1.5+, archive.ar_text_id is also a key to this column.)

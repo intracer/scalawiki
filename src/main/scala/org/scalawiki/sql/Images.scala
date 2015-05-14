@@ -1,6 +1,6 @@
 package org.scalawiki.sql
 
-import org.scalawiki.dto.{User, Contributor}
+import org.scalawiki.dto.{Contributor, User}
 import org.scalawiki.wlx.dto.Image
 
 import scala.slick.driver.H2Driver.simple._
@@ -11,7 +11,7 @@ import scala.slick.driver.H2Driver.simple._
  * However, the image description pages are stored like other pages.
  * @param tag
  */
-class Images(tag: Tag) extends Table[Image](tag, "image") {
+class Images(tag: Tag, tableName: String) extends Table[Image](tag, tableName) {
   /**
    * Filename using underscores.
    * @return

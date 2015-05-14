@@ -1,28 +1,27 @@
 package org.scalawiki.sql.dao
 
-import org.scalawiki.dto.{User, Revision}
-import org.scalawiki.sql.{MediaWiki, Text}
+import org.scalawiki.dto.{Revision, User}
+import org.scalawiki.sql.{MwDatabase, Text}
 
 import scala.language.higherKinds
 import scala.slick.driver.JdbcProfile
 
+class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
-class RevisionDao(val driver: JdbcProfile) {
-
-  import MediaWiki.{revisions, texts}
   import driver.simple._
 
-  val query = MediaWiki.revisions
+  val textDao = mwDb.textDao
+  val userDao = mwDb.userDao
 
-  val textDao = new TextDao(driver)
-  val userDao = new UserDao(driver)
+  val texts = mwDb.texts
+  val revisions = mwDb.revisions
 
-  private val autoInc = query returning query.map(_.id)
+  private val autoInc = revisions returning revisions.map(_.id)
 
   def insert(revision: Revision)(implicit session: Session): Option[Long] = {
     val revId = if (revision.id.isDefined) {
       if (get(revision.id.get).isEmpty) {
-        query.forceInsert(addUser(addText(revision)))
+        revisions.forceInsert(addUser(addText(revision)))
       }
 
       revision.id
@@ -70,12 +69,10 @@ class RevisionDao(val driver: JdbcProfile) {
     }
   }
 
+  def list(implicit session: Session) = revisions.run
 
-  def list(implicit session: Session) = query.run
-
-  def get(id: Long)(implicit session: Session): Option[Revision] = query.filter {
-    _.id === id
-  }.firstOption
+  def get(id: Long)(implicit session: Session): Option[Revision] =
+    revisions.filter(_.id === id).firstOption
 
   def withText(id: Long)(implicit session: Session): Option[Revision] =
     (revisions.filter {

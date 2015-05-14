@@ -11,7 +11,7 @@ import scala.slick.driver.H2Driver.simple._
  * the time at which the edit was made, and a reference to the new wikitext in the text table.
  * @param tag
  */
-class Revisions(tag: Tag) extends Table[Revision](tag, "revision") {
+class Revisions(tag: Tag, tableName: String) extends Table[Revision](tag, tableName) {
 
   /**
    * This field holds the primary key for each revision. page_latest is a foreign key to this field.

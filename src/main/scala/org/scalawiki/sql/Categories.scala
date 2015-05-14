@@ -13,7 +13,8 @@ import scala.slick.driver.H2Driver.simple._
  * @param tag
  */
 
-class Categories(tag: Tag) extends Table[Category](tag, "category") {
+class Categories(tag: Tag, tableName: String) extends Table[Category](tag, tableName) {
+
   def id = column[Long]("cat_id", O.PrimaryKey)
 
   /**
