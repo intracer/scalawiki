@@ -2,15 +2,23 @@ package org.scalawiki.query
 
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query, TitlesParam}
-import org.scalawiki.sql.MwDatabase
+import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, TitlesParam}
+import org.scalawiki.sql.dao.PageDao
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class DslQueryDbCache(val dslQuery: DslQuery, dbCache: Boolean = true) {
+class DslQueryDbCache(val dslQuery: DslQuery) {
 
-  import dslQuery.bot.system.dispatcher
+  val bot = dslQuery.bot
+
+  def dbCache = bot.dbCache
+
+  import bot.system.dispatcher
+  import org.scalawiki.dto.cmd.query.Query
+
+  import scala.slick.driver.H2Driver.simple._
+
 
   def run(): Future[Seq[Page]] = {
 
@@ -21,6 +29,11 @@ class DslQueryDbCache(val dslQuery: DslQuery, dbCache: Boolean = true) {
         val hasContent = query.revisions.exists(_.hasContent)
 
         if (hasContent && dbCache) {
+          implicit val session: Session = bot.session.get
+
+          val mwDb = bot.database.get
+          val pageDao = mwDb.pageDao
+
           val idsAction = Action(query.revisionsWithoutContent)
 
           val idsQuery = new DslQuery(idsAction, dslQuery.bot)
@@ -28,12 +41,12 @@ class DslQueryDbCache(val dslQuery: DslQuery, dbCache: Boolean = true) {
             pages =>
 
               val ids = pages.flatMap(_.id).toSet
-              val dbPages = DslQueryDbCache.fromDb(pages, ids)
+              val dbPages = fromDb(pageDao, pages, ids)
 
               val notInDbPagesFuture = notInDb(query, ids, dbPages)
 
               val notInDbPages = Await.result(notInDbPagesFuture, 1.minute)
-              DslQueryDbCache.toDb(notInDbPages)
+              toDb(pageDao, notInDbPages)
 
               dbPages ++ notInDbPages
           }
@@ -53,26 +66,13 @@ class DslQueryDbCache(val dslQuery: DslQuery, dbCache: Boolean = true) {
       val notInDbQueryDto = if (dbIds.isEmpty) {
         query
       } else {
-        DslQueryDbCache.notInDBQuery(query, notInDbIds)
+        notInDBQuery(query, notInDbIds)
       }
       val notInDbQuery = new DslQuery(Action(notInDbQueryDto), dslQuery.bot)
 
       notInDbQuery.run()
     }
   }
-
-}
-
-object DslQueryDbCache {
-
-  import org.scalawiki.dto.cmd.query.Query
-
-  import scala.slick.driver.H2Driver.simple._
-
-  implicit var session: Session = _
-
-  val mwDb = new MwDatabase()
-  val pageDao = mwDb.pageDao
 
   def notInDBQuery(query: Query, ids: Iterable[Long]): Query = {
     val params = query.params.filterNot { p =>
@@ -84,15 +84,14 @@ object DslQueryDbCache {
     Query(params: _*)
   }
 
-  def fromDb(pages: Seq[Page], ids: Set[Long]): Seq[Page] = {
+  def fromDb(pageDao: PageDao, pages: Seq[Page], ids: Set[Long])(implicit session: Session): Seq[Page] = {
     val revIds = pages.flatMap(_.revisions.headOption.flatMap(_.id))
     pageDao.findByRevIds(ids, revIds)
   }
 
-  def toDb(pages: Seq[Page]) = {
-    pages.map { page =>
-      pageDao.insert(page)
-    }
+  def toDb(pageDao: PageDao, pages: Seq[Page])(implicit session: Session) = {
+    pages.map (pageDao.insert)
   }
 
 }
+

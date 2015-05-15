@@ -7,7 +7,9 @@ import scala.slick.driver.{H2Driver, JdbcProfile}
 import scala.slick.jdbc.meta.MTable
 import scala.slick.lifted.TableQuery
 
-class MwDatabase(val dbName: Option[String] = None, val driver: JdbcProfile = H2Driver) {
+class MwDatabase(val session: Session,
+                  val dbName: Option[String] = None,
+                  val driver: JdbcProfile = H2Driver) {
 
   def prefixed(tableName: String) = dbName.fold("")(_ + "_") + tableName
 

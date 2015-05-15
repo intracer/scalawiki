@@ -2,38 +2,37 @@ package org.scalawiki.query
 
 import java.util.concurrent.TimeUnit
 
+import org.scalawiki.MwBot
+import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list.EmbeddedIn
 import org.scalawiki.dto.cmd.query.prop.rvprop.{Content, Ids, RvProp}
 import org.scalawiki.dto.cmd.query.prop.{Info, Prop, Revisions}
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
-import org.scalawiki.dto.{User, Page, Revision}
+import org.scalawiki.dto.{Page, Revision, User}
 import org.scalawiki.sql.MwDatabase
-import org.scalawiki.sql.dao.{RevisionDao, PageDao}
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.{BeforeAfter, Specification}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import scala.slick.driver.H2Driver
 import scala.slick.driver.H2Driver.simple._
 
 class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfter {
 
   sequential
 
-  implicit var session: Session = _
+  var session1: Session = _
 
-  val mwDb = new MwDatabase()
+  override def session = session1
 
-  val pageDao = mwDb.pageDao
-  val revisionDao = mwDb.revisionDao
-
-  def createSchema() = mwDb.createTables()
+  var bot: MwBot = _
+  def database: MwDatabase = bot.database.get
+  def pageDao = database.pageDao
+  def revisionDao = database.revisionDao
 
   override def before = {
     // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()
-    session = Database.forURL("jdbc:h2:mem:test", driver = "org.h2.Driver").createSession()
-    DslQueryDbCache.session = session
+    session1 = Database.forURL("jdbc:h2:mem:test", driver = "org.h2.Driver").createSession()
   }
 
   override def after = session.close()
@@ -69,8 +68,6 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
 
   "get revisions text with generator and caching" should {
     "first run" in {
-      createSchema()
-
       val expectedCommands = Seq(new Command(Map(
         "action" -> "query",
         "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
@@ -81,7 +78,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
           "prop" -> "revisions", "rvprop" -> "ids|content"), responseWithContent())
       )
 
-      val bot = getBot(expectedCommands: _*)
+      bot = getBot(expectedCommands:_*)
 
       val future = bot.page("Category:SomeCategory")
         .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
@@ -99,7 +96,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
     }
 
     "from cache in" in {
-      createSchema()
+      implicit val s = session
 
       val expectedCommands = Seq(
         new Command(Map("action" -> "query",
@@ -117,7 +114,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
           "continue" -> ""), responseWithRevIds())
       )
 
-      val bot = getBot(expectedCommands: _*)
+      bot = getBot(expectedCommands:_*)
 
       val future = bot.page("Category:SomeCategory")
         .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
@@ -155,8 +152,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
     }
 
     "add page to cache" in {
-      createSchema()
-
+      implicit val s = session
       val expectedCommands = Seq(
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
@@ -187,7 +183,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
         )
       )
 
-      val bot = getBot(expectedCommands: _*)
+      bot = getBot(expectedCommands: _*)
 
       val future = bot.page("Category:SomeCategory")
         .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
@@ -241,7 +237,6 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
     }
 
     "add page revision to cache" in {
-      createSchema()
 
       val expectedCommands = Seq(
         new Command(Map("action" -> "query",
@@ -273,7 +268,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
         )
       )
 
-      val bot = getBot(expectedCommands: _*)
+      bot = getBot(expectedCommands: _*)
 
       val future = bot.page("Category:SomeCategory")
         .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
@@ -285,6 +280,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
         Seq(Revision(Some(11L), Some(569559L), None, None, None, None, Some(pageText1)))
       )
 
+      implicit val s = session
       pageDao.list.size must be_==(1).eventually
       val byRevs = pageDao.findByRevIds(Seq(569559L), Seq(11))
       byRevs.size === 1
@@ -337,7 +333,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       )
 
       val notInDbIds = Seq(1L, 2L, 3L)
-      val notInDbQuery = DslQueryDbCache.notInDBQuery(query, notInDbIds)
+      val notInDbQuery = new DslQueryDbCache(new DslQuery(Action(query), null)).notInDBQuery(query, notInDbIds)
 
       notInDbQuery === Query(
         Prop(

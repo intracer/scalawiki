@@ -12,13 +12,14 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
 
   implicit var session: Session = _
 
-  val mwDb = new MwDatabase()
+  var mwDb: MwDatabase = _
 
   def createSchema() = mwDb.createTables()
 
   override def before = {
     // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()
     session = Database.forURL("jdbc:h2:mem:test", driver = "org.h2.Driver").createSession()
+    mwDb = new MwDatabase(session)
   }
 
   override def after = session.close()
@@ -32,13 +33,14 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
 
   "ddls" should {
     "create schema" in {
+      new MwDatabase(session, Some("ukwiki")).dropTables() // hack
       createSchema()
 
       getTableNames === tableNames
     }
 
     "create database with one custom prefix" in {
-      val mwDbCustom = new MwDatabase(Some("ukwiki"))
+      val mwDbCustom = new MwDatabase(session, Some("ukwiki"))
 
       mwDb.dropTables()
       mwDbCustom.createTables()
@@ -48,12 +50,13 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
       mwDbCustom.dropTables()
 
       names === tableNames.map("ukwiki_" + _)
+      getTableNames.isEmpty === true
     }
 
     "create database with several custom prefix" in {
 
       val prefixes = Seq("ukwiki", "commons", "enwiki")
-      val dbs = prefixes.map(name => new MwDatabase(Some(name)))
+      val dbs = prefixes.map(name => new MwDatabase(session, Some(name)))
 
       mwDb.dropTables()
 
@@ -65,6 +68,8 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
 
       val expectedNames = prefixes.flatMap(prefix => tableNames.map(prefix + "_" + _)).toSet
       names === expectedNames
+
+      getTableNames.isEmpty === true
     }
 
     def getTableNames: Set[String] = {

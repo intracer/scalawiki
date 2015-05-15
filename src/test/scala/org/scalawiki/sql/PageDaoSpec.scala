@@ -16,19 +16,20 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
   implicit var session: Session = _
 
-  val mwDb = new MwDatabase()
+  var mwDb: MwDatabase = _
 
-  val pageDao = mwDb.pageDao
-  val textDao = mwDb.textDao
-  val revisionDao = mwDb.revisionDao
-  val userDao = mwDb.userDao
-  val imageDao = mwDb.imageDao
+  def pageDao = mwDb.pageDao
+  def textDao = mwDb.textDao
+  def revisionDao = mwDb.revisionDao
+  def userDao = mwDb.userDao
+  def imageDao = mwDb.imageDao
 
   def createSchema() = mwDb.createTables()
 
   override def before = {
     // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()
     session = Database.forURL("jdbc:h2:mem:test", driver = "org.h2.Driver").createSession()
+    mwDb = new MwDatabase(session)
   }
 
   override def after = session.close()

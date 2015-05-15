@@ -12,7 +12,7 @@ class ImageDaoSpec extends Specification with BeforeAfter {
 
   implicit var session: Session = _
 
-  val mwDb = new MwDatabase()
+  var mwDb: MwDatabase = _
 
   val imageDao = mwDb.imageDao
 
@@ -21,6 +21,7 @@ class ImageDaoSpec extends Specification with BeforeAfter {
   override def before = {
     // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()
     session = Database.forURL("jdbc:h2:mem:test", driver = "org.h2.Driver").createSession()
+    mwDb = new MwDatabase(session)
   }
 
   override def after = session.close()

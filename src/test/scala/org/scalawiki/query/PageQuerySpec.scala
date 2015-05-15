@@ -51,7 +51,7 @@ class PageQuerySpec extends Specification {
   def getBot(commands: Command*) = {
     val http = new TestHttpClient(host, mutable.Queue(commands: _*))
 
-    new MwBot(http, system, host)
+    new MwBot(http, system, host, None)
   }
 
 }

@@ -3,9 +3,12 @@ package org.scalawiki
 import akka.actor.ActorSystem
 import akka.io.IO
 import akka.pattern.ask
+import scala.slick.driver.H2Driver.simple._
+
 import org.scalawiki.http.{HttpClient, HttpClientImpl}
 import org.scalawiki.json.MwReads._
 import org.scalawiki.query.PageQuery
+import org.scalawiki.sql.MwDatabase
 import play.api.libs.json._
 import spray.can.Http
 import spray.http._
@@ -14,7 +17,7 @@ import spray.util._
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, var dbCache: Boolean = false) {
+class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val session: Option[Session]) {
 
   implicit val sys = system
 
@@ -29,6 +32,10 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, var
   def encodeTitle(title: String): String = MwUtils.normalize(title)
 
   def log = system.log
+
+  lazy val database = session.map(s => new MwDatabase(s, Some(MwDatabase.dbName(host))))
+
+  def dbCache = session.isDefined
 
   def login(user: String, password: String) = {
     require(user != null, "User is null")
@@ -161,7 +168,7 @@ object MwBot {
     val system = ActorSystem()
     val http = new HttpClientImpl(system)
 
-    val bot = new MwBot(http, system, host)
+    val bot = new MwBot(http, system, host, None)
     bot.await(bot.login(LoginInfo.login, LoginInfo.password))
     bot
   }
