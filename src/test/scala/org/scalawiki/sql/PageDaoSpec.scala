@@ -2,12 +2,10 @@ package org.scalawiki.sql
 
 import java.sql.SQLException
 
-import org.scalawiki.dto.{User, Namespace, Page, Revision}
+import org.scalawiki.dto.{Namespace, Page, Revision, User}
 import org.scalawiki.wlx.dto.Image
-import org.scalawiki.sql.dao._
 import org.specs2.mutable.{BeforeAfter, Specification}
 
-import scala.slick.driver.H2Driver
 import scala.slick.driver.H2Driver.simple._
 
 class PageDaoSpec extends Specification with BeforeAfter {
@@ -24,7 +22,10 @@ class PageDaoSpec extends Specification with BeforeAfter {
   def userDao = mwDb.userDao
   def imageDao = mwDb.imageDao
 
-  def createSchema() = mwDb.createTables()
+  def createSchema() = {
+    mwDb.dropTables()
+    mwDb.createTables()
+  }
 
   override def before = {
     // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()

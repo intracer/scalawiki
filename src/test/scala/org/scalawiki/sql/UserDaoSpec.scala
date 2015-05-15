@@ -16,7 +16,10 @@ class UserDaoSpec extends Specification with BeforeAfter {
   var mwDb: MwDatabase = _
   val userDao = mwDb.userDao
 
-  def createSchema() = mwDb.createTables()
+  def createSchema() = {
+    mwDb.dropTables()
+    mwDb.createTables()
+  }
 
   override def before = {
     // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()

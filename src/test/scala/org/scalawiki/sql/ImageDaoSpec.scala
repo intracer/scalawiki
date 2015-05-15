@@ -16,7 +16,10 @@ class ImageDaoSpec extends Specification with BeforeAfter {
 
   val imageDao = mwDb.imageDao
 
-  def createSchema() = mwDb.createTables()
+  def createSchema() = {
+    mwDb.dropTables()
+    mwDb.createTables()
+  }
 
   override def before = {
     // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()

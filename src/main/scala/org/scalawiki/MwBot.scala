@@ -168,7 +168,9 @@ object MwBot {
     val system = ActorSystem()
     val http = new HttpClientImpl(system)
 
-    val bot = new MwBot(http, system, host, None)
+    implicit val session = Database.forURL("jdbc:h2:~/scalawiki", driver = "org.h2.Driver").createSession()
+    val bot = new MwBot(http, system, host, Some(session))
+    bot.database.foreach(_.createTables())
     bot.await(bot.login(LoginInfo.login, LoginInfo.password))
     bot
   }

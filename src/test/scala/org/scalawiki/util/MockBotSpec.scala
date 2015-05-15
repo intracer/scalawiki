@@ -21,6 +21,7 @@ trait MockBotSpec {
 
     val bot = new MwBot(http, system, host, Option(session))
     Option(session).foreach { s =>
+      bot.database.foreach(_.dropTables()(s))
       bot.database.foreach(_.createTables()(s))
     }
     bot

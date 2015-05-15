@@ -38,7 +38,9 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
   }
 
   override def byMonumentTemplateAsync(template: String): Future[Seq[Monument]] = {
-    bot.page("Template:" + template).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT_NAMESPACE, Namespace.MAIN), Set("content", "timestamp", "user", "comment"), None, "100") map {
+    bot.page("Template:" + template).revisionsByGenerator("embeddedin", "ei",
+      Set(Namespace.PROJECT_NAMESPACE, Namespace.MAIN),
+      Set("ids", "content", "timestamp", "user", "userid", "comment"), None, "100") map {
       pages =>
         pages.flatMap(page =>
           Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig))
@@ -47,7 +49,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
 
   override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false): Future[Seq[Monument]] = {
     if (!page.startsWith("Template") || pageIsTemplate) {
-      bot.page(page).revisions(Set.empty, Set("content", "timestamp", "user", "comment")).map {
+      bot.page(page).revisions(Set.empty, Set("content", "timestamp", "user", "userid", "comment")).map {
         revs =>
           revs.headOption.map(page =>
             Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig).toSeq).getOrElse(Seq.empty)

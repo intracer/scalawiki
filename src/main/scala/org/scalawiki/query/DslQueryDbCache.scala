@@ -12,13 +12,14 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
 
   val bot = dslQuery.bot
 
+  var cacheStat: Option[CacheStat] = None
+
   def dbCache = bot.dbCache
 
   import bot.system.dispatcher
   import org.scalawiki.dto.cmd.query.Query
 
   import scala.slick.driver.H2Driver.simple._
-
 
   def run(): Future[Seq[Page]] = {
 
@@ -47,6 +48,9 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
 
               val notInDbPages = Await.result(notInDbPagesFuture, 1.minute)
               toDb(pageDao, notInDbPages)
+
+              cacheStat = Some(CacheStat(notInDbPages.size, dbPages.size))
+              println(cacheStat)
 
               dbPages ++ notInDbPages
           }
@@ -95,3 +99,4 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
 
 }
 
+case class CacheStat(newPages: Int, cached: Int)
