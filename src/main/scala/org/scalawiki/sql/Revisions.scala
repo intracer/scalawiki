@@ -11,8 +11,9 @@ import scala.slick.driver.H2Driver.simple._
  * the time at which the edit was made, and a reference to the new wikitext in the text table.
  * @param tag
  */
-class Revisions(tag: Tag, tableName: String) extends Table[Revision](tag, tableName) {
+class Revisions(tag: Tag, tableName: String, val dbPrefix: Option[String]) extends Table[Revision](tag, tableName) {
 
+  def withPrefix(name: String) = dbPrefix.fold("")(_ + "_") + name
   /**
    * This field holds the primary key for each revision. page_latest is a foreign key to this field.
    * @return
@@ -104,7 +105,7 @@ class Revisions(tag: Tag, tableName: String) extends Table[Revision](tag, tableN
 
   def contentFormat = column[String]("rev_content_format")
 
-  def pageRevId = index("rev_page_id", (pageId, id), unique = true)
+  def pageRevId = index(withPrefix("rev_page_id"), (pageId, id), unique = true)
 
   //  def timestampIndex = index("rev_timestamp", timestamp)
   //  def pageTampstamp = index("page_timestamp", (pageId, timestamp))

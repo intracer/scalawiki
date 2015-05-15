@@ -21,13 +21,13 @@ class MwDatabase(val dbName: Option[String] = None, val driver: JdbcProfile = H2
     (tag: Tag) => new Pages(tag, prefixed("page"), dbName))
 
   val revisions = TableQuery[Revisions](
-    (tag: Tag) => new Revisions(tag, prefixed("revision")))
+    (tag: Tag) => new Revisions(tag, prefixed("revision"), dbName))
 
   val texts = TableQuery[Texts](
     (tag: Tag) => new Texts(tag, prefixed("text")))
 
   val users = TableQuery[Users](
-    (tag: Tag) => new Users(tag, prefixed("user")))
+    (tag: Tag) => new Users(tag, prefixed("user"), dbName))
 
   val imageDao = new ImageDao(images, driver)
   val textDao = new TextDao(texts, driver)

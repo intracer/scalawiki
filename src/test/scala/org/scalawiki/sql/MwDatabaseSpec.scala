@@ -5,7 +5,6 @@ import org.specs2.mutable.{BeforeAfter, Specification}
 
 import scala.slick.driver.H2Driver.simple._
 import scala.slick.jdbc.meta.MTable
-import scala.slick.lifted.TableQuery
 
 class MwDatabaseSpec extends Specification with BeforeAfter {
 
@@ -24,42 +23,62 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
 
   override def after = session.close()
 
+  val tableNames = Set("category",
+    "image",
+    "page",
+    "revision",
+    "text",
+    "user")
+
   "ddls" should {
     "create schema" in {
       createSchema()
 
-      getTableNames === Set("category",
-        "image",
-        "page",
-        "revision",
-        "text",
-        "user")
+      getTableNames === tableNames
     }
 
-    "create table with custom prefix" in {
-      val ukWikiPages = TableQuery[Pages]((tag: Tag) => new Pages(tag, "ukwiki_page", Some("ukwiki")))
+    "create database with one custom prefix" in {
+      val mwDbCustom = new MwDatabase(Some("ukwiki"))
 
       mwDb.dropTables()
-      mwDb.createIfNotExists(ukWikiPages)
+      mwDbCustom.createTables()
 
       val names = getTableNames
-      ukWikiPages.ddl.drop
 
-      names === Set("ukwiki_page")
+      mwDbCustom.dropTables()
+
+      names === tableNames.map("ukwiki_" + _)
     }
-   }
 
-  def getTableNames: Set[String] = {
-    val tables = MTable.getTables.list
-    tables.map(_.name.name.toLowerCase).toSet
-  }
+    "create database with several custom prefix" in {
 
-  "MediaWiki" should {
-    "get db name by host" in {
-      MwDatabase.dbName("uk.wikipedia.org") === "ukwiki"
-      MwDatabase.dbName("commons.wikimedia.org") === "commonswiki"
-      MwDatabase.dbName("nl.wikimedia.org") === "nlwikimedia"
-      MwDatabase.dbName("ru.wiktionary.org") === "ruwiktionary"
+      val prefixes = Seq("ukwiki", "commons", "enwiki")
+      val dbs = prefixes.map(name => new MwDatabase(Some(name)))
+
+      mwDb.dropTables()
+
+      dbs.foreach(_.createTables())
+
+      val names = getTableNames.toSet
+
+      dbs.foreach(_.dropTables())
+
+      val expectedNames = prefixes.flatMap(prefix => tableNames.map(prefix + "_" + _)).toSet
+      names === expectedNames
+    }
+
+    def getTableNames: Set[String] = {
+      val tables = MTable.getTables.list
+      tables.map(_.name.name.toLowerCase).toSet
+    }
+
+    "MediaWiki" should {
+      "get db name by host" in {
+        MwDatabase.dbName("uk.wikipedia.org") === "ukwiki"
+        MwDatabase.dbName("commons.wikimedia.org") === "commonswiki"
+        MwDatabase.dbName("nl.wikimedia.org") === "nlwikimedia"
+        MwDatabase.dbName("ru.wiktionary.org") === "ruwiktionary"
+      }
     }
   }
 }
