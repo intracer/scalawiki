@@ -42,10 +42,8 @@ class CopyVio(val http: HttpClient) {
 
     val url = s"project=$project&lang=$lang&oldid=$revId"
 
-    val sources = http.get(baseUrl + url) map parseResponse
-    sources
+    http.get(baseUrl + url) map parseResponse
   }
-
 
   def parseResponse(body: String): Seq[CopyVioSource] = {
     Json.parse(body).validate(sourcesReads).get

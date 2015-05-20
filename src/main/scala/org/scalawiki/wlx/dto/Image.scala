@@ -77,20 +77,23 @@ object Image {
       authorValue
   }
 
-  def basic(timestamp: String,
+  def basic(title: String,
+            timestamp: String,
             uploader: String,
             size: Long,
             width: Int,
             height: Int,
             url: String,
-            pageUrl: String)
+            pageUrl: String,
+            pageId: Long)
   = new Image(
-    title = "",
+    title = title,
     date = Option(timestamp),
     uploader = Some(User(None, Some(uploader))),
     size = Some(size),
     width = Some(width),
     height = Some(height),
     url = Option(url),
-    pageUrl = Option(pageUrl))
+    pageUrl = Option(pageUrl),
+    pageId = Some(pageId))
 }

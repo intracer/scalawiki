@@ -142,7 +142,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val page = Page(None, 0, title, Seq(revision), Seq(image))
 
-      val pageId = pageDao.insert(page)
+      val pageId = pageDao.insert(page).toOption
 
       val images = imageDao.list
       images.size === 1
@@ -222,7 +222,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val page = Page(None, 0, "title", revisions)
 
-      val pageId = pageDao.insert(page)
+      val pageId = pageDao.insert(page).toOption
       pageId.isDefined === true
 
       val dbPage = pageDao.withText(pageId.get).get
@@ -249,7 +249,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
         case (n, t) => Page(None, 0, n, Seq(Revision.one(t)))
       }
 
-      val pageIds = pages.flatMap(p => pageDao.insert(p))
+      val pageIds = pages.flatMap(p => pageDao.insert(p).toOption)
       pageIds.size === 3
 
       val dbPages = pageDao.find(Set(pageIds.head, pageIds.last))
@@ -267,7 +267,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
         case (n, t) => Page(None, 0, n, Seq(Revision.one(t)))
       }
 
-      val pageIds = pages.flatMap(p => pageDao.insert(p))
+      val pageIds = pages.flatMap(p => pageDao.insert(p).toOption)
       pageIds.size === 3
 
       val dbPages = pageDao.findWithText(Set(pageIds.head, pageIds.last))
@@ -286,7 +286,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
         case (n, t) => Page(None, 0, n, Seq(Revision.one(t)))
       }
 
-      val pageIds = pages.flatMap(p => pageDao.insert(p))
+      val pageIds = pages.flatMap(p => pageDao.insert(p).toOption)
       pageIds.size === 3
 
       val dbPages = pageDao.findWithText(Set(pageIds.head, pageIds.last))
@@ -309,7 +309,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
         case (n, t) => Page(None, 0, n, t.map(Revision.one))
       }
 
-      val pageIds = pages.flatMap(p => pageDao.insert(p).toSeq)
+      val pageIds = pages.flatMap(p => pageDao.insert(p).toOption.toSeq)
       pageIds.size === 3
 
       val withRevisions = pageIds.flatMap(id => pageDao.withRevisions(id))

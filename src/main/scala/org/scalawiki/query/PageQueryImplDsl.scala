@@ -78,8 +78,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot, dbCach
     val action = Action(Query(
       Prop(
         ImageInfo(
-          IiProp(IiPropArgs.byNames(props.toSeq): _*),
-          IiLimit("max")
+          IiProp(IiPropArgs.byNames(props.toSeq): _*)
         )
       ),
       Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
@@ -109,6 +108,8 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot, dbCach
         "bot" -> "x",
         "assert" -> "user",
         "assert" -> "bot")
+
+    bot.log.info(s"${bot.host} edit page: $page, summary: $summary")
 
     if (multi)
       bot.postMultiPart(editResponseReads, params)

@@ -2,11 +2,11 @@ package org.scalawiki.wlx.query
 
 import org.scalawiki.dto.Namespace
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.cmd.query.list.{CategoryMembers, CmTitle}
+import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.cmd.query.prop.iiprop.{IiProp, Timestamp}
 import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
 import org.scalawiki.dto.cmd.query.{Generator, Query}
-import org.scalawiki.query.DslQuery
+import org.scalawiki.query.{DslQueryDbCache, DslQuery}
 import org.scalawiki.wlx.dto.{Contest, Image}
 import org.scalawiki.{MwBot, WithBot}
 
@@ -35,22 +35,25 @@ class ImageQueryApi extends ImageQuery with WithBot {
   val host = MwBot.commons
 
   override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]] = {
+    val generator: Generator = Generator(CategoryMembers(CmTitle(category), CmNamespace(Seq(Namespace.FILE)), CmLimit("500"))) // 5000 / 10
 
+    imagesByGenerator(contest, generator)
+  }
+
+  def imagesByGenerator(contest: Contest, generator: Generator): Future[Seq[Image]] = {
     import org.scalawiki.dto.cmd.query.prop._
-
     val action = Action(Query(
       Prop(
         Info(),
-        Revisions(RvProp(rvprop.Content, rvprop.Timestamp, rvprop.User, rvprop.User)),
+        Revisions(RvProp(rvprop.Ids, rvprop.Content, rvprop.Timestamp, rvprop.User, rvprop.UserId)),
         ImageInfo(
-          IiProp(Timestamp, iiprop.User, iiprop.Size, iiprop.Url),
-          IiLimit("max")
+          IiProp(Timestamp, iiprop.User, iiprop.Size, iiprop.Url)
         )
       ),
-      Generator(CategoryMembers(CmTitle(category)))
+      generator
     ))
 
-    val future = new DslQuery(action, bot).run()
+    val future = new DslQueryDbCache(new DslQuery(action, bot)).run()
 
     future.map {
       pages => pages.map {
@@ -68,13 +71,9 @@ class ImageQueryApi extends ImageQuery with WithBot {
   }
 
   override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]] = {
-    val query = bot.page("Template:" + template)
+    val generator: Generator = Generator(EmbeddedIn(EiTitle("Template:" + template), EiNamespace(Seq(Namespace.FILE)), EiLimit("500")))
 
-    query.revisionsByGenerator("embeddedin", "ei",
-      Set(Namespace.FILE), Set("content", "timestamp", "user", "comment"), None, "500") map {
-      pages =>
-        pages.flatMap(page => Image.fromPageRevision(page, contest.fileTemplate, "")).sortBy(_.title)
-    }
+    imagesByGenerator(contest, generator)
   }
 }
 

@@ -18,6 +18,10 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
   private val autoInc = revisions returning revisions.map(_.id)
 
+  def insertAll(revisionSeq: Seq[Revision])(implicit session: Session): Unit = {
+    revisions.forceInsertAll(revisionSeq: _*)
+  }
+
   def insert(revision: Revision)(implicit session: Session): Option[Long] = {
     val revId = if (revision.id.isDefined) {
       if (get(revision.id.get).isEmpty) {

@@ -50,7 +50,7 @@ class Parser(val action: Action) {
     val page = pageJson.validate(Parser.pageReads).get
 
     val revisions: Seq[Revision] = pageJson.validate(Parser.revisionsReads(page.id.get)).getOrElse(Seq.empty)
-    val images: Seq[Image] = pageJson.validate(Parser.imagesReads).getOrElse(Seq.empty)
+    val images: Seq[Image] = pageJson.validate(Parser.imagesReads(page.id.get, page.title)).getOrElse(Seq.empty)
     val langLinks: Map[String, String] = getLangLinks(pageJson)
 
     //    pageJson.validate(Parser.langLinksReads).getOrElse(Map.empty)
@@ -145,19 +145,23 @@ object Parser {
     (__ \ "revisions").read[Seq[Revision]]
   }
 
-  implicit val imageReads: Reads[Image] = (
-    (__ \ "timestamp").read[String] and
-      (__ \ "user").read[String] and
-      (__ \ "size").read[Long] and
-      (__ \ "width").read[Int] and
-      (__ \ "height").read[Int] and
-      (__ \ "url").read[String] and
-      (__ \ "descriptionurl").read[String]
-    //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
-    //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
-    )(Image.basic _)
+  def imagesReads(pageId: Long, title: String): Reads[Seq[Image]] = {
+    implicit val imageReads: Reads[Image] = (
+      Reads.pure[String](title) and
+      (__ \ "timestamp").read[String] and
+        (__ \ "user").read[String] and
+        (__ \ "size").read[Long] and
+        (__ \ "width").read[Int] and
+        (__ \ "height").read[Int] and
+        (__ \ "url").read[String] and
+        (__ \ "descriptionurl").read[String] and
+        Reads.pure[Long](pageId)
+      //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
+      //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
+      )(Image.basic _)
 
-  val imagesReads: Reads[Seq[Image]] = (__ \ "imageinfo").read[Seq[Image]]
+    (__ \ "imageinfo").read[Seq[Image]]
+  }
 
   //  val langLinkRead: Reads[(String, String)] = (
   //    (__ \ "lang").read[String] and

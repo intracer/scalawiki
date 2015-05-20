@@ -3,9 +3,9 @@ package org.scalawiki.wlx.stat
 import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
-import org.scalawiki.wlx.slick.Slick
 import org.scalawiki.wlx.dto.{Contest, Monument}
-import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
+import org.scalawiki.wlx.query.{ImageQueryApi, ImageQuery, MonumentQuery}
+import org.scalawiki.wlx.slick.Slick
 import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
 
 import scala.collection.immutable.SortedSet
@@ -27,7 +27,7 @@ class Statistics {
     val monumentDb = getMonumentDb(contest)
 
     //articleStatistics(monumentDb)
-  // imagesStatistics(monumentQuery, monumentDb)
+    imagesStatistics(monumentQuery, monumentDb)
   }
 
   def getMonumentDb(contest: Contest): MonumentDB = {
@@ -220,6 +220,9 @@ class Statistics {
 
 object Statistics {
   def main(args: Array[String]) {
+
+//    Kamon.start()
+
     val stat = new Statistics()
 
     stat.init(Contest.WLEUkraine(2015, "05-01", "05-31"))

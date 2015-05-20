@@ -41,6 +41,8 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val
     require(user != null, "User is null")
     require(password != null, "Password is null")
 
+    log.info(s"$host login user: $user")
+
     http.post(apiUrl, "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json") map http.cookiesAndBody map { cb =>
       http.setCookies(cb.cookies)
       val json = Json.parse(cb.body)
@@ -54,7 +56,10 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val
           val json = Json.parse(cb.body)
           val l = json.validate(loginResponseReads) // {"login":{"result":"NotExists"}}
           l.fold(err => err.toString(),
-            success => success.result
+            success => {
+              log.info(s"$host login user: $user, result: ${success.result}")
+              success.result
+            }
           )
         }, http.timeout)
       })
@@ -140,7 +145,12 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val
   def getUri(params: (String, String)*) =
     Uri(apiUrl) withQuery (params ++ Seq("format" -> "json"): _*)
 
-  def get(params: Map[String, String]): Future[String] = http.get(getUri(params))
+  def get(params: Map[String, String]): Future[String] = {
+    val uri: Uri = getUri(params)
+
+    log.info(s"$host GET url: $uri")
+    http.get(uri)
+  }
 
   def getUri(params: Map[String, String]) =
     Uri(apiUrl) withQuery (params ++ Map("format" -> "json"))
