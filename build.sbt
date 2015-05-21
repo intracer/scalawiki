@@ -6,8 +6,9 @@ version := "0.3"
 
 scalaVersion := "2.11.6"
 
-resolvers := Seq("spray repo" at "http://repo.spray.io",
-  "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/")
+resolvers := Seq("spray repo" at "https://repo.spray.io",
+  "Typesafe Repo" at "https://repo.typesafe.com/typesafe/releases/",
+  "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases")
 
 libraryDependencies ++= {
   val akkaV = "2.3.9"
