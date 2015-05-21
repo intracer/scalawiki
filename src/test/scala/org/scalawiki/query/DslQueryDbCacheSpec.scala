@@ -26,7 +26,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
   override def session = session1
 
   var bot: MwBot = _
-  def database: MwDatabase = bot.database.get
+  def database: MwDatabase = bot.mwDb.get
   def pageDao = database.pageDao
   def revisionDao = database.revisionDao
 

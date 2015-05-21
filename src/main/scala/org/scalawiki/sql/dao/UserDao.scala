@@ -4,12 +4,12 @@ import org.scalawiki.dto.User
 import org.scalawiki.sql.Users
 
 import scala.language.higherKinds
-import scala.slick.driver.JdbcProfile
-import scala.slick.lifted.TableQuery
+import slick.driver.JdbcProfile
+import slick.lifted.TableQuery
 
 class UserDao(val query: TableQuery[Users], val driver: JdbcProfile) {
 
-  import driver.simple._
+  import driver.api._
 
   private val autoInc = query returning query.map(_.id)
 

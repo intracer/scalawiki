@@ -17,7 +17,7 @@ import spray.util._
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val session: Option[Session]) {
+class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val database: Option[Database]) {
 
   implicit val sys = system
 
@@ -33,9 +33,9 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val
 
   def log = system.log
 
-  lazy val database = session.map(s => new MwDatabase(s, Some(MwDatabase.dbName(host))))
+  lazy val mwDb = database.map(d => new MwDatabase(d, Some(MwDatabase.dbName(host))))
 
-  def dbCache = session.isDefined
+  def dbCache = database.isDefined
 
   def login(user: String, password: String) = {
     require(user != null, "User is null")
@@ -178,9 +178,9 @@ object MwBot {
     val system = ActorSystem()
     val http = new HttpClientImpl(system)
 
-    implicit val session = Database.forURL("jdbc:h2:~/scalawiki", driver = "org.h2.Driver").createSession()
-    val bot = new MwBot(http, system, host, Some(session))
-    bot.database.foreach(_.createTables())
+    implicit val db = Database.forURL("jdbc:h2:~/scalawiki", driver = "org.h2.Driver")
+    val bot = new MwBot(http, system, host, Some(db))
+    bot.mwDb.foreach(_.createTables())
     bot.await(bot.login(LoginInfo.login, LoginInfo.password))
     bot
   }

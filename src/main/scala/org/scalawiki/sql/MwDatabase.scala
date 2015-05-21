@@ -1,15 +1,15 @@
 package org.scalawiki.sql
 
 import org.scalawiki.sql.dao._
+import slick.driver.H2Driver.api._
+import slick.driver.{H2Driver, JdbcProfile}
+import slick.jdbc.meta.MTable
+import slick.lifted.TableQuery
+import scala.concurrent.ExecutionContext.Implicits.global
 
-import scala.slick.driver.H2Driver.simple._
-import scala.slick.driver.{H2Driver, JdbcProfile}
-import scala.slick.jdbc.meta.MTable
-import scala.slick.lifted.TableQuery
-
-class MwDatabase(val session: Session,
-                  val dbName: Option[String] = None,
-                  val driver: JdbcProfile = H2Driver) {
+class MwDatabase(val db: Database,
+                 val dbName: Option[String] = None,
+                 val driver: JdbcProfile = H2Driver) {
 
   def prefixed(tableName: String) = dbName.fold("")(_ + "_") + tableName
 
@@ -47,23 +47,26 @@ class MwDatabase(val session: Session,
       texts
     )
 
-  def createTables()(implicit session: Session) {
-    //dropTables()
+  def createTables() {
     createIfNotExists(tables: _*)
   }
 
-  def dropTables()(implicit session: Session) {
-    tables foreach { table =>
-      if (MTable.getTables(table.baseTableRow.tableName).list.nonEmpty) {
-        table.ddl.drop
+  def dropTables() {
+    tables.foreach { table =>
+      db.run(MTable.getTables(table.baseTableRow.tableName)).map { result =>
+        if (result.nonEmpty) {
+          db.run(table.schema.drop)
+        }
       }
     }
   }
 
-  def createIfNotExists(tables: TableQuery[_ <: Table[_]]*)(implicit session: Session) {
+  def createIfNotExists(tables: TableQuery[_ <: Table[_]]*) {
     tables foreach { table =>
-      if (MTable.getTables(table.baseTableRow.tableName).list.isEmpty) {
-        table.ddl.create
+      db.run(MTable.getTables(table.baseTableRow.tableName)).map { result =>
+        if (result.isEmpty) {
+          db.run(table.schema.create)
+        }
       }
     }
   }

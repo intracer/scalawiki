@@ -5,8 +5,7 @@ import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, TitlesParam}
 import org.scalawiki.sql.dao.PageDao
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 class DslQueryDbCache(val dslQuery: DslQuery) {
 
@@ -19,8 +18,6 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
   import bot.system.dispatcher
   import org.scalawiki.dto.cmd.query.Query
 
-  import scala.slick.driver.H2Driver.simple._
-
   def run(): Future[Seq[Page]] = {
     if (false) dslQuery.run()
     else {
@@ -31,29 +28,27 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
           val hasContent = query.revisions.exists(_.hasContent)
 
           if (hasContent && dbCache) {
-            implicit val session: Session = bot.session.get
-
-            val mwDb = bot.database.get
+            val mwDb = bot.mwDb.get
             val pageDao = mwDb.pageDao
 
             val idsAction = Action(query.revisionsWithoutContent)
 
             val idsQuery = new DslQuery(idsAction, dslQuery.bot)
-            idsQuery.run().map {
+            idsQuery.run().flatMap {
               pages =>
-
                 val ids = pages.flatMap(_.id).toSet
-                val dbPages = fromDb(pageDao, pages, ids)
+                fromDb(pageDao, pages, ids).flatMap {
+                  dbPages =>
+                    notInDb(query, ids, dbPages).map {
+                      notInDbPages =>
+                        toDb(pageDao, notInDbPages)
 
-                val notInDbPagesFuture = notInDb(query, ids, dbPages)
+                        cacheStat = Some(CacheStat(notInDbPages.size, dbPages.size))
+                        bot.log.info(s"${bot.host} $cacheStat")
 
-                val notInDbPages = Await.result(notInDbPagesFuture, 1.minute)
-                toDb(pageDao, notInDbPages)
-
-                cacheStat = Some(CacheStat(notInDbPages.size, dbPages.size))
-                bot.log.info(s"${bot.host} $cacheStat")
-
-                dbPages ++ notInDbPages
+                        dbPages ++ notInDbPages
+                    }
+                }
             }
           } else {
             dslQuery.run()
@@ -92,19 +87,21 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
     }.toSeq
   }
 
-  def fromDb(pageDao: PageDao, pages: Seq[Page], ids: Set[Long])(implicit session: Session): Seq[Page] = {
+  def fromDb(pageDao: PageDao, pages: Seq[Page], ids: Set[Long]): Future[Seq[Page]] = {
     val startTime = System.nanoTime()
     bot.log.info(s"${bot.host} query ${pages.size} pages from db")
 
     val revIds = pages.flatMap(_.revisions.headOption.flatMap(_.id))
-    val pagesFromDb = pageDao.findByRevIds(ids, revIds)
+    pageDao.findByRevIds(ids, revIds).map {
+      pagesFromDb =>
 
-    val estimatedTime = (System.nanoTime() - startTime) / Math.pow(10, 9)
-    bot.log.info(s"${bot.host} Db query completed with ${pagesFromDb.size} pages in $estimatedTime seconds")
-    pagesFromDb
+        val estimatedTime = (System.nanoTime() - startTime) / Math.pow(10, 9)
+        bot.log.info(s"${bot.host} Db query completed with ${pagesFromDb.size} pages in $estimatedTime seconds")
+        pagesFromDb
+    }
   }
 
-  def toDb(pageDao: PageDao, pages: Seq[Page])(implicit session: Session) = {
+  def toDb(pageDao: PageDao, pages: Seq[Page]) = {
     val startTime = System.nanoTime()
     bot.log.info(s"${bot.host} insert ${pages.size} pages to db")
 

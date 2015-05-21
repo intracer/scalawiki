@@ -3,13 +3,13 @@ package org.scalawiki.sql.dao
 import org.scalawiki.sql.{Text, Texts}
 
 import scala.language.higherKinds
-import scala.slick.driver.JdbcProfile
-import scala.slick.lifted.TableQuery
+import slick.driver.JdbcProfile
+import slick.lifted.TableQuery
 
 
 class TextDao(val query: TableQuery[Texts], val driver: JdbcProfile) {
 
-  import driver.simple._
+  import driver.api._
 
   private val autoInc = query returning query.map(_.id)
 

@@ -2,23 +2,23 @@ package org.scalawiki.sql.dao
 
 import org.scalawiki.sql.Images
 import org.scalawiki.wlx.dto.Image
+import slick.driver.JdbcProfile
+import slick.lifted.TableQuery
 
 import scala.language.higherKinds
-import scala.slick.driver.JdbcProfile
-import scala.slick.lifted.TableQuery
 
 class ImageDao(val query: TableQuery[Images], val driver: JdbcProfile) {
 
-  import driver.simple._
+  import driver.api._
 
-  def insert(image: Image)(implicit session: Session) = {
+  def insert(image: Image) = {
     query += image
   }
 
-  def list(implicit session: Session) = query.sortBy(_.name).run
+  def list = query.sortBy(_.name)
 
-  def get(name: String)(implicit session: Session): Option[Image] =
-    query.filter(_.name === name).firstOption
+  def get(name: String) =
+    query.filter(_.name === name).result.headOption
 
 }
 

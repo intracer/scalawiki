@@ -3,12 +3,13 @@ package org.scalawiki.sql.dao
 import org.scalawiki.dto.{Revision, User}
 import org.scalawiki.sql.{MwDatabase, Text}
 
+import scala.concurrent.Future
 import scala.language.higherKinds
 import scala.slick.driver.JdbcProfile
 
 class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
-  import driver.simple._
+  import driver.api._
 
   val textDao = mwDb.textDao
   val userDao = mwDb.userDao
@@ -18,31 +19,34 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
   private val autoInc = revisions returning revisions.map(_.id)
 
-  def insertAll(revisionSeq: Seq[Revision])(implicit session: Session): Unit = {
-    revisions.forceInsertAll(revisionSeq: _*)
+  val db = mwDb.db
+
+  def insertAll(revisionSeq: Seq[Revision]): Unit = {
+    revisions.forceInsertAll(revisionSeq)
   }
 
-  def insert(revision: Revision)(implicit session: Session): Option[Long] = {
+  def insert(revision: Revision): Future[Long] = {
     val revId = if (revision.id.isDefined) {
-      if (get(revision.id.get).isEmpty) {
-        revisions.forceInsert(addUser(addText(revision)))
+      exists(revision.id.get) flatMap { e =>
+        if (e)
+          db.run(revisions.forceInsert(addUser(addText(revision)))).map(_ => revision.id)
+        else
+          Future.successful(revision.id)
       }
-
-      revision.id
     }
     else {
-      autoInc += addUser(addText(revision))
+      db.run(autoInc += addUser(addText(revision)))
     }
-    revId
+    revId.map(_.get)
   }
 
-  def addText(revision: Revision)(implicit session: Session): Revision = {
+  def addText(revision: Revision): Revision = {
     val text = Text(None, revision.content.getOrElse(""))
     val textId = textDao.insert(text)
     revision.copy(textId = textId)
   }
 
-  def addUser(revision: Revision)(implicit session: Session): Revision = {
+  def addUser(revision: Revision): Revision = {
     revision.user.fold(revision) { case user: User =>
       if (user.id.isDefined && user.login.isDefined) {
         if (userDao.get(user.id.get).isEmpty) {
@@ -73,15 +77,19 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     }
   }
 
-  def list(implicit session: Session) = revisions.run
+  def list = db.run(revisions.result)
 
-  def get(id: Long)(implicit session: Session): Option[Revision] =
-    revisions.filter(_.id === id).firstOption
+  def get(id: Long): Future[Revision] =
+    db.run(revisions.filter(_.id === id).result.head)
 
-  def withText(id: Long)(implicit session: Session): Option[Revision] =
-    (revisions.filter {
-      _.id === id
-    } join texts on (_.textId === _.id)).run.map {
-      case (r, t) => r.copy(content = Some(t.text))
-    }.headOption
+  def exists(id: Long): Future[Boolean] =
+    get(id).recover { case _ => false }.map(_ => true)
+
+  def withText(id: Long): Future[Revision] =
+    db.run((revisions.filter(_.id === id)
+      join texts on (_.textId === _.id)).result).map { rows =>
+      rows.map {
+        case (r, t) => r.copy(content = Some(t.text))
+      }.head
+    }
 }

@@ -3,15 +3,16 @@ package org.scalawiki.sql.dao
 import org.scalawiki.dto.{Page, Revision}
 import org.scalawiki.sql.MwDatabase
 import org.scalawiki.wlx.dto.Image
+import slick.driver.JdbcProfile
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.language.higherKinds
-import scala.slick.driver.JdbcProfile
-import scala.util.Try
-import scala.util.control.NonFatal
+
 
 class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
-  import driver.simple._
+  import driver.api._
 
   val pages = mwDb.pages
   val revisions = mwDb.revisions
@@ -23,41 +24,42 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
   private val autoInc = pages returning pages.map(_.id)
 
-  def insertAll(pageSeq: Seq[Page])(implicit session: Session): Unit = {
-    pages.forceInsertAll(pageSeq: _*)
+  val db = mwDb.db
+
+  def insertAll(pageSeq: Seq[Page]): Unit = {
+    pages.forceInsertAll(pageSeq)
 
     revisionDao.insertAll(pageSeq.flatMap(_.revisions.headOption))
   }
 
-  def insert(page: Page)(implicit session: Session): Try[Long] = {
+  def insert(page: Page): Future[Long] = {
+    require(page.revisions.nonEmpty, "page has no revisions")
+    val newRevs = page.revisions //.filter(_.revId.isEmpty)
 
-    val result = Try {
-      require(page.revisions.nonEmpty, "page has no revisions")
-
-      val pageId = if (page.id.isDefined) {
-        if (get(page.id.get).isEmpty) {
-          pages.forceInsert(page)
+    val pageIdF = (
+      if (page.id.isDefined) {
+        exists(page.id.get) flatMap { e =>
+          if (e)
+            mwDb.db.run(pages.forceInsert(page)).map(_ => page.id)
+          else
+            Future.successful(page.id)
         }
-        page.id
       }
       else {
-        autoInc += page
+        mwDb.db.run(autoInc += page)
       }
+      ).map(_.get)
 
-      val newRevs = page.revisions //.filter(_.revId.isEmpty)
+    pageIdF.map { pageId =>
 
-      addRevisions(pageId.get, newRevs)
-      addImages(pageId.get, page.images)
+      addRevisions(pageId, newRevs)
+      addImages(pageId, page.images)
 
-      pageId.get
+      pageId
     }
-
-    result.recover { case NonFatal(e) => println(s"error saving page $page $e") }
-
-    result
   }
 
-  def addRevisions(pageId: Long, newRevs: Seq[Revision])(implicit session: Session) = {
+  def addRevisions(pageId: Long, newRevs: Seq[Revision]) = {
     val revIds = newRevs.reverse.flatMap { rev =>
       val withPage = rev.copy(pageId = Some(pageId))
       revisionDao.insert(withPage)
@@ -68,65 +70,77 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
       .update(revIds.last)
   }
 
-  def addImages(pageId: Long, images: Seq[Image])(implicit session: Session) = {
+  def addImages(pageId: Long, images: Seq[Image]) = {
     images.reverse.foreach { image =>
       val withPage = image.copy(pageId = Some(pageId))
       imageDao.insert(withPage)
     }
   }
 
-  def list(implicit session: Session) = pages.sortBy(_.id).run
+  def list = pages.sortBy(_.id)
 
-  def get(id: Long)(implicit session: Session): Option[Page] =
-    pages.filter(_.id === id).firstOption
+  def get(id: Long): Future[Page] =
+    db.run(pages.filter(_.id === id).result.head)
 
-  def find(ids: Iterable[Long])(implicit session: Session): Seq[Page] =
-    pages.filter(_.id inSet ids).sortBy(_.id).run
+  def exists(id: Long): Future[Boolean] =
+    get(id).recover { case _ => false }.map(_ => true)
 
-  def findWithText(ids: Iterable[Long])(implicit session: Session): Seq[Page] =
-    (pages.filter(_.id inSet ids)
-      join revisions on (_.pageLatest === _.id)
-      join texts on (_._2.textId === _.id)
-      ).sortBy { case ((p, r), t) => p.id }.run.map {
-      case ((p, r), t) => p.copy(revisions = Seq(r.copy(content = Some(t.text))))
+
+  def find(ids: Iterable[Long]): Future[Seq[Page]] =
+    db.run(
+      pages.filter(_.id inSet ids).sortBy(_.id).result
+    )
+
+  def findWithText(ids: Iterable[Long]): Future[Seq[Page]] =
+    db.run(
+      (pages.filter(_.id inSet ids)
+        join revisions on (_.pageLatest === _.id)
+        join texts on (_._2.textId === _.id)
+        sortBy { case ((p, r), t) => p.id }
+        ).result
+    ).map { pages =>
+      pages.map { case ((p, r), t) => p.copy(revisions = Seq(r.copy(content = Some(t.text)))) }
     }
 
-  def findByRevIds(ids: Iterable[Long], revIds: Iterable[Long])(implicit session: Session): Seq[Page] = {
-    ((for {
-      p <- pages if p.id inSet ids
-      r <- revisions if r.pageId === p.id
-      t <- texts if r.textId === t.id
-      i <- images if i.pageId === p.id
-    } yield (p, r, t, i)
-      ) sortBy { case (p, r, t, i) => r.id.desc }
-      ).run.map {
-      case (p, r, t, i) => p.copy(revisions = Seq(r.copy(content = Some(t.text))), images = Seq(i))
+  def findByRevIds(ids: Iterable[Long], revIds: Iterable[Long]): Future[Seq[Page]] = {
+    db.run(
+      (pages.filter(_.id inSet ids)
+        join revisions.filter(_.id inSet revIds) on (_.id === _.pageId)
+        join texts on (_._2.textId === _.id)
+        joinLeft images on (_._1._1.id === _.pageId)
+        ).sortBy { case (((p, r), t), i) => p.id }.result).map { pages =>
+      pages.map {
+        case (((p, r), t), i) => p.copy(revisions = Seq(r.copy(content = Some(t.text))), images = i.toSeq)
+      }
     }
   }
 
-  def withText(id: Long)(implicit session: Session): Option[Page] =
-    (pages.filter(_.id === id)
-      join revisions on (_.pageLatest === _.id)
-      join texts on (_._2.textId === _.id)
-      ).run.map {
-      case ((p, r), t) => p.copy(revisions = Seq(r.copy(content = Some(t.text))))
-    }.headOption
+  def withText(id: Long): Future[Page] =
+    db.run(
+      (pages.filter(_.id === id)
+        join revisions on (_.pageLatest === _.id)
+        join texts on (_._2.textId === _.id)
+        ).result).map { pages =>
+      pages.map {
+        case ((p, r), t) => p.copy(revisions = Seq(r.copy(content = Some(t.text))))
+      }.head
+    }
 
-  def withRevisions(id: Long)(implicit session: Session): Option[Page] = {
-    val rows = ((
+  def withRevisions(id: Long): Future[Page] = {
+    db.run(((
       for {
         p <- pages if p.id === id
         r <- revisions if r.pageId === p.id
         t <- texts if r.textId === t.id
       } yield (p, r, t)
       ) sortBy { case (p, r, t) => r.id.desc }
-      ).run.map {
-      case (p, r, t) => (p, r.copy(content = Some(t.text)))
+      ).result).map { pages =>
+      val rows = pages.map {
+        case (p, r, t) => (p, r.copy(content = Some(t.text)))
+      }
+      val revs = rows.map { case (p, r) => r }
+      rows.headOption.map { case (p, r) => p.copy(revisions = revs) }.get
     }
-
-    val revs = rows.map { case (p, r) => r }
-    rows.headOption.map { case (p, r) => p.copy(revisions = revs) }
   }
-
 
 }

@@ -22,7 +22,7 @@ libraryDependencies ++= {
     "commons-codec" % "commons-codec" % "1.10",
     "com.github.nscala-time" %% "nscala-time" % "1.8.0",
     "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
-    "com.typesafe.slick" %% "slick" % "2.1.0",
+    "com.typesafe.slick" %% "slick" % "3.0.0",
     "com.h2database" % "h2" % "1.3.176",
     "com.github.wookietreiber" %% "scala-chart" % "0.4.2",
     "org.jfree" % "jfreesvg" % "2.1",
@@ -44,7 +44,7 @@ libraryDependencies ++= {
 //    "org.aspectj" % "aspectjweaver" % aspectJV,
 //    "org.jruby" % "jruby-complete" % "1.7.20", // for logstash
 //    "slinky" % "slinky" % "2.1" from "http://slinky2.googlecode.com/svn/artifacts/2.1/slinky.jar"
-    "org.specs2" %% "specs2" % "2.3.12" % "test",
+    "org.specs2" %% "specs2" % "2.4.17" % "test",
     "com.google.jimfs" % "jimfs" % "1.0" % "test"
   )
 }
