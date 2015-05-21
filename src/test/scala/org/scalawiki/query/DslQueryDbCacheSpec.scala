@@ -335,13 +335,13 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       val notInDbIds = Seq(1L, 2L, 3L)
       val notInDbQuery = new DslQueryDbCache(new DslQuery(Action(query), null)).notInDBQuery(query, notInDbIds)
 
-      notInDbQuery === Query(
+      notInDbQuery === Seq(Query(
         Prop(
           Info(),
           Revisions(RvProp(Ids, Content))
         ),
         PageIdsParam(notInDbIds)
-      )
+      ))
     }
   }
 

@@ -40,11 +40,8 @@ libraryDependencies ++= {
 //  //    "io.kamon" %% "kamon-statsd" % kamonV,
 //    "io.kamon" %% "kamon-akka" % kamonV,
 //    "io.kamon" %% "kamon-jdbc" % kamonV,
-////    "net.logstash.logback" % "logstash-logback-encoder" % "4.3",
 //    "org.aspectj" % "aspectjweaver" % aspectJV,
-//    "org.jruby" % "jruby-complete" % "1.7.20", // for logstash
-//    "slinky" % "slinky" % "2.1" from "http://slinky2.googlecode.com/svn/artifacts/2.1/slinky.jar"
-    "org.specs2" %% "specs2" % "2.3.12" % "test",
+    "org.specs2" %% "specs2" % "2.4.17" % "test",
     "com.google.jimfs" % "jimfs" % "1.0" % "test"
   )
 }

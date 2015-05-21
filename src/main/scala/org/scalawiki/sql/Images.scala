@@ -107,16 +107,7 @@ class Images(tag: Tag, tableName: String) extends Table[Image](tag, tableName) {
   def * = (name, size, width, height, url, userId, userText, author, pageId) <>(fromDb, toDb)
 
   def fromDb(t: (String, Long, Int, Int, Option[String], Long, String, Option[String], Option[Long])) =
-    new Image(
-      title = t._1,
-      size = Some(t._2),
-      width = Some(t._3),
-      height = Some(t._4),
-      url = t._5,
-      uploader = Contributor(Option(t._6), Option(t._7)).collect { case u: User => u },
-      author = t._8,
-      pageId = t._9
-    )
+    Images.fromDb(t)
 
   def toDb(i: Image) = Some((
     i.title,
@@ -133,3 +124,33 @@ class Images(tag: Tag, tableName: String) extends Table[Image](tag, tableName) {
 }
 
 
+object Images {
+
+  def fromDb(t: (String, Long, Int, Int, Option[String], Long, String, Option[String], Option[Long])) =
+    new Image(
+      title = t._1,
+      size = Some(t._2),
+      width = Some(t._3),
+      height = Some(t._4),
+      url = t._5,
+      uploader = Contributor(Option(t._6), Option(t._7)).collect { case u: User => u },
+      author = t._8,
+      pageId = t._9
+    )
+
+  def fromDbJoin(t: (Option[String], Option[Long], Option[Int], Option[Int], Option[String], Option[Long], Option[String],
+    Option[String], Option[Long])): Option[Image] =
+    t._1.map { title =>
+      new Image(
+        title = title,
+        size = t._2,
+        width = t._3,
+        height = t._4,
+        url = t._5,
+        uploader = Contributor(t._6, t._7).collect { case u: User => u },
+        author = t._8,
+        pageId = t._9
+      )
+    }
+
+}

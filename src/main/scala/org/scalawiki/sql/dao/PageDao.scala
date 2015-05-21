@@ -1,7 +1,7 @@
 package org.scalawiki.sql.dao
 
 import org.scalawiki.dto.{Page, Revision}
-import org.scalawiki.sql.MwDatabase
+import org.scalawiki.sql.{Images, MwDatabase}
 import org.scalawiki.wlx.dto.Image
 
 import scala.language.higherKinds
@@ -92,15 +92,16 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     }
 
   def findByRevIds(ids: Iterable[Long], revIds: Iterable[Long])(implicit session: Session): Seq[Page] = {
-    ((for {
-      p <- pages if p.id inSet ids
-      r <- revisions if r.pageId === p.id
-      t <- texts if r.textId === t.id
-      i <- images if i.pageId === p.id
-    } yield (p, r, t, i)
-      ) sortBy { case (p, r, t, i) => r.id.desc }
-      ).run.map {
-      case (p, r, t, i) => p.copy(revisions = Seq(r.copy(content = Some(t.text))), images = Seq(i))
+    (pages.filter(_.id inSet ids)
+      join revisions.filter(_.id inSet revIds) on (_.id === _.pageId)
+      join texts on (_._2.textId === _.id)
+      leftJoin images on (_._1._1.id === _.pageId)
+      ).sortBy { case (((p, r), t), i) => p.id }
+      .map { case (((p, r), t), i) => (p, r, t,
+      (i.name.?, i.size.?, i.width.?, i.height.?, i.url, i.userId.?, i.userText.?, i.author, i.pageId))
+    }.run.map {
+      case (p, r, t, i) =>
+        p.copy(revisions = Seq(r.copy(content = Some(t.text))), images = Images.fromDbJoin(i).toSeq)
     }
   }
 
