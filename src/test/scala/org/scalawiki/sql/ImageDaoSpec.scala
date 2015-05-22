@@ -1,5 +1,7 @@
 package org.scalawiki.sql
 
+import java.sql.SQLException
+
 import org.scalawiki.dto.User
 import org.scalawiki.wlx.dto.Image
 import org.specs2.mutable.{BeforeAfter, Specification}
@@ -62,6 +64,24 @@ class ImageDaoSpec extends Specification with BeforeAfter {
       imageDao.insert(image)
       imageDao.list.size === 1
       imageDao.get(title) === Some(image)
+    }
+
+    "insert with the same title should fail" in {
+      createSchema()
+
+      val emptyUser = User(Some(0), Some(""))
+      val title = "Image.jpg"
+      val image = new Image(
+        title,
+        Some("http://Image.jpg"), None,
+        Some(1000 * 1000), Some(800), Some(600)
+      )
+      val image2 = image.copy()
+
+      imageDao.insert(image)
+      imageDao.insert(image2) must throwA[SQLException]
+
+      imageDao.list.size === 1
     }
   }
 }

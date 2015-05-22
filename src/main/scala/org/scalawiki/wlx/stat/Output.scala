@@ -19,8 +19,7 @@ class Output {
 
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
     val contest = monumentDb.contest
-    val categoryName =  contest.contestType.name + " in " + contest.country.name
-
+    val categoryName = contest.contestType.name + " in " + contest.country.name
 
     val yearSeq = imageDbsByYear.keys.toSeq.sorted
     val numYears = yearSeq.size
@@ -151,7 +150,7 @@ class Output {
       case NonFatal(e) =>
         println(e)
         e.printStackTrace()
-        throw  e
+        throw e
     }
   }
 
@@ -233,12 +232,12 @@ class Output {
     val regionIds = SortedSet(monumentDb._byRegion.keySet.toSeq: _*)
 
     val rows =
-    regionIds.map { regionId =>
-      (Seq(
-        monumentDb.contest.country.regionById(regionId).name,
-        totalImageDb.authorsByRegion(regionId).size) ++
-        yearSeq.map(year => imageDbsByYear(year).head.authorsByRegion(regionId).size)).map(_.toString)
-    } ++ Seq(totalData)
+      regionIds.map { regionId =>
+        (Seq(
+          monumentDb.contest.country.regionById(regionId).name,
+          totalImageDb.authorsByRegion(regionId).size) ++
+          yearSeq.map(year => imageDbsByYear(year).head.authorsByRegion(regionId).size)).map(_.toString)
+      } ++ Seq(totalData)
 
     val authors = yearSeq.map(year => imageDbsByYear(year).head.authors)
 
@@ -284,7 +283,27 @@ class Output {
     val total = "|}" + s"\n[[Category:${contest.contestType.name} ${contest.year} in ${country.name}]]"
 
     header + text + total
-
   }
+
+  def authorsImages(byAuthor: Map[String, Seq[Image]]) = {
+
+    val sections = byAuthor.map {
+      case (user, images) =>
+        val userLink = s"[[User:$user|$user]]"
+        val header = s"== $userLink =="
+        val gallery = images.map {
+          i =>
+            val w = i.width.get
+            val h = i.height.get
+            val mp = w * h / Math.pow(10, 6)
+            f"${i.title}| $mp%1.2f ${i.width.get} x ${i.height.get}"
+        }
+
+        header + gallery.mkString("\n<gallery>\n", "\n", "\n</gallery>")
+    }
+
+    sections.mkString("__TOC__\n", "\n", "")
+  }
+
 
 }

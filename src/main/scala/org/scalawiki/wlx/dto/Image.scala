@@ -31,7 +31,8 @@ case class Image(title: String,
       Files.write(Paths.get(filename), bytes)
   }
 
-  def pixels = width.get * height.get
+  def pixels: Option[Long] =
+    for (w <- width; h <- height) yield w * h
 
 }
 

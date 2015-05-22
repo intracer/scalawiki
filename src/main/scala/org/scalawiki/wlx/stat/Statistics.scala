@@ -79,6 +79,10 @@ class Statistics {
         //        new SpecialNominations().specialNominations(contest, imageDb, monumentQuery)
         wrongIds(contest, imageDb, monumentDb)
 
+        lessThan2MpGallery(contest, imageDb)
+
+        fillLists(monumentDb, imageDb)
+
         val total = new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)
         for (totalImages <- total) {
 
@@ -87,9 +91,17 @@ class Statistics {
           regionalStat(contest, monumentDb, imageQueryDb, imageDb, totalImageDb)
 
           Thread.sleep(5000)
-          fillLists(monumentDb, totalImageDb)
         }
+
     }
+  }
+
+  def lessThan2MpGallery(contest: Contest, imageDb: ImageDB) = {
+    val lessThan2Mp = imageDb.byMegaPixelFilterAuthorMap(_ < 2)
+    val gallery = new Output().authorsImages(lessThan2Mp)
+    val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
+
+    MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Less than 2Mp").edit(gallery, "updating")
   }
 
   def wrongIds(wlmContest: Contest, imageDb: ImageDB, monumentDb: MonumentDB) {
