@@ -285,10 +285,12 @@ class Output {
     header + text + total
   }
 
-  def authorsImages(byAuthor: Map[String, Seq[Image]]) = {
+  def authorsImages(byAuthor: Map[String, Seq[Image]], monumentDb: MonumentDB) = {
 
-    val sections = byAuthor.map {
-      case (user, images) =>
+    val sections = byAuthor
+      .mapValues(images => images.filter(_.monumentId.fold(false)(monumentDb.ids.contains)))
+      .collect {
+      case (user, images) if images.nonEmpty =>
         val userLink = s"[[User:$user|$user]]"
         val header = s"== $userLink =="
         val gallery = images.map {

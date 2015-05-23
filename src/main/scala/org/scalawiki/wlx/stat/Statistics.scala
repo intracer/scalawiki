@@ -98,7 +98,7 @@ class Statistics {
 
   def lessThan2MpGallery(contest: Contest, imageDb: ImageDB) = {
     val lessThan2Mp = imageDb.byMegaPixelFilterAuthorMap(_ < 2)
-    val gallery = new Output().authorsImages(lessThan2Mp)
+    val gallery = new Output().authorsImages(lessThan2Mp, imageDb.monumentDb)
     val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
 
     MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Less than 2Mp").edit(gallery, "updating")
