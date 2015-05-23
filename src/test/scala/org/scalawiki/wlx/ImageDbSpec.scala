@@ -83,9 +83,8 @@ class ImageDbSpec extends Specification {
     }
 
     "show image authors" in {
-      val user1 = User(Some(1), Some("user1"))
-      val user2 = User(Some(2), Some("user2"))
-      val user3 = User(Some(3), Some("user3"))
+      val user1 = User(1, "user1")
+      val user2 = User(2, "user2")
 
       val noRes = new Image("imageNoRes", width = None, height = None, uploader = Some(user1))
 

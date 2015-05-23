@@ -35,7 +35,7 @@ class ImageDaoSpec extends Specification with BeforeAfter {
     "insert" in {
       createSchema()
 
-      val emptyUser = User(Some(0), Some(""))
+      val emptyUser = User(0, "")
       val title = "Image.jpg"
       val image = new Image(
         title,
@@ -52,7 +52,7 @@ class ImageDaoSpec extends Specification with BeforeAfter {
     "insert with user" in {
       createSchema()
 
-      val user = User(Some(5), Some("username"))
+      val user = User(5, "username")
       val title = "Image.jpg"
       val image = new Image(
         title,
@@ -69,7 +69,7 @@ class ImageDaoSpec extends Specification with BeforeAfter {
     "insert with the same title should fail" in {
       createSchema()
 
-      val emptyUser = User(Some(0), Some(""))
+      val emptyUser = User(0, "")
       val title = "Image.jpg"
       val image = new Image(
         title,

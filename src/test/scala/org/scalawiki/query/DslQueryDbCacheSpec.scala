@@ -41,7 +41,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
 
   val pageText1 = "some vandalism"
   val pageText2 = "more vandalism"
-  val emptyUser = Some(User(Some(0), Some("")))
+  val emptyUser = Some(User(0, ""))
 
   def revisionContent(content: Option[String]) = content.fold("") {
     text => s""", "*": "$text" """
