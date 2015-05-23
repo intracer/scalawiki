@@ -20,7 +20,6 @@ class DslSpec extends Specification  with ThrownMessages {
       )
 
      // action.flatten.map(_.name).toSet === Set("action", "prop", "inprop")
-
       action.query.toSeq.flatMap(_.props).map(_.name).toSet === Set("info", "revisions")
     }
   }

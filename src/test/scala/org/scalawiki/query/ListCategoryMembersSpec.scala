@@ -15,17 +15,22 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
     "return category members in" in {
       val queryType = "categorymembers"
 
-      //      val response = {"query-continue":{"embeddedin":{"eicontinue":"10|Stub|6674690"}},"query":{"embeddedin":[{"pageid":569559,"ns":1,"title":"Talk:Welfare reform"},{"pageid":2581310,"ns":2,"title":"User:Rpyle731/sandbox/archive1"},{"pageid":3954860,"ns":3,"title":"User talk:PBS/Archive 6"},{"pageid":4571809,"ns":2,"title":"User:Formator"},{"pageid":5024711,"ns":3,"title":"User talk:Rauterkus"}]}}
+      val response1 =
+        """{ "query":
+          |{ "categorymembers": [{ "pageid": 569559, "ns": 1, "title": "Talk:Welfare reform" }] },
+          | "continue": { "continue": "-||", "cmcontinue": "10|Stub|6674690"}}""".stripMargin
 
-      val response1 = """{"query":{"categorymembers":[{"pageid":569559,"ns":1,"title":"Talk:Welfare reform"}]}, "continue":{"continue":"-||","cmcontinue":"10|Stub|6674690"}}"""
-      val response2 = """{"limits": {"categorymembers": 500}, "query":{"categorymembers":[ {"pageid":4571809,"ns":2,"title":"User:Formator"}]}}"""
+      val response2 =
+        """{"limits": {"categorymembers": 500}, "query":
+          |{"categorymembers": [{"pageid": 4571809, "ns": 2, "title": "User:Formator"}]} }""".stripMargin
 
       val commands = Seq(
         new Command(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max", "cmtitle" -> "Category:SomeCategory", "continue" -> ""), response1),
-        new Command(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max", "cmtitle" -> "Category:SomeCategory", "continue" -> "-||", "cmcontinue" -> "10|Stub|6674690"), response2)
+        new Command(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max", "cmtitle" -> "Category:SomeCategory",
+          "continue" -> "-||", "cmcontinue" -> "10|Stub|6674690"), response2)
       )
 
-      val bot = getBot(commands:_*)
+      val bot = getBot(commands: _*)
 
       val future = bot.page("Category:SomeCategory").categoryMembers()
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
@@ -34,6 +39,4 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
       result(1) === Page(4571809, 2, "User:Formator")
     }
   }
-
-
 }

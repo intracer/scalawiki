@@ -33,10 +33,17 @@ class Parser(val action: Action) {
 
           val jsons = (queryChild match {
             case "pages" => pagesJson.asInstanceOf[JsObject].values
+            case "allusers" => pagesJson.asInstanceOf[JsArray].value
             case _ => pagesJson.asInstanceOf[JsArray].value
           }).map(_.asInstanceOf[JsObject])
 
-          jsons.map(parsePage).toSeq
+          jsons.map {
+            queryChild match {
+              case "pages" => parsePage
+              case "allusers" => parseUser
+              case _ => parsePage
+            }
+          }.toSeq
         } else Seq.empty
       }
     }
@@ -56,6 +63,12 @@ class Parser(val action: Action) {
     //    pageJson.validate(Parser.langLinksReads).getOrElse(Map.empty)
 
     page.copy(revisions = revisions, images = images, langLinks = langLinks)
+  }
+
+  // hacky wrapping into page // TODO refactor return types
+  def parseUser(userJson: JsObject): Page = {
+    val user = userJson.validate(Parser.userReads).get
+    new Page(id = None, title = user.name.get, ns = Namespace.USER_NAMESPACE, revisions = Seq(Revision(user = Some(user))))
   }
 
   def getContinue(json: JsValue, jsonObj: JsObject): Map[String, String] = {
@@ -112,6 +125,14 @@ object Parser {
       (__ \ "talkid").readNullable[Long]
     )(Page.full _)
 
+  val userReads: Reads[User] = (
+    (__ \ "userid").read[Long] and
+      (__ \ "name").read[String]
+    )(User.apply(
+    _: Long,
+    _: String)
+    )
+
   // implicit val DefaultJodaDateReads = jodaDateReads()
 
   val jodaDateTimeReads = Reads.jodaDateReads("yyyy-MM-dd'T'HH:mm:ss'Z'")
@@ -148,7 +169,7 @@ object Parser {
   def imagesReads(pageId: Long, title: String): Reads[Seq[Image]] = {
     implicit val imageReads: Reads[Image] = (
       Reads.pure[String](title) and
-      (__ \ "timestamp").read[String] and
+        (__ \ "timestamp").read[String] and
         (__ \ "user").read[String] and
         (__ \ "size").read[Long] and
         (__ \ "width").read[Int] and
