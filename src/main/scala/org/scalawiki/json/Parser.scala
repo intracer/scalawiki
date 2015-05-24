@@ -33,7 +33,7 @@ class Parser(val action: Action) {
 
           val jsons = (queryChild match {
             case "pages" => pagesJson.asInstanceOf[JsObject].values
-            case "allusers" => pagesJson.asInstanceOf[JsArray].value
+            case "allusers" | "usercontribs" => pagesJson.asInstanceOf[JsArray].value
             case _ => pagesJson.asInstanceOf[JsArray].value
           }).map(_.asInstanceOf[JsObject])
 
@@ -41,6 +41,7 @@ class Parser(val action: Action) {
             queryChild match {
               case "pages" => parsePage
               case "allusers" => parseUser
+              case "usercontribs" => parseUserContrib
               case _ => parsePage
             }
           }.toSeq
@@ -69,6 +70,11 @@ class Parser(val action: Action) {
   def parseUser(userJson: JsObject): Page = {
     val user = userJson.validate(Parser.userReads).get
     new Page(id = None, title = user.name.get, ns = Namespace.USER_NAMESPACE, revisions = Seq(Revision(user = Some(user))))
+  }
+
+  def parseUserContrib(userJson: JsObject): Page = {
+    val userContribs = userJson.validate(Parser.userContribReads).get
+    userContribs.toPage
   }
 
   def getContinue(json: JsValue, jsonObj: JsObject): Map[String, String] = {
@@ -137,7 +143,6 @@ object Parser {
 
   val jodaDateTimeReads = Reads.jodaDateReads("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
-
   def revisionsReads(pageId: Long): Reads[Seq[Revision]] = {
     implicit val revisionReads: Reads[Revision] = (
       (__ \ "revid").readNullable[Long] and
@@ -169,7 +174,7 @@ object Parser {
   def imagesReads(pageId: Long, title: String): Reads[Seq[Image]] = {
     implicit val imageReads: Reads[Image] = (
       Reads.pure[String](title) and
-        (__ \ "timestamp").read[String] and
+        (__ \ "timestamp").read[DateTime](jodaDateTimeReads) and
         (__ \ "user").read[String] and
         (__ \ "size").read[Long] and
         (__ \ "width").read[Int] and
@@ -184,6 +189,21 @@ object Parser {
     (__ \ "imageinfo").read[Seq[Image]]
   }
 
+  val userContribReads: Reads[UserContrib] = (
+    (__ \ "userid").read[Long] and
+      (__ \ "user").read[String] and
+      (__ \ "pageid").read[Long] and
+      (__ \ "revid").read[Long] and
+      (__ \ "parentid").read[Long] and
+      (__ \ "ns").read[Int] and
+      (__ \ "title").read[String] and
+      (__ \ "timestamp").read[DateTime](jodaDateTimeReads) and
+//      (__ \ "new").read[String] and
+//      (__ \ "minor").read[Boolea] and
+      (__ \ "comment").read[String] and
+      (__ \ "size").read[Int]
+    )(UserContrib.apply _)
+
   //  val langLinkRead: Reads[(String, String)] = (
   //    (__ \ "lang").read[String] and
   //      (__ \ "*").read[String]
@@ -191,5 +211,22 @@ object Parser {
   //
   //  val langLinksReads: Reads[Seq[String, String]] =
   //    (__ \ "langlinks").read[Seq[(String, String)]](langLinkRead)
+}
 
+case class UserContrib(userId: Long,
+                       user: String,
+                       pageId: Long,
+                       revId: Long,
+                       parentId: Long,
+                       ns: Int,
+                       title: String,
+                       timestamp: DateTime,
+//                       isNew: Boolean,
+//                       isMinor: Boolean,
+                       comment: String,
+                       size: Int) {
+
+  def toPage = new Page(Some(pageId), ns, title, revisions =
+    Seq(new Revision(Some(revId), Some(pageId), Some(parentId), Some(User(userId, user)),Option(timestamp), Option(comment), None, Some(size)))
+  )
 }

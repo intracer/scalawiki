@@ -3,8 +3,8 @@ package org.scalawiki.wlx.stat
 import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
-import org.scalawiki.wlx.dto.{Contest, Monument}
-import org.scalawiki.wlx.query.{ImageQueryApi, ImageQuery, MonumentQuery}
+import org.scalawiki.wlx.dto.Contest
+import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
 import org.scalawiki.wlx.slick.Slick
 import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
 
@@ -117,28 +117,28 @@ class Statistics {
 
   def byDayAndRegion(imageDb: ImageDB): Unit = {
 
-    val byDay = imageDb.withCorrectIds.groupBy(_.date.getOrElse("2014-00-00").substring(8, 10))
-
-    val firstSlice = (16 to 16).flatMap(day => byDay.getOrElse(day.toString, Seq.empty))
-
-    val byRegion = firstSlice.groupBy(im => Monument.getRegionId(im.monumentId))
-
-    var text = ""
-
-    val contest = imageDb.contest
-    val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
-
-    val dayPage = s"Commons:$contestPage/Day 2"
-    for (regionId <- SortedSet(byRegion.keySet.toSeq: _*)) {
-      val regionName: String = imageDb.monumentDb.contest.country.regionById(regionId).name
-      val pageName = s"$dayPage Region $regionName"
-      val gallery = byRegion(regionId).map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
-
-      text += s"* [[$pageName|$regionName]]\n"
-
-      MwBot.get(MwBot.commons).page(pageName).edit(gallery, "updating")
-    }
-    MwBot.get(MwBot.commons).page(dayPage).edit(text, "updating")
+//    val byDay = imageDb.withCorrectIds.groupBy(_.date.map(_.toDate))
+//
+//    val firstSlice = (16 to 16).flatMap(day => byDay.get)//.getOrElse(day.toString, Seq.empty))
+//
+//    val byRegion = firstSlice.groupBy(im => Monument.getRegionId(im.monumentId))
+//
+//    var text = ""
+//
+//    val contest = imageDb.contest
+//    val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
+//
+//    val dayPage = s"Commons:$contestPage/Day 2"
+//    for (regionId <- SortedSet(byRegion.keySet.toSeq: _*)) {
+//      val regionName: String = imageDb.monumentDb.contest.country.regionById(regionId).name
+//      val pageName = s"$dayPage Region $regionName"
+//      val gallery = byRegion(regionId).map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
+//
+//      text += s"* [[$pageName|$regionName]]\n"
+//
+//      MwBot.get(MwBot.commons).page(pageName).edit(gallery, "updating")
+//    }
+//    MwBot.get(MwBot.commons).page(dayPage).edit(text, "updating")
   }
 
   def authorsStat(monumentDb: MonumentDB, imageDb: ImageDB) {
@@ -233,7 +233,7 @@ class Statistics {
 object Statistics {
   def main(args: Array[String]) {
 
-//    Kamon.start()
+    //    Kamon.start()
 
     val stat = new Statistics()
 

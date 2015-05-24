@@ -2,6 +2,7 @@ package org.scalawiki.wlx.dto
 
 import java.nio.file.{Files, Paths}
 
+import org.joda.time.DateTime
 import org.scalawiki.MwBot
 import org.scalawiki.dto.{User, Page}
 import org.scalawiki.parser.TemplateParser
@@ -16,7 +17,7 @@ case class Image(title: String,
                  author: Option[String] = None,
                  uploader: Option[User] = None,
                  year: Option[String] = None,
-                 date: Option[String] = None,
+                 date: Option[DateTime] = None,
                  monumentId: Option[String] = None,
                  pageId: Option[Long] = None
                   ) extends Ordered[Image] {
@@ -38,10 +39,10 @@ case class Image(title: String,
 
 object Image {
 
-  def fromPageImages(page: Page, monumentIdTemplate: String, year: String): Option[Image] =
-    page.images.headOption.map(_.copy(year = Option(year)))
+  def fromPageImages(page: Page, monumentIdTemplate: String): Option[Image] =
+    page.images.headOption
 
-  def fromPageRevision(page: Page, monumentIdTemplate: String, date: String): Option[Image] = {
+  def fromPageRevision(page: Page, monumentIdTemplate: String): Option[Image] = {
     page.revisions.headOption.map { revision =>
 
       val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
@@ -53,7 +54,7 @@ object Image {
 
       new Image(page.title,
         author = Some(author),
-        date = Some(date),
+        date = revision.timestamp,
         monumentId = idOpt,
         pageId = page.id)
     }
@@ -79,7 +80,7 @@ object Image {
   }
 
   def basic(title: String,
-            timestamp: String,
+            timestamp: DateTime,
             uploader: String,
             size: Long,
             width: Int,

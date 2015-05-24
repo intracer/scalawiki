@@ -1,6 +1,6 @@
 package org.scalawiki.wlx.dto
 
-import org.scalawiki.dto.{Revision, Page, Template}
+import org.scalawiki.dto.{Page, Revision, Template}
 import org.specs2.mutable.Specification
 
 class ImageSpec extends Specification {
@@ -35,7 +35,7 @@ class ImageSpec extends Specification {
       val wiki = makeTemplate("[[User:PhotoMaster|PhotoMaster]]", "{{Monument|nature-park-id}}")
 
       val page = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(wiki)))
-      val image = Image.fromPageRevision(page, "Monument", "2014-01-05").get
+      val image = Image.fromPageRevision(page, "Monument").get
 
       image.author === Some("PhotoMaster")
       image.monumentId === Some("nature-park-id")

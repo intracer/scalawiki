@@ -271,8 +271,10 @@ class Output {
 
     val authors = imageDb.authors.toSeq.sortBy(user => -imageDb._authorsIds(user).size)
     for (user <- authors) {
+      val noTemplateUser = user.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
+      val userLink = s"[[User:$noTemplateUser|$noTemplateUser]]"
       val columnData = Seq(
-        user.replaceAll("\\{\\{", "").replaceAll("\\}\\}", ""),
+        userLink,
         imageDb._authorsIds(user).size,
         imageDb._byAuthor(user).size
       ) ++ country.regionIds.toSeq.map(regId => imageDb._authorIdsByRegion(user).getOrElse(regId, Seq.empty).size)

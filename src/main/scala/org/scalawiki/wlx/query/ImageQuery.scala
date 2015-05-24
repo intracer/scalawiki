@@ -59,8 +59,8 @@ class ImageQueryApi extends ImageQuery with WithBot {
       pages => pages.map {
         page =>
 
-          val fromRev = Image.fromPageRevision(page, contest.fileTemplate, contest.year.toString)
-          val fromImage = Image.fromPageImages(page, contest.fileTemplate, contest.year.toString)
+          val fromRev = Image.fromPageRevision(page, contest.fileTemplate)
+          val fromImage = Image.fromPageImages(page, contest.fileTemplate)
 
           fromImage.get.copy(
             monumentId = fromRev.flatMap(_.monumentId),
