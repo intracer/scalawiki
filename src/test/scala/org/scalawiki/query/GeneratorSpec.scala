@@ -2,7 +2,7 @@ package org.scalawiki.query
 
 import java.util.concurrent.TimeUnit
 
-import org.joda.time.DateTime
+import org.scalawiki.Timestamp
 import org.scalawiki.dto.{Page, Revision, User}
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.scalawiki.wlx.dto.Image
@@ -132,15 +132,12 @@ class GeneratorSpec extends Specification with MockBotSpec {
 
       result must have size 2
 
-      val df = org.joda.time.format.DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-      def parseDate(s: String) = DateTime.parse(s, df)
-
       result(0) === Page(Some(32885574), 6, "File:\"Dovbush-rocks\" 01.JPG", Seq.empty,
-        Seq(Image.basic("File:\"Dovbush-rocks\" 01.JPG", parseDate("2014-05-20T20:54:33Z"), "Taras r", 4270655, 3648, 2736,
+        Seq(Image.basic("File:\"Dovbush-rocks\" 01.JPG", Timestamp.parse("2014-05-20T20:54:33Z"), "Taras r", 4270655, 3648, 2736,
         "https://upload.wikimedia.org/wikipedia/commons/e/ea/%22Dovbush-rocks%22_01.JPG",
           "https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_01.JPG", 32885574)))
       result(1) === Page(Some(32885597), 6, "File:\"Dovbush-rocks\" 02.JPG", Seq.empty,
-        Seq(Image.basic("File:\"Dovbush-rocks\" 02.JPG", parseDate("2014-05-20T20:55:12Z"), "Taras r", 4537737, 2736, 3648,
+        Seq(Image.basic("File:\"Dovbush-rocks\" 02.JPG", Timestamp.parse("2014-05-20T20:55:12Z"), "Taras r", 4537737, 2736, 3648,
         "https://upload.wikimedia.org/wikipedia/commons/2/26/%22Dovbush-rocks%22_02.JPG",
           "https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_02.JPG", 32885597)))
     }

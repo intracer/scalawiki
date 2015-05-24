@@ -68,7 +68,9 @@ class Parser(val action: Action) {
 
   // hacky wrapping into page // TODO refactor return types
   def parseUser(userJson: JsObject): Page = {
-    val user = userJson.validate(Parser.userReads).get
+    val hasEmptyRegistration = userJson.value.get("registration").collect({case jsStr: JsString => jsStr.value.isEmpty}).getOrElse(false)
+    val mappedJson = if (hasEmptyRegistration) userJson - "registration" else userJson
+    val user = mappedJson.validate(Parser.userReads).get
     new Page(id = None, title = user.name.get, ns = Namespace.USER_NAMESPACE, revisions = Seq(Revision(user = Some(user))))
   }
 
@@ -131,17 +133,19 @@ object Parser {
       (__ \ "talkid").readNullable[Long]
     )(Page.full _)
 
-  val userReads: Reads[User] = (
-    (__ \ "userid").read[Long] and
-      (__ \ "name").read[String]
-    )(User.apply(
-    _: Long,
-    _: String)
-    )
-
-  // implicit val DefaultJodaDateReads = jodaDateReads()
-
   val jodaDateTimeReads = Reads.jodaDateReads("yyyy-MM-dd'T'HH:mm:ss'Z'")
+
+  val userReads: Reads[User] = (
+    (__ \ "userid").readNullable[Long] and
+      (__ \ "name").readNullable[String] and
+      (__ \ "editcount").readNullable[Long] and
+      (__ \ "registration").readNullable[DateTime](jodaDateTimeReads)
+    )(User.apply(
+    _: Option[Long],
+    _: Option[String],
+    _: Option[Long],
+    _: Option[DateTime])
+    )
 
   def revisionsReads(pageId: Long): Reads[Seq[Revision]] = {
     implicit val revisionReads: Reads[Revision] = (
@@ -198,8 +202,8 @@ object Parser {
       (__ \ "ns").read[Int] and
       (__ \ "title").read[String] and
       (__ \ "timestamp").read[DateTime](jodaDateTimeReads) and
-//      (__ \ "new").read[String] and
-//      (__ \ "minor").read[Boolea] and
+      //      (__ \ "new").read[String] and
+      //      (__ \ "minor").read[Boolea] and
       (__ \ "comment").read[String] and
       (__ \ "size").read[Int]
     )(UserContrib.apply _)
@@ -221,12 +225,12 @@ case class UserContrib(userId: Long,
                        ns: Int,
                        title: String,
                        timestamp: DateTime,
-//                       isNew: Boolean,
-//                       isMinor: Boolean,
+                       //                       isNew: Boolean,
+                       //                       isMinor: Boolean,
                        comment: String,
                        size: Int) {
 
   def toPage = new Page(Some(pageId), ns, title, revisions =
-    Seq(new Revision(Some(revId), Some(pageId), Some(parentId), Some(User(userId, user)),Option(timestamp), Option(comment), None, Some(size)))
+    Seq(new Revision(Some(revId), Some(pageId), Some(parentId), Some(User(userId, user)), Option(timestamp), Option(comment), None, Some(size)))
   )
 }

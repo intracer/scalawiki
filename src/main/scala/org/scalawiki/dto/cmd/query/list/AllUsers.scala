@@ -3,6 +3,11 @@ package org.scalawiki.dto.cmd.query.list
 import org.scalawiki.dto.cmd.query.Module
 import org.scalawiki.dto.cmd._
 
+/**
+ * https://www.mediawiki.org/wiki/API:Allusers
+ * @param params
+ */
+
 case class AllUsers(override val params: AuParam[Any]*)
   extends Module[ListArg]("au", "allusers", "Enumerate all registered users, ordered by username.")
   with ListArg
@@ -48,8 +53,9 @@ case class AuProp(override val args: Seq[String]) extends StringListParameter("a
 case class AuLimit(override val arg: String) extends StringParameter("aulimit",
   "How many total user names to return.") with AuParam[String]
 
+// not a boolean actually 
 case class AuWithEditsOnly(override val arg: Boolean) extends BooleanParameter("auwitheditsonly",
-  "auwitheditsonly.") with AuParam[Boolean]
+  "Only list users who have made edits.") with AuParam[Boolean]
 
 case class AuActiveUsers(override val arg: Boolean) extends BooleanParameter("auactiveusers",
   "Only list users active in the last 30 days.") with AuParam[Boolean]

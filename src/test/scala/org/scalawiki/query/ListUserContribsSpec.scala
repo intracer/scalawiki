@@ -2,7 +2,7 @@ package org.scalawiki.query
 
 import java.util.concurrent.TimeUnit
 
-import org.joda.time.DateTime
+import org.scalawiki.Timestamp
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
 import org.scalawiki.dto.cmd.query.list.{ListParam, UcUser, UserContribs}
@@ -57,15 +57,12 @@ class ListUserContribsSpec extends Specification with MockBotSpec {
 
       val future = new DslQuery(action, bot).run()
 
-      val df = org.joda.time.format.DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-      def parseDate(s: String) = DateTime.parse(s, df)
-
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 1
       val user = User(4587601, "Catrope")
 
       val rev = new Revision(Some(136629050), Some(11650099), Some(0), Some(user),
-        Some(parseDate("2007-06-07T16:45:30Z")), Some("Creation; directing to BW"), None, Some(119))
+        Some(Timestamp.parse("2007-06-07T16:45:30Z")), Some("Creation; directing to BW"), None, Some(119))
       result(0) === new Page(Some(11650099), 3, "User talk:Catrope", revisions = Seq(rev))
     }
   }

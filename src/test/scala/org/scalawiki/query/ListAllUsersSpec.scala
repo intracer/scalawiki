@@ -2,10 +2,11 @@ package org.scalawiki.query
 
 import java.util.concurrent.TimeUnit
 
+import org.scalawiki.Timestamp
 import org.scalawiki.dto.User
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
-import org.scalawiki.dto.cmd.query.list.{AllUsers, ListParam}
+import org.scalawiki.dto.cmd.query.list.{AuProp, AllUsers, ListParam}
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.Specification
 
@@ -14,8 +15,8 @@ import scala.concurrent.duration.Duration
 
 class ListAllUsersSpec extends Specification with MockBotSpec {
 
-  "get all users without continue" should {
-    "return users in" in {
+  "get all users" should {
+    "return users without continue" in {
       val queryType = "allusers"
 
       val response1 =
@@ -56,10 +57,54 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
       users(0) === User(146308, "!")
       users(1) === User(480659, "! !")
     }
-  }
 
-  "get all users with continue" should {
-    "return users in" in {
+    "return users with editcount and registration" in {
+      val queryType = "allusers"
+
+      val response1 =
+        """{ "query": {
+          |        "allusers": [
+          |             {
+          |                "userid": 3634417,
+          |                "name": "Y",
+          |                "editcount": 13892,
+          |                "registration": "2007-02-22T03:19:08Z"
+          |            },
+          |            {
+          |                "userid": 53928,
+          |                "name": "Y (usurped)",
+          |                "editcount": 0,
+          |                "registration": ""
+          |            }
+          |         ]
+          |    }
+          |}""".stripMargin
+
+      val commands = Seq(
+        new Command(Map("action" -> "query", "list" -> queryType, "auprop" -> "registration|editcount", "continue" -> ""), response1)
+      )
+
+      val bot = getBot(commands: _*)
+
+      val action =
+        Action(
+          Query(
+            ListParam(
+              AllUsers(AuProp(Seq("registration", "editcount")))
+            )
+          )
+        )
+
+      val future = new DslQuery(action, bot).run()
+
+      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+      result must have size 2
+      val users = result.flatMap(_.revisions.head.user)
+      users(0) === new User(Some(3634417), Some("Y"), Some(13892), Some(Timestamp.parse("2007-02-22T03:19:08Z")))
+      users(1) === new User(Some(53928), Some("Y (usurped)"), Some(0), None)
+    }
+
+    "return users with continue" in {
       val queryType = "allusers"
 
       val response1 =
