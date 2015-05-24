@@ -53,12 +53,12 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
 
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2
-      val users = result.flatMap(_.revisions.head.user)
+      val users = result.flatMap(_.lastRevisionUser)
       users(0) === User(146308, "!")
       users(1) === User(480659, "! !")
     }
 
-    "return users with editcount and registration" in {
+    "return users with editcount, registration and blockinfo" in {
       val queryType = "allusers"
 
       val response1 =
@@ -68,7 +68,13 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
           |                "userid": 3634417,
           |                "name": "Y",
           |                "editcount": 13892,
-          |                "registration": "2007-02-22T03:19:08Z"
+          |                "registration": "2007-02-22T03:19:08Z",
+          |                "blockid": 278807,
+          |                "blockedby": "Gurch",
+          |                "blockedbyid": 241822,
+          |                "blockedtimestamp": "2006-10-17T06:53:13Z",
+          |                "blockreason": "username",
+          |                "blockexpiry": "infinity"
           |            },
           |            {
           |                "userid": 53928,
@@ -81,7 +87,7 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
           |}""".stripMargin
 
       val commands = Seq(
-        new Command(Map("action" -> "query", "list" -> queryType, "auprop" -> "registration|editcount", "continue" -> ""), response1)
+        new Command(Map("action" -> "query", "list" -> queryType, "auprop" -> "registration|editcount|blockinfo", "continue" -> ""), response1)
       )
 
       val bot = getBot(commands: _*)
@@ -90,7 +96,7 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
         Action(
           Query(
             ListParam(
-              AllUsers(AuProp(Seq("registration", "editcount")))
+              AllUsers(AuProp(Seq("registration", "editcount", "blockinfo")))
             )
           )
         )
@@ -99,9 +105,9 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
 
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2
-      val users = result.flatMap(_.revisions.head.user)
-      users(0) === new User(Some(3634417), Some("Y"), Some(13892), Some(Timestamp.parse("2007-02-22T03:19:08Z")))
-      users(1) === new User(Some(53928), Some("Y (usurped)"), Some(0), None)
+      val users = result.flatMap(_.lastRevisionUser)
+      users(0) === new User(Some(3634417), Some("Y"), Some(13892), Some(Timestamp.parse("2007-02-22T03:19:08Z")), Some(true))
+      users(1) === new User(Some(53928), Some("Y (usurped)"), Some(0), None, None)
     }
 
     "return users with continue" in {
@@ -162,7 +168,7 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
 
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 4
-      val users = result.flatMap(_.revisions.head.user)
+      val users = result.flatMap(_.lastRevisionUser)
       users(0) === User(146308, "!")
       users(1) === User(480659, "! !")
       users(2) === User(505506, "! ! !")

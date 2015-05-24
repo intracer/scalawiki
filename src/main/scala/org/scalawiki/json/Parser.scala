@@ -70,7 +70,9 @@ class Parser(val action: Action) {
   def parseUser(userJson: JsObject): Page = {
     val hasEmptyRegistration = userJson.value.get("registration").collect({case jsStr: JsString => jsStr.value.isEmpty}).getOrElse(false)
     val mappedJson = if (hasEmptyRegistration) userJson - "registration" else userJson
-    val user = mappedJson.validate(Parser.userReads).get
+
+    val blocked = if (userJson.keys.contains("blockid")) Some(true) else None
+    val user = mappedJson.validate(Parser.userReads).get.copy(blocked = blocked)
     new Page(id = None, title = user.name.get, ns = Namespace.USER_NAMESPACE, revisions = Seq(Revision(user = Some(user))))
   }
 
