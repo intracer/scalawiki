@@ -4,7 +4,7 @@ import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
 import org.scalawiki.wlx.dto.Contest
-import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
+import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
 import org.scalawiki.wlx.slick.Slick
 import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
 
@@ -83,16 +83,15 @@ class Statistics {
 
         fillLists(monumentDb, imageDb)
 
-        val total = new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)
-        for (totalImages <- total) {
-
-          val totalImageDb = new ImageDB(contest, totalImages, monumentDb)
-
-          regionalStat(contest, monumentDb, imageQueryDb, imageDb, totalImageDb)
-
-          Thread.sleep(5000)
-        }
-
+      //        val total = new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)
+      //        for (totalImages <- total) {
+      //
+      //          val totalImageDb = new ImageDB(contest, totalImages, monumentDb)
+      //
+      //          regionalStat(contest, monumentDb, imageQueryDb, imageDb, totalImageDb)
+      //
+      //          Thread.sleep(5000)
+      //        }
     }
   }
 
@@ -101,7 +100,7 @@ class Statistics {
     val gallery = new Output().authorsImages(lessThan2Mp, imageDb.monumentDb)
     val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
 
-    MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Less than 2Mp").edit(gallery, "updating")
+    MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Less than 2Mp").edit(gallery, Some("updating"))
   }
 
   def wrongIds(wlmContest: Contest, imageDb: ImageDB, monumentDb: MonumentDB) {
@@ -112,33 +111,33 @@ class Statistics {
     val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
 
     val text = wrongIdImages.map(_.title).mkString("<gallery>", "\n", "</gallery>")
-    MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Images with bad ids").edit(text, "updating")
+    MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Images with bad ids").edit(text, Some("updating"))
   }
 
   def byDayAndRegion(imageDb: ImageDB): Unit = {
 
-//    val byDay = imageDb.withCorrectIds.groupBy(_.date.map(_.toDate))
-//
-//    val firstSlice = (16 to 16).flatMap(day => byDay.get)//.getOrElse(day.toString, Seq.empty))
-//
-//    val byRegion = firstSlice.groupBy(im => Monument.getRegionId(im.monumentId))
-//
-//    var text = ""
-//
-//    val contest = imageDb.contest
-//    val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
-//
-//    val dayPage = s"Commons:$contestPage/Day 2"
-//    for (regionId <- SortedSet(byRegion.keySet.toSeq: _*)) {
-//      val regionName: String = imageDb.monumentDb.contest.country.regionById(regionId).name
-//      val pageName = s"$dayPage Region $regionName"
-//      val gallery = byRegion(regionId).map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
-//
-//      text += s"* [[$pageName|$regionName]]\n"
-//
-//      MwBot.get(MwBot.commons).page(pageName).edit(gallery, "updating")
-//    }
-//    MwBot.get(MwBot.commons).page(dayPage).edit(text, "updating")
+    //    val byDay = imageDb.withCorrectIds.groupBy(_.date.map(_.toDate))
+    //
+    //    val firstSlice = (16 to 16).flatMap(day => byDay.get)//.getOrElse(day.toString, Seq.empty))
+    //
+    //    val byRegion = firstSlice.groupBy(im => Monument.getRegionId(im.monumentId))
+    //
+    //    var text = ""
+    //
+    //    val contest = imageDb.contest
+    //    val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
+    //
+    //    val dayPage = s"Commons:$contestPage/Day 2"
+    //    for (regionId <- SortedSet(byRegion.keySet.toSeq: _*)) {
+    //      val regionName: String = imageDb.monumentDb.contest.country.regionById(regionId).name
+    //      val pageName = s"$dayPage Region $regionName"
+    //      val gallery = byRegion(regionId).map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
+    //
+    //      text += s"* [[$pageName|$regionName]]\n"
+    //
+    //      MwBot.get(MwBot.commons).page(pageName).edit(gallery, "updating")
+    //    }
+    //    MwBot.get(MwBot.commons).page(dayPage).edit(text, "updating")
   }
 
   def authorsStat(monumentDb: MonumentDB, imageDb: ImageDB) {
@@ -149,7 +148,7 @@ class Statistics {
     val contest = imageDb.contest
     val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
 
-    MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Number of objects pictured by uploader").edit(text, "updating")
+    MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Number of objects pictured by uploader").edit(text, Some("updating"))
   }
 
   def regionalStat(wlmContest: Contest, monumentDb: MonumentDB,
@@ -186,14 +185,14 @@ class Statistics {
               //      val bot = MwBot.get(MwBot.commons)
               //      bot.await(bot.page("Commons:Wiki Loves Monuments 2014 in Ukraine/Regional statistics").edit(regionalStat, "update statistics"))
 
-              MwBot.get(MwBot.commons).page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, "updating")
+              MwBot.get(MwBot.commons).page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, Some("updating"))
 
               val authorsByRegionTotal = output.authorsMonuments(totalImageDb) + s"\n[[Category:$categoryName]]"
 
-              MwBot.get(MwBot.commons).page(s"Commons:$categoryName/3 years total number of objects pictured by uploader").edit(authorsByRegionTotal, "updating")
+              MwBot.get(MwBot.commons).page(s"Commons:$categoryName/3 years total number of objects pictured by uploader").edit(authorsByRegionTotal, Some("updating"))
 
               val mostPopularMonuments = output.mostPopularMonuments(imageDbs, totalImageDb, monumentDb)
-              MwBot.get(MwBot.commons).page(s"Commons:$categoryName/Most photographed objects").edit(mostPopularMonuments, "updating")
+              MwBot.get(MwBot.commons).page(s"Commons:$categoryName/Most photographed objects").edit(mostPopularMonuments, Some("updating"))
 
               val monumentQuery = MonumentQuery.create(wlmContest)
 

@@ -1,6 +1,6 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.parser.TemplateParser
+import org.scalawiki.wikitext.TemplateParser
 import org.scalawiki.wlx.dto.Monument
 import org.scalawiki.wlx.dto.lists.ListConfig
 

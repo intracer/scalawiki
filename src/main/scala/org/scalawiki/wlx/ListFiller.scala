@@ -34,7 +34,7 @@ class ListFiller extends WithBot {
 
       val result = bot.pageText(title).flatMap { pageText =>
           val (newText: String, comment: String) = addPhotosToPageText(monumentDb, imageDb, titles, title, index, ids, pageText)
-          bot.page(title).edit(newText, comment)
+          bot.page(title).edit(newText, Some(comment))
       }
       result
     }

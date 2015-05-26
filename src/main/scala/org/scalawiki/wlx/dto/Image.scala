@@ -5,7 +5,7 @@ import java.nio.file.{Files, Paths}
 import org.joda.time.DateTime
 import org.scalawiki.MwBot
 import org.scalawiki.dto.{User, Page}
-import org.scalawiki.parser.TemplateParser
+import org.scalawiki.wikitext.TemplateParser
 
 
 case class Image(title: String,
