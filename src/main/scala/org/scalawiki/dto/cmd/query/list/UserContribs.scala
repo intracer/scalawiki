@@ -1,5 +1,6 @@
 package org.scalawiki.dto.cmd.query.list
 
+import org.joda.time.DateTime
 import org.scalawiki.dto.cmd.query.Module
 import org.scalawiki.dto.cmd._
 
@@ -12,11 +13,11 @@ case class UserContribs(override val params: UcParam[Any]*)
 
 trait UcParam[+T] extends Parameter[T]
 
-case class UcStart(override val arg: String) extends StringParameter("ucstart",
-  "The timestamp to start listing from.") with UcParam[String]
+case class UcStart(override val arg: DateTime) extends DateTimeParameter("ucstart",
+  "The timestamp to start listing from.") with UcParam[DateTime]
 
-case class UcEnd(override val arg: String) extends StringParameter("ucend",
-  "The timestamp to end listing at.") with UcParam[String]
+case class UcEnd(override val arg: DateTime) extends DateTimeParameter("ucend",
+  "The timestamp to end listing at.") with UcParam[DateTime]
 
 case class UcUser(override val args: Seq[String]) extends StringListParameter("ucuser",
   "Users to retrieve contributions for.") with UcParam[String]

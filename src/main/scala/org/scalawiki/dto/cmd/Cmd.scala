@@ -1,6 +1,7 @@
 package org.scalawiki.dto.cmd
 
 import org.joda.time.DateTime
+import org.scalawiki.Timestamp
 import org.scalawiki.dto.cmd.query.Query
 
 trait Parameter[+T] extends Equals {
@@ -66,7 +67,11 @@ abstract class LongParameter(val name: String, val summary: String) extends Sing
 
 abstract class IdParameter(val name: String, val summary: String) extends SingleParameter[Long]
 
-abstract class DateTimeParameter(val name: String, val summary: String) extends SingleParameter[DateTime]
+abstract class DateTimeParameter(val name: String, val summary: String) extends SingleParameter[DateTime] {
+
+  override def pairs: Seq[(String, String)] = Seq(name -> Timestamp.format(arg))
+}
+
 
 abstract class BooleanParameter(val name: String, val summary: String) extends SingleParameter[Boolean]
 
