@@ -7,6 +7,7 @@ import org.scalawiki.dto.cmd.query.Generator
 import org.scalawiki.dto.cmd.query.list.ListArg
 import org.scalawiki.dto.cmd.query.prop.PropArg
 import org.scalawiki.wlx.dto.Image
+import play.api.data.validation.ValidationError
 import play.api.libs.json._
 
 import scala.util.Try
@@ -135,7 +136,26 @@ object Parser {
       (__ \ "talkid").readNullable[Long]
     )(Page.full _)
 
-  val jodaDateTimeReads = Reads.jodaDateReads("yyyy-MM-dd'T'HH:mm:ss'Z'")
+  def jodaDateReads(pattern: String, corrector: String => String = identity): Reads[org.joda.time.DateTime] = new Reads[org.joda.time.DateTime] {
+    import org.joda.time.DateTime
+
+    val df = org.joda.time.format.DateTimeFormat.forPattern(pattern).withZoneUTC()
+
+    def reads(json: JsValue): JsResult[DateTime] = json match {
+      case JsNumber(d) => JsSuccess(new DateTime(d.toLong))
+      case JsString(s) => parseDate(corrector(s)) match {
+        case Some(d) => JsSuccess(d)
+        case None => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.jodadate.format", pattern))))
+      }
+      case _ => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.date"))))
+    }
+
+    private def parseDate(input: String): Option[DateTime] =
+      scala.util.control.Exception.allCatch[DateTime] opt DateTime.parse(input, df)
+
+  }
+
+  val jodaDateTimeReads = jodaDateReads("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
   val userReads: Reads[User] = (
     (__ \ "userid").readNullable[Long] and
@@ -206,8 +226,8 @@ object Parser {
       (__ \ "timestamp").read[DateTime](jodaDateTimeReads) and
       //      (__ \ "new").read[String] and
       //      (__ \ "minor").read[Boolea] and
-      (__ \ "comment").read[String] and
-      (__ \ "size").read[Int]
+      (__ \ "comment").readNullable[String] and   // can be hidden
+      (__ \ "size").readNullable[Long]
     )(UserContrib.apply _)
 
   //  val langLinkRead: Reads[(String, String)] = (
@@ -229,10 +249,10 @@ case class UserContrib(userId: Long,
                        timestamp: DateTime,
                        //                       isNew: Boolean,
                        //                       isMinor: Boolean,
-                       comment: String,
-                       size: Int) {
+                       comment: Option[String],
+                       size: Option[Long]) {
 
   def toPage = new Page(Some(pageId), ns, title, revisions =
-    Seq(new Revision(Some(revId), Some(pageId), Some(parentId), Some(User(userId, user)), Option(timestamp), Option(comment), None, Some(size)))
+    Seq(new Revision(Some(revId), Some(pageId), Some(parentId), Some(User(userId, user)), Option(timestamp), comment, None, size))
   )
 }

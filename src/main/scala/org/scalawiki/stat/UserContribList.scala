@@ -40,7 +40,7 @@ object UserContribList extends WithBot {
               )
             )))
 
-            new DslQuery(contribsQuery, bot).run()
+            new DslQuery(contribsQuery, bot).run(limit = Some(300))
         }
 
         contribsFuture.map {
