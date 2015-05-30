@@ -4,7 +4,7 @@ import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
 import org.scalawiki.wlx.dto.Contest
-import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
+import org.scalawiki.wlx.query.{ImageQueryApi, ImageQuery, MonumentQuery}
 import org.scalawiki.wlx.slick.Slick
 import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
 
@@ -74,6 +74,9 @@ class Statistics {
     imageDbFuture onSuccess {
       case imageDb =>
 
+        //        val authors = imageDb.authors.toSeq
+        //        authors.foreach(user => message(MwBot.get(MwBot.commons), user, message1))
+
         authorsStat(monumentDb, imageDb)
         //        byDayAndRegion(imageDb)
         //        new SpecialNominations().specialNominations(contest, imageDb, monumentQuery)
@@ -83,17 +86,45 @@ class Statistics {
 
         fillLists(monumentDb, imageDb)
 
-      //        val total = new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)
-      //        for (totalImages <- total) {
-      //
-      //          val totalImageDb = new ImageDB(contest, totalImages, monumentDb)
-      //
-      //          regionalStat(contest, monumentDb, imageQueryDb, imageDb, totalImageDb)
-      //
-      //          Thread.sleep(5000)
-      //        }
+        val total = new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)
+        for (totalImages <- total) {
+
+          val totalImageDb = new ImageDB(contest, totalImages, monumentDb)
+
+          regionalStat(contest, monumentDb, imageQueryDb, imageDb, totalImageDb)
+
+          Thread.sleep(5000)
+        }
     }
   }
+
+  def message(bot: MwBot, user: String, msg: String => String): Unit = {
+    bot.page("User_talk:" + user).edit(msg(user), section = Some("new"))
+  }
+
+  def message1(user: String): String = {
+    val msg =
+      s"""== Допоможіть захистити пам'ятки природно-заповідного фонду! ==
+         |[[File:Надпис на охоронній табличці не відповідає офіційній назві парку - "Червонський". Аналогічно із парком в Андрушівці.jpg|right|150px|thumb|Надпис на охоронній табличці не відповідає офіційній назві парку&nbsp;— «Червонський»]]
+         |Вітаємо!
+         |
+         |Беручи участь у конкурсі [http://wikilovesearth.org.ua/about/ «Вікі любить Землю»], Ви допомагаєте накопичити та поширити вільні знання про пам'ятки природи України. Це допомагає їх зберегти. Але знання у відкритому доступі&nbsp;— це ще далеко не все, що потрібно для збереження природно-заповідного фонду.
+         |
+         |Ви бачите пам'ятки, зазначені в списках, наживо, бачите в якому вони стані. Просимо нас повідомити, якщо Ви зауважили:
+         |*Будь-які порушення на територіях об'єктів природно-заповідного фонду (рубка, сміття, будівництво тощо);
+         |*Чи були наявні на обстежених об'єктах охоронні знаки?
+         |
+         |Також бувають випадки, що самі охоронні знаки (таблички) наявні, але в них трапляються помилки, які не дають ідентифікувати належним чином цей об'єкт.
+         |
+         |Будь ласка, надсилайте повідомлення на електронну пошту: pzf.regions{{@}}gmail.com. У повідомленні вкажіть назву об'єкту, коли і яке порушення було виявлене, а також Ваше ім'я та контактні дані для зворотного зв'язку. Бажано до повідомлення додати фотографію.
+         |
+         |Завдяки Вашим повідомленням, ми зможемо надіслати скарги до відповідних органів, зупинити порушення та відновити порядок. Завдяки точній інформації інколи дійсно можна реалізувати корисні справи!
+         |
+         |Більше інформації читайте за лінком: [http://wikilovesearth.org.ua/2015/05/zahyst/ на блозі конкурсу]. Пишіть [[User talk:Olena Zakharian|Олені Захарян]], якщо є додаткові запитання.
+         |<small>повідомлення доставлено за допомогою [[User:IlyaBot|IlyaBot]]</small>""".stripMargin
+    msg
+  }
+
 
   def lessThan2MpGallery(contest: Contest, imageDb: ImageDB) = {
     val lessThan2Mp = imageDb.byMegaPixelFilterAuthorMap(_ < 2)
@@ -237,6 +268,8 @@ object Statistics {
     val stat = new Statistics()
 
     stat.init(Contest.WLEUkraine(2015, "05-01", "05-31"))
+
+    //stat.message(MwBot.get(MwBot.commons), "Ilya", stat.message1)
 
     //    val contests = Contest.allWLE
     //    val dbs = contests.map(stat.getMonumentDb)

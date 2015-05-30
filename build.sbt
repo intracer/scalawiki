@@ -12,7 +12,7 @@ resolvers := Seq("spray repo" at "http://repo.spray.io",
 
 libraryDependencies ++= {
   val akkaV = "2.3.9"
-  val sprayV = "1.3.2"
+  val sprayV = "1.3.3"
   val kamonV = "0.4.0"
   val aspectJV = "1.8.5"
   Seq(

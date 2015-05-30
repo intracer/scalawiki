@@ -46,13 +46,13 @@ class Charts extends WithBot {
 
   def createPieDataset() = {
     val dataset = new DefaultPieDataset()
-    dataset.setValue("2012", 3240.0)
-    dataset.setValue("2013", 3046.0)
-    dataset.setValue("2014", 5328.0)
-    dataset.setValue("2013 & 2014", 2274.0)
-    dataset.setValue("2012 & 2014", 1069.0)
-    dataset.setValue("2012 & 2013 & 2014", 2402.0)
-    dataset.setValue("2012 & 2013", 1615.0)
+    dataset.setValue("2013", 3240.0)
+    dataset.setValue("2014", 3046.0)
+    dataset.setValue("2015", 5328.0)
+    dataset.setValue("2014 & 2015", 2274.0)
+    dataset.setValue("2013 & 2015", 1069.0)
+    dataset.setValue("2013 & 2014 & 2015", 2402.0)
+    dataset.setValue("2013 & 2014", 1615.0)
 
     dataset
   }
@@ -84,13 +84,13 @@ class Charts extends WithBot {
     plot.setShadowYOffset(0)
     plot.setBackgroundPaint(Color.white)
 
-    plot.setSectionPaint("2012", color2012)
-    plot.setSectionPaint("2012 & 2013", blend(color2012, color2013))
-    plot.setSectionPaint("2013", color2013)
-    plot.setSectionPaint("2013 & 2014", blend(color2013, color2014))
-    plot.setSectionPaint("2014", color2014)
-    plot.setSectionPaint("2012 & 2014", blend(color2012, color2014))
-    plot.setSectionPaint("2012 & 2013 & 2014", new Color(0x99CC00))
+    plot.setSectionPaint("2013", color2012)
+    plot.setSectionPaint("2013 & 2014", blend(color2012, color2013))
+    plot.setSectionPaint("2014", color2013)
+    plot.setSectionPaint("2014 & 2015", blend(color2013, color2014))
+    plot.setSectionPaint("2015", color2014)
+    plot.setSectionPaint("2013 & 2015", blend(color2012, color2014))
+    plot.setSectionPaint("2013 & 2014 & 2015", new Color(0x99CC00))
 
     val gen = new StandardPieSectionLabelGenerator("{0}:\n{1} ({2})", new DecimalFormat("0"), new DecimalFormat("0%"))
     plot.setLabelGenerator(gen)
@@ -166,9 +166,9 @@ class Charts extends WithBot {
     val renderer = plot.getRenderer.asInstanceOf[BarRenderer]
     renderer.setDrawBarOutline(true)
 
-    renderer.setSeriesPaint(0, color2014)
+    renderer.setSeriesPaint(0, color2012)
     renderer.setSeriesPaint(1, color2013)
-    renderer.setSeriesPaint(2, color2012)
+    renderer.setSeriesPaint(2, color2014)
 
     //    val domainAxis = plot.getDomainAxis
     //    domainAxis.setCategoryLabelPositions(
