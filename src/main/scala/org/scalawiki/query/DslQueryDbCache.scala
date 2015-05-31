@@ -22,7 +22,7 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
   import scala.slick.driver.H2Driver.simple._
 
   def run(): Future[Seq[Page]] = {
-    if (false) dslQuery.run()
+    if (!dbCache) dslQuery.run()
     else {
       val action = dslQuery.action
       action.query.map {

@@ -59,8 +59,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot, dbCach
       Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
     ))
 
-    //new DslQueryDbCache(
-      new DslQuery(action, bot).run()
+    new DslQueryDbCache(new DslQuery(action, bot)).run()
   }
 
   override def imageInfoByGenerator(
