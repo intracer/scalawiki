@@ -21,11 +21,13 @@ class UserDaoSpec extends Specification with BeforeAfter {
   }
 
   override def before = {
-    val dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
-    mwDb = new MwDatabase(dc.db)
+      val dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
+      mwDb = new MwDatabase(dc.db, None, dc.driver)
   }
 
-  override def after = if (mwDb != null) mwDb.db.close()
+  override def after = {
+    //mwDb.db.close()
+  }
 
   "user" should {
 

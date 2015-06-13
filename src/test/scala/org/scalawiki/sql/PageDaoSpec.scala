@@ -31,7 +31,9 @@ class PageDaoSpec extends Specification with BeforeAfter {
     mwDb = new MwDatabase(dc.db)
   }
 
-  override def after = mwDb.db.close()
+  override def after = {
+    //mwDb.db.close()
+  }
 
   "page" should {
     "not insert without revision" in {
@@ -50,6 +52,8 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val page = Page(None, 0, "title", Seq(revision))
 
       val pageId = pageDao.insert(page)
+
+      Thread.sleep(1000)
 
       val dbPage = pageDao.withText(pageId)
 
@@ -165,7 +169,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       dbPage.id.isDefined === true
       dbPage.id === pageId
 
-      pageDao.insert(dbPage.copy(title = "other title"))
+      pageDao.insert(dbPage.copy(title = "other title")) must throwA[SQLException]
 
       pageDao.list.size === 1
       revisionDao.list.size === 1

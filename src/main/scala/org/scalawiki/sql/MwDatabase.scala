@@ -5,6 +5,8 @@ import slick.driver.H2Driver.api._
 import slick.driver.{H2Driver, JdbcProfile}
 import slick.jdbc.meta.MTable
 import slick.lifted.TableQuery
+import spray.util.pimpFuture
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class MwDatabase(val db: Database,
@@ -48,27 +50,36 @@ class MwDatabase(val db: Database,
     )
 
   def createTables() {
-    createIfNotExists(tables: _*)
+    createIfNotExists()
+  }
+
+  def existingTables(existing: Boolean) = {
+    db.run(MTable.getTables).map {
+      dbTables =>
+        val dbTableNames = dbTables.map(_.name.name).toSet
+        tables.filter(t => {
+          val tableName = t.baseTableRow.tableName
+          val contains = dbTableNames.contains(tableName)
+          if (existing)
+            contains
+          else
+            !contains
+        })
+    }
   }
 
   def dropTables() {
-    tables.foreach { table =>
-      db.run(MTable.getTables(table.baseTableRow.tableName)).map { result =>
-        if (result.nonEmpty) {
-          db.run(table.schema.drop)
-        }
-      }
-    }
+    val toDrop = existingTables(true).await
+    db.run(
+      DBIO.sequence(toDrop.map(_.schema.drop))
+    ).await
   }
 
-  def createIfNotExists(tables: TableQuery[_ <: Table[_]]*) {
-    tables foreach { table =>
-      db.run(MTable.getTables(table.baseTableRow.tableName)).map { result =>
-        if (result.isEmpty) {
-          db.run(table.schema.create)
-        }
-      }
-    }
+  def createIfNotExists() {
+    val toCreate = existingTables(false).await
+    db.run(
+      DBIO.sequence(toCreate.map(_.schema.create))
+    ).await
   }
 }
 

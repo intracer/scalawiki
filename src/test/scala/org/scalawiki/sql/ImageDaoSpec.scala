@@ -24,7 +24,9 @@ class ImageDaoSpec extends Specification with BeforeAfter {
     mwDb = new MwDatabase(dc.db)
   }
 
-  override def after = mwDb.db.close()
+  override def after = {
+    //mwDb.db.close()
+  }
 
   "image" should {
     "insert" in {

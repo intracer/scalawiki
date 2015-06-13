@@ -22,7 +22,9 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
     mwDb = new MwDatabase(dc.db)
   }
 
-  override def after = mwDb.db.close()
+  override def after = {
+    //mwDb.db.close()
+  }
 
   val tableNames = Set("category",
     "image",

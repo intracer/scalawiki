@@ -1,6 +1,6 @@
 package org.scalawiki.sql
 
-import scala.slick.driver.H2Driver.simple._
+import slick.driver.H2Driver.api._
 
 /**
  * https://www.mediawiki.org/wiki/Manual:Category_table

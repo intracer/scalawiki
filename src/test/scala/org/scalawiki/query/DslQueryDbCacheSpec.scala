@@ -37,10 +37,12 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
 
   override def before = {
     dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
-
+    mwDb = new MwDatabase(dc.db)
   }
 
-  override def after = dc.db.close()
+  override def after = {
+    //dc.db.close()
+  }
 
   val pageText1 = "some vandalism"
   val pageText2 = "more vandalism"

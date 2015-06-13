@@ -38,7 +38,7 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
     val pageIdF = (
       if (page.id.isDefined) {
-          if (exists(page.id.get))
+          if (!exists(page.id.get))
             mwDb.db.run(pages.forceInsert(page)).map(_ => page.id)
           else
             Future.successful(page.id)
@@ -63,9 +63,9 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
       revisionDao.insert(withPage)
     }
 
-    pages.filter(_.id === pageId)
+    db.run(pages.filter(_.id === pageId)
       .map(p => p.pageLatest)
-      .update(revIds.last)
+      .update(revIds.last)).await
   }
 
   def addImages(pageId: Long, images: Seq[Image]) = {
@@ -75,7 +75,7 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     }
   }
 
-  def list = pages.sortBy(_.id)
+  def list = db.run(pages.sortBy(_.id).result).await
 
   def get(id: Long): Option[Page] =
     db.run(pages.filter(_.id === id).result.headOption).await

@@ -3,7 +3,7 @@ package org.scalawiki.sql
 import org.scalawiki.dto.{Contributor, User}
 import org.scalawiki.wlx.dto.Image
 
-import scala.slick.driver.H2Driver.simple._
+import slick.driver.H2Driver.api._
 
 /**
  * https://www.mediawiki.org/wiki/Manual:Image_table
