@@ -12,32 +12,35 @@ import org.scalawiki.dto.{Page, Revision, User}
 import org.scalawiki.sql.MwDatabase
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.{BeforeAfter, Specification}
+import slick.backend.DatabaseConfig
+import slick.driver.JdbcProfile
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import scala.slick.driver.H2Driver.simple._
 
 class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfter {
 
   sequential
 
-  var session1: Session = _
 
-  override def session = session1
+  override def database = Some(mwDb)
 
   var bot: MwBot = _
-  def database: MwDatabase = bot.mwDb.get
-  def pageDao = database.pageDao
-  def revisionDao = database.revisionDao
+
+  var dc: DatabaseConfig[JdbcProfile] = _
+
+  var mwDb: MwDatabase = _
+
+  def pageDao = mwDb.pageDao
+
+  def revisionDao = mwDb.revisionDao
 
   override def before = {
-    // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()
-    session1 = Database.forURL("jdbc:h2:mem:test", driver = "org.h2.Driver").createSession()
+    dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
+
   }
 
-  override def after = session.close()
-
-  override val dbCache: Boolean = true
+  override def after = dc.db.close()
 
   val pageText1 = "some vandalism"
   val pageText2 = "more vandalism"
@@ -78,7 +81,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
           "prop" -> "revisions", "rvprop" -> "ids|content"), responseWithContent())
       )
 
-      bot = getBot(expectedCommands:_*)
+      bot = getBot(expectedCommands: _*)
 
       val future = bot.page("Category:SomeCategory")
         .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
@@ -96,7 +99,6 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
     }
 
     "from cache in" in {
-      implicit val s = session
 
       val expectedCommands = Seq(
         new Command(Map("action" -> "query",
@@ -114,7 +116,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
           "continue" -> ""), responseWithRevIds())
       )
 
-      bot = getBot(expectedCommands:_*)
+      bot = getBot(expectedCommands: _*)
 
       val future = bot.page("Category:SomeCategory")
         .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
@@ -152,7 +154,6 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
     }
 
     "add page to cache" in {
-      implicit val s = session
       val expectedCommands = Seq(
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
@@ -280,7 +281,6 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
         Seq(Revision(Some(11L), Some(569559L), None, None, None, None, Some(pageText1)))
       )
 
-      implicit val s = session
       pageDao.list.size must be_==(1).eventually
       val byRevs = pageDao.findByRevIds(Seq(569559L), Seq(11))
       byRevs.size === 1

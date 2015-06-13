@@ -5,7 +5,9 @@ import org.scalawiki.sql.{MwDatabase, Text}
 
 import scala.concurrent.Future
 import scala.language.higherKinds
-import scala.slick.driver.JdbcProfile
+import slick.driver.JdbcProfile
+import spray.util.pimpFuture
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
@@ -25,7 +27,8 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     revisions.forceInsertAll(revisionSeq)
   }
 
-  def insert(revision: Revision): Future[Long] = {
+  def insert(revision: Revision): Long = {
+
     val revId = if (revision.id.isDefined) {
       exists(revision.id.get) flatMap { e =>
         if (e)
@@ -37,7 +40,7 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     else {
       db.run(autoInc += addUser(addText(revision)))
     }
-    revId.map(_.get)
+    revId.map(_.get).await
   }
 
   def addText(revision: Revision): Revision = {
@@ -77,7 +80,7 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     }
   }
 
-  def list = db.run(revisions.result)
+  def list = db.run(revisions.result).await
 
   def get(id: Long): Future[Revision] =
     db.run(revisions.filter(_.id === id).result.head)

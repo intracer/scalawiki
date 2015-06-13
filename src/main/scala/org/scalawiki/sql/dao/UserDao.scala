@@ -1,37 +1,41 @@
 package org.scalawiki.sql.dao
 
 import org.scalawiki.dto.User
-import org.scalawiki.sql.Users
+import org.scalawiki.sql.{MwDatabase, Users}
 
 import scala.language.higherKinds
 import slick.driver.JdbcProfile
 import slick.lifted.TableQuery
+import spray.util.pimpFuture
 
-class UserDao(val query: TableQuery[Users], val driver: JdbcProfile) {
+class UserDao(val mwDb: MwDatabase, val query: TableQuery[Users], val driver: JdbcProfile) {
 
   import driver.api._
 
   private val autoInc = query returning query.map(_.id)
 
-  def insert(user: User)(implicit session: Session): Option[Long] = {
+  val db = mwDb.db
+
+
+  def insert(user: User): Option[Long] = {
     if (user.id.isDefined) {
-      query.forceInsert(user)
+      db.run(query.forceInsert(user)).await
       user.id
     }
     else {
-      autoInc += user
+      db.run(autoInc += user).await
     }
   }
 
-  def list(implicit session: Session) = query.sortBy(_.id).run
+  def list = db.run(query.sortBy(_.id).result).await
 
-  def find(ids: Iterable[Long])(implicit session: Session): Seq[User] =
-    query.filter(_.id inSet ids).sortBy(_.id).run
+  def find(ids: Iterable[Long]): Seq[User] =
+    db.run(query.filter(_.id inSet ids).sortBy(_.id).result).await
 
-  def get(id: Long)(implicit session: Session): Option[User] =
-    query.filter(_.id === id).firstOption
+  def get(id: Long): Option[User] =
+    db.run(query.filter(_.id === id).result.headOption).await
 
-  def get(name: String)(implicit session: Session): Option[User] =
-    query.filter(_.name === name).firstOption
+  def get(name: String): Option[User] =
+    db.run(query.filter(_.name === name).result.headOption).await
 
 }

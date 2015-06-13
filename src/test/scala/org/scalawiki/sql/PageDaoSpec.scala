@@ -6,14 +6,12 @@ import org.scalawiki.dto.{Namespace, Page, Revision, User}
 import org.scalawiki.wlx.dto.Image
 import org.specs2.mutable.{BeforeAfter, Specification}
 
-import scala.slick.driver.H2Driver.simple._
-import scala.util.Failure
+import slick.driver.JdbcProfile
+import slick.backend.DatabaseConfig
 
 class PageDaoSpec extends Specification with BeforeAfter {
 
   sequential
-
-  implicit var session: Session = _
 
   var mwDb: MwDatabase = _
 
@@ -29,19 +27,18 @@ class PageDaoSpec extends Specification with BeforeAfter {
   }
 
   override def before = {
-    // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()
-    session = Database.forURL("jdbc:h2:mem:test", driver = "org.h2.Driver").createSession()
-    mwDb = new MwDatabase(session)
+    val dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
+    mwDb = new MwDatabase(dc.db)
   }
 
-  override def after = session.close()
+  override def after = mwDb.db.close()
 
   "page" should {
     "not insert without revision" in {
       createSchema()
 
       val page = new Page(None, 0, "title")
-      pageDao.insert(page) must beFailedTry.withThrowable[IllegalArgumentException]("requirement failed: page has no revisions")
+      pageDao.insert(page) must throwA[IllegalArgumentException]
     }
 
     "insert with revision" in {
@@ -54,7 +51,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val pageId = pageDao.insert(page)
 
-      val dbPage = pageDao.withText(pageId.get).get
+      val dbPage = pageDao.withText(pageId)
 
       dbPage.text === Some(text)
 
@@ -71,7 +68,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val page = Page(None, 0, "title", Seq(revision))
 
       val pageId = pageDao.insert(page)
-      val dbPage = pageDao.withText(pageId.get).get
+      val dbPage = pageDao.withText(pageId)
 
       val dbRev = dbPage.revisions.head
       val contributor = dbRev.user
@@ -94,7 +91,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val page = Page(None, 0, "title", Seq(revision))
 
       val pageId = pageDao.insert(page)
-      val dbPage = pageDao.withText(pageId.get).get
+      val dbPage = pageDao.withText(pageId)
 
       val dbRev = dbPage.revisions.head
       val contributor = dbRev.user
@@ -117,7 +114,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val page = Page(None, 0, "title", Seq(revision))
 
       val pageId = pageDao.insert(page)
-      val dbPage = pageDao.withText(pageId.get).get
+      val dbPage = pageDao.withText(pageId)
 
       val dbRev = dbPage.revisions.head
       val contributor = dbRev.user
@@ -164,7 +161,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val pageId = pageDao.insert(page).toOption
 
-      val dbPage = pageDao.withText(pageId.get).get
+      val dbPage = pageDao.withText(pageId.get)
       dbPage.id.isDefined === true
       dbPage.id === pageId
 
@@ -186,7 +183,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val pageId = pageDao.insert(page1)
 
-      pageDao.insert(page2) must beFailedTry.withThrowable[SQLException]
+      pageDao.insert(page2) must throwA[SQLException]
 
       pageDao.list.size === 1
       revisionDao.list.size === 1
@@ -205,8 +202,8 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val pageId1 = pageDao.insert(page1)
       val pageId2 = pageDao.insert(page2)
 
-      val dbPage1 = pageDao.withText(pageId1.get).get
-      val dbPage2 = pageDao.withText(pageId2.get).get
+      val dbPage1 = pageDao.withText(pageId1)
+      val dbPage2 = pageDao.withText(pageId2)
 
       dbPage1.title === "title"
       dbPage2.title === "title"
@@ -223,15 +220,14 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val page = Page(None, 0, "title", revisions)
 
-      val pageId = pageDao.insert(page).toOption
-      pageId.isDefined === true
+      val pageId = pageDao.insert(page)
 
-      val dbPage = pageDao.withText(pageId.get).get
+      val dbPage = pageDao.withText(pageId)
 
       dbPage.text === Some(texts.head)
       dbPage.revisions.size === 1
 
-      val withRevisions = pageDao.withRevisions(pageId.get).get
+      val withRevisions = pageDao.withRevisions(pageId)
       withRevisions.text === Some(texts.head)
 
       val allRevisions = withRevisions.revisions
@@ -313,7 +309,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val pageIds = pages.flatMap(p => pageDao.insert(p).toOption.toSeq)
       pageIds.size === 3
 
-      val withRevisions = pageIds.flatMap(id => pageDao.withRevisions(id))
+      val withRevisions = pageIds.map(id => pageDao.withRevisions(id))
 
       withRevisions.map(_.revisions.size) === Seq(2, 2, 2)
 

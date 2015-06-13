@@ -31,9 +31,9 @@ class MwDatabase(val db: Database,
   val users = TableQuery[Users](
     (tag: Tag) => new Users(tag, prefixed("user"), dbName))
 
-  val imageDao = new ImageDao(images, driver)
-  val textDao = new TextDao(texts, driver)
-  val userDao = new UserDao(users, driver)
+  val imageDao = new ImageDao(this, images, driver)
+  val textDao = new TextDao(this, texts, driver)
+  val userDao = new UserDao(this, users, driver)
   val revisionDao = new RevisionDao(this, driver)
   val pageDao = new PageDao(this, driver)
 

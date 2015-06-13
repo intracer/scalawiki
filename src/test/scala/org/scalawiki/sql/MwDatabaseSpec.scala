@@ -1,28 +1,28 @@
 package org.scalawiki.sql
 
 
+import slick.driver.JdbcProfile
+import slick.backend.DatabaseConfig
 import org.specs2.mutable.{BeforeAfter, Specification}
-
-import scala.slick.driver.H2Driver.simple._
-import scala.slick.jdbc.meta.MTable
+import slick.jdbc.meta.MTable
+import spray.util.pimpFuture
 
 class MwDatabaseSpec extends Specification with BeforeAfter {
 
   sequential
 
-  implicit var session: Session = _
 
   var mwDb: MwDatabase = _
+  var dc: DatabaseConfig[JdbcProfile] = _
 
   def createSchema() = mwDb.createTables()
 
   override def before = {
-    // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()
-    session = Database.forURL("jdbc:h2:mem:test", driver = "org.h2.Driver").createSession()
-    mwDb = new MwDatabase(session)
+    dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
+    mwDb = new MwDatabase(dc.db)
   }
 
-  override def after = session.close()
+  override def after = mwDb.db.close()
 
   val tableNames = Set("category",
     "image",
@@ -33,14 +33,14 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
 
   "ddls" should {
     "create schema" in {
-      new MwDatabase(session, Some("ukwiki")).dropTables() // hack
+      new MwDatabase(dc.db, Some("ukwiki")).dropTables() // hack
       createSchema()
 
       getTableNames === tableNames
     }
 
     "create database with one custom prefix" in {
-      val mwDbCustom = new MwDatabase(session, Some("ukwiki"))
+      val mwDbCustom = new MwDatabase(dc.db, Some("ukwiki"))
 
       mwDb.dropTables()
       mwDbCustom.createTables()
@@ -56,7 +56,7 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
     "create database with several custom prefix" in {
 
       val prefixes = Seq("ukwiki", "commons", "enwiki")
-      val dbs = prefixes.map(name => new MwDatabase(session, Some(name)))
+      val dbs = prefixes.map(name => new MwDatabase(dc.db, Some(name)))
 
       mwDb.dropTables()
 
@@ -73,7 +73,7 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
     }
 
     def getTableNames: Set[String] = {
-      val tables = MTable.getTables.list
+      val tables = mwDb.db.run(MTable.getTables).await
       tables.map(_.name.name.toLowerCase).toSet
     }
 

@@ -8,7 +8,7 @@ import slick.driver.JdbcProfile
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.language.higherKinds
-
+import spray.util.pimpFuture
 
 class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
@@ -32,18 +32,16 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     revisionDao.insertAll(pageSeq.flatMap(_.revisions.headOption))
   }
 
-  def insert(page: Page): Future[Long] = {
+  def insert(page: Page): Long = {
     require(page.revisions.nonEmpty, "page has no revisions")
     val newRevs = page.revisions //.filter(_.revId.isEmpty)
 
     val pageIdF = (
       if (page.id.isDefined) {
-        exists(page.id.get) flatMap { e =>
-          if (e)
+          if (exists(page.id.get))
             mwDb.db.run(pages.forceInsert(page)).map(_ => page.id)
           else
             Future.successful(page.id)
-        }
       }
       else {
         mwDb.db.run(autoInc += page)
@@ -56,11 +54,11 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
       addImages(pageId, page.images)
 
       pageId
-    }
+    }.await
   }
 
   def addRevisions(pageId: Long, newRevs: Seq[Revision]) = {
-    val revIds = newRevs.reverse.flatMap { rev =>
+    val revIds = newRevs.reverse.map { rev =>
       val withPage = rev.copy(pageId = Some(pageId))
       revisionDao.insert(withPage)
     }
@@ -79,19 +77,19 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
   def list = pages.sortBy(_.id)
 
-  def get(id: Long): Future[Page] =
-    db.run(pages.filter(_.id === id).result.head)
+  def get(id: Long): Option[Page] =
+    db.run(pages.filter(_.id === id).result.headOption).await
 
-  def exists(id: Long): Future[Boolean] =
-    get(id).recover { case _ => false }.map(_ => true)
+  def exists(id: Long): Boolean =
+    get(id).fold (false)(_ => true)
 
 
-  def find(ids: Iterable[Long]): Future[Seq[Page]] =
+  def find(ids: Iterable[Long]): Seq[Page] =
     db.run(
       pages.filter(_.id inSet ids).sortBy(_.id).result
-    )
+    ).await
 
-  def findWithText(ids: Iterable[Long]): Future[Seq[Page]] =
+  def findWithText(ids: Iterable[Long]): Seq[Page] =
     db.run(
       (pages.filter(_.id inSet ids)
         join revisions on (_.pageLatest === _.id)
@@ -100,9 +98,9 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
         ).result
     ).map { pages =>
       pages.map { case ((p, r), t) => p.copy(revisions = Seq(r.copy(content = Some(t.text)))) }
-    }
+    }.await
 
-  def findByRevIds(ids: Iterable[Long], revIds: Iterable[Long]): Future[Seq[Page]] = {
+  def findByRevIds(ids: Iterable[Long], revIds: Iterable[Long]): Seq[Page] = {
     db.run(
       (pages.filter(_.id inSet ids)
         join revisions.filter(_.id inSet revIds) on (_.id === _.pageId)
@@ -112,10 +110,10 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
       pages.map {
         case (((p, r), t), i) => p.copy(revisions = Seq(r.copy(content = Some(t.text))), images = i.toSeq)
       }
-    }
+    }.await
   }
 
-  def withText(id: Long): Future[Page] =
+  def withText(id: Long): Page =
     db.run(
       (pages.filter(_.id === id)
         join revisions on (_.pageLatest === _.id)
@@ -124,9 +122,9 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
       pages.map {
         case ((p, r), t) => p.copy(revisions = Seq(r.copy(content = Some(t.text))))
       }.head
-    }
+    }.await
 
-  def withRevisions(id: Long): Future[Page] = {
+  def withRevisions(id: Long): Page = {
     db.run(((
       for {
         p <- pages if p.id === id
@@ -141,6 +139,6 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
       val revs = rows.map { case (p, r) => r }
       rows.headOption.map { case (p, r) => p.copy(revisions = revs) }.get
     }
-  }
+  }.await
 
 }

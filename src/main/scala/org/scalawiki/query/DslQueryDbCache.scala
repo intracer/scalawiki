@@ -4,7 +4,7 @@ import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, TitlesParam}
 import org.scalawiki.sql.dao.PageDao
-
+import spray.util.pimpFuture
 import scala.concurrent.Future
 
 class DslQueryDbCache(val dslQuery: DslQuery) {
@@ -34,21 +34,19 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
             val idsAction = Action(query.revisionsWithoutContent)
 
             val idsQuery = new DslQuery(idsAction, dslQuery.bot)
-            idsQuery.run().flatMap {
+            idsQuery.run().map {
               pages =>
+
                 val ids = pages.flatMap(_.id).toSet
-                fromDb(pageDao, pages, ids).flatMap {
-                  dbPages =>
-                    notInDb(query, ids, dbPages).map {
-                      notInDbPages =>
-                        toDb(pageDao, notInDbPages)
+                val dbPages = fromDb(pageDao, pages, ids)
 
-                        cacheStat = Some(CacheStat(notInDbPages.size, dbPages.size))
-                        bot.log.info(s"${bot.host} $cacheStat")
+                val notInDbPages = notInDb(query, ids, dbPages).await
+                toDb(pageDao, notInDbPages)
 
-                        dbPages ++ notInDbPages
-                    }
-                }
+                cacheStat = Some(CacheStat(notInDbPages.size, dbPages.size))
+                bot.log.info(s"${bot.host} $cacheStat")
+
+                dbPages ++ notInDbPages
             }
           } else {
             dslQuery.run()
@@ -87,18 +85,17 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
     }.toSeq
   }
 
-  def fromDb(pageDao: PageDao, pages: Seq[Page], ids: Set[Long]): Future[Seq[Page]] = {
+  def fromDb(pageDao: PageDao, pages: Seq[Page], ids: Set[Long]): Seq[Page] = {
     val startTime = System.nanoTime()
     bot.log.info(s"${bot.host} query ${pages.size} pages from db")
 
     val revIds = pages.flatMap(_.revisions.headOption.flatMap(_.id))
-    pageDao.findByRevIds(ids, revIds).map {
-      pagesFromDb =>
+    val pagesFromDb = pageDao.findByRevIds(ids, revIds)
 
-        val estimatedTime = (System.nanoTime() - startTime) / Math.pow(10, 9)
-        bot.log.info(s"${bot.host} Db query completed with ${pagesFromDb.size} pages in $estimatedTime seconds")
-        pagesFromDb
-    }
+    val estimatedTime = (System.nanoTime() - startTime) / Math.pow(10, 9)
+    bot.log.info(s"${bot.host} Db query completed with ${pagesFromDb.size} pages in $estimatedTime seconds")
+    pagesFromDb
+
   }
 
   def toDb(pageDao: PageDao, pages: Seq[Page]) = {

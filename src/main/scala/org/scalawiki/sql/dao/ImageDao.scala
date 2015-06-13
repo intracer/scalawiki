@@ -1,24 +1,27 @@
 package org.scalawiki.sql.dao
 
-import org.scalawiki.sql.Images
+import org.scalawiki.sql.{Images, MwDatabase}
 import org.scalawiki.wlx.dto.Image
 import slick.driver.JdbcProfile
 import slick.lifted.TableQuery
+import spray.util.pimpFuture
 
 import scala.language.higherKinds
 
-class ImageDao(val query: TableQuery[Images], val driver: JdbcProfile) {
+class ImageDao(val mwDb: MwDatabase, val query: TableQuery[Images], val driver: JdbcProfile) {
 
   import driver.api._
 
-  def insert(image: Image) = {
-    query += image
+  val db = mwDb.db
+
+  def insert(image: Image): Long = {
+    db.run(query += image).await
   }
 
-  def list = query.sortBy(_.name)
+  def list: Seq[Image] = db.run(query.sortBy(_.name).result).await
 
-  def get(name: String) =
-    query.filter(_.name === name).result.headOption
+  def get(name: String): Option[Image] =
+    db.run(query.filter(_.name === name).result.headOption).await
 
 }
 

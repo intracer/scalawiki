@@ -3,14 +3,12 @@ package org.scalawiki.sql
 import org.scalawiki.dto.User
 import org.scalawiki.wlx.dto.Image
 import org.specs2.mutable.{BeforeAfter, Specification}
-
-import scala.slick.driver.H2Driver.simple._
+import slick.backend.DatabaseConfig
+import slick.driver.JdbcProfile
 
 class ImageDaoSpec extends Specification with BeforeAfter {
 
   sequential
-
-  implicit var session: Session = _
 
   var mwDb: MwDatabase = _
 
@@ -22,12 +20,11 @@ class ImageDaoSpec extends Specification with BeforeAfter {
   }
 
   override def before = {
-    // session = Database.forURL("jdbc:h2:~/test", driver = "org.h2.Driver").createSession()
-    session = Database.forURL("jdbc:h2:mem:test", driver = "org.h2.Driver").createSession()
-    mwDb = new MwDatabase(session)
+    val dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
+    mwDb = new MwDatabase(dc.db)
   }
 
-  override def after = session.close()
+  override def after = mwDb.db.close()
 
   "image" should {
     "insert" in {
