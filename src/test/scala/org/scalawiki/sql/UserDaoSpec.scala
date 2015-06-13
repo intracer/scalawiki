@@ -7,16 +7,13 @@ import org.specs2.mutable.{BeforeAfter, Specification}
 import slick.backend.DatabaseConfig
 import slick.driver.JdbcProfile
 
-import scala.slick.driver.H2Driver.simple._
-import scala.tools.nsc.interpreter
-import scala.tools.nsc.interpreter.session
-
 class UserDaoSpec extends Specification with BeforeAfter {
 
   sequential
 
   var mwDb: MwDatabase = _
-  val userDao = mwDb.userDao
+
+  def userDao = mwDb.userDao
 
   def createSchema() = {
     mwDb.dropTables()
@@ -28,7 +25,7 @@ class UserDaoSpec extends Specification with BeforeAfter {
     mwDb = new MwDatabase(dc.db)
   }
 
-  override def after = mwDb.db.close()
+  override def after = if (mwDb != null) mwDb.db.close()
 
   "user" should {
 
