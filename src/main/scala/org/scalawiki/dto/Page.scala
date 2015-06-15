@@ -25,6 +25,8 @@ case class Page(
   def isTalkPage = ns % 2 == 1
 
   def withId(id: Long): Page = copy(id = Some(id))
+
+  def lastRevisionUser: Option[Contributor] = revisions.headOption.flatMap(_.user)
 }
 
 object Page {

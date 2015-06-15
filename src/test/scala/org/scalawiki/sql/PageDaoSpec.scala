@@ -40,7 +40,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       createSchema()
 
       val page = new Page(None, 0, "title")
-      pageDao.insert(page) must throwA[IllegalArgumentException]
+      pageDao.insert(page) must beFailedTry.withThrowable[IllegalArgumentException]("requirement failed: page has no revisions")
     }
 
     "insert with revision" in {
@@ -66,7 +66,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       createSchema()
 
       val username = Some("username")
-      val user = User(Some(5), username)
+      val user = User(5, username.get)
       val revision: Revision = new Revision(user = Some(user), content = Some("revision text"))
 
       val page = Page(None, 0, "title", Seq(revision))
@@ -87,7 +87,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       createSchema()
 
       val username = Some("username")
-      val user = User(Some(5), username)
+      val user = User(5, username.get)
       userDao.insert(user)
 
       val revision: Revision = new Revision(user = Some(user.copy(login = None)), content = Some("revision text"))
@@ -110,7 +110,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       createSchema()
 
       val username = Some("username")
-      val user = User(Some(5), username)
+      val user = User(5, username.get)
       userDao.insert(user)
 
       val revision: Revision = new Revision(user = Some(user.copy(id = None)), content = Some("revision text"))
@@ -132,7 +132,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
     "insert with image" in {
       createSchema()
 
-      val user = User(Some(5), Some("username"))
+      val user = User(5, "username")
       val title = "Image.jpg"
       val image = new Image(
         title,
@@ -163,7 +163,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val page = Page(None, 0, "title", Seq(revision))
 
-      val pageId = pageDao.insert(page)
+      val pageId = pageDao.insert(page).toOption
 
       val dbPage = pageDao.withText(pageId)
       dbPage.id.isDefined === true
@@ -187,7 +187,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val pageId = pageDao.insert(page1)
 
-      pageDao.insert(page2) must throwA[SQLException]
+      pageDao.insert(page2) must beFailedTry.withThrowable[SQLException]
 
       pageDao.list.size === 1
       revisionDao.list.size === 1

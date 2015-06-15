@@ -27,7 +27,11 @@ trait SinglePageQuery {
                             limit:String = "max",
                             titlePrefix: Option[String] = None): Future[Seq[Page]]
 
-  def edit(text: String, summary: String, token: Option[String] = None, multi:Boolean = true): Future[Any]  // TODO specific result
+  def edit(text: String,
+           summary: Option[String] = None,
+           section: Option[String] = None,
+           token: Option[String] = None,
+           multi:Boolean = true): Future[Any]  // TODO specific result
 
   def upload(filename: String): Future[Any]  // TODO specific result
 

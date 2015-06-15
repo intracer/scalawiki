@@ -12,7 +12,7 @@ resolvers := Seq("spray repo" at "http://repo.spray.io",
 
 libraryDependencies ++= {
   val akkaV = "2.3.9"
-  val sprayV = "1.3.2"
+  val sprayV = "1.3.3"
   val kamonV = "0.4.0"
   val aspectJV = "1.8.5"
   Seq(
@@ -28,9 +28,11 @@ libraryDependencies ++= {
     "com.github.wookietreiber" %% "scala-chart" % "0.4.2",
     "org.jfree" % "jfreesvg" % "2.1",
     "com.fasterxml" % "aalto-xml" % "0.9.11",
+    //    "org.codehaus.woodstox" % "woodstox-core-asl" % "4.4.1",
     "org.apache.commons" % "commons-compress" % "1.9",
     "ch.qos.logback" % "logback-classic" % "1.1.3",
     "org.sweble.wikitext" % "swc-engine" % "2.0.0",
+    "org.jsoup" % "jsoup" % "1.8.2",
     "org.specs2" %% "specs2" % "2.4.17" % "test",
     "com.google.jimfs" % "jimfs" % "1.0" % "test"
   )

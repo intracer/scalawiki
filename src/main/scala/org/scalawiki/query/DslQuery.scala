@@ -16,7 +16,8 @@ class DslQuery(val action: Action, val bot: MwBot) {
 
   def run(
            continue: Map[String, String] = Map("continue" -> ""),
-           pages: Seq[Page] = Seq.empty[Page]
+           pages: Seq[Page] = Seq.empty[Page],
+           limit: Option[Long] = None
            ): Future[Seq[Page]] = {
 
     val params = action.pairs ++ Seq("format" -> "json", "bot" -> "x") ++ continue
@@ -34,13 +35,13 @@ class DslQuery(val action: Action, val bot: MwBot) {
             val allPages = pages ++ newPages
 
             val newContinue = parser.continue
-            if (newContinue.isEmpty) {
+            if (newContinue.isEmpty || limit.exists(_ <= allPages.size)) {
               val estimatedTime = (System.nanoTime() - startTime) / Math.pow(10, 9)
 
               bot.log.info(s"${bot.host} Action completed with ${allPages.size} pages in $estimatedTime seconds,  $params")
               Future.successful(allPages)
             } else {
-              run(newContinue, allPages)
+              run(newContinue, allPages, limit)
             }
 
           case Failure(mwEx: MwException) =>

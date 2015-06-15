@@ -1,6 +1,7 @@
 package org.scalawiki.parser
 
 import org.scalawiki.dto.markup.Table
+import org.scalawiki.wikitext.TableParser
 import org.specs2.mutable.Specification
 
 class TableParserSpec extends Specification {

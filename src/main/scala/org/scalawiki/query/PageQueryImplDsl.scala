@@ -59,7 +59,8 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot, dbCach
       Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
     ))
 
-    new DslQueryDbCache(new DslQuery(action, bot)).run()
+    //new DslQueryDbCache(
+      new DslQuery(action, bot).run()
   }
 
   override def imageInfoByGenerator(
@@ -87,7 +88,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot, dbCach
     new DslQuery(action, bot).run()
   }
 
-  def edit(text: String, summary: String, token: Option[String] = None, multi: Boolean = true) = {
+  override def edit(text: String, summary: Option[String] = None, section: Option[String] = None, token: Option[String] = None, multi: Boolean = true) = {
 
     val page = query.fold(
       ids => PageId(ids.head),
@@ -97,7 +98,6 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot, dbCach
     val action = Action(Edit(
       page,
       Text(text),
-      Summary(summary),
       Token(token.fold(bot.token)(identity))
     )
     )
@@ -107,7 +107,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot, dbCach
         "format" -> "json",
         "bot" -> "x",
         "assert" -> "user",
-        "assert" -> "bot")
+        "assert" -> "bot") ++ section.map(s => "section" -> s).toSeq
 
     bot.log.info(s"${bot.host} edit page: $page, summary: $summary")
 
@@ -117,7 +117,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot, dbCach
       bot.post(editResponseReads, params)
   }
 
-  def upload(filename: String) = {
+  override def upload(filename: String) = {
     val page = query.right.toOption.fold(filename)(_.head)
     val token = bot.token
     val fileContents = Files.readAllBytes(Paths.get(filename))

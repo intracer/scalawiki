@@ -45,7 +45,7 @@ class UserDaoSpec extends Specification with BeforeAfter {
     "insert with id" in {
       createSchema()
       val username = Some("username")
-      val user = User(Some(5), username)
+      val user = User(5, username.get)
 
       val userId = userDao.insert(user).get
 
@@ -65,7 +65,7 @@ class UserDaoSpec extends Specification with BeforeAfter {
 
     "insert user without name should fail" in {
       createSchema()
-      val user = User(Some(6), None)
+      val user = new User(Some(6), None)
 
       userDao.insert(user) must throwA[SQLException]
 

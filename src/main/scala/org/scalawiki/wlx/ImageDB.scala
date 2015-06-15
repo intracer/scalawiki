@@ -15,13 +15,39 @@ class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Monu
 
   val _byAuthor: Map[String, Seq[Image]] = withCorrectIds.groupBy(_.author.getOrElse(""))
 
-  val _authorsByRegion: Map[String, Set[String]] = _imagesByRegion.mapValues{
+  val _authorsByRegion: Map[String, Set[String]] = _imagesByRegion.mapValues {
     images => images.groupBy(_.author.getOrElse("")).keySet
   }
 
   val _authorsIds: Map[String, Set[String]] = _byAuthor.mapValues(images => images.groupBy(_.monumentId.getOrElse("")).keySet)
 
   val _authorIdsByRegion = _authorsIds.mapValues(ids => ids.groupBy(id => Monument.getRegionId(id)))
+
+  val _byMegaPixels: Map[Option[Int], Seq[Image]] = images.groupBy { i =>
+    i.pixels.map(px => Math.floor(px.toFloat / Math.pow(10, 6)).toInt)
+  }
+
+  val _byMegaPixelsAndAuthor = _byMegaPixels.mapValues {
+    images => images.groupBy(_.author.getOrElse(""))
+  }
+
+  def byMegaPixels(mp: Option[Int]): Seq[Image] = _byMegaPixels.getOrElse(mp, Seq.empty[Image])
+
+  def byMegaPixelFilterAuthorMap(predicate: (Int => Boolean)) = {
+    val values = _byMegaPixelsAndAuthor.filterKeys(_.exists(predicate)).values
+    values.fold(Map.empty)((m1, m2) => unionWith(m1, m2)(_ ++ _))
+  }
+
+  def unionWithKey[K, A](m1: Map[K, A], m2: Map[K, A])(f: (K, A, A) => A): Map[K, A] = {
+    val diff = m2 -- m1.keySet
+    val aug = m1 map {
+      case (k, v) => if (m2 contains k) k -> f(k, v, m2(k)) else (k, v)
+    }
+    aug ++ diff
+  }
+
+  def unionWith[K, A](m1: Map[K, A], m2: Map[K, A])(f: (A, A) => A): Map[K, A] =
+    unionWithKey(m1, m2)((_, x, y) => f(x, y))
 
   def authorsCountById: Map[String, Int] = _byId.mapValues(_.flatMap(_.author).toSet.size)
 
@@ -62,9 +88,10 @@ class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Monu
 }
 
 object ImageDB {
+
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def create(contest: Contest, imageQuery: ImageQuery, monumentDb: MonumentDB):Future[ImageDB] = {
+  def create(contest: Contest, imageQuery: ImageQuery, monumentDb: MonumentDB): Future[ImageDB] = {
     imageQuery.imagesFromCategoryAsync(contest.category, contest).map {
       images => new ImageDB(contest, images, monumentDb)
     }

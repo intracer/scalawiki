@@ -1,6 +1,6 @@
 package org.scalawiki.dto
 
-import org.scalawiki.parser.TemplateParser
+import org.scalawiki.wikitext.TemplateParser
 import org.specs2.mutable.Specification
 
 class TemplateParserSpec extends Specification {

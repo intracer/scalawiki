@@ -19,7 +19,7 @@ class SpecialNominations {
 
     val stat = specialNomination(contest, imageDbs)
 
-    MwBot.get(MwBot.commons).page(s"Commons:Wiki Loves ${contest.contestType.name} ${contest.year} in ${contest.country.name}/Special nominations statistics").edit(stat, "updating")
+    MwBot.get(MwBot.commons).page(s"Commons:Wiki Loves ${contest.contestType.name} ${contest.year} in ${contest.country.name}/Special nominations statistics").edit(stat, Some("updating"))
   }
 
   def specialNomination(contest: Contest, imageDbs: Map[SpecialNomination, ImageDB]) = {
@@ -54,7 +54,7 @@ class SpecialNominations {
         }
       }
 
-      MwBot.get(MwBot.commons).page(imagesPage).edit(imagesText, "updating")
+      MwBot.get(MwBot.commons).page(imagesPage).edit(imagesText, Some("updating"))
 
       text += columnData.mkString("|-\n| ", " || ", "\n")
     }

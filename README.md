@@ -5,6 +5,7 @@ scalawiki is a MediaWiki client in Scala
 [![Coverage Status](https://coveralls.io/repos/intracer/scalawiki/badge.svg)](https://coveralls.io/r/intracer/scalawiki)
 [![Codacy Badge](https://www.codacy.com/project/badge/83a1a032be754d0c81b87e9633988ae2)](https://www.codacy.com/public/intracer/scalawiki)
 [![Join the chat at https://gitter.im/intracer/scalawiki](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/intracer/scalawiki?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[ ![Download](https://api.bintray.com/packages/intracer/maven/scalawiki/images/download.svg) ](https://bintray.com/intracer/maven/scalawiki/_latestVersion)
 
 On early stages of development but already has features many clients lack.
 

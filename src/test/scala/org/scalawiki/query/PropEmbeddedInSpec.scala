@@ -86,6 +86,4 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
       result(1) === Page(4571809, 2, "User:Formator")
     }
   }
-
-
 }

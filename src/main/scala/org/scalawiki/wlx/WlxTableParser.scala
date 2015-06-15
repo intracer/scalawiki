@@ -1,6 +1,6 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.parser.TableParser
+import org.scalawiki.wikitext.TableParser
 import org.scalawiki.wlx.dto.Monument
 import org.scalawiki.wlx.dto.lists.ListConfig
 

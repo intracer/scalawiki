@@ -6,7 +6,7 @@ import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.cmd.query.prop.iiprop.{IiProp, Timestamp}
 import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
 import org.scalawiki.dto.cmd.query.{Generator, Query}
-import org.scalawiki.query.{DslQueryDbCache, DslQuery}
+import org.scalawiki.query.DslQuery
 import org.scalawiki.wlx.dto.{Contest, Image}
 import org.scalawiki.{MwBot, WithBot}
 
@@ -53,14 +53,15 @@ class ImageQueryApi extends ImageQuery with WithBot {
       generator
     ))
 
-    val future = new DslQueryDbCache(new DslQuery(action, bot)).run()
+    val future = //new DslQueryDbCache(
+      new DslQuery(action, bot).run()
 
     future.map {
       pages => pages.map {
         page =>
 
-          val fromRev = Image.fromPageRevision(page, contest.fileTemplate, contest.year.toString)
-          val fromImage = Image.fromPageImages(page, contest.fileTemplate, contest.year.toString)
+          val fromRev = Image.fromPageRevision(page, contest.fileTemplate)
+          val fromImage = Image.fromPageImages(page, contest.fileTemplate)
 
           fromImage.get.copy(
             monumentId = fromRev.flatMap(_.monumentId),

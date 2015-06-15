@@ -1,4 +1,4 @@
-package org.scalawiki.parser
+package org.scalawiki.wikitext
 
 import org.scalawiki.dto.markup.Table
 import org.sweble.wikitext.engine.config.WikiConfig

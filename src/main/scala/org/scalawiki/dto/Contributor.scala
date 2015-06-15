@@ -6,6 +6,10 @@ trait Contributor {
 
   def name: Option[String]
 
+  def editCount: Option[Long]
+
+  def blocked: Option[Boolean]
+
 }
 
 object Contributor {

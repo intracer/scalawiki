@@ -77,7 +77,7 @@ object SubsetCreator {
     val s = buf.toString
 
     //ukWiki.page(regionLink +" дерев'яна архітектура").edit(s, s"$regionTitle - дерев'яна архітектура")
-    ukWiki.page(s"Вікіпедія:Вікі любить пам'ятки $specialNomination").edit(s, specialNomination)
+    ukWiki.page(s"Вікіпедія:Вікі любить пам'ятки $specialNomination").edit(s, Some(specialNomination))
 
   }
 
@@ -109,7 +109,7 @@ object SubsetCreator {
       val s = buf.toString
 
       //ukWiki.page(regionLink +" дерев'яна архітектура").edit(s, s"$regionTitle - дерев'яна архітектура")
-      ukWiki.page(s"$regionLink $specialNomination").edit(s, s"$regionTitle - $specialNomination")
+      ukWiki.page(s"$regionLink $specialNomination").edit(s, Some(s"$regionTitle - $specialNomination"))
 
     }
   }
