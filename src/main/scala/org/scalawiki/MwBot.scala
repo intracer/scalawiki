@@ -179,7 +179,7 @@ object MwBot {
     val http = new HttpClientImpl(system)
 
     val bot = if (withDb) {
-      val db = Database.forURL("jdbc:h2:~/scalawiki", driver = "org.h2.Driver").createSession()
+      val db = Database.forURL("jdbc:h2:~/scalawiki", driver = "org.h2.Driver")
       new MwBot(http, system, host, Some(new MwDatabase(db, Some(MwDatabase.dbName(host)))))
     } else {
       new MwBot(http, system, host, None)

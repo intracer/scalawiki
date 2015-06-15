@@ -1,5 +1,7 @@
 package org.scalawiki.sql
 
+import java.sql.SQLException
+
 import org.scalawiki.dto.{Namespace, Page, Revision, User}
 import org.scalawiki.wlx.dto.Image
 import org.specs2.mutable.{BeforeAfter, Specification}
@@ -184,7 +186,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val pageId = pageDao.insert(page1)
 
-      pageDao.insert(page2)
+      pageDao.insert(page2) must throwA[SQLException]
 
       pageDao.list.size === 1
       revisionDao.list.size === 1
