@@ -1,13 +1,10 @@
 package org.scalawiki.sql
 
-import java.sql.SQLException
-
 import org.scalawiki.dto.{Namespace, Page, Revision, User}
 import org.scalawiki.wlx.dto.Image
 import org.specs2.mutable.{BeforeAfter, Specification}
-
-import slick.driver.JdbcProfile
 import slick.backend.DatabaseConfig
+import slick.driver.JdbcProfile
 
 class PageDaoSpec extends Specification with BeforeAfter {
 
@@ -40,7 +37,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       createSchema()
 
       val page = new Page(None, 0, "title")
-      pageDao.insert(page) must beFailedTry.withThrowable[IllegalArgumentException]("requirement failed: page has no revisions")
+      pageDao.insert(page) must throwA[IllegalArgumentException]
     }
 
     "insert with revision" in {
@@ -163,7 +160,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val page = Page(None, 0, "title", Seq(revision))
 
-      val pageId = pageDao.insert(page).toOption
+      val pageId = pageDao.insert(page)
 
       val dbPage = pageDao.withText(pageId)
       dbPage.id.isDefined === true
@@ -187,7 +184,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val pageId = pageDao.insert(page1)
 
-      pageDao.insert(page2) must beFailedTry.withThrowable[SQLException]
+      pageDao.insert(page2)
 
       pageDao.list.size === 1
       revisionDao.list.size === 1
