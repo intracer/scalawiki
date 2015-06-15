@@ -4,9 +4,9 @@ import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
 import org.scalawiki.wlx.dto.Contest
-import org.scalawiki.wlx.query.{ImageQueryApi, ImageQuery, MonumentQuery}
+import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
 import org.scalawiki.wlx.slick.Slick
-import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
+import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 import scala.collection.immutable.SortedSet
 import scala.util.control.NonFatal
@@ -47,13 +47,13 @@ class Statistics {
     var allArticles = 0
     for (regId <- regionIds) {
       val monuments = monumentDb.byRegion(regId)
-      val withArticles = monuments.filter(_.article.isDefined)
+      val withArticles = monuments.filter(_.name.contains("[["))
       val regionName = monumentDb.contest.country.regionById(regId).name
 
       allMonuments += monuments.size
       allArticles += withArticles.size
       val percentage = withArticles.size * 100 / monuments.size
-      println(s"$regId - $regionName, Monuments: ${monuments.size}, Article - ${withArticles.size}, percentage - $percentage")
+      println(s"$regId - $regionName, Monuments: ${monuments.size}, Articles - ${withArticles.size}, percentage - $percentage")
     }
     val percentage = allArticles * 100 / allMonuments
     println(s"Ukraine, Monuments: $allMonuments, Article - $allArticles, percentage - $percentage")
@@ -204,7 +204,7 @@ class Statistics {
               val output = new Output()
 
               val idsStat = output.monumentsPictured(imageDbs, totalImageDb, monumentDb)
-              //            println(idsStat)
+              println(idsStat)
 
               val authorStat = output.authorsContributed(imageDbs, totalImageDb, monumentDb)
               //            println(authorStat)
@@ -212,9 +212,6 @@ class Statistics {
               val toc = "__TOC__"
               val category = s"\n[[Category:$categoryName]]"
               val regionalStat = toc + idsStat + authorStat + category
-
-              //      val bot = MwBot.get(MwBot.commons)
-              //      bot.await(bot.page("Commons:Wiki Loves Monuments 2014 in Ukraine/Regional statistics").edit(regionalStat, "update statistics"))
 
               MwBot.get(MwBot.commons).page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, Some("updating"))
 
