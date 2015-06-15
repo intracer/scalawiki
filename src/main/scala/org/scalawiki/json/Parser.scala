@@ -202,11 +202,11 @@ object Parser {
       Reads.pure[String](title) and
         (__ \ "timestamp").read[DateTime](jodaDateTimeReads) and
         (__ \ "user").read[String] and
-        (__ \ "size").read[Long] and
-        (__ \ "width").read[Int] and
-        (__ \ "height").read[Int] and
-        (__ \ "url").read[String] and
-        (__ \ "descriptionurl").read[String] and
+        (__ \ "size").readNullable[Long] and
+        (__ \ "width").readNullable[Int] and
+        (__ \ "height").readNullable[Int] and
+        (__ \ "url").readNullable[String] and
+        (__ \ "descriptionurl").readNullable[String] and
         Reads.pure[Long](pageId)
       //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
       //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
