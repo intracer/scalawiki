@@ -19,7 +19,7 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
   import org.scalawiki.dto.cmd.query.Query
 
   def run(): Future[Seq[Page]] = {
-    if (false) dslQuery.run()
+    if (!dbCache) dslQuery.run()
     else {
       val action = dslQuery.action
       action.query.map {

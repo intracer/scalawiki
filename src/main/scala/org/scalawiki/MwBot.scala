@@ -174,13 +174,21 @@ object MwBot {
   val commons = "commons.wikimedia.org"
   val ukWiki = "uk.wikipedia.org"
 
-  def create(host: String): MwBot = {
+  def create(host: String, withDb: Boolean = false): MwBot = {
     val system = ActorSystem()
     val http = new HttpClientImpl(system)
 
-    implicit val db = Database.forURL("jdbc:h2:~/scalawiki", driver = "org.h2.Driver")
-    val bot = new MwBot(http, system, host, Some(new MwDatabase(db, Some(MwDatabase.dbName(host)))))
-    bot.mwDb.foreach(_.createTables())
+    val bot = if (withDb) {
+      val db = Database.forURL("jdbc:h2:~/scalawiki", driver = "org.h2.Driver").createSession()
+      new MwBot(http, system, host, Some(new MwDatabase(db, Some(MwDatabase.dbName(host)))))
+    } else {
+      new MwBot(http, system, host, None)
+    }
+
+    if (withDb) {
+      bot.database.foreach(_.createTables())
+    }
+
     bot.await(bot.login(LoginInfo.login, LoginInfo.password))
     bot
   }

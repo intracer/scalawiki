@@ -73,9 +73,14 @@ class Output {
       val yearSeq = imageDbsByYear.keys.toSeq.sorted
       val numYears = yearSeq.size
 
+      val yearsColumns = yearSeq.flatMap {
+        year =>
+          val ys = year.toString
+          Seq(ys + " Objects", ys + " Pictures")
+      }
+
       val columns = Seq("Region", "Objects in lists",
-        s"$numYears years total", s"$numYears years percentage") ++
-        yearSeq.map(_.toString)
+        s"$numYears years total", s"$numYears years percentage") ++ yearsColumns
 
       val dataset = new DefaultCategoryDataset()
 
@@ -88,6 +93,9 @@ class Output {
       var withPhotoInListsFromRegions = Set.empty[String]
 
       val ids = yearSeq.map(year => imageDbsByYear(year).head.ids)
+
+      val photoSize = yearSeq.map(year => imageDbsByYear(year).head.images.size)
+
       val idsSize = ids.map(_.size)
 
       val rows = regionIds.map { regionId =>
@@ -97,7 +105,19 @@ class Output {
         val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
         val allMonumentsInRegion: Int = monumentDb.byRegion(regionId).size
 
-        val pictured = yearSeq.map(year => imageDbsByYear(year).head.idsByRegion(regionId).toSet.size)
+        val picturedIds = yearSeq.map {
+          year =>
+            val db = imageDbsByYear(year).head
+            db.idsByRegion(regionId).toSet.size
+        }
+        val pictured = yearSeq.flatMap {
+          year =>
+            val db = imageDbsByYear(year).head
+            Seq(
+              db.idsByRegion(regionId).toSet.size,
+              db.imagesByRegion(regionId).toSet.size
+            )
+        }
 
         val regionName = monumentDb.contest.country.regionById(regionId).name
         val columnData = (Seq(
@@ -107,7 +127,7 @@ class Output {
           100 * picturedMonumentsInRegion / allMonumentsInRegion) ++ pictured).map(_.toString)
 
         val shortRegionName = regionName.replaceAll("область", "").replaceAll("Автономна Республіка", "АР")
-        pictured.zipWithIndex.foreach { case (n, i) => dataset.addValue(n, yearSeq(i), shortRegionName) }
+        picturedIds.zipWithIndex.foreach { case (n, i) => dataset.addValue(n, yearSeq(i), shortRegionName) }
 
         withPhotoInListsFromRegions ++= picturedMonumentsInRegionSet
 
@@ -116,17 +136,20 @@ class Output {
 
       val allMonuments = monumentDb.monuments.size
       val picturedMonuments = (totalImageDb.ids ++ withPhotoInLists).size
+
+      val totalByYear = idsSize.zip(photoSize).flatMap{case (ids, photos) => Seq(ids, photos)}
+
       val totalData = Seq(
         "Total",
         allMonuments.toString,
         picturedMonuments.toString,
-        (100 * picturedMonuments / allMonuments).toString) ++ idsSize.map(_.toString)
+        (100 * picturedMonuments / allMonuments).toString) ++ totalByYear.map(_.toString)
 
       val images =
         s"\n[[File:${filenamePrefix}PicturedByYearTotal.png|$categoryName, monuments pictured by year overall|left]]" +
-        s"\n[[File:${filenamePrefix}PicturedByYearPie.png|$categoryName, monuments pictured by year pie chart|left]]" +
-        s"\n[[File:${filenamePrefix}PicturedByYear.png|$categoryName, monuments pictured by year by regions|left]]" +
-        "\n<br clear=\"all\">"
+          s"\n[[File:${filenamePrefix}PicturedByYearPie.png|$categoryName, monuments pictured by year pie chart|left]]" +
+          s"\n[[File:${filenamePrefix}PicturedByYear.png|$categoryName, monuments pictured by year by regions|left]]" +
+          "\n<br clear=\"all\">"
 
       val chart = charts.createChart(dataset, "Регіон")
       val byRegionFile = filenamePrefix + "PicturedByYear"
@@ -146,7 +169,10 @@ class Output {
       val table = new Table(columns, rows ++ Seq(totalData), "Objects pictured")
 
       header + table.asWiki + images
-    } catch {
+
+    }
+
+    catch {
       case NonFatal(e) =>
         println(e)
         e.printStackTrace()
@@ -162,7 +188,9 @@ class Output {
     val sliding = idsSeq.sliding(2).toSeq ++ Seq(Seq(idsSeq.head, idsSeq.last))
     val idsNear = sliding.map(_.reduce((a, b) => a intersect b) -- intersection)
 
-    val only = idsSeq.zipWithIndex.map { case (ids, i) => ids -- removeByIndex(idsSeq, i).reduce(_ ++ _) }
+    val only = idsSeq.zipWithIndex.map {
+      case (ids, i) => ids -- removeByIndex(idsSeq, i).reduce(_ ++ _)
+    }
 
     val pieDataset = new DefaultPieDataset()
 
@@ -197,20 +225,28 @@ class Output {
 
       val regionStat = byRegion.toSeq.sortBy(-_._2.size).map {
         case (regionId, monuments) =>
-          val byReg1 = s"${regions(regionId)}: ${monuments.size}"
+          val byReg1 = s"${
+            regions(regionId)
+          }: ${
+            monuments.size
+          }"
 
           val byReg2 = if (byRegion.size == 1) {
             val byReg2Stat = monuments.groupBy(m => m.id.substring(0, 6))
 
             byReg2Stat.toSeq.sortBy(-_._2.size).map {
               case (regionId2, monuments2) =>
-                s"$regionId2: ${monuments2.size}"
+                s"$regionId2: ${
+                  monuments2.size
+                }"
             }.mkString("(", ", ", ")")
           } else ""
 
           byReg1 + byReg2
       }.mkString(", ")
-      println(s"$typ: ${monumentDb._byType(typ).size}, $regionStat")
+      println(s"$typ: ${
+        monumentDb._byType(typ).size
+      }, $regionStat")
     }
   }
 
@@ -232,11 +268,12 @@ class Output {
     val regionIds = monumentDb._byRegion.keySet.toSeq.sortBy(identity)
 
     val rows =
-      regionIds.map { regionId =>
-        (Seq(
-          monumentDb.contest.country.regionById(regionId).name,
-          totalImageDb.authorsByRegion(regionId).size) ++
-          yearSeq.map(year => imageDbsByYear(year).head.authorsByRegion(regionId).size)).map(_.toString)
+      regionIds.map {
+        regionId =>
+          (Seq(
+            monumentDb.contest.country.regionById(regionId).name,
+            totalImageDb.authorsByRegion(regionId).size) ++
+            yearSeq.map(year => imageDbsByYear(year).head.authorsByRegion(regionId).size)).map(_.toString)
       } ++ Seq(totalData)
 
     val authors = yearSeq.map(year => imageDbsByYear(year).head.authors)
