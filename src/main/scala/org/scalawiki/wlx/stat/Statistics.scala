@@ -6,7 +6,7 @@ import org.scalawiki.MwBot
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
 import org.scalawiki.wlx.slick.Slick
-import org.scalawiki.wlx.{ImageDB, MonumentDB}
+import org.scalawiki.wlx.{ListFiller, ImageDB, MonumentDB}
 
 import scala.collection.immutable.SortedSet
 import scala.util.control.NonFatal
