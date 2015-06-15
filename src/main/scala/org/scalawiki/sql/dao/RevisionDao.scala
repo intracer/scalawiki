@@ -32,9 +32,9 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     val revId = if (revision.id.isDefined) {
       exists(revision.id.get) flatMap { e =>
         if (e)
-          db.run(revisions.forceInsert(addUser(addText(revision)))).map(_ => revision.id)
-        else
           Future.successful(revision.id)
+        else
+          db.run(revisions.forceInsert(addUser(addText(revision)))).map(_ => revision.id)
       }
     }
     else {
@@ -86,7 +86,8 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     db.run(revisions.filter(_.id === id).result.head)
 
   def exists(id: Long): Future[Boolean] =
-    get(id).recover { case _ => false }.map(_ => true)
+    db.run(revisions.filter(_.id === id).exists.result)
+//    get(id).recover { case _ => false }.map(_ => true)
 
   def withText(id: Long): Future[Revision] =
     db.run((revisions.filter(_.id === id)

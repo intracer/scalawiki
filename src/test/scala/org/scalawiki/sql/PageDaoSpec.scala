@@ -163,13 +163,13 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val page = Page(None, 0, "title", Seq(revision))
 
-      val pageId = pageDao.insert(page).toOption
+      val pageId = pageDao.insert(page)
 
-      val dbPage = pageDao.withText(pageId.get)
+      val dbPage = pageDao.withText(pageId)
       dbPage.id.isDefined === true
-      dbPage.id === pageId
+      dbPage.id === Some(pageId)
 
-      pageDao.insert(dbPage.copy(title = "other title")) must throwA[SQLException]
+      pageDao.insert(dbPage.copy(title = "other title"))
 
       pageDao.list.size === 1
       revisionDao.list.size === 1

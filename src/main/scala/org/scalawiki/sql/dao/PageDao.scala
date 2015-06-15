@@ -81,8 +81,8 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     db.run(pages.filter(_.id === id).result.headOption).await
 
   def exists(id: Long): Boolean =
-    get(id).fold (false)(_ => true)
-
+    db.run(pages.filter(_.id === id).exists.result).await
+//    get(id).fold (false)(_ => true)
 
   def find(ids: Iterable[Long]): Seq[Page] =
     db.run(
