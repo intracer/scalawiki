@@ -86,6 +86,6 @@ class ArticleStatBot(val event: ArticlesEvent) extends WithBot {
 object ArticleStatBot {
 
   def main(args: Array[String]) {
-    new ArticleStatBot(Events.Zaporizhia2Week).stat()
+    new ArticleStatBot(Events.WLEWeek).stat()
   }
 }

@@ -21,6 +21,15 @@ class ArticlesEvent(
 }
 
 object Events {
+
+  val WLEWeek = new ArticlesEvent(
+    "Zaporizhia2-week",
+    DateTime.parse("2015-05-04T00:00+02:00"),
+    DateTime.parse("2015-05-31T00:00+02:00"),
+    "Пам'ятки природи у Вікіпедії",
+    "Пам'ятки природи у Вікіпедії")
+
+
   val Zaporizhia2Week = new ArticlesEvent(
     "Zaporizhia2-week",
     DateTime.parse("2015-02-12T00:00+02:00"),
