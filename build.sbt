@@ -2,7 +2,7 @@ name := "scalawiki"
 
 organization := "org.scalawiki"
 
-version := "0.3"
+version := "0.4-M1"
 
 scalaVersion := "2.11.6"
 
