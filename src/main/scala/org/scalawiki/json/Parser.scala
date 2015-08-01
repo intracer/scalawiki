@@ -30,7 +30,7 @@ class Parser(val action: Action) {
 
         if (jsonObj.value.contains("query")) {
 
-          val pagesJson = json \ "query" \ queryChild
+          val pagesJson = (json \ "query" \ queryChild).get
 
           val jsons = (queryChild match {
             case "pages" => pagesJson.asInstanceOf[JsObject].values
@@ -84,7 +84,7 @@ class Parser(val action: Action) {
 
   def getContinue(json: JsValue, jsonObj: JsObject): Map[String, String] = {
     if (jsonObj.value.contains("continue")) {
-      val continueJson = json \ "continue"
+      val continueJson = (json \ "continue").get
       continueJson match {
         case obj: JsObject => obj.fields.toMap.mapValues[String] {
           case JsNumber(n) => n.toString()

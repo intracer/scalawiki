@@ -18,7 +18,7 @@ libraryDependencies ++= {
   Seq(
     "io.spray" %% "spray-client" % sprayV,
     "io.spray" %% "spray-caching" % sprayV,
-    "com.typesafe.play" %% "play-json" % "2.3.7",
+    "com.typesafe.play" %% "play-json" % "2.4.2",
     "com.typesafe.akka" %% "akka-actor" % akkaV,
     "commons-codec" % "commons-codec" % "1.10",
     "com.github.nscala-time" %% "nscala-time" % "1.8.0",
