@@ -40,7 +40,7 @@ libraryDependencies ++= {
 
 initialize := {
   val _ = initialize.value // run the previous initialization
-  val required = VersionNumber("1.7")
+  val required = VersionNumber("1.8")
   val curr = VersionNumber(sys.props("java.specification.version"))
   assert(CompatibleJavaVersion(curr, required), s"Java $required or above required")
 }
