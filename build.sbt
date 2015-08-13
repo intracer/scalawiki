@@ -4,7 +4,7 @@ organization := "org.scalawiki"
 
 version := "0.4-M1"
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.7"
 
 resolvers := Seq("spray repo" at "http://repo.spray.io",
   "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
@@ -23,7 +23,7 @@ libraryDependencies ++= {
     "commons-codec" % "commons-codec" % "1.10",
     "com.github.nscala-time" %% "nscala-time" % "1.8.0",
     "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
-    "com.typesafe.slick" %% "slick" % "3.0.0",
+    "com.typesafe.slick" %% "slick" % "3.0.1",
     "com.h2database" % "h2" % "1.3.176",
     "com.github.wookietreiber" %% "scala-chart" % "0.4.2",
     "org.jfree" % "jfreesvg" % "2.1",
@@ -33,7 +33,8 @@ libraryDependencies ++= {
     "ch.qos.logback" % "logback-classic" % "1.1.3",
     "org.sweble.wikitext" % "swc-engine" % "2.0.0",
     "org.jsoup" % "jsoup" % "1.8.2",
-    "org.specs2" %% "specs2" % "2.4.17" % "test",
+    "org.specs2" %% "specs2-core" % "3.6.4" % "test",
+    "org.specs2" %% "specs2-matcher-extra" % "3.6.4" % "test",
     "com.google.jimfs" % "jimfs" % "1.0" % "test"
   )
 }

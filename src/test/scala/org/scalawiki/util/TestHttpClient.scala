@@ -6,6 +6,7 @@ import spray.http.{HttpResponse, _}
 
 import scala.collection.mutable
 import scala.concurrent.{Future, Promise}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matchers with HttpClient {
 
