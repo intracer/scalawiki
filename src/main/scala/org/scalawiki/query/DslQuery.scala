@@ -32,7 +32,7 @@ class DslQuery(val action: Action, val bot: MwBot) {
 
         parser.parse(body) match {
           case Success(newPages) =>
-            val allPages = pages ++ newPages
+            val allPages = mergePages(pages, newPages)
 
             val newContinue = parser.continue
             if (newContinue.isEmpty || limit.exists(_ <= allPages.size)) {
@@ -53,5 +53,16 @@ class DslQuery(val action: Action, val bot: MwBot) {
             Future.failed(ex)
         }
     }
+  }
+
+  def mergePages(pages: Seq[Page], newPages: Seq[Page]): Seq[Page] = {
+    val byId = pages.filter(_.id.isDefined).groupBy(_.id.get)
+    val newById = newPages.filter(_.id.isDefined).groupBy(_.id.get)
+
+    val intersection = byId.keySet.intersect(newById.keySet)
+
+    pages.map { p =>
+      if (p.id.isEmpty || !intersection.contains(p.id.get)) p else p.appendLists(newById(p.id.get).head)
+    } ++ newPages.filterNot(p => p.id.isDefined && intersection.contains(p.id.get))
   }
 }
