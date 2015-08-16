@@ -41,18 +41,14 @@ object WlmUa extends ListConfig {
     "ID" -> "ID",
     "name" -> "назва",
     "year" -> "рік",
-    "description" -> "опис",
     "city" -> "нас_пункт",
     "place" -> "адреса",
-    "user" -> "користувач",
-    "area" -> "площа",
     "lat" -> "широта",
     "lon" -> "довгота",
     "type" -> "тип",
-    "subType" -> "підтип",
+    "stateId" -> "охоронний номер",
     "photo" -> "фото",
-    "gallery" -> "галерея",
-    "resolution" -> "постанова"
+    "gallery" -> "галерея"
   )
 
   override val templateName: String = "ВЛП-рядок"

@@ -106,7 +106,7 @@ class MonumentSpec extends Specification {
   }
 
   "asWiki" should {
-    "1" in {
+    "output WLE fields" in {
       val m = new Monument("page1", "id1", "name1", photo = Some("Image.jpg"), gallery = Some("category1"), listConfig = WleUa)
 
       val longest = WleUa.namesMap.values.map(_.length).max
@@ -133,8 +133,37 @@ class MonumentSpec extends Specification {
           s"}}",
           ""
         )
+    }
+
+    "output WLM fields" in {
+      val m = new Monument("page1", "id1", "name1", photo = Some("Image.jpg"), gallery = Some("category1"), listConfig = WlmUa)
+
+      val longest = WlmUa.namesMap.values.map(_.length).max
+
+      val names = WlmUa.namesMap.mapValues(_.padTo(longest, ' '))
+      val text = m.asWiki
+      val lines = text.split("\\n", -1).toSeq
+
+      val expected = Seq(
+        "{{ВЛП-рядок",
+        s"|${names("ID")} = id1",
+        s"|${names("name")} = name1",
+        s"|${names("year")} = ",
+        s"|${names("city")} = ",
+        s"|${names("place")} = ",
+        s"|${names("lat")} = ",
+        s"|${names("lon")} = ",
+        s"|${names("type")} = ",
+        s"|${names("stateId")} = ",
+        s"|${names("photo")} = Image.jpg",
+        s"|${names("gallery")} = category1",
+        s"}}",
+        ""
+      )
+      lines === expected
 
     }
+
   }
 
 

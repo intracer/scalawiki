@@ -56,6 +56,7 @@ case class Monument(page: String,
 
     val paramValues = Map("name" -> Option(name),
       "ID" -> Option(id),
+      "stateId" -> stateId,
       "year" -> year,
       "description" -> description,
       "article" -> article,
