@@ -73,6 +73,8 @@ class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Monu
 
   def byId(id: String) = _byId.getOrElse(id, Seq.empty[Image])
 
+  def containsId(id: String) =  _byId.contains(id)
+
   def imagesByRegion(regId: String) = _imagesByRegion.getOrElse(regId, Seq.empty[Image])
 
   def idsByRegion(regId: String) = _idsByRegion.getOrElse(regId, Seq.empty[String])

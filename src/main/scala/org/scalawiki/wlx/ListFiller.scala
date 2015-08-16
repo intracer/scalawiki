@@ -1,9 +1,7 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.wlx.dto.{Image, Monument}
+import org.scalawiki.wlx.dto.{Image, Monument, UploadConfig}
 import org.scalawiki.{MwBot, WithBot}
-
-import scala.collection.immutable.SortedSet
 
 class ListFiller extends WithBot {
 
@@ -14,69 +12,72 @@ class ListFiller extends WithBot {
 
   def fillLists(monumentDb: MonumentDB, imageDb: ImageDB) {
 
-    val monumentsWithoutImages = monumentDb.monuments.filter(_.photo.isEmpty)
-    val idsToFill = monumentsWithoutImages.map(_.id).toSet
+    val titles = pagesToFill(monumentDb, imageDb)
 
-    val newIds = imageDb.ids.intersect(idsToFill)
-
-    println(s"NewIds: ${newIds.size}")
-
-    val monumentToFill = monumentsWithoutImages.filter(m => newIds.contains(m.id))
-    val monumentsByPage = monumentToFill.groupBy(_.page)
-
-    val titles = SortedSet(monumentsByPage.keys.toSeq: _*)
-    println(s"pages: ${titles.size}")
+    val uploadConfig = monumentDb.contest.uploadConfigs.head
 
     val results = titles.zipWithIndex.map {
       case (title, index) =>
-      println(s"adding monuments to page: $title, $index of ${titles.size}")
-      val ids = monumentsByPage(title).map(_.id).toSet
-
-      val result = bot.pageText(title).flatMap { pageText =>
-          val (newText: String, comment: String) = addPhotosToPageText(monumentDb, imageDb, titles, title, index, ids, pageText)
-          bot.page(title).edit(newText, Some(comment))
-      }
-      result
+        println(s"adding monuments to page: $title, $index of ${titles.size}")
+        addPhotosToPage(uploadConfig, imageDb, title)
     }
 
-   for (seq <- Future.sequence(results.toSeq)) {
-     val succesfull = seq.count(_ == "Success")
-     println (s"Succesfull pages inserts: $succesfull")
+    for (seq <- Future.sequence(results.toSeq)) {
+      val (succesfull, errors) = seq.partition(_ == "Success")
 
-     val errors = seq.filterNot(_ == "Success")
+      println(s"Succesfull pages inserts: ${succesfull.size}")
+      println(s"Errors in  page inserts: ${errors.size}")
 
-     println (s"Errors in  page inserts: ${errors.size}")
-     errors.foreach(println)
-   }
+      errors.foreach(println)
+    }
   }
 
-  def addPhotosToPageText(monumentDb: MonumentDB, imageDb: ImageDB, titles: SortedSet[String], title: String, index: Int, ids: Set[String], pageText: String): (String, String) = {
-    println(s"got page text: $title, $index of ${titles.size}")
-    val splitted = pageText.split("\\{\\{" + monumentDb.contest.listTemplate)
+  def addPhotosToPage(uploadConfig: UploadConfig, imageDb: ImageDB, title: String): Future[Any] = {
+    bot.pageText(title).flatMap { pageText =>
+      val (newText: String, comment: String) = addPhotosToPageText(uploadConfig, imageDb, title, pageText)
+      bot.page(title).edit(newText, Some(comment))
+    }
+  }
 
-    val edited = splitted.zipWithIndex.map { case (text, index) =>
-      if (index == 0)
-        text
+  def pagesToFill(monumentDb: MonumentDB, imageDb: ImageDB): Set[String] = {
+
+    val monumentsToFill = monumentDb.monuments.filter{
+      m => m.photo.isEmpty && imageDb.containsId(m.id)
+    }
+
+    println(s"NewIds: ${monumentsToFill.size}")
+
+    val titles = monumentsToFill.map(_.page).toSet
+
+    println(s"pages: ${titles.size}")
+    titles
+  }
+
+  def addPhotosToPageText(uploadConfig: UploadConfig, imageDb: ImageDB, title: String, pageText: String): (String, String) = {
+    val template = uploadConfig.listTemplate
+    val splitted = pageText.split("\\{\\{" + template)
+
+    var added: Int = 0
+    val edited = splitted.head ++ splitted.tail.map { text =>
+      val monument = Monument.init("{{" + template + "\n" + text, title, uploadConfig.listConfig).head
+      if (monument.photo.isEmpty) {
+        added += 1
+        val image = bestImage(imageDb.byId(monument.id))
+        monument.copy(
+          photo = Some(image.title.replaceFirst("File:", ""))
+        ).asWiki.replaceFirst("\\{\\{" + template, "")
+      }
       else {
-        val monument = Monument.init("{{" + monumentDb.contest.listTemplate + "\n" +text, title, monumentDb.contest.uploadConfigs.head.listConfig).head
-
-        if (!ids.contains(monument.id))
-          text
-        else {
-          monument.copy(
-            photo = Some(bestImage(imageDb.byId(monument.id)).title.replaceFirst("File:", ""))
-          ).asWiki.replaceFirst("\\{\\{" + monumentDb.contest.listTemplate, "")
-        }
+        text
       }
     }
 
-    val newText = edited.mkString("{{" + monumentDb.contest.listTemplate)
-    val comment = s"adding ${ids.size} image(s)"
+    val newText = edited.mkString("{{" + template)
+    val comment = s"adding $added image(s)"
     (newText, comment)
   }
 
   def bestImage(images: Seq[Image]) =
     images.sortBy(image => image.size.get + image.width.get * image.height.get).last
-
 
 }
