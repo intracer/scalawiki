@@ -6,9 +6,8 @@ import org.scalawiki.MwBot
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
 import org.scalawiki.wlx.slick.Slick
-import org.scalawiki.wlx.{ListFiller, ImageDB, MonumentDB}
+import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
 
-import scala.collection.immutable.SortedSet
 import scala.util.control.NonFatal
 
 class Statistics {
@@ -42,21 +41,7 @@ class Statistics {
   }
 
   def articleStatistics(monumentDb: MonumentDB) = {
-    val regionIds = SortedSet(monumentDb._byRegion.keySet.toSeq: _*)
-    var allMonuments = 0
-    var allArticles = 0
-    for (regId <- regionIds) {
-      val monuments = monumentDb.byRegion(regId)
-      val withArticles = monuments.filter(_.name.contains("[["))
-      val regionName = monumentDb.contest.country.regionById(regId).name
-
-      allMonuments += monuments.size
-      allArticles += withArticles.size
-      val percentage = withArticles.size * 100 / monuments.size
-      println(s"$regId - $regionName, Monuments: ${monuments.size}, Articles - ${withArticles.size}, percentage - $percentage")
-    }
-    val percentage = allArticles * 100 / allMonuments
-    println(s"Ukraine, Monuments: $allMonuments, Article - $allArticles, percentage - $percentage")
+    println(Stats.withArticles(monumentDb).asWiki("Article Statistics"))
   }
 
   def imagesStatistics(monumentQuery: MonumentQuery, monumentDb: MonumentDB) {

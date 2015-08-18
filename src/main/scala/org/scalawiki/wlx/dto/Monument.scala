@@ -8,7 +8,7 @@ import org.scalawiki.wlx.dto.lists.ListConfig
 
 import scala.collection.immutable.ListMap
 
-case class Monument(page: String,
+case class Monument(page: String = "",
                     id: String,
                     name: String,
                     year: Option[String] = None,
