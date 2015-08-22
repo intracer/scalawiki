@@ -12,13 +12,12 @@ Why [another client library for MediaWiki](https://www.mediawiki.org/wiki/API:Cl
 
 I don't know any Java client that supports [generators](https://www.mediawiki.org/wiki/API:Query#Generators) (fetching properties from articles listed by list query in a single request). JWBF [only recently] (https://github.com/eldur/jwbf/issues/21) got the ability to query more than 1 page at a time. 
 
-When Wikipedia sites are real examples of Big Data it is just a show stopper. Fetching information about Wiki Loves Monuments uploads in such ineffective way will take almost a day even for one country, when could be done in several minutes otherwise in batches of 5000 (recently Wikimedia decreased max limit to 500 and that really slowed thing down a bit, but anyway).
+When Wikipedia sites are real Big Data it is just a show stopper. Fetching information about Wiki Loves Monuments uploads in such ineffective way will take almost a day even for one country, when could be done in several minutes otherwise in batches.
 
-This library uses [Scala Futures](http://docs.scala-lang.org/overviews/core/futures.html) for easy job parallelization, later may use [Akka actors](http://akka.io/docs/) and Akka Streams 
+This library uses [Scala Futures](http://docs.scala-lang.org/overviews/core/futures.html) for easy job parallelization.
 
 
 # Goals
-1. First goal is to 
   * Fully support [MediaWiki API](https://www.mediawiki.org/wiki/API:Main_page)
   * Support different backends - MediaWiki API, [xml dumps](https://meta.wikimedia.org/wiki/Data_dumps), [MediWiki database](https://www.mediawiki.org/wiki/Manual:Database_layout). Support coping data between backends (importing and exporting xml dumps to database, storing data retrived by MediaWiki API to xml dumps or database).
   * Good test coverage
