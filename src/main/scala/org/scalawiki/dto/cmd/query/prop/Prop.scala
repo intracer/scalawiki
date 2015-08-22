@@ -1,6 +1,6 @@
 package org.scalawiki.dto.cmd.query.prop
 
-import org.scalawiki.dto.cmd.query.QueryParam
+import org.scalawiki.dto.cmd.query.{GeneratorArg, QueryParam}
 import org.scalawiki.dto.cmd.{EnumArg, EnumParameter}
 
 /**
@@ -8,7 +8,7 @@ import org.scalawiki.dto.cmd.{EnumArg, EnumParameter}
  *
  */
 
-trait PropArg extends EnumArg[PropArg] { val param = Prop }
+trait PropArg extends EnumArg[PropArg] with GeneratorArg { val param = Prop }
 
 /**
  * ?action=query&amp;prop= parameter
