@@ -12,9 +12,12 @@ case class CategoryMembers(override val params: CmParam[Any]*)
     this(Seq(
       title.map(CmTitle).toSeq,
       pageId.map(CmPageId).toSeq,
-      Seq(CmNamespace(namespaces.toSeq)),
       limit.map(CmLimit).toSeq
-    ).flatten ++ params:_*)
+    ).flatten ++
+      (if (namespaces.nonEmpty)
+        Seq(CmNamespace(namespaces.toSeq))
+      else Seq.empty)
+      ++ params: _*)
   }
 }
 
@@ -27,7 +30,9 @@ case class CmPageId(override val arg: Long) extends IdParameter("cmpageid",
   "Page ID to search. Cannot be used together with cmtitle.") with CmParam[Long]
 
 case class CmNamespace(override val args: Seq[Int]) extends IntListParameter("cmnamespace",
-  "Only include pages in these namespaces.") with CmParam[Int]  // TODO Seq[Int] ?
+  "Only include pages in these namespaces.") with CmParam[Int]
+
+// TODO Seq[Int] ?
 
 case class CmLimit(override val arg: String) extends StringParameter("cmlimit",
   "How many total pages to return.") with CmParam[String]
