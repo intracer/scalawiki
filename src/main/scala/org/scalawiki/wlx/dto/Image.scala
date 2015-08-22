@@ -80,22 +80,22 @@ object Image {
   }
 
   def basic(title: String,
-            timestamp: DateTime,
-            uploader: String,
+            timestamp: Option[DateTime],
+            uploader: Option[String],
             size: Option[Long],
             width: Option[Int],
             height: Option[Int],
             url: Option[String],
             pageUrl: Option[String],
-            pageId: Long)
+            pageId: Option[Long])
   = new Image(
     title = title,
-    date = Option(timestamp),
-    uploader = Some(User(None, Some(uploader))),
+    date = timestamp,
+    uploader = uploader.map(name => User(None, Some(name))),
     size = size,
     width = width,
     height = height,
     url = url,
     pageUrl = pageUrl,
-    pageId = Some(pageId))
+    pageId = pageId)
 }

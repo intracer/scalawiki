@@ -3,7 +3,6 @@ package org.scalawiki.json
 import org.joda.time.DateTime
 import org.scalawiki.dto._
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.cmd.query.Generator
 import org.scalawiki.dto.cmd.query.list.ListArg
 import org.scalawiki.dto.cmd.query.prop.PropArg
 import org.scalawiki.wlx.dto.Image
@@ -59,7 +58,15 @@ class Parser(val action: Action) {
     val page = pageJson.validate(Parser.pageReads).get
 
     val revisions: Seq[Revision] = pageJson.validate(Parser.revisionsReads(page.id.get)).getOrElse(Seq.empty)
-    val images: Seq[Image] = pageJson.validate(Parser.imagesReads(page.id.get, page.title)).getOrElse(Seq.empty)
+    val images: Seq[Image] = pageJson.validate{
+      if (pageJson.value.contains("imageinfo")) {
+        Parser.imageInfoReads(page.id.get, page.title)
+      } else {
+//      if (pageJson.value.contains("images")) {
+        Parser.imageReads()
+      }
+
+    }.getOrElse(Seq.empty)
     val langLinks: Map[String, String] = getLangLinks(pageJson)
 
     //    pageJson.validate(Parser.langLinksReads).getOrElse(Map.empty)
@@ -119,7 +126,7 @@ class Parser(val action: Action) {
 
   def props: Seq[PropArg] = query.flatMap(_.props)
 
-  def generator: Option[Generator] = query.flatMap(_.byType(manifest[Generator])).headOption
+//  def generator: Option[Generator] = query.flatMap(_.byType(manifest[Generator])).headOption
 
 }
 
@@ -197,22 +204,40 @@ object Parser {
     (__ \ "revisions").read[Seq[Revision]]
   }
 
-  def imagesReads(pageId: Long, title: String): Reads[Seq[Image]] = {
+  def imageInfoReads(pageId: Long, title: String): Reads[Seq[Image]] = {
     implicit val imageReads: Reads[Image] = (
       Reads.pure[String](title) and
-        (__ \ "timestamp").read[DateTime](jodaDateTimeReads) and
-        (__ \ "user").read[String] and
+        (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) and
+        (__ \ "user").readNullable[String] and
         (__ \ "size").readNullable[Long] and
         (__ \ "width").readNullable[Int] and
         (__ \ "height").readNullable[Int] and
         (__ \ "url").readNullable[String] and
         (__ \ "descriptionurl").readNullable[String] and
-        Reads.pure[Long](pageId)
+        Reads.pure[Option[Long]](Some(pageId))
       //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
       //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
       )(Image.basic _)
 
     (__ \ "imageinfo").read[Seq[Image]]
+  }
+
+  def imageReads(): Reads[Seq[Image]] = {
+    implicit val imageReads: Reads[Image] = (
+        (__ \ "title").read[String]   and
+        (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) and
+        (__ \ "user").readNullable[String] and
+        (__ \ "size").readNullable[Long] and
+        (__ \ "width").readNullable[Int] and
+        (__ \ "height").readNullable[Int] and
+        (__ \ "url").readNullable[String] and
+        (__ \ "descriptionurl").readNullable[String] and
+        Reads.pure[Option[Long]](None)
+      //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
+      //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
+      )(Image.basic _)
+
+    (__ \ "images").read[Seq[Image]]
   }
 
   val userContribReads: Reads[UserContrib] = (

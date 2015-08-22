@@ -137,13 +137,13 @@ class GeneratorSpec extends Specification with MockBotSpec {
       result must have size 2
 
       result(0) === Page(Some(32885574), 6, "File:\"Dovbush-rocks\" 01.JPG", Seq.empty,
-        Seq(Image.basic("File:\"Dovbush-rocks\" 01.JPG", Timestamp.parse("2014-05-20T20:54:33Z"), "Taras r", Some(4270655), Some(3648), Some(2736),
+        Seq(Image.basic("File:\"Dovbush-rocks\" 01.JPG", Some(Timestamp.parse("2014-05-20T20:54:33Z")), Some("Taras r"), Some(4270655), Some(3648), Some(2736),
           Some("https://upload.wikimedia.org/wikipedia/commons/e/ea/%22Dovbush-rocks%22_01.JPG"),
-          Some("https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_01.JPG"), 32885574)))
+          Some("https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_01.JPG"), Some(32885574))))
       result(1) === Page(Some(32885597), 6, "File:\"Dovbush-rocks\" 02.JPG", Seq.empty,
-        Seq(Image.basic("File:\"Dovbush-rocks\" 02.JPG", Timestamp.parse("2014-05-20T20:55:12Z"), "Taras r", Some(4537737), Some(2736), Some(3648),
+        Seq(Image.basic("File:\"Dovbush-rocks\" 02.JPG", Some(Timestamp.parse("2014-05-20T20:55:12Z")), Some("Taras r"), Some(4537737), Some(2736), Some(3648),
           Some("https://upload.wikimedia.org/wikipedia/commons/2/26/%22Dovbush-rocks%22_02.JPG"),
-          Some("https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_02.JPG"), 32885597)))
+          Some("https://commons.wikimedia.org/wiki/File:%22Dovbush-rocks%22_02.JPG"), Some(32885597))))
     }
 
     "get lang links" should {
