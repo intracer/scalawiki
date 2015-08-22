@@ -20,11 +20,12 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
 
     val command = commands.dequeue()
 
-    url.scheme === "https"
-    url.authority.host.address === host
-    url.path.toString() === command.path
+    require(url.scheme == "https")
+    require(url.authority.host.address == host)
+    require(url.path.toString() == command.path)
 
-    url.query.toMap === command.query
+    val matchResult = url.query.toMap === command.query
+    require(matchResult.isSuccess, matchResult.message)
 
     val pageResponse = Option(command.response)
       .fold(HttpResponse(StatusCodes.NotFound))(
