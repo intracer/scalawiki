@@ -25,8 +25,8 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
           |{"categorymembers": [{"pageid": 4571809, "ns": 2, "title": "User:Formator"}]} }""".stripMargin
 
       val commands = Seq(
-        new Command(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max", "cmtitle" -> "Category:SomeCategory", "continue" -> ""), response1),
-        new Command(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max", "cmtitle" -> "Category:SomeCategory",
+        new Command(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max", "cmtitle" -> "Category:SomeCategory", "cmnamespace" -> "", "continue" -> ""), response1),
+        new Command(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max", "cmtitle" -> "Category:SomeCategory", "cmnamespace" -> "",
           "continue" -> "-||", "cmcontinue" -> "10|Stub|6674690"), response2)
       )
 

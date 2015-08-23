@@ -25,7 +25,7 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
     require(url.path.toString() == command.path)
 
     val matchResult = url.query.toMap === command.query
-//    require(matchResult.isSuccess, matchResult.message)
+    require(matchResult.isSuccess, matchResult.message)
 
     val pageResponse = Option(command.response)
       .fold(HttpResponse(StatusCodes.NotFound))(

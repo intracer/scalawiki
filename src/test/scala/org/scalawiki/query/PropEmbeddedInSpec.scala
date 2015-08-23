@@ -19,7 +19,8 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
 
       val response = """{"query":{"embeddedin":[]}}"""
 
-      val bot = getBot(new Command(Map("action" -> "query", "list" -> queryType, "eilimit" -> "max", "eititle" -> "Template:SomeTemplate", "continue" -> ""), response))
+      val bot = getBot(new Command(Map("action" -> "query", "list" -> queryType, "eilimit" -> "max", "eititle" -> "Template:SomeTemplate",
+        "einamespace" -> "", "continue" -> ""), response))
 
       val future = bot.page("Template:SomeTemplate").whatTranscludesHere()
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
@@ -35,7 +36,8 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
 
       val response = """{"limits": {"embeddedin": 500}, "query":{"embeddedin":[{"pageid":569559,"ns":1,"title":"Talk:Welfare reform"}]}}"""
 
-      val bot = getBot(new Command(Map("action" -> "query", "list" -> queryType, "eilimit" -> "max", "eititle" -> "Template:SomeTemplate", "continue" -> ""), response))
+      val bot = getBot(new Command(Map("action" -> "query", "list" -> queryType, "eilimit" -> "max", "eititle" -> "Template:SomeTemplate",
+        "einamespace" -> "", "continue" -> ""), response))
 
       val future = bot.page("Template:SomeTemplate").whatTranscludesHere()
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
@@ -53,7 +55,8 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
           |{"pageid":569559,"ns":1,"title":"Talk:Welfare reform"},
           |{"pageid":4571809,"ns":2,"title":"User:Formator"}]}}""".stripMargin
 
-      val bot = getBot(new Command(Map("action" -> "query", "list" -> queryType, "eilimit" -> "max", "eititle" -> "Template:SomeTemplate", "continue" -> ""), response))
+      val bot = getBot(new Command(Map("action" -> "query", "list" -> queryType, "eilimit" -> "max", "eititle" -> "Template:SomeTemplate",
+        "einamespace" -> "", "continue" -> ""), response))
 
       val future = bot.page("Template:SomeTemplate").whatTranscludesHere()
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
@@ -73,8 +76,10 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
       val response2 = """{"limits": {"embeddedin": 500}, "query":{"embeddedin":[ {"pageid":4571809,"ns":2,"title":"User:Formator"}]}}"""
 
       val commands = Seq(
-        new Command(Map("action" -> "query", "list" -> queryType, "eilimit" -> "max", "eititle" -> "Template:SomeTemplate", "continue" -> ""), response1),
-        new Command(Map("action" -> "query", "list" -> queryType, "eilimit" -> "max", "eititle" -> "Template:SomeTemplate", "continue" -> "-||", "eicontinue" -> "10|Stub|6674690"), response2)
+        new Command(Map("action" -> "query", "list" -> queryType, "eilimit" -> "max", "eititle" -> "Template:SomeTemplate",
+          "einamespace" -> "", "continue" -> ""), response1),
+        new Command(Map("action" -> "query", "list" -> queryType, "eilimit" -> "max", "eititle" -> "Template:SomeTemplate",
+          "einamespace" -> "", "continue" -> "-||", "eicontinue" -> "10|Stub|6674690"), response2)
       )
 
       val bot = getBot(commands:_*)

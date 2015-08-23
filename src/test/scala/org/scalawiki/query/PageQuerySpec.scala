@@ -36,8 +36,8 @@ class PageQuerySpec extends Specification {
         Map(
           "pageids" -> "569559|4571809",
           "action" -> "query",
-          "prop" -> "revisions",
-          "continue" -> "",
+          "prop" -> "info|revisions",
+          "continue" -> "", "rvlimit" -> "max",
           "rvprop" -> "ids|content|user|comment"), response))
 
       val future = bot.pagesById(Set(569559L, 4571809L)).revisions(Set.empty[Int], Set("ids", "content", "user", "comment"))

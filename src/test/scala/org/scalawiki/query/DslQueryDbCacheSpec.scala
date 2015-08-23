@@ -18,6 +18,7 @@ import slick.driver.JdbcProfile
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
+// TODO check 50 pages limit
 class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfter {
 
   sequential
@@ -72,15 +73,16 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
     pagesJson(pages)
 
   "get revisions text with generator and caching" should {
-    "first run" in {
+    "first run should use generator" in {
       val expectedCommands = Seq(new Command(Map(
         "action" -> "query",
         "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-        "prop" -> "revisions", "rvprop" -> "ids",
+        "prop" -> "info|revisions", "rvprop" -> "ids",
         "continue" -> ""), responseWithRevIds()),
         new Command(Map("action" -> "query",
-          "pageids" -> "4571809|569559", "limit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids|content"), responseWithContent())
+          "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
+          "prop" -> "info|revisions", "rvprop" -> "ids|content",
+          "continue" -> ""), responseWithContent())
       )
 
       bot = getBot(expectedCommands: _*)
@@ -105,16 +107,17 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       val expectedCommands = Seq(
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids",
           "continue" -> ""), responseWithRevIds()),
 
         new Command(Map("action" -> "query",
-          "pageids" -> "4571809|569559", "limit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids|content"), responseWithContent()),
+          "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
+          "prop" -> "info|revisions", "rvprop" -> "ids|content",
+          "continue" -> ""), responseWithContent()),
 
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids",
           "continue" -> ""), responseWithRevIds())
       )
 
@@ -157,31 +160,37 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
 
     "add page to cache" in {
       val expectedCommands = Seq(
+      // query for page 1 ids in category
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids",
           "continue" -> ""), pagesJson(Seq(page1()))
         ),
 
-        new Command(Map("action" -> "query",
-          "pageids" -> "4571809", "limit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids|content"), pagesJson(Seq(page1(Some(pageText1))))
-        ),
-
+        // query for page 1 content
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids|content",
+          "continue" -> ""), pagesJson(Seq(page1(Some(pageText1))))
+        ),
+
+        // query for page 1 and page2  ids in category
+        new Command(Map("action" -> "query",
+          "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
+          "prop" -> "info|revisions", "rvprop" -> "ids",
           "continue" -> ""), pagesJson(Seq(page1(), page2()))
         ),
 
+        // fetch for page2 content for cache
         new Command(Map("action" -> "query",
-          "pageids" -> "569559", "limit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids|content"), pagesJson(Seq(page2(Some(pageText2))))
+          "pageids" -> "4571809",
+          "prop" -> "info|revisions", "rvprop" -> "ids|content", "continue" -> ""), pagesJson(Seq(page2(Some(pageText2))))
         ),
 
+        // query for page 1 and page2  ids in category. content should be in cache by now
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids",
           "continue" -> ""), pagesJson(Seq(page1(), page2()))
         )
       )
@@ -239,34 +248,36 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       )
     }
 
-    "add page revision to cache" in {
+    "add one page revision to cache" in { // TODO more pages?
 
       val expectedCommands = Seq(
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids",
           "continue" -> ""), pagesJson(Seq(page1(revId = 11)))
         ),
 
         new Command(Map("action" -> "query",
-          "pageids" -> "4571809", "limit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids|content"), pagesJson(Seq(page1(Some(pageText1), revId = 11)))
+          "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
+          "prop" -> "info|revisions", "rvprop" -> "ids|content",
+          "continue" -> ""), pagesJson(Seq(page1(Some(pageText1), revId = 11)))
         ),
 
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids",
           "continue" -> ""), pagesJson(Seq(page1(revId = 12)))
         ),
 
         new Command(Map("action" -> "query",
-          "pageids" -> "4571809", "limit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids|content"), pagesJson(Seq(page1(Some(pageText2), revId = 12)))
+          "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
+          "prop" -> "info|revisions", "rvprop" -> "ids|content",
+          "continue" -> ""), pagesJson(Seq(page1(Some(pageText2), revId = 12)))
         ),
 
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids",
           "continue" -> ""), pagesJson(Seq(page1(revId = 12)))
         )
       )

@@ -36,11 +36,11 @@ class GeneratorSpec extends Specification with MockBotSpec {
       val commands = Seq(
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids|content|user|comment",
+          "prop" -> "info|revisions", "rvprop" -> "ids|content|user|comment",
           "continue" -> ""), response1),
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "revisions", "rvprop" -> "ids|content|user|comment",
+          "prop" -> "info|revisions", "rvprop" -> "ids|content|user|comment",
           "continue" -> "gcmcontinue||", "gcmcontinue" -> "10|Stub|6674690"), response2)
       )
 
@@ -117,11 +117,11 @@ class GeneratorSpec extends Specification with MockBotSpec {
       val commands = Seq(
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "imageinfo", "iiprop" -> "content|timestamp|user|comment",
+          "prop" -> "imageinfo", "iiprop" -> "timestamp|user|comment",
           "continue" -> ""), response1),
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "imageinfo", "iiprop" -> "content|timestamp|user|comment",
+          "prop" -> "imageinfo", "iiprop" -> "timestamp|user|comment",
           "continue" -> "gcmcontinue||",
           "gcmcontinue" -> "file|44454d45524749373631312e4a50470a44454d45524749373631312e4a5047|32763876"),
           response2)
@@ -130,7 +130,7 @@ class GeneratorSpec extends Specification with MockBotSpec {
       val bot = getBot(commands: _*)
 
       val future = bot.page("Category:SomeCategory")
-        .imageInfoByGenerator("categorymembers", "cm", Set.empty, Set("content", "timestamp", "user", "comment"))
+        .imageInfoByGenerator("categorymembers", "cm", Set.empty, Set("timestamp", "user", "comment"))
 
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
 
@@ -217,12 +217,12 @@ class GeneratorSpec extends Specification with MockBotSpec {
 
         val commands = Seq(
           new Command(Map("action" -> "query",
-            "generator" -> "categorymembers", "gcmtitle" -> category, "gcmlimit" -> "2", "lllimit" -> "2",
-            "prop" -> "langlinks", "iiprop" -> "content|timestamp|user|comment",
+            "generator" -> "categorymembers", "gcmtitle" -> category, "gcmnamespace" -> "0", "gcmlimit" -> "2", "lllimit" -> "2",
+            "prop" -> "langlinks",
             "continue" -> ""), response1),
           new Command(Map("action" -> "query",
-            "generator" -> "categorymembers", "gcmtitle" -> category, "gcmlimit" -> "2", "lllimit" -> "2",
-            "prop" -> "langlinks", "iiprop" -> "content|timestamp|user|comment",
+            "generator" -> "categorymembers", "gcmtitle" -> category, "gcmnamespace" -> "0", "gcmlimit" -> "2", "lllimit" -> "2",
+            "prop" -> "langlinks",
             "continue" -> "||",
             "llcontinue" -> "6863578|cs"),
             response2)
