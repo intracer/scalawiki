@@ -58,9 +58,9 @@ class ListFiller extends WithBot {
     val splitted = pageText.split("\\{\\{" + template)
 
     var added: Int = 0
-    val edited = splitted.head ++ splitted.tail.map { text =>
+    val edited = Seq(splitted.head) ++ splitted.tail.map { text =>
       val monument = Monument.init("{{" + template + "\n" + text, title, uploadConfig.listConfig).head
-      if (monument.photo.isEmpty) {
+      if (monument.photo.isEmpty && imageDb.byId(monument.id).nonEmpty) {
         added += 1
         val image = bestImage(imageDb.byId(monument.id))
         monument.copy(

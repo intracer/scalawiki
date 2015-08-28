@@ -82,7 +82,7 @@ class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Monu
   def authorsByRegion(regId: String) = _authorsByRegion.getOrElse(regId, Seq.empty[String])
 
   def subSet(monuments: Seq[Monument], withFalseIds: Boolean = false): ImageDB = {
-    val subSetMonumentDb = new MonumentDB(contest, monuments, withFalseIds)
+    val subSetMonumentDb = new MonumentDB(monumentDb.contest, monuments, withFalseIds)
     val subSetImages = images.filter(_.monumentId.fold(false)(subSetMonumentDb.ids.contains))
     new ImageDB(contest, subSetImages, subSetMonumentDb)
   }
