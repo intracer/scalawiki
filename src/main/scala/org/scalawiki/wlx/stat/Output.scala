@@ -346,5 +346,22 @@ class Output {
     sections.mkString("__TOC__\n", "\n", "")
   }
 
+  def galleryByRegionAndId(monumentDb: MonumentDB, imageDb: ImageDB) = {
+    val country = monumentDb.contest.country
+    val regionIds = country.regionIds.filter(id => imageDb.idsByRegion(id).nonEmpty)
+
+    regionIds.map {
+      regionId =>
+        val regionName: String = country.regionById(regionId).name
+        val regionHeader = s"== [[:uk:Вікіпедія:Вікі любить Землю/$regionName|$regionName]] ==\n"
+        val ids = imageDb.idsByRegion(regionId)
+        regionHeader + ids.map {
+          id =>
+            s"=== $id ===\n${monumentDb.byId(id).get.name}\n<gallery>\n" +
+              imageDb.byId(id).map(_.title).sorted.mkString("\n") +
+              "\n</gallery>"
+        }.mkString("\n")
+    }.mkString("\n")
+  }
 
 }
