@@ -52,8 +52,6 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val pageId = pageDao.insert(page)
 
-      Thread.sleep(1000)
-
       val dbPage = pageDao.withText(pageId)
 
       dbPage.text === Some(text)

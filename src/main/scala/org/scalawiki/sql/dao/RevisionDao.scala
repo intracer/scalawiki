@@ -23,8 +23,15 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
   val db = mwDb.db
 
-  def insertAll(revisionSeq: Seq[Revision]): Unit = {
-    revisions.forceInsertAll(revisionSeq)
+  def insertAll(revisionSeq: Seq[Revision]): Seq[Option[Long]] = {
+
+    val texts = revisionSeq.map( r => Text(None, r.content.getOrElse("")))
+    val textIds = textDao.insertAll(texts)
+    val withTextIds = revisionSeq.zip(textIds).map {
+      case (r, textId) => r.copy(textId = textId)
+    }
+
+    db.run(autoInc.forceInsertAll(withTextIds)).await
   }
 
   def insert(revision: Revision): Long = {
@@ -81,6 +88,8 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
   }
 
   def list = db.run(revisions.result).await
+
+  def count = db.run(revisions.length.result).await
 
   def get(id: Long): Future[Revision] =
     db.run(revisions.filter(_.id === id).result.head)

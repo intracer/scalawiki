@@ -14,6 +14,7 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
   import driver.api._
 
+  // TODO need to rename, name clash is horrible
   val pages = mwDb.pages
   val revisions = mwDb.revisions
   val texts = mwDb.texts
@@ -26,10 +27,27 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
   val db = mwDb.db
 
-  def insertAll(pageSeq: Seq[Page]): Unit = {
-    pages.forceInsertAll(pageSeq)
+  def insertAll(pageSeq: Seq[Page]): Seq[Option[Long]] = {
 
-    revisionDao.insertAll(pageSeq.flatMap(_.revisions.headOption))
+    val revisionSeq = pageSeq.flatMap(_.revisions.headOption)
+    require(revisionSeq.size == pageSeq.size, "Pages should have revisions") // Fail on any absent for now
+
+    val pageIds = db.run(autoInc.forceInsertAll(pageSeq)).await
+
+    val withPageIds: Seq[Revision] = revisionSeq.zip(pageIds).map {
+      case (rev, id) => rev.copy(pageId = id)
+    }
+    val revIds = revisionDao.insertAll(withPageIds)
+
+    // TODO batchUpdate or case/when/then
+    Future.traverse(pageIds.zip(revIds))({
+      case (pageId, revId) =>
+        db.run(pages.filter(_.id === pageId)
+          .map(p => p.pageLatest)
+          .update(revId.get))
+    }).await
+
+    pageIds
   }
 
   def insert(page: Page): Long = {
@@ -39,12 +57,12 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     val pageIdF = (
       if (page.id.isDefined) {
           if (!exists(page.id.get))
-            mwDb.db.run(pages.forceInsert(page)).map(_ => page.id)
+            db.run(pages.forceInsert(page)).map(_ => page.id)
           else
             Future.successful(page.id)
       }
       else {
-        mwDb.db.run(autoInc += page)
+        db.run(autoInc += page)
       }
       ).map(_.get)
 
@@ -77,17 +95,29 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
   def list = db.run(pages.sortBy(_.id).result).await
 
+  def count = db.run(pages.length.result).await
+
   def get(id: Long): Option[Page] =
     db.run(pages.filter(_.id === id).result.headOption).await
 
   def exists(id: Long): Boolean =
     db.run(pages.filter(_.id === id).exists.result).await
-//    get(id).fold (false)(_ => true)
 
   def find(ids: Iterable[Long]): Seq[Page] =
     db.run(
       pages.filter(_.id inSet ids).sortBy(_.id).result
     ).await
+
+  def listWithText: Seq[Page] =
+    db.run(
+      (pages
+        join revisions on (_.pageLatest === _.id)
+        join texts on (_._2.textId === _.id)
+        sortBy { case ((p, r), t) => p.id }
+        ).result
+    ).map { pages =>
+      pages.map { case ((p, r), t) => p.copy(revisions = Seq(r.copy(content = Some(t.text)))) }
+    }.await
 
   def findWithText(ids: Iterable[Long]): Seq[Page] =
     db.run(
