@@ -16,11 +16,11 @@ class BaseIntegrationSpec extends Specification {
   val system: ActorSystem = ActorSystem()
   val http = new HttpClientImpl(system)
 
-  def getUkWikiBot = new MwBot(http, system, ukWiki)
+  def getUkWikiBot = new MwBot(http, system, ukWiki, None)
 
-  def getTestBot = new MwBot(http, system, "wikilovesearth.org")
+  def getTestBot = new MwBot(http, system, "wikilovesearth.org", None)
 
-  def getCommonsBot = new MwBot(http, system, commons)
+  def getCommonsBot = new MwBot(http, system, commons, None)
 
   def login(wiki: MwBot, username: String = LoginInfo.login, passwd: String = LoginInfo.password) =
     await(wiki.login(username, passwd))
