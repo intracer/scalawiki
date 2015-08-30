@@ -84,6 +84,93 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
       }
     }
 
+    "insert with given id page id" in {
+      createSchema()
+
+      val (titles, texts, pageIds) = (
+        (1 to 10) map ("title" + _),
+        (1 to 10) map ("text" + _),
+        51L to 60L
+        )
+
+      val pages = titles.zip(texts).zip(pageIds) map {
+        case ((title, text), pageId) =>
+          Page(Some(pageId), 0, title, Seq(Revision.one(text)))
+      }
+
+      pageDao.insertAll(pages)
+
+      textDao.count aka "text size" must_== 10
+      revisionDao.count aka "revisions size" must_== 10
+      pageDao.count aka "pages size" must_== 10
+
+      val dbTexts = textDao.list
+      dbTexts.map(_.text) aka "texts" must_== texts
+
+      val revs = revisionDao.list
+      revs.map(_.textId) aka "textIds in revisions" must_== dbTexts.map(_.id)
+
+      val dbPages = pageDao.list
+      dbPages.map(_.revisions.headOption.flatMap(_.revId)) aka "revIds in pages" must_== revs.map(_.id)
+
+      val fromDb = pageDao.listWithText
+
+      fromDb.size aka "pages with text size" must_== 10
+
+      (0 to 9) map  { i =>
+        val page = fromDb(i)
+        page.id === Some(pageIds(i))
+        page.title === titles(i)
+        page.text === Some(texts(i))
+        page.revisions.size === 1
+      }
+    }
+
+    "insert with given id page id and revision id" in {
+      createSchema()
+
+      val (titles, texts, pageIds, revIds) = (
+        (1 to 10) map ("title" + _),
+        (1 to 10) map ("text" + _),
+        51L to 60L,
+        21L to 30L
+        )
+
+      val pages = titles.zip(texts).zip(pageIds).zip(revIds) map {
+        case (((title, text), pageId), revId) =>
+          val revision: Revision = new Revision(revId = Some(revId), pageId = Some(pageId), content = Some(text))
+          Page(Some(pageId), 0, title, Seq(revision))
+      }
+
+      pageDao.insertAll(pages)
+
+      textDao.count aka "text size" must_== 10
+      revisionDao.count aka "revisions size" must_== 10
+      pageDao.count aka "pages size" must_== 10
+
+      val dbTexts = textDao.list
+      dbTexts.map(_.text) aka "texts" must_== texts
+
+      val revs = revisionDao.list
+      revs.map(_.textId) aka "textIds in revisions" must_== dbTexts.map(_.id)
+
+      val dbPages = pageDao.list
+      dbPages.map(_.revisions.headOption.flatMap(_.revId)) aka "revIds in pages" must_== revs.map(_.id)
+
+      val fromDb = pageDao.listWithText
+
+      fromDb.size aka "pages with text size" must_== 10
+
+      (0 to 9) map  { i =>
+        val page = fromDb(i)
+        page.id === Some(pageIds(i))
+        page.title === titles(i)
+        page.text === Some(texts(i))
+        page.revisions.size === 1
+        page.revisions.head.revId === Some(revIds(i))
+      }
+    }
+
 //    "insert with user" in {
 //      createSchema()
 //

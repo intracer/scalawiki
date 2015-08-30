@@ -40,12 +40,14 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     val revIds = revisionDao.insertAll(withPageIds)
 
     // TODO batchUpdate or case/when/then
-    Future.traverse(pageIds.zip(revIds))({
-      case (pageId, revId) =>
-        db.run(pages.filter(_.id === pageId)
-          .map(p => p.pageLatest)
-          .update(revId.get))
-    }).await
+    if (revisionSeq.exists(_.revId.isEmpty)) {
+      Future.traverse(pageIds.zip(revIds))({
+        case (pageId, revId) =>
+          db.run(pages.filter(_.id === pageId)
+            .map(p => p.pageLatest)
+            .update(revId.get))
+      }).await
+    }
 
     pageIds
   }

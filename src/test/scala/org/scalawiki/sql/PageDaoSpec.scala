@@ -59,6 +59,45 @@ class PageDaoSpec extends Specification with BeforeAfter {
       dbPage.revisions.size === 1
     }
 
+    "insert with given id page id" in {
+      createSchema()
+
+      val text = "revision text"
+      val revision = Revision.one(text)
+
+      val page = Page(Some(3), 0, "title", Seq(revision))
+
+      val pageId = pageDao.insert(page)
+      pageId === 3
+
+      val dbPage = pageDao.withText(pageId)
+
+      dbPage.text === Some(text)
+      dbPage.id === Some(3)
+
+      dbPage.revisions.size === 1
+    }
+
+    "insert with given id page id and revision id" in {
+      createSchema()
+
+      val text = "revision text"
+      val revision: Revision = new Revision(revId = Some(5L), pageId = Some(3L), content = Some(text))
+
+      val page: Page = new Page(Some(3L), 0, "title", Seq(revision))
+
+      val pageId = pageDao.insert(page)
+      pageId === 3L
+
+      val dbPage = pageDao.withText(pageId)
+
+      dbPage.text === Some(text)
+      dbPage.id === Some(3)
+
+      dbPage.revisions.size === 1
+      dbPage.revisions.head.revId === Some(5)
+    }
+
     "insert with user" in {
       createSchema()
 
