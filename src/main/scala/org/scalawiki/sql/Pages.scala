@@ -74,7 +74,7 @@ class Pages(tag: Tag, tableName: String, val dbPrefix: Option[String]) extends T
    * or there will be the "The revision #0 of the page named 'Foo' does not exist" error when one tries to view the page
    * @return
    */
-  def pageLatest = column[Long]("page_latest")
+  def pageLatest = column[Long]("page_latest", O.Default(0))
 
   /**
    * Uncompressed length in bytes of the page's current source text.

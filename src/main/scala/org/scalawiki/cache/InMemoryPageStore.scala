@@ -29,7 +29,7 @@ class InMemoryPageStore extends PageStore {
             val cachedRevs = cached.revisions
             val newRevs = page.revisions
             val allRevs = cachedRevs ++ newRevs
-            val allRevIds = allRevs.flatMap(_.id).toSet.toSeq.sortBy((id: Long) => -id)
+            val allRevIds = allRevs.flatMap(_.id).distinct.sortBy((id: Long) => -id)
 
             val updatedRevs = allRevIds.map(revisionMap.apply)
             page.copy(revisions = updatedRevs)

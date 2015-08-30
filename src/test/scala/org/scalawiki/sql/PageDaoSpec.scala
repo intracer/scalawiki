@@ -40,6 +40,8 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val page = new Page(None, 0, "title")
       pageDao.insert(page) must throwA[IllegalArgumentException]
+      pageDao.count aka "page count" must_== 0
+      revisionDao.count aka "revision count" must_== 0
     }
 
     "insert with revision" in {
@@ -164,6 +166,24 @@ class PageDaoSpec extends Specification with BeforeAfter {
       dbUser.name === username
       dbUser.id === Some(5)
     }
+
+    "insert with new user should fail" in {
+      createSchema()
+
+      val username = Some("username")
+      val user = new User(None, username)
+      val revision: Revision = new Revision(user = Some(user), content = Some("revision text"))
+
+      val page = Page(None, 0, "title", Seq(revision))
+
+      pageDao.insert(page) must throwA[IllegalArgumentException]
+
+      // TODO
+//      pageDao.count aka "page count" must_== 0
+//      revisionDao.count aka "revision count" must_== 0
+//      userDao.count aka "user count" must_== 0
+    }
+
 
     "insert with image" in {
       createSchema()

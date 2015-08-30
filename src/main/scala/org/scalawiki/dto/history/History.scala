@@ -29,7 +29,7 @@ class History(val page: Page) {
       if (parentId == 0)
         revision.size
       else
-        revisions.find(_.revId == Some(parentId)).flatMap {
+        revisions.find(_.revId.contains(parentId)).flatMap {
           parent => delta(parent, revision)
         }
     }

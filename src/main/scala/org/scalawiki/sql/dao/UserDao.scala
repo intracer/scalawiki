@@ -29,6 +29,8 @@ class UserDao(val mwDb: MwDatabase, val query: TableQuery[Users], val driver: Jd
 
   def list = db.run(query.sortBy(_.id).result).await
 
+  def count = db.run(query.length.result).await
+
   def find(ids: Iterable[Long]): Seq[User] =
     db.run(query.filter(_.id inSet ids).sortBy(_.id).result).await
 

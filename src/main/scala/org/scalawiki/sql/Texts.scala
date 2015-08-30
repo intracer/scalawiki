@@ -21,7 +21,7 @@ class Texts(tag: Tag, tableName: String) extends Table[Text](tag, tableName) {
    * The wikitext of the page
    * @return
    */
-  def text = column[String]("old_text", O.NotNull)
+  def text = column[String]("old_text")
 
   /**
    * Comma-separated list of flags. Contains the following possible values:

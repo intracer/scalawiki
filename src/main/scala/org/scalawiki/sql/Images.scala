@@ -22,7 +22,7 @@ class Images(tag: Tag, tableName: String) extends Table[Image](tag, tableName) {
    * File size in bytes.
    * @return
    */
-  def size = column[Long]("img_size", O.NotNull)
+  def size = column[Long]("img_size")
 
   /**
    * Image width, in pixels.

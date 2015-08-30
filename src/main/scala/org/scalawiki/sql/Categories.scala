@@ -23,7 +23,7 @@ class Categories(tag: Tag, tableName: String) extends Table[Category](tag, table
    * it has this name (in the Category namespace).
    * @return
    */
-  def title = column[String]("cat_title", O.NotNull)
+  def title = column[String]("cat_title")
 
   /**
    * Number of pages in the category. This number includes the number of subcategories and the number of files.

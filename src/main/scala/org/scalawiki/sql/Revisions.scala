@@ -25,7 +25,7 @@ class Revisions(tag: Tag, tableName: String, val dbPrefix: Option[String]) exten
    * The number in this field is equal to the page_id field of said page.
    * @return
    */
-  def pageId = column[Long]("rev_page", O.NotNull)
+  def pageId = column[Long]("rev_page")
 
   /**
    * This is a foreign key to old_id in the text table. (The text table is where the actual bulk text is stored.)
@@ -33,7 +33,7 @@ class Revisions(tag: Tag, tableName: String, val dbPrefix: Option[String]) exten
    * or where a rollback is done to a previous version.
    * @return
    */
-  def textId = column[Long]("rev_text_id", O.NotNull)
+  def textId = column[Long]("rev_text_id")
 
   /**
    * This field holds an editor's edit summary (editor's comment on revision). This text is shown in the history and contributions.
@@ -41,14 +41,14 @@ class Revisions(tag: Tag, tableName: String, val dbPrefix: Option[String]) exten
    * for the list of new pages.) It is rendered in a sanitized subset of wiki markup.
    * @return
    */
-  def comment = column[String]("rev_comment", O.NotNull)
+  def comment = column[String]("rev_comment")
 
   /**
    * This is equal to the user_id of the user who made this edit. The value for this field is 0 for anonymous edits,
    * initializations scripts, and for some mass imports.
    * @return
    */
-  def userId = column[Long]("rev_user", O.NotNull, O.Default(0))
+  def userId = column[Long]("rev_user", O.Default(0))
 
   /**
    * This field holds the text of the editor's username, or the IP address of the editor if the revision was done by an unregistered user.
@@ -57,13 +57,13 @@ class Revisions(tag: Tag, tableName: String, val dbPrefix: Option[String]) exten
    * see bug 3631). Some edits imported from UseModWiki may contain a Reverse DNS lookup hostname like ppfree165-153-bz.aknet.it or office.bomis.com.
    * @return
    */
-  def userText = column[String]("rev_user_text", O.NotNull, O.Default(""))
+  def userText = column[String]("rev_user_text", O.Default(""))
 
   /**
    * Holds the timestamp of the edit.
    * @return
    */
-  def timestamp = column[String]("rev_timestamp", O.NotNull, O.Default(""))
+  def timestamp = column[String]("rev_timestamp", O.Default(""))
 
   /**
    * Records whether the user marked the 'minor edit' checkbox.
@@ -71,7 +71,7 @@ class Revisions(tag: Tag, tableName: String, val dbPrefix: Option[String]) exten
    * it is 0 otherwise. Many automated edits are marked as minor.
    * @return
    */
-  def minorEdit = column[Boolean]("rev_minor_edit", O.NotNull, O.Default(false))
+  def minorEdit = column[Boolean]("rev_minor_edit", O.Default(false))
 
   /**
    * This field is reserved for the [[https://www.mediawiki.org/wiki/Manual:RevisionDelete RevisionDelete system]].
@@ -80,7 +80,7 @@ class Revisions(tag: Tag, tableName: String, val dbPrefix: Option[String]) exten
    * if both the comment and user have been deleted, then the value is 6.
    * @return
    */
-  def deleted = column[Int]("rev_deleted", O.NotNull, O.Default(0))
+  def deleted = column[Int]("rev_deleted", O.Default(0))
 
   /**
    * This field contains the length of the article after the revision, in bytes.
@@ -99,7 +99,7 @@ class Revisions(tag: Tag, tableName: String, val dbPrefix: Option[String]) exten
    * This field is used to add the SHA-1 text content hash in base-36
    * @return
    */
-  def sha1 = column[String]("rev_sha1", O.NotNull)
+  def sha1 = column[String]("rev_sha1")
 
   def contentModel = column[String]("rev_content_model")
 

@@ -64,6 +64,10 @@ object Image {
     val template = TemplateParser.parseOne(content, Some("Information"))
     val authorValue = template.flatMap(t => t.getParamOpt("author").orElse(t.getParamOpt("Author"))).getOrElse("")
 
+    parseUser(authorValue)
+  }
+
+  def parseUser(authorValue: String): String = {
     val i1: Int = authorValue.indexOf("User:")
     val i2: Int = authorValue.indexOf("user:")
     val start = Seq(i1, i2, Int.MaxValue).filter(_ >= 0).min
