@@ -22,6 +22,7 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
     val lon = getMappedName("lon")
     val image = getMappedName("photo")
     val gallery = getMappedName("gallery")
+    val stateId = getMappedName("stateId")
     val typ = getMappedName("type")
     val subType = getMappedName("subType")
     val resolution = getMappedName("resolution")
@@ -51,6 +52,7 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
           lon = byName(lon),
           photo = byName(image),
           gallery = byName(gallery),
+          stateId = byName(stateId),
           typ = byName(typ),
           subType = byName(subType),
           resolution = byName(resolution),

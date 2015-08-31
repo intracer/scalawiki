@@ -23,9 +23,9 @@ class ListFiller extends WithBot {
     }
 
     for (seq <- Future.sequence(results.toSeq)) {
-      val (succesfull, errors) = seq.partition(_ == "Success")
+      val (successful, errors) = seq.partition(_ == "Success")
 
-      println(s"Succesfull pages inserts: ${succesfull.size}")
+      println(s"Succesfull pages inserts: ${successful.size}")
       println(s"Errors in  page inserts: ${errors.size}")
 
       errors.foreach(println)

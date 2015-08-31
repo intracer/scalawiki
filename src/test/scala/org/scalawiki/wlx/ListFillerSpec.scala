@@ -55,9 +55,9 @@ class ListFillerSpec extends Specification {
       val text = "header\n" + monuments.map(_.asWiki).mkString + "\nfooter"
 
       val images = Seq(
-        Image("Img1.jpg", size = Some(10^6), width = Some(2048), height = Some(1024), monumentId = Some("id1")),
-        Image("Img2.jpg", size = Some(10^6), width = Some(1280), height = Some(1024), monumentId = Some("id2")),
-        Image("Img2sm.jpg", size = Some(10^6), width = Some(1024), height = Some(768), monumentId = Some("id2"))
+        Image("File:Img1.jpg", size = Some(10^6), width = Some(2048), height = Some(1024), monumentId = Some("id1")),
+        Image("File:Img2.jpg", size = Some(10^6), width = Some(1280), height = Some(1024), monumentId = Some("id2")),
+        Image("File:Img2sm.jpg", size = Some(10^6), width = Some(1024), height = Some(768), monumentId = Some("id2"))
       )
       val monumentDb = new MonumentDB(contest, monuments)
       val imageDb = new ImageDB(contest, images, monumentDb)
