@@ -1,5 +1,6 @@
 package org.scalawiki.wlx
 
+import org.scalawiki.MwBot
 import org.scalawiki.wlx.dto.{Contest, Image, Monument}
 import org.specs2.mutable.Specification
 
@@ -8,6 +9,7 @@ class ListFillerSpec extends Specification {
   val contest = Contest.WLMUkraine(2015)
   val uploadConfig = contest.uploadConfigs.head
   val listConfig = uploadConfig.listConfig
+  val host = MwBot.ukWiki
 
   "ListFiller" should {
     "select bestImage" in {
@@ -17,7 +19,7 @@ class ListFillerSpec extends Specification {
         Image("16mpBigger", size = Some(4 * 10 ^ 9), width = Some(4000), height = Some(4000))
       )
 
-      val best = new ListFiller().bestImage(images)
+      val best = ListFiller.bestImage(images)
       best.title === "16mpBigger"
     }
 
@@ -25,8 +27,9 @@ class ListFillerSpec extends Specification {
 
       val monumentDb = new MonumentDB(contest, Seq.empty)
       val imageDb = new ImageDB(contest, Seq.empty, monumentDb)
+      val task = new ListFillerTask(host, monumentDb, imageDb)
 
-      val (newText, comment) = new ListFiller().addPhotosToPageText(uploadConfig, imageDb, "page", "")
+      val (newText, comment) = task.updatePage("page", "")
       newText === ""
       comment === "adding 0 image(s)"
     }
@@ -41,8 +44,9 @@ class ListFillerSpec extends Specification {
 
       val monumentDb = new MonumentDB(contest, monuments)
       val imageDb = new ImageDB(contest, Seq.empty, monumentDb)
+      val task = new ListFillerTask(host, monumentDb, imageDb)
 
-      val (newText, comment) = new ListFiller().addPhotosToPageText(uploadConfig, imageDb, "page", text)
+      val (newText, comment) = task.updatePage("page", text)
       newText === text
       comment === "adding 0 image(s)"
     }
@@ -61,8 +65,9 @@ class ListFillerSpec extends Specification {
       )
       val monumentDb = new MonumentDB(contest, monuments)
       val imageDb = new ImageDB(contest, images, monumentDb)
+      val task = new ListFillerTask(host, monumentDb, imageDb)
 
-      val (newText, comment) = new ListFiller().addPhotosToPageText(uploadConfig, imageDb, "page", text)
+      val (newText, comment) = task.updatePage("page", text)
       val updatedMonuments = Seq(
       monument1,
       monument2.copy(photo = Some("Img2.jpg")),
@@ -110,9 +115,9 @@ class ListFillerSpec extends Specification {
 
       val imageDb = new ImageDB(contest, images, monumentDb)
       val text = monuments.map(_.asWiki).mkString
+      val task = new ListFillerTask(host, monumentDb, imageDb)
 
-
-      val (newText, comment) = new ListFiller().addPhotosToPageText(uploadConfig, imageDb, "page", text)
+      val (newText, comment) = task.updatePage("page", text)
       val updatedMonuments = Seq(
         monument1.copy(photo = Some("Image1.jpg"))
       )
