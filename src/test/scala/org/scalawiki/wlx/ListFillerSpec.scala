@@ -37,7 +37,7 @@ class ListFillerSpec extends Specification {
         Monument(id = "id2", name = "name2", listConfig = listConfig),
         Monument(id = "id3", name = "name3", listConfig = listConfig)
       )
-      val text = "header\n" + monuments.map(_.asWiki).mkString + "\nfooter"
+      val text = "header\n" + monuments.map(_.asWiki).mkString("|}\n{|\n") + "\nfooter"
 
       val monumentDb = new MonumentDB(contest, monuments)
       val imageDb = new ImageDB(contest, Seq.empty, monumentDb)
@@ -73,55 +73,52 @@ class ListFillerSpec extends Specification {
       comment === "adding 1 image(s)"
     }
 
-    "addPhotosToPageText" in {
+//    "addPhotosToPageText should preserve surrounding markup" in {
+//      val monument1 = Monument(id = "id1", name = "name1", listConfig = listConfig)
+//      val monument2 = Monument(id = "id2", name = "name2", listConfig = listConfig)
+//      val monument3 = Monument(id = "id3", name = "name3", listConfig = listConfig)
+//      val monuments = Seq(monument1, monument2, monument3)
+//      val text = "header\n" + monuments.map(_.asWiki).mkString("|}\n{|\n") + "\nfooter"
+//
+//      val images = Seq(
+//        Image("File:Img1.jpg", size = Some(10^6), width = Some(2048), height = Some(1024), monumentId = Some("id1")),
+//        Image("File:Img2.jpg", size = Some(10^6), width = Some(1280), height = Some(1024), monumentId = Some("id2")),
+//        Image("File:Img3.jpg", size = Some(10^6), width = Some(1024), height = Some(768), monumentId = Some("id3"))
+//      )
+//      val monumentDb = new MonumentDB(contest, monuments)
+//      val imageDb = new ImageDB(contest, images, monumentDb)
+//
+//      val (newText, comment) = new ListFiller().addPhotosToPageText(uploadConfig, imageDb, "page", text)
+//      val updatedMonuments = Seq(
+//        monument1.copy(photo = Some("Img1.jpg")),
+//        monument2.copy(photo = Some("Img2.jpg")),
+//        monument3.copy(photo = Some("Img3.jpg"))
+//      )
+//      val expected = "header\n" + updatedMonuments.map(_.asWiki).mkString("|}\n{|\n") + "\nfooter"
+//      newText === expected
+//      comment === "adding 3 image(s)"
+//    }
+
+    "addPhotosToPageText should not add localized File:" in {
       val images = Seq(
-        Image("Image1", monumentId = Some("id1")),
-        Image("Image2", monumentId = Some("id2"))
+        Image("Файл:Image1.jpg", monumentId = Some("id1"))
       )
 
-      val monuments = Seq(
-        Monument(id = "id1", name = "name1", listConfig = listConfig),
-        Monument(id = "id2", name = "name2", listConfig = listConfig),
-        Monument(id = "id3", name = "name3", listConfig = listConfig)
-      )
+      val monument1 = Monument(id = "id1", name = "name1", listConfig = listConfig)
+      val monuments = Seq(monument1)
       val monumentDb = new MonumentDB(contest, monuments)
 
       val imageDb = new ImageDB(contest, images, monumentDb)
-      val listFiller = new ListFiller
+      val text = monuments.map(_.asWiki).mkString
 
-      val (newText, comment) = listFiller.addPhotosToPageText(uploadConfig, imageDb, "page", "")
-      ok
-    }
 
-    "addPhotosToPageText" in {
-      val images = Seq(
-        Image("Image1", monumentId = Some("id1")),
-        Image("Image2", monumentId = Some("id2"))
+      val (newText, comment) = new ListFiller().addPhotosToPageText(uploadConfig, imageDb, "page", text)
+      val updatedMonuments = Seq(
+        monument1.copy(photo = Some("Image1.jpg"))
       )
-
-      val contest = Contest.WLMUkraine(2015)
-      val uploadConfig = contest.uploadConfigs.head
-      val listConfig = uploadConfig.listConfig
-      val monuments = Seq(
-        Monument(id = "id1", name = "name1", listConfig = listConfig),
-        Monument(id = "id2", name = "name2", listConfig = listConfig),
-        Monument(id = "id3", name = "name3", listConfig = listConfig)
-      )
-      val monumentDb = new MonumentDB(contest, monuments)
-
-      val imageDb = new ImageDB(contest, images, monumentDb)
-      val listFiller = new ListFiller
-
-      val (newText, comment) = listFiller.addPhotosToPageText(uploadConfig, imageDb, "page", "")
-      ok
-    }
-
-    "fillLists" in {
-      ok
-    }
-
-    "pagesToFill" in {
-      ok
+      val expected = updatedMonuments.map(_.asWiki).mkString
+      newText === expected
+      comment === "adding 1 image(s)"
     }
 
   }

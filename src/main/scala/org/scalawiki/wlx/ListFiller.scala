@@ -41,7 +41,7 @@ class ListFiller extends WithBot {
 
   def pagesToFill(monumentDb: MonumentDB, imageDb: ImageDB): Set[String] = {
 
-    val monumentsToFill = monumentDb.monuments.filter{
+    val monumentsToFill = monumentDb.monuments.filter {
       m => m.photo.isEmpty && imageDb.containsId(m.id)
     }
 
@@ -64,7 +64,7 @@ class ListFiller extends WithBot {
         added += 1
         val image = bestImage(imageDb.byId(monument.id))
         monument.copy(
-          photo = Some(image.title.replaceFirst("File:", ""))
+          photo = Some(image.title.replaceFirst("File:", "").replaceFirst("Файл:", ""))
         ).asWiki.replaceFirst("\\{\\{" + template, "")
       }
       else {

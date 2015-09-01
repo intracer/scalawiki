@@ -45,8 +45,8 @@ object WlmUa extends ListConfig {
     "place" -> "адреса",
     "lat" -> "широта",
     "lon" -> "довгота",
-    "type" -> "тип",
     "stateId" -> "охоронний номер",
+    "type" -> "тип",
     "photo" -> "фото",
     "gallery" -> "галерея"
   )

@@ -69,6 +69,13 @@ class MonumentSpec extends Specification {
       val m = Monument.init(text1, listConfig = WlmUa).head
       m.id === "05-105-0001"
       m.name === "[[Козятин I|Козятинський залізничний вокзал]]"
+      m.year === Some("1888")
+      m.city === Some("[[Козятин]]")
+      m.place === Some("вул. Вокзальна, 1")
+      m.lat === Some("49.705589")
+      m.lon === Some("28.830099")
+      m.stateId === Some("{{Фон|#cff|655}}, {{Фон|#cfc|17-Вн/1}}")
+      m.typ === Some("А-місц.")
       m.photo === Some("Station2 2.jpg")
       m.gallery === Some("Koziatyn-1 Railway Station")
     }
