@@ -2,24 +2,20 @@ package org.scalawiki.wlx
 
 import org.scalawiki.MwBot
 import org.scalawiki.edit.{PageUpdateTask, PageUpdater}
-import org.scalawiki.wlx.dto.{Monument, Image}
+import org.scalawiki.wlx.dto.Monument
 
-object ListFiller {
+object ListFileNSRemover {
 
-  def fillLists(monumentDb: MonumentDB, imageDb: ImageDB) {
-    val task = new ListFillerTask(MwBot.ukWiki, monumentDb, imageDb)
+  def updateLists(monumentDb: MonumentDB) {
+    val task = new ListFileNSRemoverTask(MwBot.ukWiki, monumentDb)
     val updater = new PageUpdater(task)
     updater.update()
   }
-
-  def bestImage(images: Seq[Image]) =
-    images.sortBy(image => image.size.get + image.width.get * image.height.get).last
-
 }
 
-class ListFillerTask(val host: String, monumentDb: MonumentDB, imageDb: ImageDB) extends PageUpdateTask {
+class ListFileNSRemoverTask(val host: String, monumentDb: MonumentDB) extends PageUpdateTask {
 
-  val titles = pagesToFill(monumentDb, imageDb)
+  val titles = pagesToFix(monumentDb)
 
   val uploadConfig = monumentDb.contest.uploadConfigs.head
 
@@ -32,9 +28,9 @@ class ListFillerTask(val host: String, monumentDb: MonumentDB, imageDb: ImageDB)
       val monument = Monument.init("{{" + template + "\n" + text, title, uploadConfig.listConfig).head
       if (needsUpdate(monument)) {
         added += 1
-        val image = ListFiller.bestImage(imageDb.byId(monument.id))
+        val photo = monument.photo.get.replaceFirst("File:", "").replaceFirst("Файл:", "")
         monument.copy(
-          photo = Some(image.title.replaceFirst("File:", "").replaceFirst("Файл:", ""))
+          photo = Some(photo)
         ).asWiki.replaceFirst("\\{\\{" + template, "")
       }
       else {
@@ -43,18 +39,18 @@ class ListFillerTask(val host: String, monumentDb: MonumentDB, imageDb: ImageDB)
     }
 
     val newText = edited.mkString("{{" + template)
-    val comment = s"adding $added image(s)"
+    val comment = s"fixing $added image(s)"
     (newText, comment)
   }
 
   def needsUpdate(m: Monument): Boolean =
-    m.photo.isEmpty && imageDb.containsId(m.id)
+    m.photo.exists(photo => photo.trim.startsWith("File:") || photo.trim.startsWith("Файл:"))
 
-  def pagesToFill(monumentDb: MonumentDB, imageDb: ImageDB): Set[String] = {
+  def pagesToFix(monumentDb: MonumentDB): Set[String] = {
 
     val monumentsToFill = monumentDb.monuments.filter(needsUpdate)
 
-    println(s"NewIds: ${monumentsToFill.size}")
+    println(s"Ids: ${monumentsToFill.size}")
 
     val titles = monumentsToFill.map(_.page).toSet
 
