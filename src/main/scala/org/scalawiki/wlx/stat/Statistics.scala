@@ -224,7 +224,7 @@ class Statistics {
 
 
   def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
-    new ListFiller().fillLists(monumentDb, imageDb)
+    ListFiller.fillLists(monumentDb, imageDb)
   }
 
   def saveMonuments(monumentDb: MonumentDB) {
