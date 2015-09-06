@@ -43,4 +43,18 @@ trait SwebleParser {
     WtRtDataPrinter.print(node)
   }
 
+  def replace[T <: WtNode](wiki: String, pf: PartialFunction[WtNode, T], mapper: (T => String)): String = {
+    val page = parsePage("Some title", wiki).getPage
+
+    replaceNodeWithText(page, pf, mapper)
+  }
+
+  def replaceNodeWithText[T <: WtNode](node: WtNode, pf: PartialFunction[WtNode, T], mapper: (T => String)): String = {
+    if (pf.isDefinedAt(node))
+      mapper(node.asInstanceOf[T])
+    else if (node.isEmpty)
+      getText(node)
+    else
+      node.asScala.map(child => replaceNodeWithText(child, pf, mapper)).mkString
+  }
 }

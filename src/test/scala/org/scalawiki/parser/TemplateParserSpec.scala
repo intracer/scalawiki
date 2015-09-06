@@ -1,4 +1,4 @@
-package org.scalawiki.dto
+package org.scalawiki.parser
 
 import org.scalawiki.wikitext.TemplateParser
 import org.specs2.mutable.Specification
