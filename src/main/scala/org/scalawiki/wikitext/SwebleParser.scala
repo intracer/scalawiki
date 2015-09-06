@@ -1,5 +1,6 @@
 package org.scalawiki.wikitext
 
+import de.fau.cs.osr.ptk.common.ast.AstNode
 import org.sweble.wikitext.engine.config.WikiConfig
 import org.sweble.wikitext.engine.nodes.EngProcessedPage
 import org.sweble.wikitext.engine.{PageId, PageTitle, WtEngineImpl}
@@ -34,6 +35,9 @@ trait SwebleParser {
     else
       node.asScala.flatMap(child => collectNodes(child, pf))
   }
+
+  def nodesToText[T <: AstNode[WtNode]](node: WtNode, pf: PartialFunction[WtNode, T]): Seq[String] =
+    collectNodes(node, pf).map(c => getText(c.get(1)).trim)
 
   def getText(node: WtNode): String = {
     WtRtDataPrinter.print(node)

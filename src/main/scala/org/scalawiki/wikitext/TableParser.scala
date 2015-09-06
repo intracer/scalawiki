@@ -18,12 +18,11 @@ object TableParser extends SwebleParser {
         val rows = collectNodes(tableBody,  { case r: WtTableRow => r })
 
         val headers = rows.headOption.toSeq.flatMap {
-          head =>
-            collectNodes(head, { case h: WtTableHeader => h }).map(c => getText(c.getBody).trim)
+          head => nodesToText(head, { case h: WtTableHeader => h })
         }
 
         val items = rows.map {
-          row => collectNodes(row, { case c: WtTableCell => c }).map(c => getText(c.getBody).trim)
+          row => nodesToText(row, { case c: WtTableCell => c })
         }.filter(_.nonEmpty)
 
         new Table(headers, items, "", "")
