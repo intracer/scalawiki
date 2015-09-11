@@ -19,7 +19,7 @@ class MonumentStatSpec extends Specification {
   "with articles stat" should {
     "work with no regions, no articles" in {
 
-      1 === 1
+      ok
     }
 
     "work with no articles" in {

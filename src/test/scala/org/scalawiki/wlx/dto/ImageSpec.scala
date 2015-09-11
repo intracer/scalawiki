@@ -1,6 +1,7 @@
 package org.scalawiki.wlx.dto
 
-import org.scalawiki.dto.{Page, Revision, Template}
+import org.scalawiki.dto.markup.Template
+import org.scalawiki.dto.{Page, Revision}
 import org.specs2.mutable.Specification
 
 class ImageSpec extends Specification {

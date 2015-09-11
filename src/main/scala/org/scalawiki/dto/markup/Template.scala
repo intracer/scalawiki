@@ -1,4 +1,4 @@
-package org.scalawiki.dto
+package org.scalawiki.dto.markup
 
 case class Template(
                      templateName: String,

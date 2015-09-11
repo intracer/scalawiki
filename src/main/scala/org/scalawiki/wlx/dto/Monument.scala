@@ -1,8 +1,7 @@
 package org.scalawiki.wlx.dto
 
 import java.net.URLEncoder
-
-import org.scalawiki.dto.Template
+import org.scalawiki.dto.markup.Template
 import org.scalawiki.wlx.WlxTemplateParser
 import org.scalawiki.wlx.dto.lists.ListConfig
 

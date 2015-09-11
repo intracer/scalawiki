@@ -1,11 +1,9 @@
 package org.scalawiki.wikitext
 
-import org.scalawiki.dto.Template
+import org.scalawiki.dto.markup.{SwTemplate, Template}
 import org.sweble.wikitext.engine.config.WikiConfig
 import org.sweble.wikitext.engine.utils.DefaultConfigEnWp
-import org.sweble.wikitext.parser.nodes.{WtTemplate, WtTemplateArgument}
-
-import scala.collection.JavaConverters._
+import org.sweble.wikitext.parser.nodes.WtTemplate
 
 object TemplateParser extends SwebleParser {
 
@@ -13,7 +11,7 @@ object TemplateParser extends SwebleParser {
 
   def parseOne(wiki: String, templateName: Option[String] = None): Option[Template] = {
     val page = parsePage("Some title", wiki).getPage
-    findNode(page, { case t: WtTemplate if templateName.forall(getTemplateName(t).equals)  => nodeToTemplate(t) })
+    findNode(page, { case t: WtTemplate if templateName.forall(getTemplateName(t).equals) => nodeToTemplate(t) })
   }
 
   def parse(wiki: String, templateName: String): Seq[Template] = {
@@ -21,30 +19,6 @@ object TemplateParser extends SwebleParser {
     collectNodes(page, { case t: WtTemplate if getTemplateName(t) == templateName => nodeToTemplate(t) })
   }
 
-  def nodeToTemplate(template: WtTemplate): Template = {
-    val args = template.getArgs.asScala.collect { case arg: WtTemplateArgument => arg }
-
-    val params = args.zipWithIndex.map {
-      case (arg, index) =>
-
-        val name =
-          if (arg.hasName)
-            getText(arg.getName).trim
-          else
-            (index + 1).toString
-
-        val value = getText(arg.getValue).trim
-
-        name -> value
-    }
-
-    val name = getTemplateName(template)
-    new Template(
-      name,
-      params.toMap
-    )
-  }
-
-  def getTemplateName(template: WtTemplate): String = getText(template.getName).trim
+  def nodeToTemplate(wtTemplate: WtTemplate): Template = new SwTemplate(wtTemplate).getTemplate
 
 }

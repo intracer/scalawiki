@@ -1,6 +1,6 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.dto.Template
+import org.scalawiki.dto.markup.Template
 import org.specs2.mutable.Specification
 
 class WlxTemplateParserSpec extends Specification {

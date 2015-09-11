@@ -1,8 +1,13 @@
 package org.scalawiki.wlx
 
 import org.scalawiki.MwBot
+import org.scalawiki.dto.markup.SwTemplate
 import org.scalawiki.edit.{PageUpdateTask, PageUpdater}
-import org.scalawiki.wlx.dto.{Monument, Image}
+import org.scalawiki.wikitext.SwebleParser
+import org.scalawiki.wlx.dto.{Image, Monument}
+import org.sweble.wikitext.engine.config.WikiConfig
+import org.sweble.wikitext.engine.utils.DefaultConfigEnWp
+import org.sweble.wikitext.parser.nodes.WtTemplate
 
 object ListFiller {
 
@@ -17,7 +22,9 @@ object ListFiller {
 
 }
 
-class ListFillerTask(val host: String, monumentDb: MonumentDB, imageDb: ImageDB) extends PageUpdateTask {
+class ListFillerTask(val host: String, monumentDb: MonumentDB, imageDb: ImageDB) extends PageUpdateTask with SwebleParser {
+
+  val config: WikiConfig = DefaultConfigEnWp.generate
 
   val titles = pagesToFill(monumentDb, imageDb)
 
@@ -25,24 +32,23 @@ class ListFillerTask(val host: String, monumentDb: MonumentDB, imageDb: ImageDB)
 
   override def updatePage(title: String, pageText: String): (String, String) = {
     val template = uploadConfig.listTemplate
-    val splitted = pageText.split("\\{\\{" + template)
-
+    val wlxParser = new WlxTemplateParser(uploadConfig.listConfig, title)
     var added: Int = 0
-    val edited = Seq(splitted.head) ++ splitted.tail.map { text =>
-      val monument = Monument.init("{{" + template + "\n" + text, title, uploadConfig.listConfig).head
+
+    def mapper(wtTemplate: WtTemplate) = {
+      val swTemplate = new SwTemplate(wtTemplate)
+      val monument = wlxParser.templateToMonument(swTemplate.template)
+
       if (needsUpdate(monument)) {
         added += 1
         val image = ListFiller.bestImage(imageDb.byId(monument.id))
-        monument.copy(
-          photo = Some(image.title.replaceFirst("File:", "").replaceFirst("Файл:", ""))
-        ).asWiki.replaceFirst("\\{\\{" + template, "")
-      }
-      else {
-        text
+        val name = wlxParser.image.get
+        val value = image.title.replaceFirst("File:", "").replaceFirst("Файл:", "")
+        swTemplate.setTemplateParam(name, value)
       }
     }
 
-    val newText = edited.mkString("{{" + template)
+    val newText = replace(pageText, { case t: WtTemplate if getTemplateName(t) == template => t }, mapper)
     val comment = s"adding $added image(s)"
     (newText, comment)
   }
@@ -63,3 +69,4 @@ class ListFillerTask(val host: String, monumentDb: MonumentDB, imageDb: ImageDB)
   }
 
 }
+
