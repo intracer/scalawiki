@@ -1,8 +1,6 @@
 package org.scalawiki.wlx.stat
 
-import org.jfree.chart.JFreeChart
 import org.jfree.data.category.DefaultCategoryDataset
-import org.jfree.data.general.DefaultPieDataset
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.dto._
@@ -183,7 +181,7 @@ class Output {
 
       val chart = charts.createChart(dataset, "Регіон")
       val byRegionFile = filenamePrefix + "PicturedByYear"
-      saveCharts(charts, chart, byRegionFile, 900, 1200)
+      charts.saveCharts(chart, byRegionFile, 900, 1200)
       MwBot.get(MwBot.commons).page(byRegionFile + ".png").upload(byRegionFile + ".png")
 
       val chartTotal = charts.createChart(charts.createTotalDataset(yearSeq, idsSize), "")
@@ -193,46 +191,10 @@ class Output {
       MwBot.get(MwBot.commons).page(chartTotalFile).upload(chartTotalFile)
 
       val intersectionFile = filenamePrefix + "PicturedByYearPie"
-      intersectionDiagram(charts, "Унікальність фотографій пам'яток за роками", intersectionFile, yearSeq, ids, 900, 800)
+      charts.intersectionDiagram("Унікальність фотографій пам'яток за роками", intersectionFile, yearSeq, ids, 900, 800)
       MwBot.get(MwBot.commons).page(intersectionFile + ".png").upload(intersectionFile + ".png")
     }
     images
-  }
-
-  // up to 3 years
-  def intersectionDiagram(charts: Charts, title: String, filename: String, years: Seq[Int], idsSeq: Seq[Set[String]], width: Int, height: Int) {
-    val intersection = idsSeq.reduce(_ intersect _)
-    val union = idsSeq.reduce(_ ++ _)
-
-    val sliding = idsSeq.sliding(2).toSeq ++ Seq(Seq(idsSeq.head, idsSeq.last))
-    val idsNear = sliding.map(_.reduce((a, b) => a intersect b) -- intersection)
-
-    val only = idsSeq.zipWithIndex.map {
-      case (ids, i) => ids -- removeByIndex(idsSeq, i).reduce(_ ++ _)
-    }
-
-    val pieDataset = new DefaultPieDataset()
-
-    // TODO map years
-
-    pieDataset.setValue("2013", only(0).size)
-    pieDataset.setValue("2013 & 2014", idsNear(0).size)
-    pieDataset.setValue("2014", only(1).size)
-    pieDataset.setValue("2014 & 2015", idsNear(1).size)
-    pieDataset.setValue("2015", only(2).size)
-    pieDataset.setValue("2013 & 2015", idsNear(2).size)
-    pieDataset.setValue("2013 & 2014 & 2015", intersection.size)
-
-    val pieChart = charts.createPieChart(pieDataset, title)
-    saveCharts(charts, pieChart, filename, width, height)
-  }
-
-  def removeByIndex[T](seq: Seq[T], i: Int): Seq[T] = seq.take(i) ++ seq.drop(i + 1)
-
-  def saveCharts(charts: Charts, chart: JFreeChart, name: String, width: Int, height: Int) {
-    //charts.saveAsJPEG(chart, name + ".jpg", width, height)
-    charts.saveAsPNG(chart, name + ".png", width, height)
-    //charts.saveAsSVG(chart, name + ".svg", width, height)
   }
 
   def monumentsByType(/*imageDbs: Seq[ImageDB], totalImageDb: ImageDB,*/ monumentDb: MonumentDB) = {
@@ -299,7 +261,7 @@ class Output {
     val authors = yearSeq.map(year => imageDbsByYear(year).head.authors)
 
     val filename = contest.contestType.name.split(" ").mkString + "In" + contest.country.name + "AuthorsByYearPie"
-    intersectionDiagram(charts, "Унікальність авторів за роками", filename, yearSeq, authors, 900, 900)
+    charts.intersectionDiagram("Унікальність авторів за роками", filename, yearSeq, authors, 900, 900)
 
     val table = new Table(columns, rows, "Authors contributed")
 

@@ -14,11 +14,10 @@ class MonumentStatSpec extends Specification {
     new Monument(id = id, name = name, listConfig = WlmUa)
 
   def monuments(n: Int, regionId: String, namePrefix: String, startId: Int = 1): Seq[Monument] =
-    (startId to (startId + n - 1)).map(i => monument(s"$regionId-xxx-000$n", namePrefix + i))
+    (startId to (startId + n - 1)).map(i => monument(s"$regionId-xxx-000$i", namePrefix + i))
 
   "with articles stat" should {
     "work with no regions, no articles" in {
-
       ok
     }
 

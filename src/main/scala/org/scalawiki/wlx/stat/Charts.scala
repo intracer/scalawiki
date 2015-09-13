@@ -22,13 +22,6 @@ class Charts extends WithBot {
   val color2013 = new Color(255, 153, 0)
   val color2012 = new Color(51, 102, 204)
 
-  def init {
-    val dataset = createTotalDataset(Seq(2001, 2002, 2003),  Seq(1, 2, 3))
-    val chart = createChart(dataset, "")
-
-    saveAsPNG(createPieChart(createPieDataset(), "Унікальність фотографій пам'яток за роками"), "WikiLovesMonumentsInUkrainePicturedByYearPieTest.png", 900, 900)
-  }
-
   def saveAsJPEG(chart: JFreeChart, filename: String, width: Int, height: Int) {
     ChartUtilities.saveChartAsJPEG(new File(filename), chart, width, height)
   }
@@ -42,19 +35,6 @@ class Charts extends WithBot {
     chart.draw(g2, new Rectangle(width, height))
 
     SVGUtils.writeToSVG(new File(filename), g2.getSVGElement)
-  }
-
-  def createPieDataset() = {
-    val dataset = new DefaultPieDataset()
-    dataset.setValue("2013", 3240.0)
-    dataset.setValue("2014", 3046.0)
-    dataset.setValue("2015", 5328.0)
-    dataset.setValue("2014 & 2015", 2274.0)
-    dataset.setValue("2013 & 2015", 1069.0)
-    dataset.setValue("2013 & 2014 & 2015", 2402.0)
-    dataset.setValue("2013 & 2014", 1615.0)
-
-    dataset
   }
 
   /**
@@ -178,11 +158,58 @@ class Charts extends WithBot {
     chart
   }
 
-}
+  // up to 3 years
+  def intersectionDiagram(title: String, filename: String, years: Seq[Int], idsSeq: Seq[Set[String]], width: Int, height: Int) {
+    val pieDataset = intersectionDataSet(years, idsSeq)
 
-object Charts {
-  def main(args: Array[String]) {
-    new Charts().init
+    val pieChart = createPieChart(pieDataset, title)
+    saveCharts(pieChart, filename, width, height)
   }
+
+  def intersectionDataSet(years: Seq[Int], idsSeq: Seq[Set[String]]): DefaultPieDataset = {
+    val intersection = idsSeq.reduce(_ intersect _)
+    val union = idsSeq.reduce(_ ++ _)
+
+    val sliding = idsSeq.sliding(2).toSeq ++ Seq(Seq(idsSeq.head, idsSeq.last))
+    val idsNear = sliding.map(_.reduce((a, b) => a intersect b) -- intersection)
+
+    val only = idsSeq.zipWithIndex.map {
+      case (ids, i) => ids -- removeByIndex(idsSeq, i).foldLeft(Set.empty[String])(_ ++ _)
+    }
+
+    val pieDataset = new DefaultPieDataset()
+
+    years.zipWithIndex.foreach {
+      case (year, i) =>
+
+        pieDataset.setValue(year.toString, only(i).size)
+
+        if (years.size > 1) {
+          val nextYear = if (i < years.size - 1)
+            years(i + 1)
+          else
+            years.head
+
+          if (i < years.size - 1 || years.size > 2) {
+            pieDataset.setValue(s"$year & $nextYear", idsNear(i).size)
+          }
+        }
+    }
+
+    if (years.size > 1) {
+      pieDataset.setValue(years.mkString(" & "), intersection.size)
+    }
+
+    pieDataset
+  }
+
+  def removeByIndex[T](seq: Seq[T], i: Int): Seq[T] = seq.take(i) ++ seq.drop(i + 1)
+
+  def saveCharts(chart: JFreeChart, name: String, width: Int, height: Int) {
+    //charts.saveAsJPEG(chart, name + ".jpg", width, height)
+    saveAsPNG(chart, name + ".png", width, height)
+    //charts.saveAsSVG(chart, name + ".svg", width, height)
+  }
+
 
 }
