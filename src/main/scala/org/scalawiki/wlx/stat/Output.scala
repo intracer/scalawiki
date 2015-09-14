@@ -222,16 +222,20 @@ class Output {
     }
   }
 
-
   def authorsContributed(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB) = {
 
+    val table = authorsContributedTable(imageDbs, totalImageDb, monumentDb)
+
+    val header = "\n==Authors contributed==\n"
+    header + table.asWiki
+  }
+
+  def authorsContributedTable(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB): Table = {
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
     val yearSeq = imageDbsByYear.keys.toSeq.sorted
     val numYears = yearSeq.size
 
     val columns = Seq("Region", s"$numYears years total") ++ yearSeq.map(_.toString)
-
-    val header = "\n==Authors contributed==\n"
 
     val totalData = (Seq(
       "Total",
@@ -252,11 +256,9 @@ class Output {
     val authors = yearSeq.map(year => imageDbsByYear(year).head.authors)
 
     val filename = contest.contestType.name.split(" ").mkString + "In" + contest.country.name + "AuthorsByYearPie"
-    charts.intersectionDiagram("Унікальність авторів за роками", filename, yearSeq, authors, 900, 900)
+//    charts.intersectionDiagram("Унікальність авторів за роками", filename, yearSeq, authors, 900, 900)
 
-    val table = new Table(columns, rows, "Authors contributed")
-
-    header + table.asWiki
+    new Table(columns, rows, "Authors contributed")
   }
 
   def authorsMonuments(imageDb: ImageDB) = {
