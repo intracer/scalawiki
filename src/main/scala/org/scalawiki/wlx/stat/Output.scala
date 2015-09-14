@@ -6,7 +6,6 @@ import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.dto._
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
-import scala.collection.immutable.SortedSet
 import scala.util.control.NonFatal
 
 class Output {
@@ -15,9 +14,19 @@ class Output {
 
   def mostPopularMonuments(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB) = {
 
-    val imageDbsByYear = imageDbs.groupBy(_.contest.year)
+    val table = mostPopularMonumentsTable(imageDbs, totalImageDb, monumentDb)
+
+    val header = "\n==Most photographed objects==\n"
+
     val contest = monumentDb.contest
     val categoryName = contest.contestType.name + " in " + contest.country.name
+    val category = s"\n[[Category:$categoryName]]"
+
+    header + table.asWiki + category
+  }
+
+  def mostPopularMonumentsTable(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB): Table = {
+    val imageDbsByYear = imageDbs.groupBy(_.contest.year)
 
     val yearSeq = imageDbsByYear.keys.toSeq.sorted
     val numYears = yearSeq.size
@@ -49,12 +58,7 @@ class Output {
       ) ++ counts.map(_.getOrElse(id, 0).toString)
     }
 
-    val table = new Table(columns, rows, "Most photographed objects")
-
-    val header = "\n==Most photographed objects==\n"
-    val category = s"\n[[Category:$categoryName]]"
-
-    header + table.asWiki + category
+    new Table(columns, rows, "Most photographed objects")
   }
 
   def topN(n: Int, stat: Map[String, Int]) = stat.toSeq.sortBy(-_._2).take(n).map(_._1)
@@ -97,25 +101,16 @@ class Output {
 
     val dataset = new DefaultCategoryDataset()
 
-
-    val regionIds = SortedSet(monumentDb._byRegion.keySet.toSeq: _*).intersect(monumentDb.contest.country.regionIds).toSeq.sortBy(identity)
+    val regionIds = monumentDb._byRegion.keySet.intersect(monumentDb.contest.country.regionIds).toSeq.sortBy(identity)
 
     val withPhotoInLists = monumentDb.monuments.filter(_.photo.isDefined).map(_.id).toSet
-
-    var withPhotoInListsFromRegions = Set.empty[String]
-
-    val ids = yearSeq.map(year => imageDbsByYear(year).head.ids)
-
-    val photoSize = yearSeq.map(year => imageDbsByYear(year).head.images.size)
-
-    val idsSize = ids.map(_.size)
 
     val rows = regionIds.map { regionId =>
 
       val withPhotoInListsCurrentRegion = withPhotoInLists.filter(id => Monument.getRegionId(id) == regionId)
       val picturedMonumentsInRegionSet = (totalImageDb.idsByRegion(regionId) ++ withPhotoInListsCurrentRegion).toSet
       val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
-      val allMonumentsInRegion: Int = monumentDb.byRegion(regionId).size
+      val allMonumentsInRegion = monumentDb.byRegion(regionId).size
 
       val picturedIds = yearSeq.map {
         year =>
@@ -141,13 +136,18 @@ class Output {
       val shortRegionName = regionName.replaceAll("область", "").replaceAll("Автономна Республіка", "АР")
       picturedIds.zipWithIndex.foreach { case (n, i) => dataset.addValue(n, yearSeq(i), shortRegionName) }
 
-      withPhotoInListsFromRegions ++= picturedMonumentsInRegionSet
-
       columnData
     }
 
     val allMonuments = monumentDb.monuments.size
     val picturedMonuments = (totalImageDb.ids ++ withPhotoInLists).size
+
+
+    val ids = yearSeq.map(year => imageDbsByYear(year).head.ids)
+
+    val photoSize = yearSeq.map(year => imageDbsByYear(year).head.images.size)
+
+    val idsSize = ids.map(_.size)
 
     val totalByYear = idsSize.zip(photoSize).flatMap { case (ids, photos) => Seq(ids, photos) }
 
@@ -155,7 +155,7 @@ class Output {
       "Total",
       allMonuments.toString,
       picturedMonuments.toString,
-      (100 * picturedMonuments / allMonuments).toString) ++ totalByYear.map(_.toString)
+      (if (allMonuments != 0) 100 * picturedMonuments / allMonuments else 0).toString) ++ totalByYear.map(_.toString)
 
     val images = regionalStatImages(filenamePrefix, categoryName, yearSeq, dataset, ids, idsSize, uploadImages)
 
@@ -203,31 +203,22 @@ class Output {
     for ((typ, size) <- monumentDb._byType.mapValues(_.size).toSeq.sortBy(-_._2)) {
       val byRegion = monumentDb._byTypeAndRegion(typ)
 
-
       val regionStat = byRegion.toSeq.sortBy(-_._2.size).map {
         case (regionId, monuments) =>
-          val byReg1 = s"${
-            regions(regionId)
-          }: ${
-            monuments.size
-          }"
+          val byReg1 = s"${regions(regionId)}: ${monuments.size}"
 
           val byReg2 = if (byRegion.size == 1) {
             val byReg2Stat = monuments.groupBy(m => m.id.substring(0, 6))
 
             byReg2Stat.toSeq.sortBy(-_._2.size).map {
               case (regionId2, monuments2) =>
-                s"$regionId2: ${
-                  monuments2.size
-                }"
+                s"$regionId2: ${monuments2.size}"
             }.mkString("(", ", ", ")")
           } else ""
 
           byReg1 + byReg2
       }.mkString(", ")
-      println(s"$typ: ${
-        monumentDb._byType(typ).size
-      }, $regionStat")
+      println(s"$typ: ${monumentDb._byType(typ).size}, $regionStat")
     }
   }
 
