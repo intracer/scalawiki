@@ -166,16 +166,30 @@ class Charts extends WithBot {
     saveCharts(pieChart, filename, width, height)
   }
 
-  def intersectionDataSet(years: Seq[Int], idsSeq: Seq[Set[String]]): DefaultPieDataset = {
-    val intersection = idsSeq.reduce(_ intersect _)
-    val union = idsSeq.reduce(_ ++ _)
 
-    val sliding = idsSeq.sliding(2).toSeq ++ Seq(Seq(idsSeq.head, idsSeq.last))
-    val idsNear = sliding.map(_.reduce((a, b) => a intersect b) -- intersection)
+  def intersectionDataSet(years: Seq[Int], idsSeq: Seq[Set[String]]): DefaultPieDataset = {
+    require(years.nonEmpty, "years should not be empty")
+    require(idsSeq.nonEmpty, "idsSeq should not be empty")
+    require(years.size == idsSeq.size, "years and idsSeq should have same size")
+
+    val intersectAll = idsSeq.reduce(_ intersect _)
+    val unionAll = idsSeq.reduce(_ ++ _)
+
+    val yearsCounts = unionAll.map { id => id -> idsSeq.count(_.contains(id)) }.toMap
 
     val only = idsSeq.zipWithIndex.map {
       case (ids, i) => ids -- removeByIndex(idsSeq, i).foldLeft(Set.empty[String])(_ ++ _)
     }
+
+    val idsMap = unionAll.map {
+      id =>
+        id -> years.zip(idsSeq).flatMap {
+          case (year, set) =>
+            if (set.contains(id)) Some(year) else None
+        }
+    }.toMap
+
+    val yearsMap = idsMap.mapValues(_.mkString(" & ")).groupBy(_._2).mapValues(_.keys)
 
     val pieDataset = new DefaultPieDataset()
 
@@ -184,20 +198,23 @@ class Charts extends WithBot {
 
         pieDataset.setValue(year.toString, only(i).size)
 
-        if (years.size > 1) {
-          val nextYear = if (i < years.size - 1)
-            years(i + 1)
-          else
-            years.head
-
-          if (i < years.size - 1 || years.size > 2) {
-            pieDataset.setValue(s"$year & $nextYear", idsNear(i).size)
-          }
+        ((i + 1) to years.size - 1).foreach { j =>
+          val intersection = (idsSeq(i) intersect idsSeq(j)).filter { id => yearsCounts(id) == 2 }
+          pieDataset.setValue(s"$year & ${years(j)}", intersection.size)
         }
     }
 
+    if (years.size > 3) {
+      years.zipWithIndex.foreach {
+        case (year, i) =>
+          val withoutOne = removeByIndex(years, i)
+          val key = withoutOne.mkString(" & ")
+          pieDataset.setValue(key, yearsMap(key).size)
+      }
+    }
+
     if (years.size > 1) {
-      pieDataset.setValue(years.mkString(" & "), intersection.size)
+      pieDataset.setValue(years.mkString(" & "), intersectAll.size)
     }
 
     pieDataset
