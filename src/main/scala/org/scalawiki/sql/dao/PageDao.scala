@@ -48,6 +48,10 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
             .update(revId.get))
       }).await
     }
+    val images = pageSeq.zip(pageIds).flatMap { case (p, id) => p.images.map(_.copy(pageId = id)) }
+    if (images.nonEmpty) {
+      imageDao.insertAll(images)
+    }
 
     pageIds
   }
@@ -58,10 +62,10 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
     val pageIdF = (
       if (page.id.isDefined) {
-          if (!exists(page.id.get))
-            db.run(pages.forceInsert(page)).map(_ => page.id)
-          else
-            Future.successful(page.id)
+        if (!exists(page.id.get))
+          db.run(pages.forceInsert(page)).map(_ => page.id)
+        else
+          Future.successful(page.id)
       }
       else {
         db.run(autoInc += page)

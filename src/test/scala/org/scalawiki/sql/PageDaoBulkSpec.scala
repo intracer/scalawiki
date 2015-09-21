@@ -1,6 +1,7 @@
 package org.scalawiki.sql
 
 import org.scalawiki.dto.{Page, Revision, User}
+import org.scalawiki.wlx.dto.Image
 import org.specs2.mutable.{BeforeAfter, Specification}
 import slick.backend.DatabaseConfig
 import slick.driver.JdbcProfile
@@ -76,7 +77,7 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
 
       fromDb.size aka "pages with text size" must_== 10
 
-      (0 to 9) map  { i =>
+      (0 to 9) map { i =>
         val page = fromDb(i)
         page.title === titles(i)
         page.text === Some(texts(i))
@@ -117,7 +118,7 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
 
       fromDb.size aka "pages with text size" must_== 10
 
-      (0 to 9) map  { i =>
+      (0 to 9) map { i =>
         val page = fromDb(i)
         page.id === Some(pageIds(i))
         page.title === titles(i)
@@ -161,7 +162,7 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
 
       fromDb.size aka "pages with text size" must_== 10
 
-      (0 to 9) map  { i =>
+      (0 to 9) map { i =>
         val page = fromDb(i)
         page.id === Some(pageIds(i))
         page.title === titles(i)
@@ -209,7 +210,7 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
 
       fromDb.size aka "pages with text size" must_== 10
 
-      (0 to 9) map  { i =>
+      (0 to 9) map { i =>
         val page = fromDb(i)
         page.id === Some(pageIds(i))
         page.title === titles(i)
@@ -222,6 +223,29 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
       // TODO userDao.count aka "users count" must_== 10
     }
 
-  }
+    "insert with image" in {
+      createSchema()
 
+      val user = User(5, "username")
+      val title = "Image.jpg"
+      val image = new Image(
+        title,
+        Some("http://Image.jpg"), None,
+        Some(1000 * 1000), Some(800), Some(600),
+        user.name, Some(user)
+      )
+      val revision: Revision = new Revision(user = Some(user), content = Some("revision text"))
+
+      val page = Page(None, 0, title, Seq(revision), Seq(image))
+
+      val pageId = pageDao.insertAll(Seq(page)).head
+
+      val images = imageDao.list
+      images.size === 1
+      images.head === image.copy(pageId = pageId)
+
+      val dbImage = imageDao.get(title)
+      dbImage === Some(image.copy(pageId = pageId))
+    }
+  }
 }

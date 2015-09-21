@@ -18,6 +18,10 @@ class ImageDao(val mwDb: MwDatabase, val query: TableQuery[Images], val driver: 
     db.run(query += image).await
   }
 
+  def insertAll(images: Seq[Image]): Unit = {
+    db.run(query.forceInsertAll(images))
+  }
+
   def list: Seq[Image] = db.run(query.sortBy(_.name).result).await
 
   def get(name: String): Option[Image] =
