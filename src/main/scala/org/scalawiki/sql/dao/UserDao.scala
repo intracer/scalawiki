@@ -2,11 +2,11 @@ package org.scalawiki.sql.dao
 
 import org.scalawiki.dto.User
 import org.scalawiki.sql.{MwDatabase, Users}
-
-import scala.language.higherKinds
 import slick.driver.JdbcProfile
 import slick.lifted.TableQuery
 import spray.util.pimpFuture
+
+import scala.language.higherKinds
 
 class UserDao(val mwDb: MwDatabase, val query: TableQuery[Users], val driver: JdbcProfile) {
 
@@ -16,6 +16,9 @@ class UserDao(val mwDb: MwDatabase, val query: TableQuery[Users], val driver: Jd
 
   val db = mwDb.db
 
+  def insertAll(users: Iterable[User]): Unit = {
+    db.run(query.forceInsertAll(users)).await
+  }
 
   def insert(user: User): Option[Long] = {
     if (user.id.isDefined) {

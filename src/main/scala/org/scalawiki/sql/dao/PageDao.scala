@@ -32,21 +32,22 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     val revisionSeq = pageSeq.flatMap(_.revisions.headOption)
     require(revisionSeq.size == pageSeq.size, "Pages should have revisions") // Fail on any absent for now
 
-    val pageIds = db.run(autoInc.forceInsertAll(pageSeq)).await
+    val hasIds = pageSeq.head.id.isDefined
+    val pageIds = if (hasIds) {
+      db.run(pages.forceInsertAll(pageSeq)).await
+      pageSeq.map(_.id)
+    }
+    else {
+      db.run(autoInc.forceInsertAll(pageSeq)).await
+    }
 
     val withPageIds: Seq[Revision] = revisionSeq.zip(pageIds).map {
       case (rev, id) => rev.copy(pageId = id)
     }
     val revIds = revisionDao.insertAll(withPageIds)
 
-    // TODO batchUpdate or case/when/then
     if (revisionSeq.exists(_.revId.isEmpty)) {
-      Future.traverse(pageIds.zip(revIds))({
-        case (pageId, revId) =>
-          db.run(pages.filter(_.id === pageId)
-            .map(p => p.pageLatest)
-            .update(revId.get))
-      }).await
+      updateLastRevision(pageIds, revIds)
     }
     val images = pageSeq.zip(pageIds).flatMap { case (p, id) => p.images.map(_.copy(pageId = id)) }
     if (images.nonEmpty) {
@@ -54,6 +55,16 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     }
 
     pageIds
+  }
+
+  // TODO batchUpdate or case/when/then
+  def updateLastRevision(pageIds: Seq[Option[Long]], revIds: Seq[Option[Long]]): Seq[Int] = {
+    Future.traverse(pageIds.zip(revIds))({
+      case (pageId, revId) =>
+        db.run(pages.filter(_.id === pageId)
+          .map(p => p.pageLatest)
+          .update(revId.get))
+    }).await
   }
 
   def insert(page: Page): Long = {
@@ -136,15 +147,28 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
       pages.map { case ((p, r), t) => p.copy(revisions = Seq(r.copy(content = Some(t.text)))) }
     }.await
 
-  def findByRevIds(ids: Iterable[Long], revIds: Iterable[Long]): Seq[Page] = {
+  def findByRevIds(pageIds: Iterable[Long], revIds: Iterable[Long]): Seq[Page] = {
     db.run(
-      (pages.filter(_.id inSet ids)
+      (pages.filter(_.id inSet pageIds)
         join revisions.filter(_.id inSet revIds) on (_.id === _.pageId)
         join texts on (_._2.textId === _.id)
         joinLeft images on (_._1._1.id === _.pageId)
         ).sortBy { case (((p, r), t), i) => p.id }.result).map { pages =>
       pages.map {
         case (((p, r), t), i) => p.copy(revisions = Seq(r.copy(content = Some(t.text))), images = i.toSeq)
+      }
+    }.await
+  }
+
+  def findByPageAndRevIdsOpt(pageIds: Iterable[Long], revIds: Iterable[Long]): Seq[Page] = {
+    db.run(
+      (pages.filter(_.id inSet pageIds)
+        joinLeft revisions.filter(_.id inSet revIds) on (_.id === _.pageId)
+        joinLeft texts on (_._2.map(_.textId) === _.id)
+        joinLeft images on (_._1._1.id === _.pageId)
+        ).sortBy { case (((p, r), t), i) => p.id }.result).map { pages =>
+      pages.map {
+        case (((p, r), t), i) => p.copy(revisions = r.toSeq.map(_.copy(content = t.map(_.text))), images = i.toSeq)
       }
     }.await
   }

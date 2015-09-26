@@ -15,9 +15,13 @@ class PageDaoSpec extends Specification with BeforeAfter {
   var mwDb: MwDatabase = _
 
   def pageDao = mwDb.pageDao
+
   def textDao = mwDb.textDao
+
   def revisionDao = mwDb.revisionDao
+
   def userDao = mwDb.userDao
+
   def imageDao = mwDb.imageDao
 
   def createSchema() = {
@@ -179,11 +183,10 @@ class PageDaoSpec extends Specification with BeforeAfter {
       pageDao.insert(page) must throwA[IllegalArgumentException]
 
       // TODO
-//      pageDao.count aka "page count" must_== 0
-//      revisionDao.count aka "revision count" must_== 0
-//      userDao.count aka "user count" must_== 0
+      //      pageDao.count aka "page count" must_== 0
+      //      revisionDao.count aka "revision count" must_== 0
+      //      userDao.count aka "user count" must_== 0
     }
-
 
     "insert with image" in {
       createSchema()
@@ -380,6 +383,39 @@ class PageDaoSpec extends Specification with BeforeAfter {
       dbPages.map(_.title) === Seq("page1", "page3")
       dbPages.flatMap(_.text.toSeq) === Seq("page1Text1", "page3Text1")
     }
-  }
 
+    "find pages by revIdsOpt" in {
+      createSchema()
+
+      val names = Seq("page1", "page2", "page3")
+      val texts = Seq(
+        Seq("page1Text2", "page1Text1"),
+        Seq("page2Text2", "page2Text1"),
+        Seq("page3Text2", "page3Text1")
+      )
+      //      val revisions = texts.map(Revision.one)
+      val pages = names.zip(texts).map {
+        case (n, t) => Page(None, 0, n, t.map(Revision.one))
+      }
+
+      val pageIds = pages.flatMap(p => pageDao.insert(p).toOption.toSeq)
+      pageIds.size === 3
+
+      val withRevisions = pageIds.map(id => pageDao.withRevisions(id))
+
+      withRevisions.map(_.revisions.size) === Seq(2, 2, 2)
+
+      val revIds = withRevisions.flatMap(_.revisions.last.id)
+
+      val dbPages = pageDao.findByPageAndRevIdsOpt(Set(pageIds.head, pageIds.last), Set(revIds.head, revIds.last))
+      dbPages.size === 2
+      dbPages.map(_.title) === Seq("page1", "page3")
+      dbPages.flatMap(_.text.toSeq) === Seq("page1Text1", "page3Text1")
+
+      val dbPagesOpt = pageDao.findByPageAndRevIdsOpt(Set(pageIds.head, pageIds.last), Set(revIds.head, 123L))
+      dbPagesOpt.size === 2
+      dbPagesOpt.map(_.title) === Seq("page1", "page3")
+      dbPagesOpt.flatMap(_.text.toSeq) === Seq("page1Text1")
+    }
+  }
 }

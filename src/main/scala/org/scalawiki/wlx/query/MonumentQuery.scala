@@ -59,7 +59,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
       //        pages =>
       //          pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template).toSeq)
       //      }
-      bot.page(page).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT_NAMESPACE), Set("content", "timestamp", "user", "comment"), None, "100") map {
+      bot.page(page).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT_NAMESPACE), Set("content", "timestamp", "user", "userid", "comment"), None, "100") map {
         pages =>
           pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig))
       }

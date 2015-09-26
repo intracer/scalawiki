@@ -220,7 +220,7 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
         page.revisions.head.user === Some(User(userIds(i), userNames(i)))
       }
 
-      // TODO userDao.count aka "users count" must_== 10
+      userDao.count aka "users count" must_== 10
     }
 
     "insert with image" in {

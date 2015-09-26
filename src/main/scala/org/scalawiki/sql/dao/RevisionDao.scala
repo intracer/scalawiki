@@ -25,13 +25,21 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
   def insertAll(revisionSeq: Seq[Revision]): Seq[Option[Long]] = {
 
-    val texts = revisionSeq.map( r => Text(None, r.content.getOrElse("")))
+    val texts = revisionSeq.map(r => Text(None, r.content.getOrElse("")))
     val textIds = textDao.insertAll(texts)
-    val withTextIds = revisionSeq.zip(textIds).map {
+    val withTextIds = addUsers(revisionSeq).zip(textIds).map {
       case (r, textId) => r.copy(textId = textId)
     }
 
-    db.run(autoInc.forceInsertAll(withTextIds)).await
+    val hasIds = revisionSeq.head.id.isDefined
+    val revIds = if (hasIds) {
+      db.run(revisions.forceInsertAll(withTextIds)).await
+      revisionSeq.map(_.id)
+    }
+    else {
+      db.run(autoInc.forceInsertAll(withTextIds)).await
+    }
+    revIds
   }
 
   def insert(revision: Revision): Long = {
@@ -87,6 +95,18 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     }
   }
 
+  def addUsers(revisionSeq: Seq[Revision]): Seq[Revision] = {
+    val toSet = revisionSeq.toSet
+    val users = toSet.flatMap(r => r.user.map(u => u.asInstanceOf[User]))
+
+    val inDbIds = userDao.find(users.flatMap(_.id)).flatMap(_.id).toSet
+    val toInsert = users.filterNot(u => inDbIds.contains(u.id.get))
+    userDao.insertAll(toInsert)
+
+    revisionSeq
+  }
+
+
   def list = db.run(revisions.result).await
 
   def count = db.run(revisions.length.result).await
@@ -96,7 +116,8 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
   def exists(id: Long): Future[Boolean] =
     db.run(revisions.filter(_.id === id).exists.result)
-//    get(id).recover { case _ => false }.map(_ => true)
+
+  //    get(id).recover { case _ => false }.map(_ => true)
 
   def withText(id: Long): Future[Revision] =
     db.run((revisions.filter(_.id === id)

@@ -5,6 +5,7 @@ import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, TitlesParam}
 import org.scalawiki.sql.dao.PageDao
 import spray.util.pimpFuture
+
 import scala.concurrent.Future
 
 class DslQueryDbCache(val dslQuery: DslQuery) {
@@ -41,12 +42,15 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
                 val dbPages = fromDb(pageDao, pages, ids)
 
                 val notInDbPages = notInDb(query, ids, dbPages).await
-                toDb(pageDao, notInDbPages)
+
+                if (notInDbPages.nonEmpty) {
+                  toDb(pageDao, notInDbPages, dbPages)
+                }
 
                 cacheStat = Some(CacheStat(notInDbPages.size, dbPages.size))
                 bot.log.info(s"${bot.host} $cacheStat")
 
-                dbPages ++ notInDbPages
+                dbPages.filter(_.revisions.nonEmpty) ++ notInDbPages
             }
           } else {
             dslQuery.run()
@@ -56,7 +60,7 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
   }
 
   def notInDb(query: Query, ids: Set[Long], dbPages: Seq[Page]): Future[Seq[Page]] = {
-    val dbIds = dbPages.flatMap(_.id).toSet
+    val dbIds = dbPages.filter(_.revisions.nonEmpty).flatMap(_.id).toSet
     val notInDbIds = ids -- dbIds
 
     if (notInDbIds.isEmpty) {
@@ -90,7 +94,7 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
     bot.log.info(s"${bot.host} query ${pages.size} pages from db")
 
     val revIds = pages.flatMap(_.revisions.headOption.flatMap(_.id))
-    val pagesFromDb = pageDao.findByRevIds(ids, revIds)
+    val pagesFromDb = pageDao.findByPageAndRevIdsOpt(ids, revIds)
 
     val estimatedTime = (System.nanoTime() - startTime) / Math.pow(10, 9)
     bot.log.info(s"${bot.host} Db query completed with ${pagesFromDb.size} pages in $estimatedTime seconds")
@@ -98,14 +102,27 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
 
   }
 
-  def toDb(pageDao: PageDao, pages: Seq[Page]) = {
+  def toDb(pageDao: PageDao, toDbPages: Seq[Page], inDbPages: Seq[Page]) = {
     val startTime = System.nanoTime()
-    bot.log.info(s"${bot.host} insert ${pages.size} pages to db")
+    bot.log.info(s"${bot.host} insert ${toDbPages.size} pages to db")
 
-    pages.map(pageDao.insert)
+    val inDbIds = inDbPages.map(_.id).toSet
+    val (newRevPages, newPages) = toDbPages.partition(p => inDbIds.contains(p.id))
+
+    if (newPages.nonEmpty) {
+      pageDao.insertAll(newPages)
+    }
+
+    if (newRevPages.nonEmpty) {
+      val revisionDao = bot.mwDb.get.revisionDao
+
+      val newRevisions = newRevPages.map(_.revisions.head)
+      revisionDao.insertAll(newRevisions)
+      pageDao.updateLastRevision(newRevPages.map(_.id), newRevisions.map(_.id))
+    }
 
     val estimatedTime = (System.nanoTime() - startTime) / Math.pow(10, 9)
-    bot.log.info(s"${bot.host} Insert completed with ${pages.size} pages in $estimatedTime seconds")
+    bot.log.info(s"${bot.host} Insert completed with ${toDbPages.size} pages in $estimatedTime seconds")
   }
 
 }

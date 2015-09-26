@@ -16,7 +16,9 @@ import slick.backend.DatabaseConfig
 import slick.driver.JdbcProfile
 
 import scala.concurrent.Await
+import scala.concurrent.duration._
 import scala.concurrent.duration.Duration
+import spray.util.pimpFuture
 
 // TODO check 50 pages limit
 class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfter {
@@ -48,19 +50,21 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
   val pageText1 = "some vandalism"
   val pageText2 = "more vandalism"
   val emptyUser = Some(User(0, ""))
+  val someUser1 = Some(User(7L, "Formator"))
+  val someUser2 = Some(User(9L, "OtherUser"))
 
   def revisionContent(content: Option[String]) = content.fold("") {
     text => s""", "*": "$text" """
   }
 
-  def page2(content: Option[String] = None, revId: Long = 12) = s""" "4571809":
+  def page2(content: Option[String] = None, revId: Long = 12, user: String = "Formator", userId: Long = 7) = s""" "4571809":
     { "pageid": 4571809, "ns": 2, "title": "User:Formator",
-      "revisions": [{"revid": $revId ${revisionContent(content)} }]
+      "revisions": [{"revid": $revId, "user": "$user", "userid": $userId ${revisionContent(content)} }]
     }"""
 
-  def page1(content: Option[String] = None, revId: Long = 11) = s""" "569559":
+  def page1(content: Option[String] = None, revId: Long = 11, user: String = "OtherUser", userId: Long = 9) = s""" "569559":
     { "pageid": 569559, "ns": 1, "title": "Talk:Welfare reform",
-      "revisions": [{"revid": $revId ${revisionContent(content)} }]
+      "revisions": [{"revid": $revId, "user": "$user", "userid": $userId ${revisionContent(content)} }]
     }"""
 
   def pagesJson(pages: Seq[String]) =
@@ -77,28 +81,28 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       val expectedCommands = Seq(new Command(Map(
         "action" -> "query",
         "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-        "prop" -> "info|revisions", "rvprop" -> "ids",
+        "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",  // TODO remove user?
         "continue" -> ""), responseWithRevIds()),
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids|content",
+          "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid",
           "continue" -> ""), responseWithContent())
       )
 
       bot = getBot(expectedCommands: _*)
 
       val future = bot.page("Category:SomeCategory")
-        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
+        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "userid"))
 
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+      val result = future.await(timeout = 15.minutes)
 
       result must have size 2
 
       result(0) === Page(Some(4571809L), 2, "User:Formator",
-        Seq(Revision(Some(12L), Some(4571809L), None, None, None, None, Some(pageText2)))
+        Seq(Revision(Some(12L), Some(4571809L), None, someUser1, None, None, Some(pageText2)))
       )
       result(1) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), None, None, None, None, Some(pageText1)))
+        Seq(Revision(Some(11L), Some(569559L), None, someUser2, None, None, Some(pageText1)))
       )
     }
 
@@ -107,33 +111,33 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       val expectedCommands = Seq(
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), responseWithRevIds()),
 
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids|content",
+          "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid",
           "continue" -> ""), responseWithContent()),
 
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), responseWithRevIds())
       )
 
       bot = getBot(expectedCommands: _*)
 
       val future = bot.page("Category:SomeCategory")
-        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
+        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "userid"))
 
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
 
       result must have size 2
       result(0) === Page(Some(4571809L), 2, "User:Formator",
-        Seq(Revision(Some(12L), Some(4571809L), None, None, None, None, Some(pageText2)))
+        Seq(Revision(Some(12L), Some(4571809L), None, someUser1, None, None, Some(pageText2)))
       )
       result(1) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), None, None, None, None, Some(pageText1)))
+        Seq(Revision(Some(11L), Some(569559L), None, someUser2, None, None, Some(pageText1)))
       )
 
       pageDao.list.size must be_==(2).eventually
@@ -144,16 +148,16 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       byRevs.map(_.revisions.head.content.get) === Seq("some vandalism", "more vandalism")
 
       val futureDb = bot.page("Category:SomeCategory")
-        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
+        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "userid"))
 
-      val resultDb = Await.result(futureDb, Duration(2, TimeUnit.SECONDS))
+      val resultDb = futureDb.await
       resultDb must have size 2
       resultDb(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), Some(0), emptyUser, None, None, Some(pageText1),
+        Seq(Revision(Some(11L), Some(569559L), Some(0), someUser2, None, None, Some(pageText1),
           textId = resultDb(0).revisions.head.textId))
       )
       resultDb(1) === Page(Some(4571809L), 2, "User:Formator",
-        Seq(Revision(Some(12L), Some(4571809L), Some(0), emptyUser, None, None, Some(pageText2),
+        Seq(Revision(Some(12L), Some(4571809L), Some(0), someUser1, None, None, Some(pageText2),
           textId = resultDb(1).revisions.head.textId))
       )
     }
@@ -163,34 +167,34 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       // query for page 1 ids in category
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), pagesJson(Seq(page1()))
         ),
 
         // query for page 1 content
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids|content",
+          "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(Some(pageText1))))
         ),
 
         // query for page 1 and page2  ids in category
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(), page2()))
         ),
 
         // fetch for page2 content for cache
         new Command(Map("action" -> "query",
           "pageids" -> "4571809",
-          "prop" -> "info|revisions", "rvprop" -> "ids|content", "continue" -> ""), pagesJson(Seq(page2(Some(pageText2))))
+          "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid", "continue" -> ""), pagesJson(Seq(page2(Some(pageText2))))
         ),
 
         // query for page 1 and page2  ids in category. content should be in cache by now
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(), page2()))
         )
       )
@@ -198,13 +202,13 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       bot = getBot(expectedCommands: _*)
 
       val future = bot.page("Category:SomeCategory")
-        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
+        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "userid"))
 
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+      val result = future.await
 
       result must have size 1
       result(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), None, None, None, None, Some(pageText1)))
+        Seq(Revision(Some(11L), Some(569559L), None, someUser2, None, None, Some(pageText1)))
       )
 
       pageDao.list.size must be_==(1).eventually
@@ -215,16 +219,16 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       byRevs.map(_.revisions.head.content.get) === Seq("some vandalism")
 
       val plus1Future = bot.page("Category:SomeCategory")
-        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
+        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "userid"))
 
-      val plus1 = Await.result(plus1Future, Duration(2, TimeUnit.SECONDS))
+      val plus1 = plus1Future.await
       plus1 must have size 2
       plus1(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), Some(0), emptyUser, None, None, Some(pageText1),
+        Seq(Revision(Some(11L), Some(569559L), Some(0), someUser2, None, None, Some(pageText1),
           textId = plus1(0).revisions.head.textId))
       )
       plus1(1) === Page(Some(4571809L), 2, "User:Formator",
-        Seq(Revision(Some(12L), Some(4571809L), None, None, None, None, Some(pageText2)))
+        Seq(Revision(Some(12L), Some(4571809L), None, someUser1, None, None, Some(pageText2)))
       )
 
       pageDao.list.size must be_==(2).eventually
@@ -234,16 +238,16 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       byRevsFinal.map(_.revisions.head.content.get) === Seq("some vandalism", "more vandalism")
 
       val futureFinal = bot.page("Category:SomeCategory")
-        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
+        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "userid"))
 
-      val resultFinal = Await.result(futureFinal, Duration(2, TimeUnit.SECONDS))
+      val resultFinal = futureFinal.await
       resultFinal must have size 2
       resultFinal(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), Some(0), emptyUser, None, None, Some(pageText1),
+        Seq(Revision(Some(11L), Some(569559L), Some(0), someUser2, None, None, Some(pageText1),
           textId = resultFinal(0).revisions.head.textId))
       )
       resultFinal(1) === Page(Some(4571809L), 2, "User:Formator",
-        Seq(Revision(Some(12L), Some(4571809L), Some(0), emptyUser, None, None, Some(pageText2),
+        Seq(Revision(Some(12L), Some(4571809L), Some(0), someUser1, None, None, Some(pageText2),
           textId = resultFinal(1).revisions.head.textId))
       )
     }
@@ -253,31 +257,31 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       val expectedCommands = Seq(
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(revId = 11)))
         ),
 
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids|content",
+          "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(Some(pageText1), revId = 11)))
         ),
 
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(revId = 12)))
         ),
 
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids|content",
+          "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(Some(pageText2), revId = 12)))
         ),
 
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids",
+          "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(revId = 12)))
         )
       )
@@ -285,13 +289,13 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       bot = getBot(expectedCommands: _*)
 
       val future = bot.page("Category:SomeCategory")
-        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
+        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "userid"))
 
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+      val result = future.await
 
       result must have size 1
       result(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(11L), Some(569559L), None, None, None, None, Some(pageText1)))
+        Seq(Revision(Some(11L), Some(569559L), None, someUser2, None, None, Some(pageText1)))
       )
 
       pageDao.list.size must be_==(1).eventually
@@ -301,12 +305,12 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       byRevs.map(_.revisions.head.content.get) === Seq("some vandalism")
 
       val plus1Future = bot.page("Category:SomeCategory")
-        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
+        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "userid"))
 
-      val plus1 = Await.result(plus1Future, Duration(2, TimeUnit.SECONDS))
+      val plus1 = plus1Future.await
       plus1 must have size 1
       plus1(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(12L), Some(569559L), None, None, None, None, Some(pageText2)))
+        Seq(Revision(Some(12L), Some(569559L), None, someUser2, None, None, Some(pageText2)))
       )
 
       revisionDao.list.size must be_==(2).eventually
@@ -316,12 +320,12 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       byRevsFinal.map(_.revisions.head.content.get) === Seq("more vandalism")
 
       val futureFinal = bot.page("Category:SomeCategory")
-        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content"))
+        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "userid"))
 
-      val resultFinal = Await.result(futureFinal, Duration(2, TimeUnit.SECONDS))
+      val resultFinal = futureFinal.await
       resultFinal must have size 1
       resultFinal(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
-        Seq(Revision(Some(12L), Some(569559L), Some(0), emptyUser, None, None, Some(pageText2),
+        Seq(Revision(Some(12L), Some(569559L), Some(0), someUser2, None, None, Some(pageText2),
           textId = resultFinal(0).revisions.head.textId))
       )
     }
