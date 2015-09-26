@@ -4,7 +4,6 @@ import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, TitlesParam}
 import org.scalawiki.sql.dao.PageDao
-import spray.util.pimpFuture
 
 import scala.concurrent.Future
 
@@ -35,22 +34,24 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
             val idsAction = Action(query.revisionsWithoutContent)
 
             val idsQuery = new DslQuery(idsAction, dslQuery.bot)
-            idsQuery.run().map {
+            idsQuery.run().flatMap {
               pages =>
 
                 val ids = pages.flatMap(_.id).toSet
                 val dbPages = fromDb(pageDao, pages, ids)
 
-                val notInDbPages = notInDb(query, ids, dbPages).await
+                notInDb(query, ids, dbPages).map {
+                  notInDbPages =>
 
-                if (notInDbPages.nonEmpty) {
-                  toDb(pageDao, notInDbPages, dbPages)
+                    if (notInDbPages.nonEmpty) {
+                      toDb(pageDao, notInDbPages, dbPages)
+                    }
+
+                    cacheStat = Some(CacheStat(notInDbPages.size, dbPages.size))
+                    bot.log.info(s"${bot.host} $cacheStat")
+
+                    dbPages.filter(_.revisions.nonEmpty) ++ notInDbPages
                 }
-
-                cacheStat = Some(CacheStat(notInDbPages.size, dbPages.size))
-                bot.log.info(s"${bot.host} $cacheStat")
-
-                dbPages.filter(_.revisions.nonEmpty) ++ notInDbPages
             }
           } else {
             dslQuery.run()
