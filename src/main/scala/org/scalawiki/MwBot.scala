@@ -3,7 +3,7 @@ package org.scalawiki
 import akka.actor.ActorSystem
 import akka.io.IO
 import akka.pattern.ask
-import scala.slick.driver.H2Driver.simple._
+import slick.driver.H2Driver.api._
 
 import org.scalawiki.http.{HttpClient, HttpClientImpl}
 import org.scalawiki.json.MwReads._

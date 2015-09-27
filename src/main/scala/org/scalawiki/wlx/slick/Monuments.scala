@@ -2,13 +2,13 @@ package org.scalawiki.wlx.slick
 
 import org.scalawiki.wlx.dto.Monument
 import org.scalawiki.wlx.dto.lists.EmptyListConfig
-import scala.slick.driver.H2Driver.simple._
+import slick.driver.H2Driver.api._
 
 class Monuments(tag: Tag) extends Table[Monument](tag, "MONUMENTS") {
 
-  def id = column[String]("ID", O.NotNull)
-  def page = column[String]("PAGE", O.NotNull)
-  def name = column[String]("NAME", O.NotNull)
+  def id = column[String]("ID")
+  def page = column[String]("PAGE")
+  def name = column[String]("NAME")
   def photo = column[String]("PHOTO" )
   def gallery = column[String]("GALLERY")
 

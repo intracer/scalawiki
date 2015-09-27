@@ -5,8 +5,7 @@ import java.nio.file.{Files, Paths}
 import org.scalawiki.MwBot
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
-import org.scalawiki.wlx.slick.Slick
-import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
+import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 import scala.util.control.NonFatal
 
@@ -14,10 +13,7 @@ class Statistics {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  val slick = new Slick()
-
-  //  val contest = Contest.WLEUkraine(2015, "09-15", "10-15")
-  val previousContests = (2013 to 2014).map(year => Contest.WLEUkraine(year, "05-01", "05-31"))
+  val previousContests = (2012 to 2014).map(year => Contest.WLMUkraine(year, "05-01", "05-31"))
 
   def init(contest: Contest): Unit = {
 
@@ -200,20 +196,7 @@ class Statistics {
 
 
   def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
-    ListFiller.fillLists(monumentDb, imageDb)
-  }
-
-  def saveMonuments(monumentDb: MonumentDB) {
-
-    import scala.slick.driver.H2Driver.simple._
-
-    slick.db.withSession {
-      implicit session =>
-        slick.monuments.ddl.drop
-        slick.monuments.ddl.create
-
-        slick.monuments ++= monumentDb.allMonuments
-    }
+    //ListFiller.fillLists(monumentDb, imageDb)
   }
 
 }
@@ -225,7 +208,7 @@ object Statistics {
 
     val stat = new Statistics()
 
-    stat.init(Contest.WLEUkraine(2015, "05-01", "05-31"))
+    stat.init(Contest.WLMUkraine(2015, "05-01", "05-31"))
 
     //stat.message(MwBot.get(MwBot.commons), "Ilya", stat.message1)
 

@@ -20,7 +20,7 @@ class Users(tag: Tag, tableName: String, val dbPrefix: Option[String]) extends T
    * Shouldn't allow slashes or case conflicts. Spaces are allowed, and are not converted to underscores like titles.
    * @return
    */
-  def name = column[String]("user_name", O.NotNull)
+  def name = column[String]("user_name")
 
   /**
    * stores the user's real name (optional) as provided by the user in their "Preferences" section.

@@ -1,6 +1,6 @@
 package org.scalawiki.wlx.stat
 
-import java.awt.{Color, Font, Rectangle}
+import java.awt.{Color, Font}
 import java.io.File
 import java.text.DecimalFormat
 
@@ -11,7 +11,6 @@ import org.jfree.chart.renderer.category.{BarRenderer, StandardBarPainter}
 import org.jfree.chart.{ChartFactory, ChartUtilities, JFreeChart}
 import org.jfree.data.category.{CategoryDataset, DefaultCategoryDataset}
 import org.jfree.data.general.{DefaultPieDataset, PieDataset}
-import org.jfree.graphics2d.svg.{SVGGraphics2D, SVGUtils}
 import org.scalawiki.{MwBot, WithBot}
 
 class Charts extends WithBot {
@@ -28,13 +27,6 @@ class Charts extends WithBot {
 
   def saveAsPNG(chart: JFreeChart, filename: String, width: Int, height: Int) {
     ChartUtilities.saveChartAsPNG(new File(filename), chart, width, height)
-  }
-
-  def saveAsSVG(chart: JFreeChart, filename: String, width: Int, height: Int) {
-    val g2 = new SVGGraphics2D(width, height)
-    chart.draw(g2, new Rectangle(width, height))
-
-    SVGUtils.writeToSVG(new File(filename), g2.getSVGElement)
   }
 
   /**

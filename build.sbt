@@ -11,22 +11,22 @@ resolvers := Seq("spray repo" at "http://repo.spray.io",
   "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases")
 
 libraryDependencies ++= {
-  val akkaV = "2.3.9"
+  val akkaV = "2.3.14"
   val sprayV = "1.3.3"
-  val kamonV = "0.4.0"
-  val aspectJV = "1.8.5"
   Seq(
     "io.spray" %% "spray-client" % sprayV,
     "io.spray" %% "spray-caching" % sprayV,
-    "com.typesafe.play" %% "play-json" % "2.4.2",
+    "com.typesafe.play" %% "play-json" % "2.4.3",
     "com.typesafe.akka" %% "akka-actor" % akkaV,
     "commons-codec" % "commons-codec" % "1.10",
-    "com.github.nscala-time" %% "nscala-time" % "1.8.0",
+    "com.github.nscala-time" %% "nscala-time" % "2.2.0",
     "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
-    "com.typesafe.slick" %% "slick" % "3.0.2",
-    "com.h2database" % "h2" % "1.3.176",
-    "com.github.wookietreiber" %% "scala-chart" % "0.4.2",
-    "org.jfree" % "jfreesvg" % "2.1",
+    "com.typesafe.slick" %% "slick" % "3.1.0-RC2",
+    "com.typesafe.slick" %% "slick-hikaricp" % "3.1.0-RC2",
+//  "com.zaxxer" % "HikariCP" % "2.4.1",
+    "com.h2database" % "h2" % "1.4.189",
+    "com.github.wookietreiber" %% "scala-chart" % "0.5.0",
+//    "org.jfree" % "jfreesvg" % "2.1",
     "com.fasterxml" % "aalto-xml" % "0.9.11",
     //    "org.codehaus.woodstox" % "woodstox-core-asl" % "4.4.1",
     "org.apache.commons" % "commons-compress" % "1.9",
