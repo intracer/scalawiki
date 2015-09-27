@@ -38,13 +38,36 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
               pages =>
 
                 val ids = pages.flatMap(_.id).toSet
-                val dbPages = fromDb(pageDao, pages, ids)
+                val noRevs = pages.filter(p => p.revisions.isEmpty || p.revisions.head.id.isEmpty)
+                if (noRevs.nonEmpty) {
+                  bot.log.error("No revs pages" + noRevs.toBuffer)
+                }
+
+                val revIds = pages.flatMap(_.revisions.headOption.flatMap(_.id)).toSet
+
+                if (revIds.size != ids.size) {
+                  bot.log.error(s"pageIds.size ${ids.size}, revIds.size: ${revIds.size}")
+                }
+
+                val dbPagesAll = fromDb(pageDao, pages, ids)
+
+                val dbPages = dbPagesAll.filter(p => ids.contains(p.id.get)).map {
+                  p =>
+                    if (revIds.contains(p.revisions.head.id.get)) p else p.copy(revisions = Seq.empty)
+                }
 
                 notInDb(query, ids, dbPages).map {
                   notInDbPages =>
 
                     if (notInDbPages.nonEmpty) {
-                      toDb(pageDao, notInDbPages, dbPages)
+                      val needNewRevPageIds = dbPages.filter(_.revisions.isEmpty).flatMap(_.id).toSet
+
+                      val duplicates = notInDbPages.groupBy(_.id.get).values.filter(_.size > 1)
+                      if (duplicates.nonEmpty) {
+                        bot.log.error("Duplicates present from API" + duplicates.toBuffer)
+                      }
+
+                      toDb(pageDao, notInDbPages, needNewRevPageIds)
                     }
 
                     cacheStat = Some(CacheStat(notInDbPages.size, dbPages.size))
@@ -64,13 +87,16 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
     val dbIds = dbPages.filter(_.revisions.nonEmpty).flatMap(_.id).toSet
     val notInDbIds = ids -- dbIds
 
+//    bot.log.info(s"fully in db pageIds: $dbIds")
+//    bot.log.info(s"not in DB (fully or rev missing) pageIds: $notInDbIds")
+
     if (notInDbIds.isEmpty) {
       Future.successful(Seq.empty)
     } else {
       val notInDbQueryDtos = if (dbIds.isEmpty) {
         Seq(query)
       } else {
-        notInDBQuery(query, notInDbIds)
+        notInDBQuery(query, notInDbIds.toSeq.sorted)
       }
       val notInDbQueries = notInDbQueryDtos.map(dto => new DslQuery(Action(dto), dslQuery.bot))
 
@@ -94,23 +120,50 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
     val startTime = System.nanoTime()
     bot.log.info(s"${bot.host} query ${pages.size} pages from db")
 
-    val revIds = pages.flatMap(_.revisions.headOption.flatMap(_.id))
-    val pagesFromDb = pageDao.findByPageAndRevIdsOpt(ids, revIds)
+    val revIds = pages.flatMap(_.revisions.headOption.flatMap(_.id)).toSet
+
+    if (revIds.size != ids.size) {
+      bot.log.error(s"pageIds.size ${ids.size}, revIds.size: ${revIds.size}")
+    }
+
+    val pagesFromDb = pageDao.listWithText/*.filter(p => ids.contains(p.id.get)).map {
+      p =>
+        if (revIds.contains(p.revisions.head.id.get)) p else p.copy(revisions = Seq.empty)
+    }*/
+
+  //  bot.log.info(s"pagesFromDb pageIds ${pagesFromDb.flatMap(_.id)}")
 
     val estimatedTime = (System.nanoTime() - startTime) / Math.pow(10, 9)
     bot.log.info(s"${bot.host} Db query completed with ${pagesFromDb.size} pages in $estimatedTime seconds")
     pagesFromDb
-
   }
 
-  def toDb(pageDao: PageDao, toDbPages: Seq[Page], inDbPages: Seq[Page]) = {
+  /**
+   *
+   * @param pageDao
+   * @param toDbPages pages to save in Db. Can be either new pages or new page revisions
+   * @param needNewRevPageIds ids of pages that are already in db but have new revisions to add
+   */
+  def toDb(pageDao: PageDao, toDbPages: Seq[Page], needNewRevPageIds: Set[Long]) = {
     val startTime = System.nanoTime()
     bot.log.info(s"${bot.host} insert ${toDbPages.size} pages to db")
 
-    val inDbIds = inDbPages.map(_.id).toSet
-    val (newRevPages, newPages) = toDbPages.partition(p => inDbIds.contains(p.id))
+//    bot.log.info(s"toDbPages pageIds: ${toDbPages.flatMap(_.id).toBuffer}")
+//    bot.log.info(s"old rev inDb pageIds: $inDbPageIds")
+
+
+    val (newRevPages, newPages) = toDbPages.partition(p => needNewRevPageIds.contains(p.id.get))
+
+//    bot.log.info(s"newPages pageIds: ${newPages.flatMap(_.id).toBuffer}")
+//    bot.log.info(s"newRevPages pageIds: ${newRevPages.flatMap(_.id).toBuffer}")
 
     if (newPages.nonEmpty) {
+
+      val duplicates = newPages.groupBy(_.id.get).values.filter(_.size > 1)
+      if (duplicates.nonEmpty) {
+        bot.log.error("Duplicates present to DB" + duplicates.toBuffer)
+      }
+
       pageDao.insertAll(newPages)
     }
 

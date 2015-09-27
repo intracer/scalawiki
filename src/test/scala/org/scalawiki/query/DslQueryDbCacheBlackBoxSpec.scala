@@ -4,27 +4,20 @@ import java.util.concurrent.TimeUnit
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.cmd.query.list.EmbeddedIn
-import org.scalawiki.dto.cmd.query.prop.rvprop.{Content, Ids, RvProp}
-import org.scalawiki.dto.cmd.query.prop.{Info, Prop, Revisions}
-import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
 import org.scalawiki.dto.{Page, Revision, User}
 import org.scalawiki.sql.MwDatabase
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.{BeforeAfter, Specification}
 import slick.backend.DatabaseConfig
 import slick.driver.JdbcProfile
-
-import scala.concurrent.Await
-import scala.concurrent.duration._
-import scala.concurrent.duration.Duration
 import spray.util.pimpFuture
 
-// TODO check 50 pages limit
-class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfter {
+import scala.concurrent.Await
+import scala.concurrent.duration.{Duration, _}
+
+class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with BeforeAfter {
 
   sequential
-
 
   override def database = Some(mwDb)
 
@@ -37,6 +30,10 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
   def pageDao = mwDb.pageDao
 
   def revisionDao = mwDb.revisionDao
+
+  def textDao = mwDb.textDao
+
+  val dummyAction = Action(DummyActionArg)
 
   override def before = {
     dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
@@ -57,15 +54,17 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
     text => s""", "*": "$text" """
   }
 
-  def page2(content: Option[String] = None, revId: Long = 12, user: String = "Formator", userId: Long = 7) = s""" "4571809":
-    { "pageid": 4571809, "ns": 2, "title": "User:Formator",
+  def page(pageId: Long, title: String, revId: Long, content: Option[String] = None, ns: Int = 0, user: String = "Formator", userId: Long = 7) =
+    s""" "$pageId":
+    { "pageid": $pageId, "ns": $ns, "title": "$title",
       "revisions": [{"revid": $revId, "user": "$user", "userid": $userId ${revisionContent(content)} }]
     }"""
 
-  def page1(content: Option[String] = None, revId: Long = 11, user: String = "OtherUser", userId: Long = 9) = s""" "569559":
-    { "pageid": 569559, "ns": 1, "title": "Talk:Welfare reform",
-      "revisions": [{"revid": $revId, "user": "$user", "userid": $userId ${revisionContent(content)} }]
-    }"""
+  def page1(content: Option[String] = None, revId: Long = 11, user: String = "OtherUser", userId: Long = 9) =
+    page(569559, "Talk:Welfare reform", revId, content, 1, user, userId)
+
+  def page2(content: Option[String] = None, revId: Long = 12, user: String = "Formator", userId: Long = 7) =
+    page(4571809, "User:Formator", revId, content, 2, user, userId)
 
   def pagesJson(pages: Seq[String]) =
     s"""{ "query": {"pages": { ${pages.mkString(", ")} }}}"""
@@ -81,8 +80,9 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       val expectedCommands = Seq(new Command(Map(
         "action" -> "query",
         "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-        "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",  // TODO remove user?
+        "prop" -> "info|revisions", "rvprop" -> "ids|user|userid", // TODO remove user?
         "continue" -> ""), responseWithRevIds()),
+
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid",
@@ -164,7 +164,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
 
     "add page to cache" in {
       val expectedCommands = Seq(
-      // query for page 1 ids in category
+        // query for page 1 ids in category
         new Command(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
@@ -252,7 +252,8 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
       )
     }
 
-    "add one page revision to cache" in { // TODO more pages?
+    "add one page revision to cache" in {
+      // TODO more pages?
 
       val expectedCommands = Seq(
         new Command(Map("action" -> "query",
@@ -329,37 +330,7 @@ class DslQueryDbCacheSpec extends Specification with MockBotSpec with BeforeAfte
           textId = resultFinal(0).revisions.head.textId))
       )
     }
-
   }
 
-  "cache" should {
-    "return removed revision content parameter" in {
-
-      val namespaces = Set(0)
-      val limit = Some("max")
-      val title = Some("Template:WLM-row")
-
-      val query = Query(
-        Prop(
-          Info(),
-          Revisions(RvProp(Ids, Content))
-        ),
-        Generator(
-          new EmbeddedIn(title, None, namespaces, limit)
-        )
-      )
-
-      val notInDbIds = Seq(1L, 2L, 3L)
-      val notInDbQuery = new DslQueryDbCache(new DslQuery(Action(query), null)).notInDBQuery(query, notInDbIds)
-
-      notInDbQuery === Seq(Query(
-        Prop(
-          Info(),
-          Revisions(RvProp(Ids, Content))
-        ),
-        PageIdsParam(notInDbIds)
-      ))
-    }
-  }
 
 }
