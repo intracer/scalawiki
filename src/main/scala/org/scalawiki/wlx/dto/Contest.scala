@@ -11,13 +11,16 @@ class Contest(
 
   def category: String = s"Category:Images from ${contestType.name} $year in ${country.name}".replaceAll(" ", "_")
 
-  def listTemplate = uploadConfigs.head.listTemplate
+  def listTemplate: Option[String] = uploadConfigs.headOption.map(_.listTemplate)
 
-  def fileTemplate = uploadConfigs.head.fileTemplate
+  def fileTemplate: Option[String] = uploadConfigs.headOption.map(_.fileTemplate)
 
 }
 
 object Contest {
+
+  def ESPCUkraine(year: Int, startDate: String = "01-09", endDate: String = "30-09") =
+    new Contest(ContestType.ESPC, Country.Ukraine, year, startDate, endDate, Seq.empty)
 
   def WLMUkraine(year: Int, startDate: String = "01-09", endDate: String = "30-09") =
     new Contest(ContestType.WLM, Country.Ukraine, year, startDate, endDate,

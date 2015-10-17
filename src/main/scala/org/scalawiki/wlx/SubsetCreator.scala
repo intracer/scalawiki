@@ -18,7 +18,7 @@ object SubsetCreator {
 
     val contest = Contest.WLMUkraine(2014, "", "")
     val query = MonumentQuery.create(contest)
-    query.byMonumentTemplateAsync(contest.listTemplate).map {
+    query.byMonumentTemplateAsync(contest.listTemplate.get).map {
       monuments =>
 
         val subset = monuments.filter { m =>

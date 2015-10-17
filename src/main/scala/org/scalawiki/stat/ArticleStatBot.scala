@@ -11,7 +11,7 @@ import org.scalawiki.{MwBot, WithBot}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ArticleStatBot(val event: ArticlesEvent) extends WithBot {
+class ArticleStatBot() extends WithBot {
 
   val host = MwBot.ukWiki
 
@@ -56,36 +56,69 @@ class ArticleStatBot(val event: ArticlesEvent) extends WithBot {
     }
   }
 
-  def stat() = {
+  def stat(event: ArticlesEvent): Future[Long] = {
 
     val from = Some(event.start)
     val to = Some(event.end)
 
-    for (newPagesIds <- pagesWithTemplate(event.newTemplate);
-         improvedPagesIds <- pagesWithTemplate(event.improvedTemplate)) {
-      println(s"New ${newPagesIds.size} $newPagesIds")
-      println(s"Improved ${improvedPagesIds.size} $improvedPagesIds")
+    val newPagesIdsF = pagesWithTemplate(event.newTemplate)
+    val improvedPagesIdsF = pagesWithTemplate(event.improvedTemplate)
 
-      val allIds = newPagesIds.toSet ++ improvedPagesIds.toSet
+    Future.sequence(Seq(newPagesIdsF, improvedPagesIdsF)).flatMap {
+      ids =>
 
-      for (allPages <- pagesRevisions(allIds.toSeq)) {
+        val newPagesIds = ids.head
+        val improvedPagesIds = ids.last
+        println(s"New ${newPagesIds.size} $newPagesIds")
+        println(s"Improved ${improvedPagesIds.size} $improvedPagesIds")
 
-        val updatedPages = allPages.filter(_.history.editedIn(from, to))
-        val (created, improved) = updatedPages.partition(_.history.createdAfter(from))
+        val allIds = newPagesIds.toSet ++ improvedPagesIds.toSet
 
-        val allStat = new ArticleStat(from, to, updatedPages, "All")
-        val createdStat = new ArticleStat(from, to, created, "created")
-        val improvedStat = new ArticleStat(from, to, improved, "improved")
+        pagesRevisions(allIds.toSeq).map { allPages =>
 
-        println(Seq(allStat, createdStat, improvedStat).mkString("\n"))
-      }
+          val updatedPages = allPages.filter(_.history.editedIn(from, to))
+          val (created, improved) = updatedPages.partition(_.history.createdAfter(from))
+
+          val allStat = new ArticleStat(from, to, updatedPages, "All")
+          val createdStat = new ArticleStat(from, to, created, "created")
+          val improvedStat = new ArticleStat(from, to, improved, "improved")
+
+          println(Seq(allStat, createdStat, improvedStat).mkString("\n"))
+          allStat.added.sum
+        }
     }
+
   }
 }
 
 object ArticleStatBot {
 
   def main(args: Array[String]) {
-    new ArticleStatBot(Events.WLEWeek).stat()
+    val bot = new ArticleStatBot()
+
+    val weeksF = Events.allWeeks.map(bot.stat)
+      Future.sequence(weeksF).map {
+        stats =>
+
+          val events = stats.size
+          val added = stats.sum
+          println(s"!!!!!!!!! weeks: $events, bytes: $added")
+          println(s"!!!!!!!!! weeks: $stats")
+
+      }
+
+    val contestF = Events.allContests.map(bot.stat)
+    Future.sequence(contestF).map {
+      stats =>
+
+        val events = stats.size
+        val added = stats.sum
+
+        println(s"!!!!!!!!! contests: $events, bytes: $added")
+        println(s"!!!!!!!!! contests: $stats")
+    }
+
+
+
   }
 }

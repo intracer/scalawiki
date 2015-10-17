@@ -24,7 +24,7 @@ class GallerySpec extends Specification {
         Image("File:Img2sm.jpg", size = Some(10 ^ 6), width = Some(1024), height = Some(768), monumentId = Some("05-111-1111"))
       )
       val monumentDb = new MonumentDB(contest, monuments)
-      val imageDb = new ImageDB(contest, images, monumentDb)
+      val imageDb = new ImageDB(contest, images, Some(monumentDb))
 
       val expected =
         """== [[:uk:Вікіпедія:Вікі любить Землю/Автономна Республіка Крим|Автономна Республіка Крим]] ==

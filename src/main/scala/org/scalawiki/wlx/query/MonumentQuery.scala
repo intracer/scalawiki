@@ -85,16 +85,17 @@ class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
   }
 }
 
+
 object MonumentQuery {
 
   def create(contest: Contest, caching: Boolean = true, pickling: Boolean = false): MonumentQuery = {
-    val api = new MonumentQueryApi(contest)
+      val api = new MonumentQueryApi(contest)
 
-    val query = if (caching)
-      new MonumentQueryCached(api)
-    else api
+      val query = if (caching)
+        new MonumentQueryCached(api)
+      else api
 
-    query
+      query
   }
 
 }

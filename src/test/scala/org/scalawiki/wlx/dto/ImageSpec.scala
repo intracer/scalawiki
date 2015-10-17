@@ -36,7 +36,7 @@ class ImageSpec extends Specification {
       val wiki = makeTemplate("[[User:PhotoMaster|PhotoMaster]]", "{{Monument|nature-park-id}}")
 
       val page = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(wiki)))
-      val image = Image.fromPageRevision(page, "Monument").get
+      val image = Image.fromPageRevision(page, Some("Monument")).get
 
       image.author === Some("PhotoMaster")
       image.monumentId === Some("nature-park-id")

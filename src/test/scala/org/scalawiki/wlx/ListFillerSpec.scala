@@ -26,7 +26,7 @@ class ListFillerSpec extends Specification {
     "addPhotosToPageText empty everything" in {
 
       val monumentDb = new MonumentDB(contest, Seq.empty)
-      val imageDb = new ImageDB(contest, Seq.empty, monumentDb)
+      val imageDb = new ImageDB(contest, Seq.empty, Some(monumentDb))
       val task = new ListFillerTask(host, monumentDb, imageDb)
 
       val (newText, comment) = task.updatePage("page", "")

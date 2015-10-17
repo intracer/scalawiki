@@ -71,7 +71,7 @@ class ImageDbSpec extends Specification {
 
       val allImages = Seq(noRes, halfMinus, halfPlus, one, onePlus, twoPlus, mp12, mp24)
 
-      val imageDb = new ImageDB(contest, allImages, new MonumentDB(contest, Seq.empty))
+      val imageDb = new ImageDB(contest, allImages, Some(new MonumentDB(contest, Seq.empty)))
 
       imageDb.byMegaPixels(None) === Seq(noRes)
       imageDb.byMegaPixels(Some(0)) === Seq(halfMinus, halfPlus)
@@ -98,7 +98,7 @@ class ImageDbSpec extends Specification {
 
       val allImages = Seq(noRes, halfMinus, halfPlus, one, onePlus, twoPlus, mp12, mp24)
 
-      val imageDb = new ImageDB(contest, allImages, new MonumentDB(contest, Seq.empty))
+      val imageDb = new ImageDB(contest, allImages, Some(new MonumentDB(contest, Seq.empty)))
 
       imageDb._byMegaPixelsAndAuthor(Some(0)) === Map("user1" -> Seq(halfMinus), "user2" -> Seq(halfPlus))
       imageDb._byMegaPixelsAndAuthor(Some(1)) === Map("user1" -> Seq(one), "user2" -> Seq(onePlus))

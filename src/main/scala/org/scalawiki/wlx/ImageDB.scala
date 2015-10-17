@@ -5,9 +5,13 @@ import org.scalawiki.wlx.query.ImageQuery
 
 import scala.concurrent.Future
 
-class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: MonumentDB) {
+class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Option[MonumentDB]) {
 
-  val withCorrectIds = images.filter(_.monumentId.fold(false)(monumentDb.ids.contains))
+  def this(contest: Contest, images: Seq[Image]) = this(contest, images, None)
+
+  def this(contest: Contest, images: Seq[Image], monumentDb: MonumentDB) = this(contest, images, Some(monumentDb))
+
+  val withCorrectIds = monumentDb.fold(images)(db => images.filter(_.monumentId.fold(false)(db.ids.contains)))
 
   val _byId: Map[String, Seq[Image]] = withCorrectIds.groupBy(_.monumentId.getOrElse(""))
   val _imagesByRegion: Map[String, Seq[Image]] = withCorrectIds.groupBy(im => Monument.getRegionId(im.monumentId))
@@ -73,7 +77,7 @@ class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Monu
 
   def byId(id: String) = _byId.getOrElse(id, Seq.empty[Image])
 
-  def containsId(id: String) =  _byId.contains(id)
+  def containsId(id: String) = _byId.contains(id)
 
   def imagesByRegion(regId: String) = _imagesByRegion.getOrElse(regId, Seq.empty[Image])
 
@@ -82,9 +86,9 @@ class ImageDB(val contest: Contest, val images: Seq[Image], val monumentDb: Monu
   def authorsByRegion(regId: String) = _authorsByRegion.getOrElse(regId, Seq.empty[String])
 
   def subSet(monuments: Seq[Monument], withFalseIds: Boolean = false): ImageDB = {
-    val subSetMonumentDb = new MonumentDB(monumentDb.contest, monuments, withFalseIds)
+    val subSetMonumentDb = new MonumentDB(monumentDb.get.contest, monuments, withFalseIds)
     val subSetImages = images.filter(_.monumentId.fold(false)(subSetMonumentDb.ids.contains))
-    new ImageDB(contest, subSetImages, subSetMonumentDb)
+    new ImageDB(contest, subSetImages, Some(subSetMonumentDb))
   }
 
 }
@@ -93,7 +97,7 @@ object ImageDB {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def create(contest: Contest, imageQuery: ImageQuery, monumentDb: MonumentDB): Future[ImageDB] = {
+  def create(contest: Contest, imageQuery: ImageQuery, monumentDb: Option[MonumentDB]): Future[ImageDB] = {
     imageQuery.imagesFromCategoryAsync(contest.category, contest).map {
       images => new ImageDB(contest, images, monumentDb)
     }

@@ -39,15 +39,15 @@ case class Image(title: String,
 
 object Image {
 
-  def fromPageImages(page: Page, monumentIdTemplate: String): Option[Image] =
+  def fromPageImages(page: Page, monumentIdTemplate: Option[String]): Option[Image] =
     page.images.headOption
 
-  def fromPageRevision(page: Page, monumentIdTemplate: String): Option[Image] = {
+  def fromPageRevision(page: Page, monumentIdTemplate: Option[String]): Option[Image] = {
     page.revisions.headOption.map { revision =>
 
       val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
       val content = revision.content.getOrElse("")
-      val idOpt = TemplateParser.parseOne(content, Some(monumentIdTemplate)).flatMap(_.getParamOpt("1"))
+      val idOpt = TemplateParser.parseOne(content, monumentIdTemplate).flatMap(_.getParamOpt("1"))
       //val ipOpt = if (id.matches(idRegex)) Some(id) else None
 
       val author = getAuthorFromPage(content)
