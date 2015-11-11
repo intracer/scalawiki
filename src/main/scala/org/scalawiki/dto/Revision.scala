@@ -34,6 +34,8 @@ case class Revision(
   def withComment(comment: String) = copy(comment = Some(comment))
 
   def withTimeStamp(timestamp: DateTime = DateTime.now) = copy(timestamp = Some(timestamp))
+
+  def withoutContent = copy(content = None)
 }
 
 object Revision {

@@ -1,36 +1,23 @@
 package org.scalawiki.stat
 
 import org.scalawiki.dto.filter.{AllRevisionsFilter, RevisionFilter}
-import org.scalawiki.dto.history.Annotation
+import org.scalawiki.dto.history.History
 import org.scalawiki.dto.{Page, Revision}
-import org.xwiki.blame.AnnotatedElement
 
-class RevisionStat(val page: Page, revFilter: RevisionFilter = AllRevisionsFilter) {
+class RevisionStat(val page: Page,
+                   val byRevisionSize: Map[Revision, Long],
+                   val byUserSize: Map[String, Long]) {
 
-  def revisions = revFilter(page.history.revisions)
+  val history = new History(page.revisions)
 
-  val users = page.history.users(revFilter)
-  val delta = page.history.delta(revFilter).getOrElse(0L)
+  val users = page.history.users(AllRevisionsFilter)
+  val delta = page.history.delta(AllRevisionsFilter).getOrElse(0L)
 
-  val annotation: Option[Annotation] = Annotation.create(page)
-
-  def pageAnnotatedElements: Seq[AnnotatedElement[Revision, String]] =
-    annotation.fold(Seq.empty[AnnotatedElement[Revision, String]])(_.annotatedElements)
-
-  val annotatedElements = pageAnnotatedElements
-    .filter(element => revFilter.predicate(element.getRevision))
-
-  val byRevisionContent: Map[Revision, Seq[String]] = annotatedElements.groupBy(_.getRevision).mapValues(_.map(_.getElement))
-  val byUserContent: Map[String, Seq[String]] = annotatedElements.groupBy(_.getRevision.user.flatMap(_.name) getOrElse "").mapValues(_.map(_.getElement))
-
-  val byRevisionSize = byRevisionContent.mapValues(_.map(_.getBytes.size.toLong).sum)
   val addedOrRewritten = byRevisionSize.values.sum
 
-  private val _byUserSize: Map[String, Long] = byUserContent.mapValues(_.map(_.getBytes.size.toLong).sum)
+  def byUserSize(user: String): Long = byUserSize.getOrElse(user, 0L)
 
-  def byUserSize(user: String): Long = _byUserSize.getOrElse(user, 0L)
-
-  val usersSorted = _byUserSize.toSeq.sortBy{
+  val usersSorted = byUserSize.toSeq.sortBy {
     case (user, size) => -size
   }
 
@@ -38,12 +25,29 @@ class RevisionStat(val page: Page, revFilter: RevisionFilter = AllRevisionsFilte
     case (user, size) => s"[[User:$user|$user]]: $size"
   }.mkString("<br>")
 
-  def stat = s"| [[${page.title}]] || $addedOrRewritten || $delta || ${_byUserSize.keySet.size} || $usersSortedString"
+  def stat = s"| [[${page.title}]] || $addedOrRewritten || $delta || ${byUserSize.keySet.size} || $usersSortedString"
 
 }
 
 object RevisionStat {
 
   def statHeader = s"! title !! added or rewritten !! size increase !! users !! users by added or rewritten text size\n"
+
+  def fromPage(page: Page, revFilter: RevisionFilter = AllRevisionsFilter) = {
+
+    val annotation = new RevisionAnnotation(page, revFilter)
+
+    val byRevisionSize = annotation.byRevisionContent.map {
+      case (rev, words) =>
+        rev.withoutContent -> words.map(_.getBytes.size.toLong).sum
+    }
+
+    val byUserSize = annotation.byUserContent.mapValues(_.map(_.getBytes.size.toLong).sum)
+
+    new RevisionStat(
+      page.copy(revisions = revFilter(page.revisions.map(_.withoutContent))),
+      byRevisionSize, byUserSize
+    )
+  }
 
 }

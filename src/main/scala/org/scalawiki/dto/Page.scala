@@ -17,7 +17,7 @@ case class Page(
                  langLinks: Map[String, String] = Map.empty,
                   categoryInfo: Option[CategoryInfo] = None
                  ) /*extends HasId[Page]*/ {
-  val history = new History(this)
+  val history = new History(revisions)
 
   def withText(text: String) = copy(revisions = Page.revisionsFromText(Some(text)))
 

@@ -34,8 +34,8 @@ class ArticleStatBot() extends WithBot {
     }
   }
 
-  def pagesRevisions(ids: Seq[Long]): Future[Seq[Page]] = {
-    Future.traverse(ids)(pageRevisions).map(_.flatten)
+  def pagesRevisions(ids: Seq[Long]): Future[TraversableOnce[Option[Page]]] = {
+    Future.traverse(ids)(pageRevisions)
   }
 
   def pageRevisions(id: Long): Future[Option[Page]] = {
@@ -79,10 +79,16 @@ class ArticleStatBot() extends WithBot {
 
         pagesRevisions(allIds.toSeq).map { allPages =>
 
-          val updatedPages = allPages.filter(_.history.editedIn(revisionFilter))
-          val (created, improved) = updatedPages.partition(_.history.createdAfter(from))
+          val revStats = allPages.map {
+            case Some(page)
+              if page.history.editedIn(revisionFilter) =>
+              Some(RevisionStat.fromPage(page, revisionFilter))
+            case _ => None
+          }.flatten.toSeq.sortBy(-_.addedOrRewritten)
 
-          val allStat = new ArticleStat(revisionFilter, updatedPages, "All")
+          val (created, improved) = revStats.partition(_.history.createdAfter(from))
+
+          val allStat = new ArticleStat(revisionFilter, revStats, "All")
           val createdStat = new ArticleStat(revisionFilter, created, "created")
           val improvedStat = new ArticleStat(revisionFilter, improved, "improved")
 
@@ -98,27 +104,28 @@ object ArticleStatBot {
   def main(args: Array[String]) {
     val bot = new ArticleStatBot()
 
-    val weeksF = Events.allWeeks.map(bot.stat)
-      Future.sequence(weeksF).map {
-        stats =>
-
-          val events = stats.size
-          val added = stats.sum
-          println(s"!!!!!!!!! weeks: $events, bytes: $added")
-          println(s"!!!!!!!!! weeks: $stats")
-
-      }
-
-    val contestF = Events.allContests.map(bot.stat)
-    Future.sequence(contestF).map {
-      stats =>
-
-        val events = stats.size
-        val added = stats.sum
-
-        println(s"!!!!!!!!! contests: $events, bytes: $added")
-        println(s"!!!!!!!!! contests: $stats")
-    }
+    bot.stat(Events.WLMLists)
+//    val weeksF = Events.allWeeks.map(bot.stat)
+//      Future.sequence(weeksF).map {
+//        stats =>
+//
+//          val events = stats.size
+//          val added = stats.sum
+//          println(s"!!!!!!!!! weeks: $events, bytes: $added")
+//          println(s"!!!!!!!!! weeks: $stats")
+//
+//      }
+//
+//    val contestF = Events.allContests.map(bot.stat)
+//    Future.sequence(contestF).map {
+//      stats =>
+//
+//        val events = stats.size
+//        val added = stats.sum
+//
+//        println(s"!!!!!!!!! contests: $events, bytes: $added")
+//        println(s"!!!!!!!!! contests: $stats")
+//    }
 
 
 

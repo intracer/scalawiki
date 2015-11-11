@@ -1,11 +1,8 @@
 package org.scalawiki.stat
 
-import org.scalawiki.dto.Page
 import org.scalawiki.dto.filter.RevisionFilter
 
-class ArticleStat(val filter: RevisionFilter, val pages: Seq[Page], label: String) {
-
-  val revisionStats = pages.map(page => new RevisionStat(page, filter)).sortBy(-_.addedOrRewritten)
+class ArticleStat(val filter: RevisionFilter, val revisionStats: Seq[RevisionStat], label: String) {
 
   val deltas = revisionStats.map(_.delta)
   val addedOrRewritten = revisionStats.map(_.addedOrRewritten)
@@ -27,7 +24,7 @@ class ArticleStat(val filter: RevisionFilter, val pages: Seq[Page], label: Strin
   override def toString = {
     s"""
         |=== $label articles ===
-        |* Number of articles: ${pages.size}
+        |* Number of articles: ${revisionStats.size}
         |* Authors: ${userStat.users.size}
         |====  Bytes ====
         |* $addedOrRewrittenStat
@@ -35,6 +32,5 @@ class ArticleStat(val filter: RevisionFilter, val pages: Seq[Page], label: Strin
         |""".stripMargin +
       "\n====  Page stat ====\n" + pageStat +
       "\n====  User stat ====\n" + userStat
-
   }
 }

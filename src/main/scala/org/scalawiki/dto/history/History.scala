@@ -1,12 +1,10 @@
 package org.scalawiki.dto.history
 
 import org.joda.time.DateTime
+import org.scalawiki.dto.Revision
 import org.scalawiki.dto.filter.RevisionFilter
-import org.scalawiki.dto.{Page, Revision}
 
-class History(val page: Page) {
-
-  def revisions = page.revisions
+class History(val revisions: Seq[Revision]) {
 
   def users(revisionFilter: RevisionFilter): Set[String] = {
     val filtered = revisionFilter.apply(revisions)

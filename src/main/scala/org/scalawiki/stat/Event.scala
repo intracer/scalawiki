@@ -142,6 +142,13 @@ object Events {
     "brother-week-new",
     "brother-week-improve")
 
+  val WLMLists = new ArticlesEvent(
+    "Вікіпедія:Вікі любить пам'ятки",
+    DateTime.parse("2012-01-01T00:00+02:00"),
+    DateTime.parse("2015-12-30T00:00+03:00"),
+    "ВЛП-рядок",
+    "ВЛП-рядок")
+
   val allContests = Seq(
     WLMContest, CEESpring, WLEContest, CrimeaContest
   )
