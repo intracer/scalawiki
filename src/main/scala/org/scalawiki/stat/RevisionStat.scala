@@ -6,7 +6,7 @@ import org.scalawiki.dto.{Page, Revision}
 
 class RevisionStat(val page: Page,
                    val byRevisionSize: Map[Revision, Long],
-                   val byUserSize: Map[String, Long]) {
+                   byUserSize: Map[String, Long]) {
 
   val history = new History(page.revisions)
 
