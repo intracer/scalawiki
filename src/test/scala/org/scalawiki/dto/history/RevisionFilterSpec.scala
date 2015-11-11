@@ -1,9 +1,9 @@
 package org.scalawiki.dto.history
 
-import org.scalawiki.dto.Revision
-import org.scalawiki.dto.filter.RevisionFilter
-import org.specs2.mutable.Specification
 import com.github.nscala_time.time.Imports._
+import org.scalawiki.dto.Revision
+import org.scalawiki.dto.filter.RevisionFilterDateAndUser
+import org.specs2.mutable.Specification
 
 class RevisionFilterSpec extends Specification {
 
@@ -15,7 +15,7 @@ class RevisionFilterSpec extends Specification {
       val r1 = Revision(1, 1).withTimeStamp(now - 2.months)
       val r2 = Revision(2, 1).withTimeStamp(now)
 
-      val rf = new RevisionFilter(from = Some(now - 1.month))
+      val rf = new RevisionFilterDateAndUser(from = Some(now - 1.month))
 
       val filtered = rf(Seq(r1,r2))
 
@@ -27,7 +27,7 @@ class RevisionFilterSpec extends Specification {
       val r1 = Revision(1, 1).withTimeStamp(now - 2.months)
       val r2 = Revision(2, 1).withTimeStamp(now)
 
-      val rf = new RevisionFilter(to = Some(now - 1.month))
+      val rf = new RevisionFilterDateAndUser(to = Some(now - 1.month))
 
       val filtered = rf(Seq(r1,r2))
 
@@ -41,7 +41,7 @@ class RevisionFilterSpec extends Specification {
       val r3 = Revision(3, 1).withTimeStamp(now - 1.months)
       val r4 = Revision(4, 1).withTimeStamp(now)
 
-      val rf = new RevisionFilter(from = Some(now - 2.month), to = Some(now - 1.month))
+      val rf = new RevisionFilterDateAndUser(from = Some(now - 2.month), to = Some(now - 1.month))
 
       val filtered = rf(Seq(r1,r2, r3, r4))
 

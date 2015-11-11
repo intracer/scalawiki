@@ -1,16 +1,16 @@
 package org.scalawiki.stat
 
-import org.scalawiki.dto.filter.RevisionFilter
+import org.scalawiki.dto.filter.{AllRevisionsFilter, RevisionFilter}
 import org.scalawiki.dto.history.Annotation
 import org.scalawiki.dto.{Page, Revision}
 import org.xwiki.blame.AnnotatedElement
 
-class RevisionStat(val page: Page, revFilter: RevisionFilter) {
+class RevisionStat(val page: Page, revFilter: RevisionFilter = AllRevisionsFilter) {
 
   def revisions = revFilter(page.history.revisions)
 
-  val users = page.history.users(revFilter.from, revFilter.to)
-  val delta = page.history.delta(revFilter.from, revFilter.to).getOrElse(0L)
+  val users = page.history.users(revFilter)
+  val delta = page.history.delta(revFilter).getOrElse(0L)
 
   val annotation: Option[Annotation] = Annotation.create(page)
 

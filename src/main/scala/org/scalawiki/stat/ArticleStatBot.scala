@@ -5,6 +5,7 @@ import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
+import org.scalawiki.dto.filter.RevisionFilterDateAndUser
 import org.scalawiki.query.DslQuery
 import org.scalawiki.{MwBot, WithBot}
 
@@ -61,6 +62,8 @@ class ArticleStatBot() extends WithBot {
     val from = Some(event.start)
     val to = Some(event.end)
 
+    val revisionFilter = new RevisionFilterDateAndUser(from, to)
+
     val newPagesIdsF = pagesWithTemplate(event.newTemplate)
     val improvedPagesIdsF = pagesWithTemplate(event.improvedTemplate)
 
@@ -76,18 +79,17 @@ class ArticleStatBot() extends WithBot {
 
         pagesRevisions(allIds.toSeq).map { allPages =>
 
-          val updatedPages = allPages.filter(_.history.editedIn(from, to))
+          val updatedPages = allPages.filter(_.history.editedIn(revisionFilter))
           val (created, improved) = updatedPages.partition(_.history.createdAfter(from))
 
-          val allStat = new ArticleStat(from, to, updatedPages, "All")
-          val createdStat = new ArticleStat(from, to, created, "created")
-          val improvedStat = new ArticleStat(from, to, improved, "improved")
+          val allStat = new ArticleStat(revisionFilter, updatedPages, "All")
+          val createdStat = new ArticleStat(revisionFilter, created, "created")
+          val improvedStat = new ArticleStat(revisionFilter, improved, "improved")
 
           println(Seq(allStat, createdStat, improvedStat).mkString("\n"))
           allStat.added.sum
         }
     }
-
   }
 }
 

@@ -1,12 +1,10 @@
 package org.scalawiki.stat
 
-import org.joda.time.DateTime
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.filter.RevisionFilter
 
-class ArticleStat(val from: Option[DateTime], val to: Option[DateTime], val pages: Seq[Page], label: String) {
+class ArticleStat(val filter: RevisionFilter, val pages: Seq[Page], label: String) {
 
-  val filter = new RevisionFilter(from, to)
   val revisionStats = pages.map(page => new RevisionStat(page, filter)).sortBy(-_.addedOrRewritten)
 
   val deltas = revisionStats.map(_.delta)
