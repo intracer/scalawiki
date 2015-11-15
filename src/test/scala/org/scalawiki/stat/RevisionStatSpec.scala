@@ -30,7 +30,7 @@ class RevisionStatSpec extends Specification {
       val words = Seq("revision",  "text")
       val text = words.mkString(" ")
       val user = "user"
-      val rev = Revision(user = Some(User(12, user)), content = Some(text))
+      val rev = Revision(revId = Some(1), user = Some(User(12, user)), content = Some(text))
       val page = new Page(Some(1), 0, "page", revisions = Seq(rev))
       val stat = RevisionStat.fromPage(page)
 
@@ -49,7 +49,7 @@ class RevisionStatSpec extends Specification {
       val words = Seq("текст", "ревізії")
       val text = words.mkString(" ")
       val user = "user"
-      val rev = Revision(user = Some(User(12, user)), content = Some(text))
+      val rev = Revision(revId = Some(1), user = Some(User(12, user)), content = Some(text))
       val page = new Page(Some(1), 0, "page", revisions = Seq(rev))
       val stat = RevisionStat.fromPage(page)
 
@@ -74,8 +74,8 @@ class RevisionStatSpec extends Specification {
       val text2 = text2Words.mkString(" ")
 
       val user = "user"
-      val rev1 = Revision(user = Some(User(12, user)), content = Some(text1))
-      val rev2 = Revision(user = Some(User(12, user)), content = Some(text2))
+      val rev1 = Revision(revId = Some(1), user = Some(User(12, user)), content = Some(text1))
+      val rev2 = Revision(revId = Some(2), user = Some(User(12, user)), content = Some(text2))
       val page = new Page(Some(1), 0, "page", revisions = Seq(rev2, rev1))
       val stat = RevisionStat.fromPage(page)
 
@@ -85,8 +85,8 @@ class RevisionStatSpec extends Specification {
 
       stat.page === page.withoutContent
       stat.history.revisions === Seq(rev2.withoutContent, rev1.withoutContent)
-      stat.addedOrRewritten === (words1 ++ words2).mkString.length
       stat.byRevisionSize === Map(rev1.withoutContent -> words1.mkString.length, rev2.withoutContent -> words2.mkString.length)
+      stat.addedOrRewritten === (words1 ++ words2).mkString.length
     }
 
     "two revisions remove text" in {
@@ -99,8 +99,8 @@ class RevisionStatSpec extends Specification {
       val text2 = words2.mkString(" ")
 
       val user = "user"
-      val rev1 = Revision(user = Some(User(12, user)), content = Some(text1))
-      val rev2 = Revision(user = Some(User(12, user)), content = Some(text2))
+      val rev1 = Revision(revId = Some(1), user = Some(User(12, user)), content = Some(text1))
+      val rev2 = Revision(revId = Some(2), user = Some(User(12, user)), content = Some(text2))
       val page = new Page(Some(1), 0, "page", revisions = Seq(rev2, rev1))
       val stat = RevisionStat.fromPage(page)
 
@@ -124,8 +124,8 @@ class RevisionStatSpec extends Specification {
       val text2 = words2.mkString(" ")
 
       val user = "user"
-      val rev1 = Revision(user = Some(User(12, user)), content = Some(text1))
-      val rev2 = Revision(user = Some(User(12, user)), content = Some(text2))
+      val rev1 = Revision(revId = Some(1), user = Some(User(12, user)), content = Some(text1))
+      val rev2 = Revision(revId = Some(2), user = Some(User(12, user)), content = Some(text2))
       val page = new Page(Some(1), 0, "page", revisions = Seq(rev2, rev1))
       val stat = RevisionStat.fromPage(page)
 
@@ -135,9 +135,9 @@ class RevisionStatSpec extends Specification {
 
       stat.page === page.withoutContent
       stat.history.revisions === Seq(rev2.withoutContent, rev1.withoutContent)
+      stat.byRevisionSize === Map(rev1.withoutContent -> "text".length, rev2.withoutContent -> "secondRevision".length)
       stat.addedOrRewritten === words2.mkString.length
 
-      stat.byRevisionSize === Map(rev1.withoutContent -> "text".length, rev2.withoutContent -> "secondRevision".length)
     }
 
   }
