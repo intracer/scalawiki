@@ -39,7 +39,7 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
     val otherParams = otherParamNames.map { name => name -> template.getParam(name) }.toMap
 
     new Monument(page = page,
-      id = byName(id).getOrElse(1.toString),
+      id = removeComments(byName(id).getOrElse(1.toString)).trim,
       name = byName(name).getOrElse(""),
       year = byName(year),
       description = byName(description),
@@ -57,5 +57,18 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
       resolution = byName(resolution),
       otherParams = otherParams,
       listConfig = config)
+  }
+
+  def removeComments(s: String): String = {
+    val start = s.indexOf("<!--")
+
+    if (start > 0) {
+      val end = s.indexOf("-->", start + 4)
+      if (end > 0) {
+        removeComments(s.substring(0, start) + s.substring(end + 3, s.length))
+      }
+      else s.substring(0, start)
+    } else
+      s
   }
 }
