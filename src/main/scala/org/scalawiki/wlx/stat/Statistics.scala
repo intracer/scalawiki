@@ -2,6 +2,7 @@ package org.scalawiki.wlx.stat
 
 import java.nio.file.{Files, Paths}
 
+import org.joda.time.DateTime
 import org.scalawiki.MwBot
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
@@ -22,18 +23,27 @@ class Statistics {
 
       val monumentQuery = MonumentQuery.create(contest)
 
+      val date = new DateTime(2015, 9, 1, 0, 0, 0)
+
       val monumentDb = getMonumentDb(contest)
+      val monumentDbOld = getMonumentDb(contest, Some(date))
+
+      val allIds = monumentDb.monuments.filter(_.photo.isDefined).map(_.id).toSet
+      val oldIds = monumentDbOld.monuments.filter(_.photo.isDefined).map(_.id).toSet
+
+      val newIds = allIds -- oldIds
+
 
       //articleStatistics(monumentDb)
-      imagesStatistics(contest, Some(monumentDb))
+      imagesStatistics(contest, Some(monumentDb), Some(monumentDbOld))
     } else {
-      imagesStatistics(contest, None)
+      imagesStatistics(contest, None, None)
     }
   }
 
-  def getMonumentDb(contest: Contest): MonumentDB = {
+  def getMonumentDb(contest: Contest, date: Option[DateTime] = None): MonumentDB = {
     val monumentQuery = MonumentQuery.create(contest)
-    var allMonuments = monumentQuery.byMonumentTemplate(contest.uploadConfigs.head.listTemplate)
+    var allMonuments = monumentQuery.byMonumentTemplate(contest.uploadConfigs.head.listTemplate, date)
 
     if (contest.country.code == "ru") {
       allMonuments = allMonuments.filter(_.page.contains("Природные памятники России"))
@@ -50,11 +60,11 @@ class Statistics {
     users.map(name => s"{{#target:User talk:$name}}")
   }
 
-  def imagesStatistics(contest: Contest, monumentDb: Option[MonumentDB]) {
+  def imagesStatistics(contest: Contest, monumentDb: Option[MonumentDB], oldMonumentDb: Option[MonumentDB] = None) {
     val imageQueryDb = ImageQuery.create(db = false)
     val imageQueryApi = ImageQuery.create(db = false)
 
-    val imageDbFuture = ImageDB.create(contest, imageQueryApi, monumentDb)
+    val imageDbFuture = ImageDB.create(contest, imageQueryApi, monumentDb, oldMonumentDb)
 
     imageDbFuture onFailure {
       case f =>
@@ -140,14 +150,21 @@ class Statistics {
   }
 
   def authorsStat(imageDb: ImageDB) {
-    val output = new Output()
-    val text = output.authorsMonuments(imageDb)
-    Files.write(Paths.get("authorsRating.txt"), text.getBytes)
-
     val contest = imageDb.contest
     val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
 
-    MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Number of objects pictured by uploader").edit(text, Some("updating"))
+    val output = new Output()
+
+    val numberOfMonuments = output.authorsMonuments(imageDb)
+    Files.write(Paths.get("authorsMonuments.txt"), numberOfMonuments.getBytes)
+    MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Number of objects pictured by uploader")
+      .edit(numberOfMonuments, Some("updating"))
+
+    val rating = output.authorsMonuments(imageDb, rating = true)
+    Files.write(Paths.get("authorsRating.txt"), rating.getBytes)
+    MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Rating based on number and originality of objects pictured by uploader")
+      .edit(rating, Some("updating"))
+
   }
 
   def regionalStat(wlmContest: Contest, monumentDb: MonumentDB,

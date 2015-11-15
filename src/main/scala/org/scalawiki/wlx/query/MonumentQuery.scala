@@ -1,6 +1,12 @@
 package org.scalawiki.wlx.query
 
-import org.scalawiki.dto.Namespace
+import org.joda.time.DateTime
+import org.scalawiki.dto.cmd.Action
+import org.scalawiki.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
+import org.scalawiki.dto.cmd.query.prop._
+import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
+import org.scalawiki.dto.{Page, Namespace}
+import org.scalawiki.query.DslQuery
 import org.scalawiki.wlx.dto.{Contest, Monument}
 import org.scalawiki.WithBot
 
@@ -13,11 +19,12 @@ trait MonumentQuery {
 
   def contest: Contest
 
-  def byMonumentTemplateAsync(template: String = contest.uploadConfigs.head.listTemplate): Future[Seq[Monument]]
+  def byMonumentTemplateAsync(template: String = contest.uploadConfigs.head.listTemplate, date: Option[DateTime] = None): Future[Seq[Monument]]
 
-  def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false): Future[Seq[Monument]]
+  def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false, date: Option[DateTime] = None): Future[Seq[Monument]]
 
-  final def byMonumentTemplate(template: String = contest.uploadConfigs.head.listTemplate) = Await.result(byMonumentTemplateAsync(template), 15.minutes): Seq[Monument]
+  final def byMonumentTemplate(template: String = contest.uploadConfigs.head.listTemplate, date: Option[DateTime] = None) =
+    Await.result(byMonumentTemplateAsync(template, date), 120.minutes): Seq[Monument]
 
   final def byPage(page: String, template: String, pageIsTemplate: Boolean = false) = Await.result(byPageAsync(page, template, pageIsTemplate), 15.minutes): Seq[Monument]
 }
@@ -37,17 +44,23 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
       langCode + ".wikipedia.org"
   }
 
-  override def byMonumentTemplateAsync(template: String): Future[Seq[Monument]] = {
-    bot.page("Template:" + template).revisionsByGenerator("embeddedin", "ei",
-      Set(Namespace.PROJECT_NAMESPACE, Namespace.MAIN),
-      Set("ids", "content", "timestamp", "user", "userid", "comment"), None, "100") map {
-      pages =>
-        pages.flatMap(page =>
-          Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig))
+  override def byMonumentTemplateAsync(template: String, date: Option[DateTime] = None): Future[Seq[Monument]] = {
+
+    if (date.isEmpty) {
+
+      bot.page("Template:" + template).revisionsByGenerator("embeddedin", "ei",
+        Set(Namespace.PROJECT_NAMESPACE, Namespace.MAIN),
+        Set("ids", "content", "timestamp", "user", "userid", "comment"), None, "100") map {
+        pages =>
+          pages.flatMap(page =>
+            Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig))
+      }
+    } else {
+      monumentsByDate("Template:" + template, template, date.get)
     }
   }
 
-  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false): Future[Seq[Monument]] = {
+  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false, date: Option[DateTime] = None): Future[Seq[Monument]] = {
     if (!page.startsWith("Template") || pageIsTemplate) {
       bot.page(page).revisions(Set.empty, Set("content", "timestamp", "user", "userid", "comment")).map {
         revs =>
@@ -59,13 +72,66 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
       //        pages =>
       //          pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template).toSeq)
       //      }
-      bot.page(page).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT_NAMESPACE), Set("content", "timestamp", "user", "userid", "comment"), None, "100") map {
-        pages =>
-          pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig))
+      if (date.isEmpty) {
+        bot.page(page).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT_NAMESPACE), Set("content", "timestamp", "user", "userid", "comment"), None, "100") map {
+          pages =>
+            pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig))
+        }
+      } else {
+        monumentsByDate(page, template, date.get)
       }
-
     }
   }
+
+  def monumentsByDate(page: String, template: String, date: DateTime): Future[Seq[Monument]] = {
+    pagesWithTemplate(page).flatMap {
+      ids =>
+        Future.traverse(ids)(id => pageRevisions(id, date)).map {
+          pages =>
+            pages.flatten.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig))
+        }
+    }
+  }
+
+  def pagesWithTemplate(template: String): Future[Seq[Long]] = {
+    val action = Action(Query(
+      Prop(
+        Info(InProp(SubjectId)),
+        Revisions()
+      ),
+      Generator(EmbeddedIn(
+        EiTitle(template),
+        EiLimit("500")
+      ))
+    ))
+
+    new DslQuery(action, bot).run().map {
+      pages =>
+        pages.map(p => p.subjectId.getOrElse(p.id.get))
+    }
+  }
+
+
+  def pageRevisions(id: Long, date: DateTime): Future[Option[Page]] = {
+    import org.scalawiki.dto.cmd.query.prop.rvprop._
+
+    val action = Action(Query(
+      PageIdsParam(Seq(id)),
+      Prop(
+        Info(),
+        Revisions(
+          RvProp(Content, Ids, Size, User, UserId, Timestamp),
+          RvLimit("1"),
+          RvStart(date)
+        )
+      )
+    ))
+
+    new DslQuery(action, bot).run(limit = Some(1)).map { pages =>
+      pages.headOption
+    }
+  }
+
 }
 
 class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
@@ -76,12 +142,12 @@ class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
 
   val cache: Cache[Seq[Monument]] = LruCache()
 
-  override def byMonumentTemplateAsync(template: String): Future[Seq[Monument]] = cache(template) {
-    underlying.byMonumentTemplateAsync(template)
+  override def byMonumentTemplateAsync(template: String, date: Option[DateTime] = None): Future[Seq[Monument]] = cache(template) {
+    underlying.byMonumentTemplateAsync(template, date)
   }
 
-  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false): Future[Seq[Monument]] = cache(page) {
-    underlying.byPageAsync(page, template: String)
+  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false, date: Option[DateTime] = None): Future[Seq[Monument]] = cache(page) {
+    underlying.byPageAsync(page, template: String, pageIsTemplate, date)
   }
 }
 
@@ -89,13 +155,13 @@ class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
 object MonumentQuery {
 
   def create(contest: Contest, caching: Boolean = true, pickling: Boolean = false): MonumentQuery = {
-      val api = new MonumentQueryApi(contest)
+    val api = new MonumentQueryApi(contest)
 
-      val query = if (caching)
-        new MonumentQueryCached(api)
-      else api
+    val query = if (caching)
+      new MonumentQueryCached(api)
+    else api
 
-      query
+    query
   }
 
 }

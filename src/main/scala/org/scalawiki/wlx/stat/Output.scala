@@ -256,27 +256,45 @@ class Output {
     val authors = yearSeq.map(year => imageDbsByYear(year).head.authors)
 
     val filename = contest.contestType.name.split(" ").mkString + "In" + contest.country.name + "AuthorsByYearPie"
-//    charts.intersectionDiagram("Унікальність авторів за роками", filename, yearSeq, authors, 900, 900)
+    //    charts.intersectionDiagram("Унікальність авторів за роками", filename, yearSeq, authors, 900, 900)
 
     new Table(columns, rows, "Authors contributed")
   }
 
-  def authorsMonuments(imageDb: ImageDB) = {
+  def authorsMonuments(imageDb: ImageDB, rating: Boolean = false) = {
 
     val contest = imageDb.contest
     val country = contest.country
-    val columns = Seq("User", "Objects pictured", "Photos uploaded") ++ country.regionNames
+    val columns = Seq("User") ++
+      (if (rating) Seq("Objects pictured", "Existing", "New", "Rating")
+      else Seq("Objects pictured")) ++
+      Seq("Photos uploaded") ++ country.regionNames
+
+    //    val allIds = imageDb.monumentDb.get.ids
+    //    val oldIds = imageDb.oldMonumentDb.get.ids
+
+    val allIds = imageDb.monumentDb.get.monuments.filter(_.photo.isDefined).map(_.id).toSet
+    val oldIds = imageDb.oldMonumentDb.get.monuments.filter(_.photo.isDefined).map(_.id).toSet
+
+    val newIds = allIds -- oldIds
 
     val header = "{| class='wikitable sortable'\n" +
       "|+ Number of objects pictured by uploader\n" +
       columns.mkString("!", "!!", "\n")
 
     var text = ""
-    val totalData = Seq(
-      "Total",
-      imageDb.ids.size,
-      imageDb.images.size
-    ) ++ country.regionIds.toSeq.map(regId => imageDb.idsByRegion(regId).size)
+    val totalData = Seq("Total") ++
+      (if (rating) {
+        Seq(
+          imageDb.ids.size,
+          (imageDb.ids intersect oldIds).size,
+          (imageDb.ids -- oldIds).size,
+          imageDb.ids.size + (imageDb.ids -- oldIds).size
+        )
+      } else {
+        Seq(imageDb.ids.size)
+      }) ++
+      Seq(imageDb.images.size) ++ country.regionIds.toSeq.map(regId => imageDb.idsByRegion(regId).size)
 
     text += totalData.mkString("|-\n| ", " || ", "\n")
 
@@ -284,11 +302,27 @@ class Output {
     for (user <- authors) {
       val noTemplateUser = user.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
       val userLink = s"[[User:$noTemplateUser|$noTemplateUser]]"
-      val columnData = Seq(
-        userLink,
-        imageDb._authorsIds(user).size,
-        imageDb._byAuthor(user).size
-      ) ++ country.regionIds.toSeq.map(regId => imageDb._authorIdsByRegion(user).getOrElse(regId, Seq.empty).size)
+      val columnData = Seq(userLink) ++
+        (if (rating) {
+          Seq(
+            imageDb._authorsIds(user).size,
+            (imageDb._authorsIds(user) intersect oldIds).size,
+            (imageDb._authorsIds(user) -- oldIds).size,
+            imageDb._authorsIds(user).size + (imageDb._authorsIds(user) -- oldIds).size,
+            imageDb._byAuthor(user).size
+          )
+        } else {
+          Seq(imageDb._authorsIds(user).size, imageDb._byAuthor(user).size)
+        }
+      ) ++ country.regionIds.toSeq.map {
+        regId =>
+          val regionIds = imageDb._authorIdsByRegion(user).getOrElse(regId, Seq.empty).toSet
+          if (rating) {
+            regionIds.size + (regionIds -- oldIds).size
+          } else {
+            regionIds.size
+          }
+      }
 
       text += columnData.mkString("|-\n| ", " || ", "\n")
     }
@@ -303,19 +337,19 @@ class Output {
     val sections = byAuthor
       .mapValues(images => monumentDb.fold(images)(db => images.filter(_.monumentId.fold(false)(db.ids.contains))))
       .collect {
-      case (user, images) if images.nonEmpty =>
-        val userLink = s"[[User:$user|$user]]"
-        val header = s"== $userLink =="
-        val gallery = images.map {
-          i =>
-            val w = i.width.get
-            val h = i.height.get
-            val mp = w * h / Math.pow(10, 6)
-            f"${i.title}| $mp%1.2f ${i.width.get} x ${i.height.get}"
-        }
+        case (user, images) if images.nonEmpty =>
+          val userLink = s"[[User:$user|$user]]"
+          val header = s"== $userLink =="
+          val gallery = images.map {
+            i =>
+              val w = i.width.get
+              val h = i.height.get
+              val mp = w * h / Math.pow(10, 6)
+              f"${i.title}| $mp%1.2f ${i.width.get} x ${i.height.get}"
+          }
 
-        header + gallery.mkString("\n<gallery>\n", "\n", "\n</gallery>")
-    }
+          header + gallery.mkString("\n<gallery>\n", "\n", "\n</gallery>")
+      }
 
     sections.mkString("__TOC__\n", "\n", "")
   }
