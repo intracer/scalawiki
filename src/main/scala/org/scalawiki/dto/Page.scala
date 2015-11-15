@@ -33,6 +33,8 @@ case class Page(
     revisions = this.revisions ++ other.revisions,
     langLinks = this.langLinks ++ other.langLinks
   )
+
+  def withoutContent = copy(revisions = revisions.map(_.withoutContent))
 }
 
 object Page {

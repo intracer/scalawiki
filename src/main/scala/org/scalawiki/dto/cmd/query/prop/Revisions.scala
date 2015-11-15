@@ -93,7 +93,7 @@ case class RvStartId(override val arg: Long) extends LongParameter("rvstartid", 
 case class RvEndId(override val arg: Long) extends LongParameter("rvendid", "Revision ID to stop listing at.") with RvParam
 
 case class RvStart(override val arg: DateTime) extends DateTimeParameter("rvstart", "Timestamp to start listing from.") with RvParam
-case class RvEnd(override val arg: DateTime) extends DateTimeParameter("rvstart", "Timestamp to end listing at.") with RvParam
+case class RvEnd(override val arg: DateTime) extends DateTimeParameter("rvend", "Timestamp to end listing at.") with RvParam
 
 case class RvDir(override val args: RvDirArg*) extends EnumParameter[RvDirArg]("rvdir", "Which properties to get for each revision:") with RvParam
 

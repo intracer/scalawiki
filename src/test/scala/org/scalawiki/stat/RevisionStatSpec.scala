@@ -13,13 +13,15 @@ class RevisionStatSpec extends Specification {
       val stat = RevisionStat.fromPage(page)
 
       stat.page === page
-//      stat.revisions === Seq.empty
+      stat.history.revisions === Seq.empty
       stat.addedOrRewritten === 0
-//      stat.annotatedElements === Seq.empty
-//      stat.annotation === None
-//
-//      stat.byRevisionContent === Map.empty
-//      stat.byUserContent === Map.empty
+
+      val annotation = new RevisionAnnotation(page)
+      annotation.annotatedElements === Seq.empty
+      annotation.annotation === None
+
+      annotation.byRevisionContent === Map.empty
+      annotation.byUserContent === Map.empty
 
       stat.byRevisionSize === Map.empty
     }
@@ -32,14 +34,15 @@ class RevisionStatSpec extends Specification {
       val page = new Page(Some(1), 0, "page", revisions = Seq(rev))
       val stat = RevisionStat.fromPage(page)
 
-      stat.page === page
-//      stat.revisions === Seq(rev)
+      stat.page === page.withoutContent
+      stat.history.revisions === Seq(rev.withoutContent)
       stat.addedOrRewritten === text.length - 1
 
-//      stat.byRevisionContent === Map(rev -> words)
-//      stat.byUserContent === Map(user -> words)
+      val annotation = new RevisionAnnotation(page)
+      annotation.byRevisionContent === Map(rev -> words)
+      annotation.byUserContent === Map(user -> words)
 
-      stat.byRevisionSize === Map(rev -> (text.length - 1))
+      stat.byRevisionSize === Map(rev.withoutContent -> (text.length - 1))
     }
 
     "multibyte stat" in {
@@ -50,14 +53,15 @@ class RevisionStatSpec extends Specification {
       val page = new Page(Some(1), 0, "page", revisions = Seq(rev))
       val stat = RevisionStat.fromPage(page)
 
-      stat.page === page
-//      stat.revisions === Seq(rev)
+      stat.page === page.withoutContent
+      stat.history.revisions === Seq(rev.withoutContent)
       stat.addedOrRewritten === (text.length - 1) * 2
 
-//      stat.byRevisionContent === Map(rev -> words)
-//      stat.byUserContent === Map(user -> words)
+      val annotation = new RevisionAnnotation(page)
+      annotation.byRevisionContent === Map(rev -> words)
+      annotation.byUserContent === Map(user -> words)
 
-      stat.byRevisionSize === Map(rev -> (text.length - 1) * 2)
+      stat.byRevisionSize === Map(rev.withoutContent -> (text.length - 1) * 2)
     }
 
     "two revisions add text" in {
@@ -75,14 +79,14 @@ class RevisionStatSpec extends Specification {
       val page = new Page(Some(1), 0, "page", revisions = Seq(rev2, rev1))
       val stat = RevisionStat.fromPage(page)
 
-      stat.page === page
-//      stat.revisions === Seq(rev2, rev1)
+      val annotation = new RevisionAnnotation(page)
+      annotation.byRevisionContent === Map(rev1 -> words1, rev2 -> words2)
+      annotation.byUserContent === Map(user -> text2Words)
+
+      stat.page === page.withoutContent
+      stat.history.revisions === Seq(rev2.withoutContent, rev1.withoutContent)
       stat.addedOrRewritten === (words1 ++ words2).mkString.length
-
-//      stat.byRevisionContent === Map(rev1 -> words1, rev2 -> words2)
-//      stat.byUserContent === Map(user -> text2Words)
-
-      stat.byRevisionSize === Map(rev1 -> words1.mkString.length, rev2 -> words2.mkString.length)
+      stat.byRevisionSize === Map(rev1.withoutContent -> words1.mkString.length, rev2.withoutContent -> words2.mkString.length)
     }
 
     "two revisions remove text" in {
@@ -100,14 +104,15 @@ class RevisionStatSpec extends Specification {
       val page = new Page(Some(1), 0, "page", revisions = Seq(rev2, rev1))
       val stat = RevisionStat.fromPage(page)
 
-      stat.page === page
-//      stat.revisions === Seq(rev2, rev1)
+      stat.page === page.withoutContent
+      stat.history.revisions === Seq(rev2.withoutContent, rev1.withoutContent)
       stat.addedOrRewritten === words2.mkString.length
 
-//      stat.byRevisionContent === Map(rev1 -> words2)
-//      stat.byUserContent === Map(user -> words2)
+      val annotation = new RevisionAnnotation(page)
+      annotation.byRevisionContent === Map(rev1 -> words2)
+      annotation.byUserContent === Map(user -> words2)
 
-      stat.byRevisionSize === Map(rev1 -> words2.mkString.length)
+      stat.byRevisionSize === Map(rev1.withoutContent -> words2.mkString.length)
     }
 
     "two revisions replace text" in {
@@ -124,14 +129,15 @@ class RevisionStatSpec extends Specification {
       val page = new Page(Some(1), 0, "page", revisions = Seq(rev2, rev1))
       val stat = RevisionStat.fromPage(page)
 
-      stat.page === page
-//      stat.revisions === Seq(rev2, rev1)
+      val annotation = new RevisionAnnotation(page)
+      annotation.byRevisionContent === Map(rev1 -> Seq("text"), rev2 -> Seq("secondRevision"))
+      annotation.byUserContent === Map(user -> words2)
+
+      stat.page === page.withoutContent
+      stat.history.revisions === Seq(rev2.withoutContent, rev1.withoutContent)
       stat.addedOrRewritten === words2.mkString.length
 
-//      stat.byRevisionContent === Map(rev1 -> Seq("text"), rev2 -> Seq("secondRevision"))
-//      stat.byUserContent === Map(user -> words2)
-
-      stat.byRevisionSize === Map(rev1 -> "text".length, rev2 -> "secondRevision".length)
+      stat.byRevisionSize === Map(rev1.withoutContent -> "text".length, rev2.withoutContent -> "secondRevision".length)
     }
 
   }
