@@ -1,13 +1,14 @@
 package org.scalawiki
 
 import akka.actor.ActorSystem
+import akka.event.LoggingAdapter
 import akka.io.IO
 import akka.pattern.ask
 import slick.driver.H2Driver.api._
 
 import org.scalawiki.http.{HttpClient, HttpClientImpl}
 import org.scalawiki.json.MwReads._
-import org.scalawiki.query.PageQuery
+import org.scalawiki.query.{SinglePageQuery, PageQuery}
 import org.scalawiki.sql.MwDatabase
 import play.api.libs.json._
 import spray.can.Http
@@ -17,7 +18,44 @@ import spray.util._
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val database: Option[MwDatabase]) {
+trait MwBot {
+
+  def host: String
+
+  def mwDb: Option[MwDatabase]
+
+  def login(user: String, password: String): Future[String]
+
+  def get(params: Map[String, String]): Future[String]
+
+  def getByteArray(url: String): Future[Array[Byte]]
+
+  def post[T](reads: Reads[T], params: (String, String)*): Future[T]
+
+  def post[T](reads: Reads[T], params: Map[String, String]): Future[T]
+
+  def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T]
+
+  def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String): Future[T]
+
+  def page(title: String): SinglePageQuery
+
+  def page(id: Long): SinglePageQuery
+
+  def pageText(title: String): Future[String]
+
+  def token: String
+
+  def await[T](future: Future[T]): T
+
+  def dbCache: Boolean
+
+  def system: ActorSystem
+
+  def log: LoggingAdapter
+}
+
+class MwBotImpl(val http: HttpClient, val system: ActorSystem, val host: String, val database: Option[MwDatabase]) extends MwBot {
 
   implicit val sys = system
 
@@ -31,13 +69,13 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val
 
   def encodeTitle(title: String): String = MwUtils.normalize(title)
 
-  def log = system.log
+  override def log = system.log
 
-  def mwDb = database
+  override def mwDb = database
 
-  def dbCache = database.isDefined
+  override def dbCache = database.isDefined
 
-  def login(user: String, password: String) = {
+  override def login(user: String, password: String): Future[String] = {
     require(user != null, "User is null")
     require(password != null, "Password is null")
 
@@ -66,7 +104,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val
     }
   }
 
-  lazy val token = await(getToken)
+  override lazy val token = await(getToken)
 
   def getToken = get(tokenReads, "action" -> "query", "meta" -> "tokens")
 
@@ -79,16 +117,16 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val
         Json.parse(body).validate(reads).get
     }
 
-  def getByteArray(url: String): Future[Array[Byte]] =
+  override def getByteArray(url: String): Future[Array[Byte]] =
     http.getResponse(url) map {
       response => response.entity.data.toByteArray
     }
 
 
-  def post[T](reads: Reads[T], params: (String, String)*): Future[T] =
+  override def post[T](reads: Reads[T], params: (String, String)*): Future[T] =
     post(reads, params.toMap)
 
-  def post[T](reads: Reads[T], params: Map[String, String]): Future[T] =
+  override def post[T](reads: Reads[T], params: Map[String, String]): Future[T] =
     http.post(apiUrl, params) map http.getBody map {
       body =>
         val result = Json.parse(body).validate(reads).get
@@ -96,7 +134,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val
         result
     }
 
-  def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T] =
+  override def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T] =
     http.postMultiPart(apiUrl, params) map http.getBody map {
       body =>
         val json = Json.parse(body)
@@ -111,7 +149,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val
         result
     }
 
-  def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String): Future[T] =
+  override def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String): Future[T] =
     http.postFile(apiUrl, params, fileParam , filename) map http.getBody map {
       body =>
         val json = Json.parse(body)
@@ -130,11 +168,11 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val
 
   def pagesById(ids: Set[Long]) = PageQuery.byIds(ids, this)
 
-  def page(title: String) = PageQuery.byTitle(title, this)
+  override def page(title: String) = PageQuery.byTitle(title, this)
 
-  def page(id: Long) = PageQuery.byId(id, this)
+  override def page(id: Long) = PageQuery.byId(id, this)
 
-  def pageText(title: String): Future[String] = {
+  override def pageText(title: String): Future[String] = {
     val url = getIndexUri("title" -> encodeTitle(title), "action" -> "raw")
     http.get(url)
   }
@@ -145,7 +183,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val
   def getUri(params: (String, String)*) =
     Uri(apiUrl) withQuery (params ++ Seq("format" -> "json"): _*)
 
-  def get(params: Map[String, String]): Future[String] = {
+  override def get(params: Map[String, String]): Future[String] = {
     val uri: Uri = getUri(params)
 
     log.info(s"$host GET url: $uri")
@@ -160,7 +198,7 @@ class MwBot(val http: HttpClient, val system: ActorSystem, val host: String, val
     system.shutdown()
   }
 
-  def await[T](future: Future[T]) = Await.result(future, http.timeout)
+  override def await[T](future: Future[T]) = Await.result(future, http.timeout)
 
 }
 
@@ -180,9 +218,9 @@ object MwBot {
 
     val bot = if (withDb) {
       val db = Database.forURL("jdbc:h2:~/scalawiki", driver = "org.h2.Driver")
-      new MwBot(http, system, host, Some(new MwDatabase(db, Some(MwDatabase.dbName(host)))))
+      new MwBotImpl(http, system, host, Some(new MwDatabase(db, Some(MwDatabase.dbName(host)))))
     } else {
-      new MwBot(http, system, host, None)
+      new MwBotImpl(http, system, host, None)
     }
 
     if (withDb) {

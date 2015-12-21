@@ -1,16 +1,16 @@
 package org.scalawiki.query
 
-import org.scalawiki.dto.{MwException, Page}
-import org.scalawiki.dto.cmd.Action
-import org.scalawiki.json.Parser
 import org.scalawiki.MwBot
+import org.scalawiki.dto.cmd.Action
+import org.scalawiki.dto.{MwException, Page}
+import org.scalawiki.json.Parser
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 class DslQuery(val action: Action, val bot: MwBot) {
 
-  import bot.system.dispatcher
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   var startTime: Long = 0
 

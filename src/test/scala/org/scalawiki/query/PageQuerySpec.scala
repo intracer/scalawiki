@@ -3,7 +3,7 @@ package org.scalawiki.query
 import java.util.concurrent.TimeUnit
 
 import akka.actor.ActorSystem
-import org.scalawiki.MwBot
+import org.scalawiki.MwBotImpl
 import org.scalawiki.dto.{Page, Revision}
 import org.scalawiki.util.{Command, TestHttpClient}
 import org.specs2.mutable.Specification
@@ -51,7 +51,7 @@ class PageQuerySpec extends Specification {
   def getBot(commands: Command*) = {
     val http = new TestHttpClient(host, mutable.Queue(commands: _*))
 
-    new MwBot(http, system, host, None)
+    new MwBotImpl(http, system, host, None)
   }
 
 }

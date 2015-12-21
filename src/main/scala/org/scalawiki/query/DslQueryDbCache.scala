@@ -15,7 +15,7 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
 
   def dbCache = bot.dbCache
 
-  import bot.system.dispatcher
+  import scala.concurrent.ExecutionContext.Implicits.global
   import org.scalawiki.dto.cmd.query.Query
 
   def run(): Future[Seq[Page]] = {
