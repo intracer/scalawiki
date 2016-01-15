@@ -7,6 +7,7 @@ import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
 import org.scalawiki.dto.{Page, Namespace}
 import org.scalawiki.query.DslQuery
+import org.scalawiki.wlx.dto.lists.OtherTemplateListConfig
 import org.scalawiki.wlx.dto.{Contest, Monument}
 import org.scalawiki.WithBot
 
@@ -61,11 +62,12 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
   }
 
   override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false, date: Option[DateTime] = None): Future[Seq[Monument]] = {
+    val config = new OtherTemplateListConfig(template, listConfig)
     if (!page.startsWith("Template") || pageIsTemplate) {
       bot.page(page).revisions(Set.empty, Set("content", "timestamp", "user", "userid", "comment")).map {
         revs =>
           revs.headOption.map(page =>
-            Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig).toSeq).getOrElse(Seq.empty)
+            Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, config).toSeq).getOrElse(Seq.empty)
       }
     } else {
       //      bot.page(page).revisionsByGenerator("links", null, Set.empty, Set("content", "timestamp", "user", "comment")).map {
@@ -75,7 +77,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
       if (date.isEmpty) {
         bot.page(page).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT_NAMESPACE), Set("content", "timestamp", "user", "userid", "comment"), None, "100") map {
           pages =>
-            pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig))
+            pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, config))
         }
       } else {
         monumentsByDate(page, template, date.get)

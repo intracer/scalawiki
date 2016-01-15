@@ -2,16 +2,13 @@ package org.scalawiki.wlx.stat
 
 import org.scalawiki.MwBot
 import org.scalawiki.wlx.ImageDB
-import org.scalawiki.wlx.dto.{Country, SpecialNomination, Contest}
+import org.scalawiki.wlx.dto.{Monument, Country, SpecialNomination, Contest}
 import org.scalawiki.wlx.query.MonumentQuery
 
 class SpecialNominations {
 
   def specialNominations(contest: Contest, imageDb: ImageDB, monumentQuery: MonumentQuery) {
-    val monumentsMap = SpecialNomination.nominations.map { nomination =>
-      val monuments = monumentQuery.byPage(nomination.pages.head, nomination.listTemplate)
-      (nomination, monuments)
-    }.toMap
+    val monumentsMap = getMonumentsMap(monumentQuery)
 
     val imageDbs: Map[SpecialNomination, ImageDB] = SpecialNomination.nominations.map { nomination =>
       (nomination, imageDb.subSet(monumentsMap(nomination)))
@@ -20,6 +17,13 @@ class SpecialNominations {
     val stat = specialNomination(contest, imageDbs)
 
     MwBot.get(MwBot.commons).page(s"Commons:Wiki Loves ${contest.contestType.name} ${contest.year} in ${contest.country.name}/Special nominations statistics").edit(stat, Some("updating"))
+  }
+
+  def getMonumentsMap(monumentQuery: MonumentQuery): Map[SpecialNomination, Seq[Monument]] = {
+    SpecialNomination.nominations.map { nomination =>
+      val monuments = monumentQuery.byPage(nomination.pages.head, nomination.listTemplate)
+      (nomination, monuments)
+    }.toMap
   }
 
   def specialNomination(contest: Contest, imageDbs: Map[SpecialNomination, ImageDB]) = {
@@ -65,4 +69,13 @@ class SpecialNominations {
   }
 
 
+}
+
+object SpecialNominations {
+  def main(args: Array[String]) {
+    val contest = Contest.WLMUkraine(2015, "05-01", "05-31")
+    val query = MonumentQuery.create(contest)
+    val map = new SpecialNominations().getMonumentsMap(query)
+    println(map.values.map(_.size).mkString(", "))
+  }
 }

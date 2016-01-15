@@ -9,6 +9,10 @@ trait ListConfig {
 
 }
 
+class OtherTemplateListConfig(val templateName: String, base: ListConfig) extends ListConfig {
+  override def namesMap: Map[String, String] = base.namesMap
+}
+
 object EmptyListConfig extends ListConfig {
   override def templateName: String = "???"
 
