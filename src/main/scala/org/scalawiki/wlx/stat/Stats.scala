@@ -31,4 +31,4 @@ object MonumentsWithArticles extends Aggregation[Monument, Int](
 object All extends Aggregation[Any, Int]("All", _.size)
 
 class RegionNameById(country: Country) extends Mapping[String, String](
-  "Region name", id => country.regionById(id).name)
+  "Region name", id => country.regionById.get(id).map(_.name).getOrElse(""))
