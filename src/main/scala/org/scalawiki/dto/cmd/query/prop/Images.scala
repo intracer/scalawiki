@@ -9,16 +9,7 @@ import org.scalawiki.dto.cmd.query.Module
  */
 case class Images(override val params: ImagesParam[Any]*)
   extends Module[PropArg]("im", "images", "Gets a list of all images used on the provided pages.")
-  with PropArg with ArgWithParams[ImagesParam[Any], PropArg] {
-
-
-//  def this(limit: Option[String]) = {
-//    this(limit.map(ImLimit).toSeq)
-//  }
-
-
-}
-
+  with PropArg with ArgWithParams[ImagesParam[Any], PropArg]
 
 /**
  * Marker trait for parameters used with prop=langlinks

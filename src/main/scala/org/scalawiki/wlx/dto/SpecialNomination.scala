@@ -31,6 +31,4 @@ object SpecialNomination {
   val nominations = Seq(music, nationalLiberation, greek, armenian, worldWarOne, wooden, fortification, tatars, libraries)
 }
 
-class SpecialNomination(val name: String, val listTemplate: String, val pages: Seq[String]) {
-
-}
+class SpecialNomination(val name: String, val listTemplate: String, val pages: Seq[String])

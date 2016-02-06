@@ -4,10 +4,7 @@ import java.nio.file.{Files, Path}
 
 import scala.collection.JavaConverters._
 
-abstract class DumpFile(info: DumpFileInfo) {
-
-
-}
+abstract class DumpFile(info: DumpFileInfo)
 
 class DumpFileInfo(val path: Path) {
   val filename = path.getFileName.toString
