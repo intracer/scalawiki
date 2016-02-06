@@ -6,7 +6,6 @@ import org.scalawiki.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
 import org.scalawiki.dto.filter.RevisionFilterDateAndUser
-import org.scalawiki.query.DslQuery
 import org.scalawiki.{MwBot, WithBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -28,7 +27,7 @@ class ArticleStatBot() extends WithBot {
       ))
     ))
 
-    new DslQuery(action, bot).run().map {
+    bot.run(action).map {
       pages =>
         pages.map(p => p.subjectId.getOrElse(p.id.get))
     }
@@ -52,7 +51,7 @@ class ArticleStatBot() extends WithBot {
       )
     ))
 
-    new DslQuery(action, bot).run().map { pages =>
+    bot.run(action).map { pages =>
       pages.headOption
     }
   }
@@ -104,7 +103,7 @@ object ArticleStatBot {
   def main(args: Array[String]) {
     val bot = new ArticleStatBot()
 
-    bot.stat(Events.WLMLists)
+    bot.stat(Events.Culture)
 //    val weeksF = Events.allWeeks.map(bot.stat)
 //      Future.sequence(weeksF).map {
 //        stats =>

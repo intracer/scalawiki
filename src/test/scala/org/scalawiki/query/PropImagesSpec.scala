@@ -2,6 +2,7 @@ package org.scalawiki.query
 
 import java.util.concurrent.TimeUnit
 
+import org.scalawiki.copyvio.CopyVio._
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.{Generator, TitlesParam, Query}
@@ -52,7 +53,7 @@ class PropImagesSpec extends Specification with MockBotSpec {
         Prop(Images())
       ))
 
-      val future = new DslQuery(action, bot).run()
+      val future = bot.run(action)
 
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 1
@@ -111,7 +112,7 @@ class PropImagesSpec extends Specification with MockBotSpec {
       Generator(Images())
     ))
 
-    val future = new DslQuery(action, bot).run()
+    val future = bot.run(action)
 
     val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
     result must have size 2

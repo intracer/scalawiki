@@ -91,7 +91,7 @@ class PropLinksSpec extends Specification with MockBotSpec {
         TitlesParam(Seq(title))
       ))
 
-      val future = new DslQuery(action, bot).run()
+      val future = bot.run(action)
 
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 1

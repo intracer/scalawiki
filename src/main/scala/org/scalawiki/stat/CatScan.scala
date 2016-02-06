@@ -11,7 +11,6 @@ import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{Generator, Query}
-import org.scalawiki.query.DslQuery
 
 import scala.collection.JavaConverters._
 import scala.collection.SortedSet
@@ -134,7 +133,6 @@ object CatScan {
       Generator(ListArgs.toDsl("categorymembers", Some(title), None, namespaces, Some("max")))
     ))
 
-    new DslQuery(action, bot).run()
-
+    bot.run(action)
   }
 }

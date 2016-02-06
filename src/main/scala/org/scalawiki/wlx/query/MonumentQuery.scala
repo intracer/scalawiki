@@ -1,15 +1,14 @@
 package org.scalawiki.wlx.query
 
 import org.joda.time.DateTime
+import org.scalawiki.WithBot
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
-import org.scalawiki.dto.{Page, Namespace}
-import org.scalawiki.query.DslQuery
+import org.scalawiki.dto.{Namespace, Page}
 import org.scalawiki.wlx.dto.lists.OtherTemplateListConfig
 import org.scalawiki.wlx.dto.{Contest, Monument}
-import org.scalawiki.WithBot
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, _}
@@ -107,7 +106,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
       ))
     ))
 
-    new DslQuery(action, bot).run().map {
+    bot.run(action).map {
       pages =>
         pages.map(p => p.subjectId.getOrElse(p.id.get))
     }
@@ -129,7 +128,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
       )
     ))
 
-    new DslQuery(action, bot).run(limit = Some(1)).map { pages =>
+    bot.run(action).map { pages =>
       pages.headOption
     }
   }

@@ -6,10 +6,10 @@ import org.scalawiki.MwBot
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.edit._
+import org.scalawiki.dto.cmd.query._
 import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
-import org.scalawiki.dto.cmd.query._
 import org.scalawiki.json.MwReads._
 
 import scala.concurrent.Future
@@ -84,7 +84,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot, dbCach
       Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
     ))
 
-    new DslQuery(action, bot).run()
+    bot.run(action)
   }
 
   override def edit(text: String, summary: Option[String] = None, section: Option[String] = None, token: Option[String] = None, multi: Boolean = true) = {
@@ -150,7 +150,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot, dbCach
       )
     ))
 
-    new DslQuery(action, bot).run()
+    bot.run(action)
   }
 
   override def categoryMembers(namespaces: Set[Int], continueParam: Option[(String, String)]): Future[Seq[Page]] = {
@@ -169,6 +169,6 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot, dbCach
       )
     ))
 
-    new DslQuery(action, bot).run()
+    bot.run(action)
   }
 }

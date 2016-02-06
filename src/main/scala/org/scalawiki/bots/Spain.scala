@@ -1,6 +1,5 @@
 package org.scalawiki.bots
 
-import akka.actor.ActorSystem
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalawiki.MwBot
 import org.scalawiki.dto.cmd.Action
@@ -8,8 +7,6 @@ import org.scalawiki.dto.cmd.query.list.{CategoryMembers, CmLimit, CmNamespace, 
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
 import org.scalawiki.dto.{Namespace, Page}
-import org.scalawiki.http.HttpClientImpl
-import org.scalawiki.query.{DslQuery, DslQueryDbCache}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -19,8 +16,6 @@ object Spain {
   var bot: MwBot = _
 
   def main(args: Array[String]) {
-    val system = ActorSystem()
-    val http = new HttpClientImpl(system)
     bot = MwBot.get(MwBot.commons)
 
     val action = Action(Query(
@@ -40,7 +35,7 @@ object Spain {
         CmNamespace(Seq(Namespace.FILE))))
     ))
 
-    new DslQueryDbCache(new DslQuery(action, bot)).run() map {
+    bot.run(action) map {
       pages =>
         val filteredPages = pages.filterNot { page =>
           val last = page.images.last
@@ -98,8 +93,6 @@ object Spain {
       )
     ))
 
-    new DslQuery(action, bot).run().map { pages =>
-      pages.headOption
-    }
+    bot.run(action).map (_.headOption)
   }
 }

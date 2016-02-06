@@ -4,11 +4,13 @@ import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import akka.io.IO
 import akka.pattern.ask
+import org.scalawiki.dto.Page
+import org.scalawiki.dto.cmd.Action
 import slick.driver.H2Driver.api._
 
 import org.scalawiki.http.{HttpClient, HttpClientImpl}
 import org.scalawiki.json.MwReads._
-import org.scalawiki.query.{SinglePageQuery, PageQuery}
+import org.scalawiki.query.{DslQuery, SinglePageQuery, PageQuery}
 import org.scalawiki.sql.MwDatabase
 import play.api.libs.json._
 import spray.can.Http
@@ -25,6 +27,8 @@ trait MwBot {
   def mwDb: Option[MwDatabase]
 
   def login(user: String, password: String): Future[String]
+
+  def run(action:Action): Future[Seq[Page]]
 
   def get(params: Map[String, String]): Future[String]
 
@@ -109,6 +113,10 @@ class MwBotImpl(val http: HttpClient, val system: ActorSystem, val host: String,
   def getToken = get(tokenReads, "action" -> "query", "meta" -> "tokens")
 
   def getTokens = get(tokensReads, "action" -> "tokens")
+
+  override def run(action:Action): Future[Seq[Page]] = {
+    new DslQuery(action, this).run()
+  }
 
 
   def get[T](reads: Reads[T], params: (String, String)*): Future[T] =
@@ -238,8 +246,6 @@ object MwBot {
       Future { create(host) }
     }, 1.minute)
   }
-
-
 }
 
 

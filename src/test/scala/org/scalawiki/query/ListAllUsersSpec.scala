@@ -3,10 +3,11 @@ package org.scalawiki.query
 import java.util.concurrent.TimeUnit
 
 import org.scalawiki.Timestamp
+import org.scalawiki.copyvio.CopyVio._
 import org.scalawiki.dto.User
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
-import org.scalawiki.dto.cmd.query.list.{AuProp, AllUsers, ListParam}
+import org.scalawiki.dto.cmd.query.list.{AllUsers, AuProp, ListParam}
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.Specification
 
@@ -49,7 +50,7 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
           )
         )
 
-      val future = new DslQuery(action, bot).run()
+      val future = bot.run(action)
 
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2
@@ -101,7 +102,7 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
           )
         )
 
-      val future = new DslQuery(action, bot).run()
+      val future = bot.run(action)
 
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2
@@ -164,7 +165,7 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
           )
         )
 
-      val future = new DslQuery(action, bot).run()
+      val future = bot.run(action)
 
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 4

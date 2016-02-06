@@ -2,6 +2,7 @@ package org.scalawiki.query
 
 import java.util.concurrent.TimeUnit
 
+import org.scalawiki.copyvio.CopyVio._
 import org.scalawiki.dto.Namespace
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list.ListArgs
@@ -106,7 +107,7 @@ class PropLangLinksSpec extends Specification with MockBotSpec {
         Generator(ListArgs.toDsl("categorymembers", Some(category), None, Set(Namespace.MAIN), Some("2")))
       ))
 
-      val future = new DslQuery(action, bot).run()
+      val future = bot.run(action)
 
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2

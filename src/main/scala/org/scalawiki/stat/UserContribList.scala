@@ -4,11 +4,10 @@ import org.joda.time.DateTime
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
 import org.scalawiki.dto.cmd.query.list._
-import org.scalawiki.query.DslQuery
 import org.scalawiki.{MwBot, WithBot}
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 object UserContribList extends WithBot {
 
@@ -23,7 +22,7 @@ object UserContribList extends WithBot {
           AuWithEditsOnly(true), AuLimit("max"), AuExcludeGroup(Seq("bot")))
       )))
 
-    new DslQuery(allUsersQuery, bot).run().map {
+    bot.run(allUsersQuery).map {
       pages =>
 
         val users = pages.flatMap(_.lastRevisionUser).filter { u =>
@@ -40,7 +39,7 @@ object UserContribList extends WithBot {
               )
             )))
 
-            new DslQuery(contribsQuery, bot).run(limit = Some(300))
+            bot.run(contribsQuery)
         }
 
         contribsFuture.map {

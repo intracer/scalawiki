@@ -2,6 +2,7 @@ package org.scalawiki.query
 
 import java.util.concurrent.TimeUnit
 
+import org.scalawiki.copyvio.CopyVio._
 import org.scalawiki.dto.User
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
@@ -39,7 +40,7 @@ class ListUsersSpec extends Specification with MockBotSpec {
           )
         )
 
-      val future = new DslQuery(action, bot).run()
+      val future = bot.run(action)
 
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 0
@@ -90,7 +91,7 @@ class ListUsersSpec extends Specification with MockBotSpec {
 
       action.pairs.toMap + ("continue" -> "") === expectedParams
 
-      val future = new DslQuery(action, bot).run()
+      val future = bot.run(action)
 
       val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2

@@ -7,7 +7,6 @@ import org.scalawiki.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
 import org.scalawiki.http.{HttpClient, HttpClientImpl}
-import org.scalawiki.query.DslQuery
 import org.scalawiki.{MwBot, WithBot}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Json, Reads, _}
@@ -67,7 +66,7 @@ object CopyVio extends WithBot {
       ))
     ))
 
-    new DslQuery(action, bot).run().map {
+    bot.run(action).map {
       pages =>
         pages.map(p => p.subjectId.getOrElse(p.id.get))
     }
@@ -87,7 +86,7 @@ object CopyVio extends WithBot {
       )
     ))
 
-    new DslQuery(action, bot).run()
+    bot.run(action)
   }
 
   def main(args: Array[String]) {
