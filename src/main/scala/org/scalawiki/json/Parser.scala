@@ -13,6 +13,8 @@ import scala.util.Try
 
 class Parser(val action: Action) {
 
+  val params = action.pairs.toMap
+
   var continue = Map.empty[String, String]
 
   def parse(str: String): Try[Seq[Page]] = {
@@ -37,12 +39,12 @@ class Parser(val action: Action) {
             case _ => pagesJson.asInstanceOf[JsArray].value
           }).map(_.asInstanceOf[JsObject])
 
-          jsons.map {
+          jsons.map { j =>
             queryChild match {
-              case "pages" => parsePage
-              case "allusers" => parseUser
-              case "usercontribs" => parseUserContrib
-              case _ => parsePage
+              case "pages" => parsePage(j)
+              case "allusers" | "users" => parseUser(j, queryChild)
+              case "usercontribs" => parseUserContrib(j)
+              case _ => parsePage(j)
             }
           }.toSeq
         } else Seq.empty
@@ -75,12 +77,20 @@ class Parser(val action: Action) {
   }
 
   // hacky wrapping into page // TODO refactor return types
-  def parseUser(userJson: JsObject): Page = {
+  def parseUser(userJson: JsObject, queryChild: String): Page = {
     val hasEmptyRegistration = userJson.value.get("registration").collect({case jsStr: JsString => jsStr.value.isEmpty}).getOrElse(false)
     val mappedJson = if (hasEmptyRegistration) userJson - "registration" else userJson
 
-    val blocked = if (userJson.keys.contains("blockid")) Some(true) else None
-    val user = mappedJson.validate(Parser.userReads).get.copy(blocked = blocked)
+    // TODO move out of loop or get from request?
+    val prefix = queryChild match {
+      case "allusers" => "au"
+      case "users" => "us"
+    }
+    val props = params.get(prefix + "prop").map(_.split("\\|")).getOrElse(Array.empty[String]).toSet
+
+    val blocked = if (props.contains("blockinfo")) Some(userJson.keys.contains("blockid")) else None
+    val emailable = if (props.contains("emailable")) Some(userJson.keys.contains("emailable")) else None
+    val user = mappedJson.validate(Parser.userReads).get.copy(blocked = blocked, emailable = emailable)
     new Page(id = None, title = user.name.get, ns = Namespace.USER_NAMESPACE, revisions = Seq(Revision(user = Some(user))))
   }
 

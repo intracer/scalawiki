@@ -107,7 +107,7 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
       result must have size 2
       val users = result.flatMap(_.lastRevisionUser)
       users(0) === new User(Some(3634417), Some("Y"), Some(13892), Some(Timestamp.parse("2007-02-22T03:19:08Z")), Some(true))
-      users(1) === new User(Some(53928), Some("Y (usurped)"), Some(0), None, None)
+      users(1) === new User(Some(53928), Some("Y (usurped)"), Some(0), None, Some(false))
     }
 
     "return users with continue" in {

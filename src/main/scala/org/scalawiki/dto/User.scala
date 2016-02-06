@@ -7,7 +7,8 @@ case class User(
                  login: Option[String],
                  editCount: Option[Long] = None,
                  registration: Option[DateTime] = None,
-                 blocked: Option[Boolean] = None)
+                 blocked: Option[Boolean] = None,
+                 emailable: Option[Boolean] = None)
   extends Contributor {
 
   override def name = login
