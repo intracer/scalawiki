@@ -18,7 +18,6 @@ class PageQuerySpec extends Specification {
 
   private val system: ActorSystem = ActorSystem()
 
-
   "get revisions text" should {
     "return a page text" in {
       val pageText1 = "some vandalism"

@@ -59,21 +59,24 @@ class Parser(val action: Action) {
   def parsePage(pageJson: JsObject): Page = {
     val page = pageJson.validate(Parser.pageReads).get
 
-    val revisions: Seq[Revision] = pageJson.validate(Parser.revisionsReads(page.id.get)).getOrElse(Seq.empty)
-    val images: Seq[Image] = pageJson.validate{
+    val revisions = pageJson.validate(Parser.revisionsReads(page.id.get)).getOrElse(Seq.empty)
+    val images = getImages(pageJson, page)
+    val langLinks = getLangLinks(pageJson)
+    val links = getLinks(pageJson)
+
+    page.copy(revisions = revisions, images = images, langLinks = langLinks, links = links)
+  }
+
+  def getImages(pageJson: JsObject, page: Page): Seq[Image] = {
+    pageJson.validate {
       if (pageJson.value.contains("imageinfo")) {
         Parser.imageInfoReads(page.id.get, page.title)
       } else {
-//      if (pageJson.value.contains("images")) {
+        //      if (pageJson.value.contains("images")) {
         Parser.imageReads()
       }
 
     }.getOrElse(Seq.empty)
-    val langLinks: Map[String, String] = getLangLinks(pageJson)
-
-    //    pageJson.validate(Parser.langLinksReads).getOrElse(Map.empty)
-
-    page.copy(revisions = revisions, images = images, langLinks = langLinks)
   }
 
   // hacky wrapping into page // TODO refactor return types
@@ -129,6 +132,24 @@ class Parser(val action: Action) {
       case _ => Seq.empty[(String, String)]
     }.toMap
   }
+
+  def getLinks(pageJson: JsObject): Seq[Page] = {
+
+    def parseArray(arr: JsArray): Seq[Page] = {
+      arr.value.collect {
+        case link: JsObject =>
+          val ns = link.value.get("ns").map { case s: JsNumber => s.value.intValue() }
+          val title = link.value.get("title").map { case s: JsString => s.value }
+          new Page(id = None, ns = ns.get, title = title.get)
+      }
+    }
+
+    pageJson.value.get("links").toSeq.flatMap {
+      case arr: JsArray => parseArray(arr)
+      case _ => Seq.empty[Page]
+    }
+  }
+
 
   def query = action.query.toSeq
 

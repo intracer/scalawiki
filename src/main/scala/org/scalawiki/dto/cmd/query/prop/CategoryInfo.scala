@@ -3,7 +3,7 @@ package org.scalawiki.dto.cmd.query.prop
 import org.scalawiki.dto.cmd.query.Module
 
 /**
- *  ?action=query&amp;prop=langlinks
+ *  ?action=query&amp;prop=categoryinfo
  *
  */
 object CategoryInfo
