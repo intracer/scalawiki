@@ -12,9 +12,7 @@ import org.scalawiki.dto.cmd.query.Module
 case class Users(override val params: UsParam*)
   extends Module[ListArg]("us", "users", "Get information about a list of users.")
   with ListArg
-  with ArgWithParams[UsParam, ListArg] {
-
-}
+  with ArgWithParams[UsParam, ListArg]
 
 trait UsParam extends Parameter[Any]
 

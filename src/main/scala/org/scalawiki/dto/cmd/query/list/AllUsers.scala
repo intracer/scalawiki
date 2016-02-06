@@ -11,9 +11,7 @@ import org.scalawiki.dto.cmd._
 case class AllUsers(override val params: AuParam[Any]*)
   extends Module[ListArg]("au", "allusers", "Enumerate all registered users, ordered by username.")
   with ListArg
-  with ArgWithParams[AuParam[Any], ListArg] {
-
-}
+  with ArgWithParams[AuParam[Any], ListArg]
 
 trait AuParam[+T] extends Parameter[T]
 

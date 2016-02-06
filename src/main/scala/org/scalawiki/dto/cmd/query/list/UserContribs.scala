@@ -8,8 +8,7 @@ case class UserContribs(override val params: UcParam[Any]*)
   extends Module[ListArg]("uc", "usercontribs",
     "Gets a list of contributions made by a given user, ordered by modification time.")
   with ListArg
-  with ArgWithParams[UcParam[Any], ListArg] {
-}
+  with ArgWithParams[UcParam[Any], ListArg]
 
 trait UcParam[+T] extends Parameter[T]
 

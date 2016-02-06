@@ -5,20 +5,14 @@ import org.joda.time.DateTime
 class Event(
              val name: String,
              val start: DateTime,
-             val end: DateTime) {
-
-
-}
+             val end: DateTime)
 
 class ArticlesEvent(
                      name: String,
                      start: DateTime,
                      end: DateTime,
                      val newTemplate: String,
-                     val improvedTemplate: String) extends Event(name, start, end) {
-
-
-}
+                     val improvedTemplate: String) extends Event(name, start, end)
 
 object Events {
 
@@ -148,6 +142,13 @@ object Events {
     DateTime.parse("2015-12-30T00:00+03:00"),
     "ВЛП-рядок",
     "ВЛП-рядок")
+
+  val Culture = new ArticlesEvent(
+    "Вікіпедія:Проект:Тематичний тиждень/Тиждень культурної спадщини",
+    DateTime.parse("2015-12-01T00:00+03:00"),
+    DateTime.parse("2016-01-01T00:00+03:00"),
+    "Monuments-week-new",
+    "Monuments-week-new")
 
   val allContests = Seq(
     WLMContest, CEESpring, WLEContest, CrimeaContest
