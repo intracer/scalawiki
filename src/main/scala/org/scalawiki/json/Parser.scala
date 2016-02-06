@@ -94,7 +94,7 @@ class Parser(val action: Action) {
     val blocked = if (props.contains("blockinfo")) Some(userJson.keys.contains("blockid")) else None
     val emailable = if (props.contains("emailable")) Some(userJson.keys.contains("emailable")) else None
     val user = mappedJson.validate(Parser.userReads).get.copy(blocked = blocked, emailable = emailable)
-    new Page(id = None, title = user.name.get, ns = Namespace.USER_NAMESPACE, revisions = Seq(Revision(user = Some(user))))
+    new Page(id = None, title = user.name.get, ns = Namespace.USER, revisions = Seq(Revision(user = Some(user))))
   }
 
   def parseUserContrib(userJson: JsObject): Page = {
