@@ -14,8 +14,9 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
 
   override def getResponse(url: String) = getResponse(Uri(url))
 
-  override def getResponse(url: Uri): Future[HttpResponse] = {
+  override def getResponse(url: Uri): Future[HttpResponse] = getResponse(url, url.query.toMap)
 
+  def getResponse(url: Uri, params: Map[String, String]): Future[HttpResponse] = {
     require(commands.nonEmpty, "Unexpected query: " + url.toString())
 
     val command = commands.dequeue()
@@ -24,7 +25,7 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
     require(url.authority.host.address == host)
     require(url.path.toString() == command.path)
 
-    val matchResult = url.query.toMap === command.query
+    val matchResult = params === command.query
     require(matchResult.isSuccess, matchResult.message)
 
     val pageResponse = Option(command.response)
@@ -37,9 +38,9 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
 
   override def setCookies(cookies: Seq[HttpCookie]): Unit = ???
 
-  override def post(url: String, params: Map[String, String]): Future[HttpResponse] = ???
+  override def post(url: String, params: Map[String, String]): Future[HttpResponse] = getResponse(url, params)
 
-  override def post(url: Uri, params: Map[String, String]): Future[HttpResponse] = ???
+  override def post(url: Uri, params: Map[String, String]): Future[HttpResponse] = getResponse(url, params)
 
   override def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse] = ???
 

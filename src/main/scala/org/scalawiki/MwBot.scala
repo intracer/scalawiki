@@ -32,6 +32,8 @@ trait MwBot {
 
   def get(params: Map[String, String]): Future[String]
 
+  def post(params: Map[String, String]): Future[String]
+
   def getByteArray(url: String): Future[Array[Byte]]
 
   def post[T](reads: Reads[T], params: (String, String)*): Future[T]
@@ -196,6 +198,12 @@ class MwBotImpl(val http: HttpClient, val system: ActorSystem, val host: String,
 
     log.info(s"$host GET url: $uri")
     http.get(uri)
+  }
+
+  override def post(params: Map[String, String]): Future[String] = {
+    val uri: Uri = Uri(apiUrl)
+    log.info(s"$host POST url: $uri, params: $params")
+    http.post(uri, params ++ Map("format" -> "json")) map http.getBody
   }
 
   def getUri(params: Map[String, String]) =

@@ -26,7 +26,7 @@ class DslQuery(val action: Action, val bot: MwBot) {
     if (startTime == 0)
       startTime = System.nanoTime()
 
-    bot.get(params.toMap) flatMap {
+    bot.post(params.toMap) flatMap {
       body =>
         val parser = new Parser(action)
 
