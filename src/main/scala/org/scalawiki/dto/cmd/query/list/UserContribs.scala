@@ -25,7 +25,7 @@ case class UcUserPrefix(override val arg: String) extends StringParameter("ucuse
   "List contributions of all users whose name starts with this string.") with UcParam[String]
 
 // TODO enum
-case class UcDir(override val arg: String) extends StringParameter("audir",
+case class UcDir(override val arg: String) extends StringParameter("ucdir",
   "Direction to sort in.") with UcParam[String]
 
 case class UcLimit(override val arg: String) extends StringParameter("uclimit",
