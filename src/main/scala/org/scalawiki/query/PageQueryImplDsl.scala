@@ -106,7 +106,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot, dbCach
         "format" -> "json",
         "bot" -> "x",
         "assert" -> "user",
-        "assert" -> "bot") ++ section.map(s => "section" -> s).toSeq
+        "assert" -> "bot") ++ section.map(s => "section" -> s).toSeq ++ summary.map(s => "summary" -> s).toSeq
 
     bot.log.info(s"${bot.host} edit page: $page, summary: $summary")
 
