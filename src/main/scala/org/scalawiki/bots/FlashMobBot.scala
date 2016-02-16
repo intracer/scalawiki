@@ -28,11 +28,11 @@ object FlashMobBot {
       |І відпишіть організаторам на wm-ua{{@}}wikimedia.org, що Ви це зробили. Дякуємо! --~~~~
     """.stripMargin
 
-  def emailText(user: String) =
+  def emailText(user: String, url:String  = "nourl") =
     s"""Доброго дня, $user!
       |
       |Будь ласка, вкажіть як краще Вам передати сувенір за участь у Вікіфлешмобі 2016,
-      |заповнивши форму за посиланням - https://docs.google.com/forms/d/1wsZGdIWJkqEjJ145bauR1BIQSmX5ndSjL6COQn-sYQ0/viewform?c=0&w=1
+      |заповнивши форму за посиланням - $url
       |
       | З повагою,
       | Ілля / User:Ilya
