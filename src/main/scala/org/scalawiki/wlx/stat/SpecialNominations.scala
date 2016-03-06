@@ -7,7 +7,8 @@ import org.scalawiki.wlx.query.MonumentQuery
 
 class SpecialNominations {
 
-  def specialNominations(contest: Contest, imageDb: ImageDB, monumentQuery: MonumentQuery) {
+  def specialNominations(contest: Contest, imageDb: ImageDB) {
+    val monumentQuery = MonumentQuery.create(contest)
     val monumentsMap = getMonumentsMap(monumentQuery)
 
     val imageDbs: Map[SpecialNomination, ImageDB] = SpecialNomination.nominations.map { nomination =>

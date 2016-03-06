@@ -158,11 +158,9 @@ object MonumentQuery {
   def create(contest: Contest, caching: Boolean = true, pickling: Boolean = false): MonumentQuery = {
     val api = new MonumentQueryApi(contest)
 
-    val query = if (caching)
+    if (caching)
       new MonumentQueryCached(api)
     else api
-
-    query
   }
 
 }

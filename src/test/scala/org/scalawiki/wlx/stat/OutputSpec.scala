@@ -254,7 +254,7 @@ class OutputSpec extends Specification {
     "work on no monuments" in {
       val output = new Output
       val monumentDb = new MonumentDB(contest, Seq.empty)
-      val table = output.authorsContributedTable(Seq.empty, new ImageDB(contest, Seq.empty, monumentDb), monumentDb)
+      val table = output.authorsContributedTable(Seq.empty, new ImageDB(contest, Seq.empty, monumentDb), Some(monumentDb))
 
       table.headers === Seq("Region", "0 years total")
       table.data === Seq(Seq("Total", "0"))
@@ -269,7 +269,7 @@ class OutputSpec extends Specification {
           monuments(7, "07", "Volyn")
       )
 
-      val table = output.authorsContributedTable(Seq.empty, new ImageDB(contest, Seq.empty, monumentDb), monumentDb)
+      val table = output.authorsContributedTable(Seq.empty, new ImageDB(contest, Seq.empty, monumentDb), Some(monumentDb))
 
       table.headers === Seq("Region", "0 years total")
       table.data === Seq(
@@ -297,7 +297,7 @@ class OutputSpec extends Specification {
           monuments(7, "07", "Volyn")
       )
 
-      val table = output.authorsContributedTable(Seq.empty, new ImageDB(contest, images, monumentDb), monumentDb)
+      val table = output.authorsContributedTable(Seq.empty, new ImageDB(contest, images, monumentDb), Some(monumentDb))
 
       table.headers === Seq("Region", "0 years total")
       table.data === Seq(
@@ -336,7 +336,7 @@ class OutputSpec extends Specification {
       val table = output.authorsContributedTable(
         Seq(images1, images2).zipWithIndex.map { case (images, i) => new ImageDB(Contest.WLMUkraine(2014 + i), images, monumentDb) },
         new ImageDB(contest, images1 ++ images2, monumentDb),
-        monumentDb)
+        Some(monumentDb))
 
       table.headers === Seq("Region", "2 years total", "2014", "2015")
       table.data === Seq(

@@ -1,6 +1,8 @@
 package org.scalawiki.wlx
 
+import org.joda.time.DateTime
 import org.scalawiki.wlx.dto.{Contest, Monument}
+import org.scalawiki.wlx.query.MonumentQuery
 
 class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFalseIds: Boolean = true) {
 
@@ -31,3 +33,27 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 }
 
 
+object MonumentDB {
+
+  def getMonumentDbRange(contest: Contest): (Option[MonumentDB], Option[MonumentDB]) = {
+    if (contest.uploadConfigs.nonEmpty) {
+      val date = new DateTime(contest.year, 9, 1, 0, 0, 0)
+      (Some(getMonumentDb(contest)),
+        Some(getMonumentDb(contest, Some(date))))
+    } else {
+      (None, None)
+    }
+  }
+
+  def getMonumentDb(contest: Contest, date: Option[DateTime] = None): MonumentDB = {
+    val monumentQuery = MonumentQuery.create(contest)
+    var allMonuments = monumentQuery.byMonumentTemplate(contest.uploadConfigs.head.listTemplate, date)
+
+    if (contest.country.code == "ru") {
+      allMonuments = allMonuments.filter(_.page.contains("Природные памятники России"))
+    }
+
+    new MonumentDB(contest, allMonuments)
+  }
+
+}

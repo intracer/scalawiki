@@ -119,8 +119,8 @@ object Monument {
     r2
   }
 
-  def monumentsFromText(text: String, page: String, template: String, listConfig: ListConfig): Set[Monument] =
-    init(text, page, listConfig).toSet
+  def monumentsFromText(text: String, page: String, template: String, listConfig: ListConfig): Iterable[Monument] =
+    init(text, page, listConfig)//.toSet
 
   def getRegionId(monumentId: String): String = monumentId.split("\\-").headOption.getOrElse("")
 

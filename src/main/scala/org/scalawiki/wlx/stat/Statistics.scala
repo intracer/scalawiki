@@ -2,11 +2,10 @@ package org.scalawiki.wlx.stat
 
 import java.nio.file.{Files, Paths}
 
-import org.joda.time.DateTime
 import org.scalawiki.MwBot
 import org.scalawiki.wlx.dto.Contest
-import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
-import org.scalawiki.wlx.{ListFiller, ImageDB, MonumentDB}
+import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi}
+import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
@@ -15,45 +14,21 @@ class Statistics {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  val previousContests = (2012 to 2014).map(year => Contest.WLMUkraine(year, "05-01", "05-31"))
+  val currentYear = 2015
+
+  val previousContests = (2012 until currentYear).map(year => Contest.WLMUkraine(year, "05-01", "05-31"))
+
+  private val bot = MwBot.get(MwBot.commons)
 
   def init(contest: Contest): Unit = {
 
-    if (contest.uploadConfigs.nonEmpty) {
+    val (monumentDb, monumentDbOld) = MonumentDB.getMonumentDbRange(contest)
 
-      val monumentQuery = MonumentQuery.create(contest)
-
-      val date = new DateTime(2015, 9, 1, 0, 0, 0)
-
-      val monumentDb = getMonumentDb(contest)
-      val monumentDbOld = getMonumentDb(contest, Some(date))
-
-      val allIds = monumentDb.monuments.filter(_.photo.isDefined).map(_.id).toSet
-      val oldIds = monumentDbOld.monuments.filter(_.photo.isDefined).map(_.id).toSet
-
-      val newIds = allIds -- oldIds
-
-
-      //articleStatistics(monumentDb)
-      imagesStatistics(contest, Some(monumentDb), Some(monumentDbOld))
-    } else {
-      imagesStatistics(contest, None, None)
-    }
-  }
-
-  def getMonumentDb(contest: Contest, date: Option[DateTime] = None): MonumentDB = {
-    val monumentQuery = MonumentQuery.create(contest)
-    var allMonuments = monumentQuery.byMonumentTemplate(contest.uploadConfigs.head.listTemplate, date)
-
-    if (contest.country.code == "ru") {
-      allMonuments = allMonuments.filter(_.page.contains("Природные памятники России"))
-    }
-
-    new MonumentDB(contest, allMonuments)
+    imagesStatistics(contest, monumentDb, monumentDbOld)
   }
 
   def articleStatistics(monumentDb: MonumentDB) = {
-    println(Stats.withArticles(monumentDb).asWiki("Article Statistics"))
+    println(Stats.withArticles(monumentDb).asWiki("Article Statistics").asWiki)
   }
 
   def toMassMessage(users: Iterable[String]) = {
@@ -61,42 +36,46 @@ class Statistics {
   }
 
   def imagesStatistics(contest: Contest, monumentDb: Option[MonumentDB], oldMonumentDb: Option[MonumentDB] = None) {
-    val imageQueryDb = ImageQuery.create(db = false)
-    val imageQueryApi = ImageQuery.create(db = false)
+    val imageQuery = ImageQuery.create(db = false)
 
+    val imageDbF = currentYear(contest, monumentDb, oldMonumentDb, imageQuery)
+    val totalF = new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)
+
+
+    for (imageDb <- imageDbF;
+         totalImages <- totalF) {
+
+      val totalImageDb = new ImageDB(contest, totalImages, monumentDb)
+
+      photoWithoutArticle(monumentDb.get, totalImageDb)
+
+
+      regionalStat(contest, monumentDb, imageQuery, imageDb, totalImageDb)
+
+      Thread.sleep(5000)
+    }
+  }
+
+  def currentYear(contest: Contest, monumentDb: Option[MonumentDB], oldMonumentDb: Option[MonumentDB], imageQueryApi: ImageQuery) = {
     val imageDbFuture = ImageDB.create(contest, imageQueryApi, monumentDb, oldMonumentDb)
 
-    imageDbFuture onFailure {
-      case f =>
-        println("Failure " + f)
-    }
+    imageDbFuture map {
+      imageDb =>
 
-    imageDbFuture onSuccess {
-      case imageDb =>
+        new SpecialNominations().specialNominations(contest, imageDb)
 
-        //        val authors = imageDb.authors.toSeq
-        //        authors.foreach(user => message(MwBot.get(MwBot.commons), user, message1))
 
         authorsStat(imageDb)
         //        byDayAndRegion(imageDb)
-        //        new SpecialNominations().specialNominations(contest, imageDb, monumentQuery)
+        new SpecialNominations().specialNominations(contest, imageDb)
         lessThan2MpGallery(contest, imageDb)
 
         monumentDb.foreach { mDb =>
           wrongIds(contest, imageDb, mDb)
 
           fillLists(mDb, imageDb)
-
-          val total = new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)
-          for (totalImages <- total) {
-
-            val totalImageDb = new ImageDB(contest, totalImages, monumentDb)
-
-            regionalStat(contest, mDb, imageQueryDb, imageDb, totalImageDb)
-
-            Thread.sleep(5000)
-          }
         }
+        imageDb
     }
   }
 
@@ -104,12 +83,13 @@ class Statistics {
     bot.page("User_talk:" + user).edit(msg(user), section = Some("new"))
   }
 
+
   def lessThan2MpGallery(contest: Contest, imageDb: ImageDB) = {
     val lessThan2Mp = imageDb.byMegaPixelFilterAuthorMap(_ < 2)
     val gallery = new Output().authorsImages(lessThan2Mp, imageDb.monumentDb)
     val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
 
-    MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Less than 2Mp").edit(gallery, Some("updating"))
+    bot.page(s"Commons:$contestPage/Less than 2Mp").edit(gallery, Some("updating"))
   }
 
   def wrongIds(wlmContest: Contest, imageDb: ImageDB, monumentDb: MonumentDB) {
@@ -120,11 +100,10 @@ class Statistics {
     val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
 
     val text = wrongIdImages.map(_.title).mkString("<gallery>", "\n", "</gallery>")
-    MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Images with bad ids").edit(text, Some("updating"))
+    bot.page(s"Commons:$contestPage/Images with bad ids").edit(text, Some("updating"))
   }
 
   def byDayAndRegion(imageDb: ImageDB): Unit = {
-
     //    val byDay = imageDb.withCorrectIds.groupBy(_.date.map(_.toDate))
     //
     //    val firstSlice = (16 to 16).flatMap(day => byDay.get)//.getOrElse(day.toString, Seq.empty))
@@ -157,26 +136,26 @@ class Statistics {
 
     val numberOfMonuments = output.authorsMonuments(imageDb)
     Files.write(Paths.get("authorsMonuments.txt"), numberOfMonuments.getBytes)
-    MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Number of objects pictured by uploader")
+    bot.page(s"Commons:$contestPage/Number of objects pictured by uploader")
       .edit(numberOfMonuments, Some("updating"))
 
     val rating = output.authorsMonuments(imageDb, rating = true)
     Files.write(Paths.get("authorsRating.txt"), rating.getBytes)
-    MwBot.get(MwBot.commons).page(s"Commons:$contestPage/Rating based on number and originality of objects pictured by uploader")
+    bot.page(s"Commons:$contestPage/Rating based on number and originality of objects pictured by uploader")
       .edit(rating, Some("updating"))
 
   }
 
-  def regionalStat(wlmContest: Contest, monumentDb: MonumentDB,
+  def regionalStat(wlmContest: Contest,
+                   monumentDb: Option[MonumentDB],
                    imageQueryDb: ImageQuery,
                    currentYear: ImageDB,
                    totalImageDb: ImageDB) {
 
-    val contest = monumentDb.contest
+    val contest = currentYear.contest
     val categoryName = contest.contestType.name + " in " + contest.country.name
 
-
-    val dbsByYear = previousContests.map(contest => ImageDB.create(contest, imageQueryDb, Some(monumentDb))) ++ Seq(Future.successful(currentYear))
+    val dbsByYear = previousContests.map(contest => ImageDB.create(contest, imageQueryDb, monumentDb)) ++ Seq(Future.successful(currentYear))
 
     Future.sequence(dbsByYear).map {
       imageDbs =>
@@ -185,61 +164,73 @@ class Statistics {
 
           val output = new Output()
 
-          val idsStat = output.monumentsPictured(imageDbs, totalImageDb, monumentDb)
-          println(idsStat)
+          val idsStat = monumentDb.map(db => output.monumentsPictured(imageDbs, totalImageDb, db)).getOrElse("")
 
           val authorStat = output.authorsContributed(imageDbs, totalImageDb, monumentDb)
-          //            println(authorStat)
 
           val toc = "__TOC__"
           val category = s"\n[[Category:$categoryName]]"
           val regionalStat = toc + idsStat + authorStat + category
 
-          MwBot.get(MwBot.commons).page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, Some("updating"))
+          bot.page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, Some("updating"))
 
           val authorsByRegionTotal = output.authorsMonuments(totalImageDb) + s"\n[[Category:$categoryName]]"
 
-          MwBot.get(MwBot.commons).page(s"Commons:$categoryName/Total number of objects pictured by uploader").edit(authorsByRegionTotal, Some("updating"))
+          bot.page(s"Commons:$categoryName/Total number of objects pictured by uploader").edit(authorsByRegionTotal, Some("updating"))
 
-          val mostPopularMonuments = output.mostPopularMonuments(imageDbs, totalImageDb, monumentDb)
-          MwBot.get(MwBot.commons).page(s"Commons:$categoryName/Most photographed objects").edit(mostPopularMonuments, Some("updating"))
+          monumentDb.map { db =>
+            val mostPopularMonuments = output.mostPopularMonuments(imageDbs, totalImageDb, db)
+            bot.page(s"Commons:$categoryName/Most photographed objects").edit(mostPopularMonuments, Some("updating"))
+          }
 
-          val monumentQuery = MonumentQuery.create(wlmContest)
-
-          //              new SpecialNominations().specialNominations(previousContests.find(_.year == 2013).get, firstYear, monumentQuery)
-          //              new SpecialNominations().specialNominations(previousContests.find(_.year == 2014).get, lastYear, monumentQuery)
-        }
-        catch {
-          case NonFatal(e) =>
-            println(e)
-            e.printStackTrace()
-            throw e
+          }
+          catch {
+            case NonFatal(e) =>
+              println(e)
+              e.printStackTrace()
+              throw e
+          }
         }
     }
+
+    def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
+      ListFiller.fillLists(monumentDb, imageDb)
+    }
+
+    def photoWithoutArticle(monumentDb: MonumentDB, imageDb: ImageDB): String = {
+
+      val all = monumentDb.monuments.filter(m =>
+        m.photo.isDefined &&
+          m.article.isEmpty && !m.name.contains("[[") &&
+          m.types.map(_.toLowerCase).exists(_.contains("нац")
+            && imageDb.authorsCountById.getOrElse(m.id, 0) > 1
+            && imageDb.byId(m.id).size > 2)
+      )
+      val byRegion = all.groupBy(_.regionId)
+
+      val perRegion = monumentDb.contest.country.regions.sortBy(_.name).map {
+        region =>
+          val regionHeader = s"== ${region.name} ==\n"
+
+          val monuments = byRegion.getOrElse(region.code, Seq.empty)
+          val gallery = "<gallery>" +
+            monuments.map(m => s"File:${m.photo.get}|[[${m.name}]], ${m.city.getOrElse("")}").mkString("\n") +
+            "</gallery>"
+
+          regionHeader + gallery
+      }
+
+      perRegion.mkString("\n")
+    }
+
   }
 
+  object Statistics {
+    def main(args: Array[String]) {
 
-  def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
-    ListFiller.fillLists(monumentDb, imageDb)
+      val stat = new Statistics()
+
+      stat.init(Contest.WLMUkraine(2015, "05-01", "05-31"))
+
+    }
   }
-
-}
-
-object Statistics {
-  def main(args: Array[String]) {
-
-    //    Kamon.start()
-
-    val stat = new Statistics()
-
-    stat.init(Contest.WLMUkraine(2015, "05-01", "05-31"))
-
-    //stat.message(MwBot.get(MwBot.commons), "Ilya", stat.message1)
-
-    //    val contests = Contest.allWLE
-    //    val dbs = contests.map(stat.getMonumentDb)
-    //
-    //    println(new MonumentDbStat().getStat(dbs))
-
-  }
-}

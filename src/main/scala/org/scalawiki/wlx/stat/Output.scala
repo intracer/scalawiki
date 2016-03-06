@@ -41,7 +41,7 @@ class Output {
     val photoCounts = yearSeq.map(year => imageDbsByYear(year).head.imageCountById)
     val authorCounts = yearSeq.map(year => imageDbsByYear(year).head.authorsCountById)
 
-    val counts = Seq(photosCountTotal, authorsCountTotal) ++ (0 to numYears - 1).flatMap(i => Seq(photoCounts(i), authorCounts(i)))
+    val counts = Seq(photosCountTotal, authorsCountTotal) ++ (0 until numYears).flatMap(i => Seq(photoCounts(i), authorCounts(i)))
 
     val topPhotos = (Set(photosCountTotal) ++ photoCounts).flatMap(topN(12, _).toSet)
     val topAuthors = (Set(authorsCountTotal) ++ authorCounts).flatMap(topN(12, _).toSet)
@@ -222,7 +222,7 @@ class Output {
     }
   }
 
-  def authorsContributed(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB) = {
+  def authorsContributed(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: Option[MonumentDB]) = {
 
     val table = authorsContributedTable(imageDbs, totalImageDb, monumentDb)
 
@@ -230,7 +230,7 @@ class Output {
     header + table.asWiki
   }
 
-  def authorsContributedTable(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB): Table = {
+  def authorsContributedTable(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: Option[MonumentDB]): Table = {
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
     val yearSeq = imageDbsByYear.keys.toSeq.sorted
     val numYears = yearSeq.size
@@ -241,22 +241,25 @@ class Output {
       "Total",
       totalImageDb.authors.size) ++ yearSeq.map(year => imageDbsByYear(year).head.authors.size)).map(_.toString)
 
-    val contest = monumentDb.contest
-    val regionIds = monumentDb._byRegion.keySet.toSeq.filter(contest.country.regionIds.contains).sortBy(identity)
 
-    val rows =
-      regionIds.map {
-        regionId =>
-          (Seq(
-            monumentDb.contest.country.regionById(regionId).name,
-            totalImageDb.authorsByRegion(regionId).size) ++
-            yearSeq.map(year => imageDbsByYear(year).head.authorsByRegion(regionId).size)).map(_.toString)
-      } ++ Seq(totalData)
+    val perRegion = monumentDb.fold(Seq.empty[Seq[String]]) {
+      db =>
+        val contest = db.contest
+        val regionIds = db._byRegion.keySet.toSeq.filter(contest.country.regionIds.contains).sortBy(identity)
+        regionIds.map {
+          regionId =>
+            (Seq(
+              contest.country.regionById(regionId).name,
+              totalImageDb.authorsByRegion(regionId).size) ++
+              yearSeq.map(year => imageDbsByYear(year).head.authorsByRegion(regionId).size)).map(_.toString)
+        }
+    }
 
-    val authors = yearSeq.map(year => imageDbsByYear(year).head.authors)
+    val rows = perRegion ++ Seq(totalData)
 
-    val filename = contest.contestType.name.split(" ").mkString + "In" + contest.country.name + "AuthorsByYearPie"
-    //    charts.intersectionDiagram("Унікальність авторів за роками", filename, yearSeq, authors, 900, 900)
+//    val authors = yearSeq.map(year => imageDbsByYear(year).head.authors)
+//    val filename = contest.contestType.name.split(" ").mkString + "In" + contest.country.name + "AuthorsByYearPie"
+//    charts.intersectionDiagram("Унікальність авторів за роками", filename, yearSeq, authors, 900, 900)
 
     new Table(columns, rows, "Authors contributed")
   }
@@ -269,9 +272,6 @@ class Output {
       (if (rating) Seq("Objects pictured", "Existing", "New", "Rating")
       else Seq("Objects pictured")) ++
       Seq("Photos uploaded") ++ country.regionNames
-
-    //    val allIds = imageDb.monumentDb.get.ids
-    //    val oldIds = imageDb.oldMonumentDb.get.ids
 
     val allIds = imageDb.monumentDb.get.monuments.filter(_.photo.isDefined).map(_.id).toSet
     val oldIds = imageDb.oldMonumentDb.get.monuments.filter(_.photo.isDefined).map(_.id).toSet
@@ -314,7 +314,7 @@ class Output {
         } else {
           Seq(imageDb._authorsIds(user).size, imageDb._byAuthor(user).size)
         }
-      ) ++ country.regionIds.toSeq.map {
+          ) ++ country.regionIds.toSeq.map {
         regId =>
           val regionIds = imageDb._authorIdsByRegion(user).getOrElse(regId, Seq.empty).toSet
           if (rating) {
