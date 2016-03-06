@@ -38,27 +38,7 @@ class SpecialNominations {
     val nominations: Seq[SpecialNomination] = imageDbs.keySet.toSeq.sortBy(_.name)
     for (nomination <- nominations) {
 
-      val imagesPage = s"Commons:Images from Wiki Loves ${contest.contestType.name} ${contest.year} in ${contest.country.name} special nomination ${nomination.name}"
-
-      val imageDb = imageDbs(nomination)
-      val columnData = Seq(
-        nomination.name,
-        imageDb.authors.size,
-        imageDb.ids.size,
-        s"[[$imagesPage|${imageDb.images.size}]]"
-      )
-
-      var imagesText = "__TOC__"
-
-      for (region <- Country.Ukraine.regions) {
-        val images = imageDb.imagesByRegion(region.code)
-        if (images.nonEmpty) {
-          imagesText += s"\n== ${region.name} ${images.size} images ==\n"
-          imagesText += images.map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
-        }
-      }
-
-      MwBot.get(MwBot.commons).page(imagesPage).edit(imagesText, Some("updating"))
+      val columnData: Seq[Any] = makeGallery(contest, imageDbs, nomination)
 
       text += columnData.mkString("|-\n| ", " || ", "\n")
     }
@@ -69,6 +49,30 @@ class SpecialNominations {
   }
 
 
+  def makeGallery(contest: Contest, imageDbs: Map[SpecialNomination, ImageDB], nomination: SpecialNomination): Seq[Any] = {
+    val imagesPage = s"Commons:Images from Wiki Loves ${contest.contestType.name} ${contest.year} in ${contest.country.name} special nomination ${nomination.name}"
+
+    val imageDb = imageDbs(nomination)
+    val columnData = Seq(
+      nomination.name,
+      imageDb.authors.size,
+      imageDb.ids.size,
+      s"[[$imagesPage|${imageDb.images.size}]]"
+    )
+
+    var imagesText = "__TOC__"
+
+    for (region <- Country.Ukraine.regions) {
+      val images = imageDb.imagesByRegion(region.code)
+      if (images.nonEmpty) {
+        imagesText += s"\n== ${region.name} ${images.size} images ==\n"
+        imagesText += images.map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
+      }
+    }
+
+    MwBot.get(MwBot.commons).page(imagesPage).edit(imagesText, Some("updating"))
+    columnData
+  }
 }
 
 object SpecialNominations {
