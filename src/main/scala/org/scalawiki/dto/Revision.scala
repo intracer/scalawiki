@@ -23,6 +23,8 @@ case class Revision(
 
   def id = revId
 
+  def isNewPage = parentId.contains(0)
+
   def withContent(content: String*) = copy(content = Some(content.mkString("\n")))
 
   def withText(text: String*) = copy(content = Some(text.mkString("\n")))
