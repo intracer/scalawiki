@@ -24,6 +24,7 @@ class DateTimeReadersSpec extends Specification {
   "DateTimeReader" should {
     "read iso-8601 string value to ReadableInstant (DateTime)" in {
       config.as[DateTime]("str") === new DateTime("2013-01-05T12:00:00Z")
+      config.as[Option[DateTime]]("str") === Option(new DateTime("2013-01-05T12:00:00Z"))
       config.as[DateTime]("invalid") must throwA[ConfigException.BadValue]("Invalid format")
     }
   }
