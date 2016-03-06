@@ -12,10 +12,9 @@ import org.scalawiki.dto.cmd.query.prop.{Links, PlLimit, PlNamespace, Prop}
 import org.scalawiki.dto.cmd.query.{Query, TitlesParam}
 import org.scalawiki.dto.{Namespace, Page, User}
 import org.scalawiki.time.TimeRange
-//import net.ceedubs.ficus.readers.DateTimeReaders.DateTimeReader
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import org.scalawiki.time.imports._
 
 case class Message(subject: String, body: String)
 
@@ -23,8 +22,6 @@ class MessageBot(val conf: Config) {
 
   val host = conf.getString("host")
   val userListPage = conf.getString("users.list")
-
-  import org.scalawiki.time.imports._
 
   val (start, end) = (conf.as[Option[DateTime]]("users.start"), conf.as[Option[DateTime]]("users.end"))
   val range = TimeRange(start, end)
