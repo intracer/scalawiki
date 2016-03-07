@@ -1,5 +1,16 @@
 package org.scalawiki.wlx.dto
 
+/**
+  * Represents Wiki Loves X contest
+  *
+  * @param contestType
+  * @param country
+  * @param year
+  * @param startDate
+  * @param endDate
+  * @param uploadConfigs
+  * @param specialNominations
+  */
 class Contest(
                val contestType: ContestType,
                val country: Country,
@@ -9,14 +20,26 @@ class Contest(
                val uploadConfigs: Seq[UploadConfig],
                val specialNominations: Seq[SpecialNomination] = Seq.empty) {
 
+  /**
+    * @return Name of category containing contest images
+    */
   def category: String = s"Category:Images from ${contestType.name} $year in ${country.name}".replaceAll(" ", "_")
 
+  /**
+    * @return name of template that monument lists consist of
+    */
   def listTemplate: Option[String] = uploadConfigs.headOption.map(_.listTemplate)
 
+  /**
+    * @return name of template that marks a contest image with monument id
+    */
   def fileTemplate: Option[String] = uploadConfigs.headOption.map(_.fileTemplate)
 
 }
 
+/**
+  * Contest definitions. Need to move them to config files
+  */
 object Contest {
 
   def ESPCUkraine(year: Int, startDate: String = "01-09", endDate: String = "30-09") =
@@ -67,16 +90,16 @@ object Contest {
       Seq(UploadConfig("wle-ch", "Naturalistic heritage CH row", "", lists.WleCh)))
 
   def allWLE = {
-     val year = 2015
-     val (start, end) = ("01-05", "31-05")
-       Seq(
-//       WLEAustria(year, start, end),
-       WLECatalonia(year, start, end),
-       WLEEstonia(year, start, end),
-       WLENepal(year, start, end),
-       WLERussia(year, start, end),
-       WLESwitzerland(year, start, end),
-       WLEUkraine(year, start, end)
+    val year = 2015
+    val (start, end) = ("01-05", "31-05")
+    Seq(
+      //       WLEAustria(year, start, end),
+      WLECatalonia(year, start, end),
+      WLEEstonia(year, start, end),
+      WLENepal(year, start, end),
+      WLERussia(year, start, end),
+      WLESwitzerland(year, start, end),
+      WLEUkraine(year, start, end)
     )
   }
 

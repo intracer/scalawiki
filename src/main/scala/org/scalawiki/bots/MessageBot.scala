@@ -18,15 +18,36 @@ import org.scalawiki.time.imports._
 
 case class Message(subject: String, body: String)
 
+/**
+  * Send messages to users either via talk page or email
+  * @param conf configuration
+  */
 class MessageBot(val conf: Config) {
 
+  /**
+    * Mediawiki host, e.g. en.wikipedia.org
+    */
   val host = conf.getString("host")
+
+  /**
+    * Page that contains links to user pages of users we are going to notify
+    */
   val userListPage = conf.getString("users.list")
 
+  /**
+    * optional start and end of time range that user contributions are queried
+    */
   val (start, end) = (conf.as[Option[DateTime]]("users.start"), conf.as[Option[DateTime]]("users.end"))
   val range = TimeRange(start, end)
 
+  /**
+    * Email message
+    */
   val mail = conf.as[Message]("email")
+
+  /**
+    * Talk page message
+    */
   val talkPageMessage = conf.as[Message]("talk-page")
 
   lazy val bot = MwBot.get(host)
@@ -45,7 +66,6 @@ class MessageBot(val conf: Config) {
   }
 
   def processUsers(users: Seq[User], conf: Config) = {
-    val mailedBefore = FileLines.read("emails.txt")
 
     val pages = users.map(u => createdPages(u.name.get, range).map(Seq(_)))
     for (createdPagesByUser <- Future.reduce(pages)(_ ++ _).map(_.toMap)) {
@@ -55,6 +75,7 @@ class MessageBot(val conf: Config) {
 
       logUsers(users, withEmail, withoutEmail)
 
+      val mailedBefore = FileLines.read("emails.txt")
       val userNames = withEmail.flatMap(_.name).toSet -- mailedBefore.toSet
 
       messageUsers(withoutEmail, talkPageMessage)

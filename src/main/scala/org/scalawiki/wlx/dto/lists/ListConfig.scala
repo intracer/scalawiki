@@ -2,6 +2,9 @@ package org.scalawiki.wlx.dto.lists
 
 import scala.collection.immutable.ListMap
 
+/**
+  * Maps constant English field names to possibly localized field names in monument lists
+  */
 trait ListConfig {
   def templateName: String
 
