@@ -161,7 +161,8 @@ class Parser(val action: Action) {
       id = Some(gui.id),
       login = Some(gui.name),
       editCount = Some(gui.editCount),
-      registration = Some(gui.registration)
+      registration = Some(gui.registration),
+      sulAccounts = gui.merged
     )
 
     new Page(id = None, title = gui.name, ns = Namespace.USER, revisions = Seq(Revision(user = Some(user))))
