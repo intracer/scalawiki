@@ -190,7 +190,7 @@ class Charts extends WithBot {
 
         pieDataset.setValue(year.toString, only(i).size)
 
-        ((i + 1) to years.size - 1).foreach { j =>
+        (i + 1).until(years.size).foreach { j =>
           val intersection = (idsSeq(i) intersect idsSeq(j)).filter { id => yearsCounts(id) == 2 }
           pieDataset.setValue(s"$year & ${years(j)}", intersection.size)
         }

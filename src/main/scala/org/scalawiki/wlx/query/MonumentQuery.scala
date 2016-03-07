@@ -26,7 +26,8 @@ trait MonumentQuery {
   final def byMonumentTemplate(template: String = contest.uploadConfigs.head.listTemplate, date: Option[DateTime] = None) =
     Await.result(byMonumentTemplateAsync(template, date), 120.minutes): Seq[Monument]
 
-  final def byPage(page: String, template: String, pageIsTemplate: Boolean = false) = Await.result(byPageAsync(page, template, pageIsTemplate), 15.minutes): Seq[Monument]
+  final def byPage(page: String, template: String, pageIsTemplate: Boolean = false) =
+    Await.result(byPageAsync(page, template, pageIsTemplate), 15.minutes): Seq[Monument]
 }
 
 class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot {
@@ -74,7 +75,9 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
       //          pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template).toSeq)
       //      }
       if (date.isEmpty) {
-        bot.page(page).revisionsByGenerator("embeddedin", "ei", Set(Namespace.PROJECT), Set("content", "timestamp", "user", "userid", "comment"), None, "100") map {
+        bot.page(page).revisionsByGenerator(
+          "embeddedin", "ei", Set(Namespace.PROJECT), Set("content", "timestamp", "user", "userid", "comment"), None, "100"
+        ).map {
           pages =>
             pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, config))
         }

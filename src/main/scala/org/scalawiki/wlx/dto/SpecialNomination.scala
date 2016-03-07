@@ -1,5 +1,14 @@
 package org.scalawiki.wlx.dto
 
+/**
+  * Describes monument lists for contest special nominations
+  *
+  * @param name         Name of the special nomination
+  * @param listTemplate name of template that monument lists consist of
+  * @param pages        pages that contain lists of monuments, ot templates that contains links to these pages
+  */
+class SpecialNomination(val name: String, val listTemplate: String, val pages: Seq[String])
+
 object SpecialNomination {
   val music = new SpecialNomination("Музичні пам'ятки в Україні", "WLM-рядок",
     Seq("Template:WLM-music-navbar"))
@@ -30,5 +39,3 @@ object SpecialNomination {
 
   val nominations = Seq(music, nationalLiberation, greek, armenian, worldWarOne, wooden, fortification, tatars, libraries)
 }
-
-class SpecialNomination(val name: String, val listTemplate: String, val pages: Seq[String])

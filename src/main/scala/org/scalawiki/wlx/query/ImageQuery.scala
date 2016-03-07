@@ -6,27 +6,17 @@ import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.cmd.query.prop.iiprop.{IiProp, Timestamp}
 import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
 import org.scalawiki.dto.cmd.query.{Generator, Query}
-import org.scalawiki.query.{DslQueryDbCache, DslQuery}
 import org.scalawiki.wlx.dto.{Contest, Image}
 import org.scalawiki.{MwBot, WithBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future, _}
+import scala.concurrent.Future
 
 trait ImageQuery {
-
-  import scala.concurrent.duration._
-
 
   def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]]
 
   def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]]
-
-  final private[this] def imagesFromCategory(category: String, contest: Contest): Seq[Image] =
-    Await.result(imagesFromCategoryAsync(category, contest), 30.minutes)
-
-  final private[this] def imagesWithTemplate(template: String, contest: Contest): Seq[Image] =
-    Await.result(imagesWithTemplateAsync(template, contest), 30.minutes)
 
 }
 
@@ -53,9 +43,7 @@ class ImageQueryApi extends ImageQuery with WithBot {
       generator
     ))
 
-    val future = new DslQueryDbCache(new DslQuery(action, bot)).run()
-
-    future.map {
+    bot.run(action).map {
       pages => pages.map {
         page =>
 
@@ -71,7 +59,11 @@ class ImageQueryApi extends ImageQuery with WithBot {
   }
 
   override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]] = {
-    val generator: Generator = Generator(EmbeddedIn(EiTitle("Template:" + template), EiNamespace(Seq(Namespace.FILE)), EiLimit("500")))
+    val generator = Generator(EmbeddedIn(
+      EiTitle("Template:" + template),
+      EiNamespace(Seq(Namespace.FILE)),
+      EiLimit("500"))
+    )
 
     imagesByGenerator(contest, generator)
   }
@@ -98,15 +90,10 @@ class ImageQueryCached(underlying: ImageQuery) extends ImageQuery {
 object ImageQuery {
 
   def create(db: Boolean = true, caching: Boolean = true, pickling: Boolean = false): ImageQuery = {
-    val query = if (db)
-      new ImageQueryApi
-    else
-      new ImageQueryApi
+    val query = new ImageQueryApi
 
-    val wrapper = if (caching)
+    if (caching)
       new ImageQueryCached(if (pickling) query else query) //          new ImageQueryPickling(api, contest)
     else query
-
-    wrapper
   }
 }
