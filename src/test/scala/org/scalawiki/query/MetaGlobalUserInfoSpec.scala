@@ -12,26 +12,40 @@ import scala.io.Source
 
 class MetaGlobalUserInfoSpec extends Specification with MockBotSpec {
 
+  val action = Action(Query(MetaParam(
+    GlobalUserInfo(
+      GuiProp(
+        Merged, Unattached, EditCount
+      ),
+      GuiUser("Ilya")
+    ))))
+
+  def commands(response: String) = Seq(new Command(
+    Map("action" -> "query", "meta" -> "globaluserinfo",
+      "guiuser" -> "Ilya", "guiprop" -> "merged|unattached|editcount", "continue" -> ""),
+    response))
+
   "globaluserinfo" should {
+
+    "return no info" in {
+
+      val missingUser = """{"batchcomplete":"","query":{"globaluserinfo":{"missing":"","unattached":[]}}}"""
+
+      val bot = getBot(commands(missingUser): _*)
+
+      val result = bot.run(action).await
+
+      result must have size 1
+      val users = result.flatMap(_.lastRevisionUser.map(_.asInstanceOf[User]))
+      users must beEmpty
+    }
+
     "return properties" in {
       val is = getClass.getResourceAsStream("/org/scalawiki/query/globaluserinfo.json")
       is !== null
       val response = Source.fromInputStream(is).mkString
 
-      val action = Action(Query(MetaParam(
-        GlobalUserInfo(
-          GuiProp(
-            Merged, Unattached, EditCount
-          ),
-          GuiUser("Ilya")
-        ))))
-
-      val commands = Seq(new Command(
-        Map("action" -> "query", "meta" -> "globaluserinfo",
-          "guiuser" -> "Ilya", "guiprop" -> "merged|unattached|editcount", "continue" -> ""),
-        response))
-
-      val bot = getBot(commands: _*)
+      val bot = getBot(commands(response): _*)
 
       val result = bot.run(action).await
       result must have size 1

@@ -155,17 +155,22 @@ class Parser(val action: Action) {
   }
 
   def parseGlobalUserInfo(json: JsObject) = {
-    val gui = json.validate(Parser.globalUserInfoReads).get
+    if (!json.value.contains("missing")) {
 
-    val user = new User(
-      id = Some(gui.id),
-      login = Some(gui.name),
-      editCount = Some(gui.editCount),
-      registration = Some(gui.registration),
-      sulAccounts = gui.merged
-    )
+      val gui = json.validate(Parser.globalUserInfoReads).get
 
-    new Page(id = None, title = gui.name, ns = Namespace.USER, revisions = Seq(Revision(user = Some(user))))
+      val user = new User(
+        id = Some(gui.id),
+        login = Some(gui.name),
+        editCount = Some(gui.editCount),
+        registration = Some(gui.registration),
+        sulAccounts = gui.merged
+      )
+
+      new Page(id = None, title = gui.name, ns = Namespace.USER, revisions = Seq(Revision(user = Some(user))))
+    } else {
+      new Page(id = None, title = "missing", ns = Namespace.USER, revisions = Seq.empty)
+    }
   }
 
   def query = action.query.toSeq
