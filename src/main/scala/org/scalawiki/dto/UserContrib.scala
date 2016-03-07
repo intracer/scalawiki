@@ -1,0 +1,21 @@
+package org.scalawiki.dto
+
+import org.joda.time.DateTime
+
+case class UserContrib(userId: Long,
+                       user: String,
+                       pageId: Long,
+                       revId: Long,
+                       parentId: Long,
+                       ns: Int,
+                       title: String,
+                       timestamp: DateTime,
+                       //                       isNew: Boolean,
+                       //                       isMinor: Boolean,
+                       comment: Option[String],
+                       size: Option[Long]) {
+
+  def toPage = new Page(Some(pageId), ns, title, revisions =
+    Seq(new Revision(Some(revId), Some(pageId), Some(parentId), Some(User(userId, user)), Option(timestamp), comment, None, size))
+  )
+}

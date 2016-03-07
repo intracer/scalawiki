@@ -4,6 +4,10 @@ import org.joda.time.DateTime
 import org.scalawiki.dto.cmd.query.Module
 import org.scalawiki.dto.cmd._
 
+/**
+  * https://www.mediawiki.org/wiki/API:Usercontribs
+  * @param params
+  */
 case class UserContribs(override val params: UcParam[Any]*)
   extends Module[ListArg]("uc", "usercontribs",
     "Gets a list of contributions made by a given user, ordered by modification time.")

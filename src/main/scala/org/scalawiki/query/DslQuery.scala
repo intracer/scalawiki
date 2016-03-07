@@ -18,7 +18,7 @@ class DslQuery(val action: Action, val bot: MwBot) {
            continue: Map[String, String] = Map("continue" -> ""),
            pages: Seq[Page] = Seq.empty[Page],
            limit: Option[Long] = None
-           ): Future[Seq[Page]] = {
+         ): Future[Seq[Page]] = {
 
     val params = action.pairs ++ Seq("format" -> "json") ++ continue
 

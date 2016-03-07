@@ -2,8 +2,9 @@ package org.scalawiki.json
 
 import org.joda.time.DateTime
 import org.scalawiki.dto._
-import org.scalawiki.dto.cmd.Action
+import org.scalawiki.dto.cmd.{EnumArg, Action}
 import org.scalawiki.dto.cmd.query.list.ListArg
+import org.scalawiki.dto.cmd.query.meta.MetaArg
 import org.scalawiki.dto.cmd.query.prop.PropArg
 import org.scalawiki.wlx.dto.Image
 import play.api.data.validation.ValidationError
@@ -25,7 +26,8 @@ class Parser(val action: Action) {
       if (jsonObj.value.contains("error")) {
         throw mwException(jsonObj)
       } else {
-        val queryChild = lists.headOption.fold("pages")(_.name)
+        val queryArg = lists.headOption.orElse[EnumArg[_]](meta.headOption)
+        val queryChild = queryArg.fold("pages")(arg => arg.name)
 
         continue = getContinue(json, jsonObj)
 
@@ -36,6 +38,7 @@ class Parser(val action: Action) {
           val jsons = (queryChild match {
             case "pages" => pagesJson.asInstanceOf[JsObject].values
             case "allusers" | "usercontribs" => pagesJson.asInstanceOf[JsArray].value
+            case "globaluserinfo" => Seq(pagesJson)
             case _ => pagesJson.asInstanceOf[JsArray].value
           }).map(_.asInstanceOf[JsObject])
 
@@ -44,6 +47,7 @@ class Parser(val action: Action) {
               case "pages" => parsePage(j)
               case "allusers" | "users" => parseUser(j, queryChild)
               case "usercontribs" => parseUserContrib(j)
+              case "globaluserinfo" => parseGlobalUserInfo(j)
               case _ => parsePage(j)
             }
           }.toSeq
@@ -81,7 +85,7 @@ class Parser(val action: Action) {
 
   // hacky wrapping into page // TODO refactor return types
   def parseUser(userJson: JsObject, queryChild: String): Page = {
-    val hasEmptyRegistration = userJson.value.get("registration").collect({case jsStr: JsString => jsStr.value.isEmpty}).getOrElse(false)
+    val hasEmptyRegistration = userJson.value.get("registration").collect({ case jsStr: JsString => jsStr.value.isEmpty }).getOrElse(false)
     val mappedJson = if (hasEmptyRegistration) userJson - "registration" else userJson
 
     // TODO move out of loop or get from request?
@@ -150,6 +154,18 @@ class Parser(val action: Action) {
     }
   }
 
+  def parseGlobalUserInfo(json: JsObject) = {
+    val gui = json.validate(Parser.globalUserInfoReads).get
+
+    val user = new User(
+      id = Some(gui.id),
+      login = Some(gui.name),
+      editCount = Some(gui.editCount),
+      registration = Some(gui.registration)
+    )
+
+    new Page(id = None, title = gui.name, ns = Namespace.USER, revisions = Seq(Revision(user = Some(user))))
+  }
 
   def query = action.query.toSeq
 
@@ -157,13 +173,37 @@ class Parser(val action: Action) {
 
   def props: Seq[PropArg] = query.flatMap(_.props)
 
-//  def generator: Option[Generator] = query.flatMap(_.byType(manifest[Generator])).headOption
+  def meta: Seq[MetaArg] = query.flatMap(_.metas)
+
+  //  def generator: Option[Generator] = query.flatMap(_.byType(manifest[Generator])).headOption
 
 }
 
 object Parser {
 
   import play.api.libs.functional.syntax._
+
+  val TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+  val df = org.joda.time.format.DateTimeFormat.forPattern(TIMESTAMP_PATTERN).withZoneUTC()
+
+  val jodaDateTimeReads = jodaDateReads(TIMESTAMP_PATTERN)
+
+  def parseDate(input: String): DateTime = DateTime.parse(input, df)
+
+  def parseDateOpt(input: String): Option[DateTime] =
+    scala.util.control.Exception.allCatch[DateTime] opt parseDate(input)
+
+  def jodaDateReads(pattern: String, corrector: String => String = identity): Reads[DateTime] =
+    new Reads[DateTime] {
+      def reads(json: JsValue): JsResult[DateTime] = json match {
+        case JsNumber(d) => JsSuccess(new DateTime(d.toLong))
+        case JsString(s) => parseDateOpt(corrector(s)) match {
+          case Some(d) => JsSuccess(d)
+          case None => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.jodadate.format", pattern))))
+        }
+        case _ => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.date"))))
+      }
+    }
 
   val pageReads: Reads[Page] = (
     (__ \ "pageid").read[Long] and
@@ -172,40 +212,19 @@ object Parser {
       (__ \ "missing").readNullable[String] and
       (__ \ "subjectid").readNullable[Long] and
       (__ \ "talkid").readNullable[Long]
-    )(Page.full _)
-
-  def jodaDateReads(pattern: String, corrector: String => String = identity): Reads[org.joda.time.DateTime] = new Reads[org.joda.time.DateTime] {
-    import org.joda.time.DateTime
-
-    val df = org.joda.time.format.DateTimeFormat.forPattern(pattern).withZoneUTC()
-
-    def reads(json: JsValue): JsResult[DateTime] = json match {
-      case JsNumber(d) => JsSuccess(new DateTime(d.toLong))
-      case JsString(s) => parseDate(corrector(s)) match {
-        case Some(d) => JsSuccess(d)
-        case None => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.jodadate.format", pattern))))
-      }
-      case _ => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.date"))))
-    }
-
-    private def parseDate(input: String): Option[DateTime] =
-      scala.util.control.Exception.allCatch[DateTime] opt DateTime.parse(input, df)
-
-  }
-
-  val jodaDateTimeReads = jodaDateReads("yyyy-MM-dd'T'HH:mm:ss'Z'")
+    ) (Page.full _)
 
   val userReads: Reads[User] = (
     (__ \ "userid").readNullable[Long] and
       (__ \ "name").readNullable[String] and
       (__ \ "editcount").readNullable[Long] and
       (__ \ "registration").readNullable[DateTime](jodaDateTimeReads)
-    )(User.apply(
+    ) (User.apply(
     _: Option[Long],
     _: Option[String],
     _: Option[Long],
     _: Option[DateTime])
-    )
+  )
 
   def revisionsReads(pageId: Long): Reads[Seq[Revision]] = {
     implicit val revisionReads: Reads[Revision] = (
@@ -215,14 +234,14 @@ object Parser {
         (
           (__ \ "userid").readNullable[Long] and
             (__ \ "user").readNullable[String]
-          )(Contributor.apply _) and
+          ) (Contributor.apply _) and
         (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) and
         (__ \ "comment").readNullable[String] and
         (__ \ "*").readNullable[String] and
         (__ \ "size").readNullable[Long] and
         (__ \ "sha1").readNullable[String] //and
       //Reads.pure[Option[Long]](None) // textId
-      )(Revision.apply(_: Option[Long],
+      ) (Revision.apply(_: Option[Long],
       _: Option[Long],
       _: Option[Long],
       _: Option[Contributor],
@@ -248,14 +267,14 @@ object Parser {
         Reads.pure[Option[Long]](Some(pageId))
       //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
       //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
-      )(Image.basic _)
+      ) (Image.basic _)
 
     (__ \ "imageinfo").read[Seq[Image]]
   }
 
   def imageReads(): Reads[Seq[Image]] = {
     implicit val imageReads: Reads[Image] = (
-        (__ \ "title").read[String]   and
+      (__ \ "title").read[String] and
         (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) and
         (__ \ "user").readNullable[String] and
         (__ \ "size").readNullable[Long] and
@@ -266,7 +285,7 @@ object Parser {
         Reads.pure[Option[Long]](None)
       //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
       //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
-      )(Image.basic _)
+      ) (Image.basic _)
 
     (__ \ "images").read[Seq[Image]]
   }
@@ -282,9 +301,30 @@ object Parser {
       (__ \ "timestamp").read[DateTime](jodaDateTimeReads) and
       //      (__ \ "new").read[String] and
       //      (__ \ "minor").read[Boolea] and
-      (__ \ "comment").readNullable[String] and   // can be hidden
+      (__ \ "comment").readNullable[String] and // can be hidden
       (__ \ "size").readNullable[Long]
-    )(UserContrib.apply _)
+    ) (UserContrib.apply _)
+
+  def globalUserInfoReads: Reads[GlobalUserInfo] = {
+
+    implicit val sulAccountReads: Reads[SulAccount] = (
+      (__ \ "wiki").read[String] and
+        (__ \ "url").read[String] and
+        (__ \ "timestamp").read[DateTime](jodaDateTimeReads) and
+        (__ \ "method").read[String] and
+        (__ \ "editcount").read[Long] and
+        (__ \ "registration").read[DateTime](jodaDateTimeReads)
+      ) (SulAccount.apply _)
+
+    (
+      (__ \ "home").read[String] and
+        (__ \ "id").read[Long] and
+        (__ \ "registration").read[DateTime](jodaDateTimeReads) and
+        (__ \ "name").read[String] and
+        (__ \ "merged").read[Seq[SulAccount]] and
+        (__ \ "editcount").read[Long]
+      ) (GlobalUserInfo.apply _)
+  }
 
   //  val langLinkRead: Reads[(String, String)] = (
   //    (__ \ "lang").read[String] and
@@ -293,22 +333,4 @@ object Parser {
   //
   //  val langLinksReads: Reads[Seq[String, String]] =
   //    (__ \ "langlinks").read[Seq[(String, String)]](langLinkRead)
-}
-
-case class UserContrib(userId: Long,
-                       user: String,
-                       pageId: Long,
-                       revId: Long,
-                       parentId: Long,
-                       ns: Int,
-                       title: String,
-                       timestamp: DateTime,
-                       //                       isNew: Boolean,
-                       //                       isMinor: Boolean,
-                       comment: Option[String],
-                       size: Option[Long]) {
-
-  def toPage = new Page(Some(pageId), ns, title, revisions =
-    Seq(new Revision(Some(revId), Some(pageId), Some(parentId), Some(User(userId, user)), Option(timestamp), comment, None, size))
-  )
 }
