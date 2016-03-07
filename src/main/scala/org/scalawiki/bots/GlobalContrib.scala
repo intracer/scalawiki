@@ -69,4 +69,25 @@ object GlobalContrib {
         println(size)
     }
   }
+
+  def countNewComers(authors: Set[String], date: DateTime): Unit = {
+    val gc = new GlobalContrib()
+
+    Future.traverse(authors) { author =>
+      gc.checkContribs(author, date).map(author -> _)
+    }.map {
+      set =>
+        val seq = set.toSeq
+        val sorted = seq.sortBy(-_._2)
+        sorted.foreach(println)
+
+        val before = seq.filter(_._2 > 0)
+
+        println(s"Before ${before.size}")
+
+        val newComers = seq.filter(_._2 == 0)
+
+        println(s"newComers ${newComers.size}")
+    }
+  }
 }
