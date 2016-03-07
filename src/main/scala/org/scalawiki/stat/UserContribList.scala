@@ -1,9 +1,11 @@
 package org.scalawiki.stat
 
 import org.joda.time.DateTime
+import org.scalawiki.dto.Contributor
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
 import org.scalawiki.dto.cmd.query.list._
+import org.scalawiki.time.TimeRange
 import org.scalawiki.{MwBot, WithBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -13,33 +15,40 @@ object UserContribList extends WithBot {
 
   val host = MwBot.ukWiki
 
+  val allUsersQuery =
+    Action(Query(ListParam(
+      AllUsers(
+        AuProp(Seq("registration", "editcount", "blockinfo")),
+        AuWithEditsOnly(true), AuLimit("max"), AuExcludeGroup(Seq("bot")))
+    )))
+
+  def contribsQuery(user: Contributor, range: TimeRange, limit: String) = {
+    val ucParams = Seq(
+      UcUser(Seq(user.name.get)),
+      UcLimit(limit)
+    ) ++ range.start.map(UcStart) ++ range.end.map(UcEnd)
+
+    Action(Query(ListParam(UserContribs(ucParams: _*))))
+  }
+
+  def getUsers(action: Action): Future[Seq[Contributor]] =
+    bot.run(action).map(pages => pages.flatMap(_.lastRevisionUser))
 
   def main(args: Array[String]) {
-    val allUsersQuery =
-      Action(Query(ListParam(
-        AllUsers(
-          AuProp(Seq("registration", "editcount", "blockinfo")),
-          AuWithEditsOnly(true), AuLimit("max"), AuExcludeGroup(Seq("bot")))
-      )))
 
-    bot.run(allUsersQuery).map {
-      pages =>
+    getUsers(allUsersQuery).map {
+      allUsers =>
 
-        val users = pages.flatMap(_.lastRevisionUser).filter { u =>
+        val users = allUsers.filter { u =>
           u.editCount.exists(_ > 300) && u.blocked.forall(_ == false)
         }
 
-        val contribsFuture = Future.traverse(users) {
-          user =>
-            val contribsQuery = Action(Query(ListParam(
-              UserContribs(
-                UcUser(Seq(user.name.get)),
-                UcStart(new DateTime(2015, 4, 15, 0, 0)),
-                UcLimit("300")
-              )
-            )))
-
-            bot.run(contribsQuery)
+        val contribsFuture = Future.traverse(users) { user =>
+          bot.run(contribsQuery(
+            user,
+            TimeRange(Some(new DateTime(2015, 4, 15, 0, 0)), None),
+            "300")
+          )
         }
 
         contribsFuture.map {
