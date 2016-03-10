@@ -6,7 +6,7 @@ import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
-import org.scalawiki.http.{HttpClient, HttpClientImpl}
+import org.scalawiki.http.{HttpClient, HttpClientSpray}
 import org.scalawiki.{MwBot, WithBot}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Json, Reads, _}
@@ -91,7 +91,7 @@ object CopyVio extends WithBot {
 
   def main(args: Array[String]) {
     val system = ActorSystem()
-    val copyVio = new CopyVio(new HttpClientImpl(system))
+    val copyVio = new CopyVio(new HttpClientSpray(system))
 
     val revIdsFuture = pagesWithTemplate("Вікіпедія любить пам'ятки")
     recover(revIdsFuture)

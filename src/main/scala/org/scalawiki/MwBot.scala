@@ -6,13 +6,12 @@ import akka.io.IO
 import akka.pattern.ask
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
-import slick.driver.H2Driver.api._
-
-import org.scalawiki.http.{HttpClient, HttpClientImpl}
+import org.scalawiki.http.{HttpClient, HttpClientPlain, HttpClientSpray}
 import org.scalawiki.json.MwReads._
-import org.scalawiki.query.{DslQuery, SinglePageQuery, PageQuery}
+import org.scalawiki.query.{DslQuery, PageQuery, SinglePageQuery}
 import org.scalawiki.sql.MwDatabase
 import play.api.libs.json._
+import slick.driver.H2Driver.api._
 import spray.can.Http
 import spray.http._
 import spray.util._
@@ -132,7 +131,6 @@ class MwBotImpl(val http: HttpClient, val system: ActorSystem, val host: String,
       response => response.entity.data.toByteArray
     }
 
-
   override def post[T](reads: Reads[T], params: (String, String)*): Future[T] =
     post(reads, params.toMap)
 
@@ -227,10 +225,11 @@ object MwBot {
 
   val commons = "commons.wikimedia.org"
   val ukWiki = "uk.wikipedia.org"
+  val useSpray = true
 
   def create(host: String, withDb: Boolean = false): MwBot = {
     val system = ActorSystem()
-    val http = new HttpClientImpl(system)
+    val http = if (useSpray) new HttpClientSpray(system) else new HttpClientPlain
 
     val bot = if (withDb) {
       val db = Database.forURL("jdbc:h2:~/scalawiki", driver = "org.h2.Driver")

@@ -54,4 +54,7 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
     response.entity.asString(HttpCharsets.`UTF-8`)
 
   override def cookiesAndBody(response: HttpResponse): CookiesAndBody = ???
+
+  override def postMultiPart(url: Uri, params: Map[String, String]): Future[HttpResponse] = ???
+
 }
