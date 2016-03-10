@@ -62,7 +62,6 @@ class HttpClientPlain extends HttpClient {
 
   def setCookies(u: URLConnection) {
     val cookie = cookies.mkString("; ")
-//    println(s"Cookie $cookie")
     u.setRequestProperty("Cookie", cookie)
     if (zipped) u.setRequestProperty("Accept-encoding", "gzip")
     u.setRequestProperty("User-Agent", userAgent)
@@ -101,7 +100,7 @@ class HttpClientPlain extends HttpClient {
   def readResponse(connection: URLConnection) = {
     val is = if (zipped) new GZIPInputStream(connection.getInputStream) else connection.getInputStream
     val setCookie = connection.getHeaderFields.asScala.get("Set-Cookie").map(_.asScala).getOrElse(mutable.Buffer.empty[String])
-    cookies ++= grabCookies(setCookie)
+    setCookies(grabCookies(setCookie))
     val text = Source.fromInputStream(is).mkString
 
     val response = HttpResponse(

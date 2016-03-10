@@ -9,7 +9,9 @@ scalaVersion := "2.11.7"
 resolvers := Seq("spray repo" at "http://repo.spray.io",
   "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
   "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
-  Resolver.jcenterRepo)
+  Resolver.jcenterRepo
+    , Resolver.bintrayRepo("rick-beton", "maven")
+)
 
 libraryDependencies ++= {
   val akkaV = "2.3.14"
@@ -20,7 +22,7 @@ libraryDependencies ++= {
     "com.typesafe.play" %% "play-json" % "2.4.3",
     "com.typesafe.akka" %% "akka-actor" % akkaV,
     "com.typesafe" % "config" % "1.3.0",
-    "com.iheart" %% "ficus" % "1.1.3",
+    "com.iheart" %% "ficus" % "1.2.3",
     "commons-codec" % "commons-codec" % "1.10",
     "com.github.nscala-time" %% "nscala-time" % "2.10.0",
     "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
@@ -37,8 +39,9 @@ libraryDependencies ++= {
     "org.sweble.wikitext" % "swc-engine" % "2.0.0",
     "org.jsoup" % "jsoup" % "1.8.2",
     "com.github.tototoshi" %% "scala-csv" % "1.2.2",
-   // "org.apache.poi" % "poi-scratchpad" % "3.13",
-   // "org.apache.poi" % "poi-ooxml" % "3.13",
+    "org.apache.poi" % "poi-scratchpad" % "3.13",
+    "org.apache.poi" % "poi-ooxml" % "3.13",
+    "uk.co.bigbeeconsultants" %% "bee-client" % "0.29.1",
 
     "org.specs2" %% "specs2-core" % "3.6.4" % "test",
     "org.specs2" %% "specs2-matcher-extra" % "3.6.4" % "test",
