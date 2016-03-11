@@ -4,13 +4,13 @@ organization := "org.scalawiki"
 
 version := "0.4-M3"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 resolvers := Seq("spray repo" at "http://repo.spray.io",
   "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
   "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
-  Resolver.jcenterRepo
-    , Resolver.bintrayRepo("rick-beton", "maven")
+  Resolver.jcenterRepo,
+  Resolver.bintrayRepo("rick-beton", "maven")
 )
 
 libraryDependencies ++= {
@@ -31,7 +31,7 @@ libraryDependencies ++= {
     //  "com.zaxxer" % "HikariCP" % "2.4.1",
     "com.h2database" % "h2" % "1.4.189",
     "com.github.wookietreiber" %% "scala-chart" % "0.5.0",
-//    "org.jfree" % "jfreesvg" % "2.1",
+    //    "org.jfree" % "jfreesvg" % "2.1",
     "com.fasterxml" % "aalto-xml" % "1.0.0",
     //    "org.codehaus.woodstox" % "woodstox-core-asl" % "4.4.1",
     "org.apache.commons" % "commons-compress" % "1.9",
@@ -39,15 +39,17 @@ libraryDependencies ++= {
     "org.sweble.wikitext" % "swc-engine" % "2.0.0",
     "org.jsoup" % "jsoup" % "1.8.2",
     "com.github.tototoshi" %% "scala-csv" % "1.2.2",
-    "org.apache.poi" % "poi-scratchpad" % "3.13",
-    "org.apache.poi" % "poi-ooxml" % "3.13",
     "uk.co.bigbeeconsultants" %% "bee-client" % "0.29.1",
+    //    "org.apache.poi" % "poi-scratchpad" % "3.13",
+    //    "org.apache.poi" % "poi-ooxml" % "3.13",
 
     "org.specs2" %% "specs2-core" % "3.6.4" % "test",
     "org.specs2" %% "specs2-matcher-extra" % "3.6.4" % "test",
     "com.google.jimfs" % "jimfs" % "1.0" % "test"
   )
 }
+
+scalacOptions ++= Seq("-Ybackend:GenBCode")
 
 initialize := {
   val _ = initialize.value // run the previous initialization
