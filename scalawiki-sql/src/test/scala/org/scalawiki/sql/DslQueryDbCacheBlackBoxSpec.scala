@@ -20,7 +20,7 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
 
   sequential
 
-  def database = Some(mwDb)
+  def database = mwDb
 
   var bot: MwBot = _
 
@@ -35,6 +35,11 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
   def textDao = mwDb.textDao
 
   val dummyAction = Action(DummyActionArg)
+
+  override def getBot(commands: Command*) = {
+    val apiBot = super.getBot(commands:_*)
+    new DbCachedBot(apiBot, database)
+  }
 
   override def before = {
     dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
@@ -192,7 +197,8 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
         // fetch for page2 content for cache
         new Command(Map("action" -> "query",
           "pageids" -> "4571809",
-          "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid", "continue" -> ""), pagesJson(Seq(page2(Some(pageText2))))
+          "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid", "continue" -> ""),
+          pagesJson(Seq(page2(Some(pageText2))))
         ),
 
         // query for page 1 and page2  ids in category. content should be in cache by now
@@ -335,6 +341,4 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
       )
     }
   }
-
-
 }

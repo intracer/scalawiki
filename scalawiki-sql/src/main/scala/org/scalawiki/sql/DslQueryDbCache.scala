@@ -1,5 +1,6 @@
 package org.scalawiki.sql
 
+import org.scalawiki.{MwBot, MwBotImpl}
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, TitlesParam}
@@ -7,6 +8,14 @@ import org.scalawiki.query.DslQuery
 import org.scalawiki.sql.dao.PageDao
 
 import scala.concurrent.Future
+
+class DbCachedBot(apiBot: MwBotImpl, database: MwDatabase)
+  extends MwBotImpl(apiBot.http, apiBot.system, apiBot.host) {
+
+  override def run(action: Action): Future[Seq[Page]] = {
+    new DslQueryDbCache(new DslQuery(action, apiBot), database).run()
+  }
+}
 
 class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
 

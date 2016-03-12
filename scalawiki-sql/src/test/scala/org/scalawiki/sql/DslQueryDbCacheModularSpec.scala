@@ -34,6 +34,11 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
 
   val dummyAction = Action(DummyActionArg)
 
+  override def getBot(commands: Command*) = {
+    val apiBot = super.getBot(commands:_*)
+    new DbCachedBot(apiBot, database)
+  }
+
   override def before = {
     dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
     mwDb = new MwDatabase(dc.db)

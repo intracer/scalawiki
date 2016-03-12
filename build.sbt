@@ -29,7 +29,6 @@ lazy val `scalawiki-core` =
         "com.github.nscala-time" %% "nscala-time" % "2.10.0",
         "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
         "ch.qos.logback" % "logback-classic" % "1.1.3",
-        "com.github.tototoshi" %% "scala-csv" % "1.2.2",
         "uk.co.bigbeeconsultants" %% "bee-client" % "0.29.1",
         "org.sweble.wikitext" % "swc-engine" % "2.0.0",
         "commons-codec" % "commons-codec" % "1.10"
@@ -77,7 +76,7 @@ lazy val `spray-cookies` =
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
       "io.spray" %% "spray-client" % sprayV,
-      "io.spray" %% "spray-json" % "1.2.6",
+      "io.spray" %% "spray-json" % "1.3.2",
       "com.typesafe.akka" %% "akka-actor" % akkaV,
       "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"
     ))

@@ -1,12 +1,12 @@
 package org.scalawiki.util
 
-import org.scalawiki.http.{CookiesAndBody, HttpClient}
+import org.scalawiki.http.HttpClient
 import org.specs2.matcher.Matchers
 import spray.http.{HttpResponse, _}
 
 import scala.collection.mutable
-import scala.concurrent.{Future, Promise}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future, Promise}
 
 class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matchers with HttpClient {
 
