@@ -36,15 +36,16 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
 
   override def getBot(commands: Command*) = {
     val apiBot = super.getBot(commands:_*)
-    new DbCachedBot(apiBot, database)
+
+    mwDb.dropTables()
+    mwDb.createTables()
+
+    new DbCachedBot(apiBot, mwDb)
   }
 
   override def before = {
     dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
     mwDb = new MwDatabase(dc.db)
-
-    mwDb.dropTables()
-    mwDb.createTables()
   }
 
   override def after = {
@@ -104,7 +105,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
           Page(Some(pageId), 0, title, Seq(revision))
       }
 
-      cache.toDb(pageDao, pages, Set.empty)
+      cache.toDb(pages, Set.empty)
 
       val dbTexts = textDao.list
       dbTexts.map(_.text) aka "texts" must_== texts
@@ -156,7 +157,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
           p.copy(revisions = Seq(newRev))
       }
 
-      cache.toDb(pageDao, newPages, pages.flatMap(_.id).toSet)
+      cache.toDb(newPages, pages.flatMap(_.id).toSet)
 
       val dbPages = pageDao.list
       dbPages.flatMap(_.revisions.headOption.flatMap(_.revId)) aka "revIds in pages" must_== revIds.map(_ + 100)
@@ -374,7 +375,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
       )
 
       val notInDbIds = Seq(1L, 2L, 3L)
-      val notInDbQuery = new DslQueryDbCache(new DslQuery(Action(query), null), database).notInDBQuery(query, notInDbIds)
+      val notInDbQuery = new DslQueryDbCache(new DslQuery(Action(query), super.getBot()), database).notInDBQuery(query, notInDbIds)
 
       notInDbQuery === Seq(Query(
         Prop(

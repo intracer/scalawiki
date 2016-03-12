@@ -57,14 +57,15 @@ class MwDatabase(val db: Database,
     db.run(MTable.getTables).map {
       dbTables =>
         val dbTableNames = dbTables.map(_.name.name).toSet
-        tables.filter(t => {
+        tables.filter { t =>
           val tableName = t.baseTableRow.tableName
           val contains = dbTableNames.contains(tableName)
+
           if (existing)
             contains
           else
             !contains
-        })
+        }
     }
   }
 

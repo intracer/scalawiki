@@ -1,11 +1,10 @@
 package org.scalawiki.sql
 
-import org.scalawiki.{MwBot, MwBotImpl}
+import org.scalawiki.MwBotImpl
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, TitlesParam}
 import org.scalawiki.query.DslQuery
-import org.scalawiki.sql.dao.PageDao
 
 import scala.concurrent.Future
 
@@ -32,14 +31,14 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
   val pageDao = database.pageDao
 
   def run(): Future[Seq[Page]] = {
-      dslQuery.action.query.map {
-        query =>
-          if (cachingProvided(query)) {
-            runWithCaching(query)
-          } else {
-            dslQuery.run()
-          }
-      }.getOrElse(Future.successful(Seq.empty))
+    dslQuery.action.query.map {
+      query =>
+        if (cachingProvided(query)) {
+          runWithCaching(query)
+        } else {
+          dslQuery.run()
+        }
+    }.getOrElse(Future.successful(Seq.empty))
   }
 
   def cachingProvided(query: Query): Boolean = query.revisions.exists(_.hasContent)
@@ -49,29 +48,23 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
     idsOnlyApiQuery(query).run().flatMap {
       idsOnlyPages =>
 
-        val ids = idsOnlyPages.flatMap(_.id).toSet
+        val pageIds = idsOnlyPages.flatMap(_.id).toSet
+        val revIds = idsOnlyPages.flatMap(_.revisions.headOption.flatMap(_.id)).toSet
 
-        checkUnusualCases(idsOnlyPages, ids)
+        checkUnusualCases(idsOnlyPages)
 
-        val dbPages = fromDb(idsOnlyPages, ids)
+        val dbPages = fromDb(revIds, pageIds)
 
-        notInDb(query, ids, dbPages).map {
-          notInDbPages =>
-            mergePages(dbPages, notInDbPages)
+        notInDb(query, pageIds, dbPages).map {
+          mergePages(dbPages, _)
         }
     }
   }
 
-  def checkUnusualCases(pages: Seq[Page], ids: Set[Long]): Unit = {
+  def checkUnusualCases(pages: Seq[Page]): Unit = {
     val noRevs = pages.filter(p => p.revisions.isEmpty || p.revisions.head.id.isEmpty)
     if (noRevs.nonEmpty) {
       log.error("No revs pages" + noRevs.toBuffer)
-    }
-
-    val revIds = pages.flatMap(_.revisions.headOption.flatMap(_.id)).toSet
-
-    if (revIds.size != ids.size) {
-      log.error(s"pageIds.size ${ids.size}, revIds.size: ${revIds.size}")
     }
   }
 
@@ -103,8 +96,8 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
     val dbIds = dbPages.filter(_.revisions.nonEmpty).flatMap(_.id).toSet
     val notInDbIds = ids -- dbIds
 
-//    log.info(s"fully in db pageIds: $dbIds")
-//    log.info(s"not in DB (fully or rev missing) pageIds: $notInDbIds")
+    //    log.info(s"fully in db pageIds: $dbIds")
+    //    log.info(s"not in DB (fully or rev missing) pageIds: $notInDbIds")
 
     if (notInDbIds.isEmpty) {
       Future.successful(Seq.empty)
@@ -132,11 +125,9 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
     }.toSeq
   }
 
-  def fromDb(pages: Seq[Page], ids: Set[Long]): Seq[Page] = {
+  def fromDb(revIds: Set[Long], ids: Set[Long]): Seq[Page] = {
     val startTime = System.nanoTime()
-    log.info(s"${bot.host} query ${pages.size} pages from db")
-
-    val revIds = pages.flatMap(_.revisions.headOption.flatMap(_.id)).toSet
+    log.info(s"${bot.host} query ${ids.size} pages from db")
 
     if (revIds.size != ids.size) {
       log.error(s"pageIds.size ${ids.size}, revIds.size: ${revIds.size}")
@@ -147,7 +138,7 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
         if (revIds.contains(p.revisions.head.id.get)) p else p.copy(revisions = Seq.empty)
     }
 
-  //  log.info(s"pagesFromDb pageIds ${pagesFromDb.flatMap(_.id)}")
+    //  log.info(s"pagesFromDb pageIds ${pagesFromDb.flatMap(_.id)}")
 
     val estimatedTime = (System.nanoTime() - startTime) / Math.pow(10, 9)
     log.info(s"${bot.host} Db query completed with ${pagesFromDb.size} pages in $estimatedTime seconds")
@@ -155,22 +146,22 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
   }
 
   /**
-   *
-   * @param toDbPages pages to save in Db. Can be either new pages or new page revisions
-   * @param needNewRevPageIds ids of pages that are already in db but have new revisions to add
-   */
+    *
+    * @param toDbPages         pages to save in Db. Can be either new pages or new page revisions
+    * @param needNewRevPageIds ids of pages that are already in db but have new revisions to add
+    */
   def toDb(toDbPages: Seq[Page], needNewRevPageIds: Set[Long]) = {
     val startTime = System.nanoTime()
     log.info(s"${bot.host} insert ${toDbPages.size} pages to db")
 
-//    log.info(s"toDbPages pageIds: ${toDbPages.flatMap(_.id).toBuffer}")
-//    log.info(s"old rev inDb pageIds: $inDbPageIds")
+    //    log.info(s"toDbPages pageIds: ${toDbPages.flatMap(_.id).toBuffer}")
+    //    log.info(s"old rev inDb pageIds: $inDbPageIds")
 
 
     val (newRevPages, newPages) = toDbPages.partition(p => needNewRevPageIds.contains(p.id.get))
 
-//    log.info(s"newPages pageIds: ${newPages.flatMap(_.id).toBuffer}")
-//    log.info(s"newRevPages pageIds: ${newRevPages.flatMap(_.id).toBuffer}")
+    //    log.info(s"newPages pageIds: ${newPages.flatMap(_.id).toBuffer}")
+    //    log.info(s"newRevPages pageIds: ${newRevPages.flatMap(_.id).toBuffer}")
 
     if (newPages.nonEmpty) {
 

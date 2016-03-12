@@ -6,7 +6,6 @@ import org.scalawiki.MwBot
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.{Page, Revision, User}
 import org.scalawiki.query.DummyActionArg
-import org.scalawiki.sql.MwDatabase
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.{BeforeAfter, Specification}
 import slick.backend.DatabaseConfig
@@ -38,19 +37,20 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
 
   override def getBot(commands: Command*) = {
     val apiBot = super.getBot(commands:_*)
+
+    mwDb.dropTables()
+    mwDb.createTables()
+
     new DbCachedBot(apiBot, database)
   }
 
   override def before = {
     dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
     mwDb = new MwDatabase(dc.db)
-
-    mwDb.dropTables()
-    mwDb.createTables()
   }
 
   override def after = {
-    //dc.db.close()
+ //   dc.db.close()
   }
 
   val pageText1 = "some vandalism"

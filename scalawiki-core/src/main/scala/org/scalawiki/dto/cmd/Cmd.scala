@@ -107,6 +107,7 @@ trait ActionArg extends EnumArg[ActionArg] {
 
 case class Action(override val arg: ActionArg) extends EnumParameter[ActionArg]("action", "") {
   def query: Option[Query] = args.collect { case q: Query => q }.headOption
+  override def toString = pairs.toString()
 }
 
 

@@ -69,7 +69,7 @@ lazy val `scalawiki-sql` =
       "com.typesafe.slick" %% "slick-hikaricp" % "3.1.1",
       "com.h2database" % "h2" % "1.4.189"
     ))
-    .dependsOn(`scalawiki-core`)
+    .dependsOn(`scalawiki-core` % "compile->compile;test->test")
 
 lazy val `spray-cookies` =
   (project in file("spray-cookies"))
