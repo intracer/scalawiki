@@ -240,12 +240,14 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
 
       val pageId = pageDao.insertAll(Seq(page)).head
 
-      val images = imageDao.list
-      images.size === 1
-      images.head === image.copy(pageId = pageId)
+      eventually {
+        val images = imageDao.list
+        images.size === 1
+        images.head === image.copy(pageId = pageId)
 
-      val dbImage = imageDao.get(title)
-      dbImage === Some(image.copy(pageId = pageId))
+        val dbImage = imageDao.get(title)
+        dbImage === Some(image.copy(pageId = pageId))
+      }
     }
   }
 }
