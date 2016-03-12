@@ -41,7 +41,7 @@ lazy val `scalawiki-bots` =
       //    "org.apache.poi" % "poi-scratchpad" % "3.13",
       //    "org.apache.poi" % "poi-ooxml" % "3.13",
     ))
-    .dependsOn(`scalawiki-core`, `scalawiki-wlx`)
+    .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
 
 
 lazy val `scalawiki-dumps` =
