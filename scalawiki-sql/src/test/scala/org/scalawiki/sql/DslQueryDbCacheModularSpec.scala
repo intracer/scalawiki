@@ -1,4 +1,4 @@
-package org.scalawiki.query
+package org.scalawiki.sql
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.cmd.Action
@@ -7,7 +7,7 @@ import org.scalawiki.dto.cmd.query.prop.rvprop.{Content, Ids, RvProp}
 import org.scalawiki.dto.cmd.query.prop.{Info, Prop, Revisions, RvPropArgs}
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
 import org.scalawiki.dto.{Page, Revision, User}
-import org.scalawiki.sql.MwDatabase
+import org.scalawiki.query.{DslQuery, DummyActionArg}
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.{BeforeAfter, Specification}
 import slick.backend.DatabaseConfig
@@ -18,7 +18,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
 
   sequential
 
-  override def database = Some(mwDb)
+  def database = mwDb
 
   var bot: MwBot = _
 
@@ -37,6 +37,9 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
   override def before = {
     dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
     mwDb = new MwDatabase(dc.db)
+
+    mwDb.dropTables()
+    mwDb.createTables()
   }
 
   override def after = {
@@ -81,7 +84,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
     "insert new pages" in {
       bot = getBot()
 
-      val cache = new DslQueryDbCache(new DslQuery(dummyAction, bot))
+      val cache = new DslQueryDbCache(new DslQuery(dummyAction, bot), database)
 
       val (titles, texts, pageIds, revIds) = (
         (1 to 10) map ("title" + _),
@@ -124,7 +127,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
     "insert new revisions" in {
       bot = getBot()
 
-      val cache = new DslQueryDbCache(new DslQuery(dummyAction, bot))
+      val cache = new DslQueryDbCache(new DslQuery(dummyAction, bot), database)
 
       val (titles, texts, pageIds, revIds) = (
         (1 to 10) map ("title" + _),
@@ -173,7 +176,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
     "return empty seq" in {
       bot = getBot()
 
-      val cache = new DslQueryDbCache(new DslQuery(dummyAction, bot))
+      val cache = new DslQueryDbCache(new DslQuery(dummyAction, bot), database)
 
       val (titles, texts, pageIds, revIds) = (
         (1 to 10) map ("title" + _),
@@ -225,7 +228,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
         Generator(ListArgs.toDsl("categorymembers", Some("Category:SomeCategory"), None, Set.empty, Some("max")))
       )
 
-      val cache = new DslQueryDbCache(new DslQuery(Action(query), bot))
+      val cache = new DslQueryDbCache(new DslQuery(Action(query), bot), database)
 
       val dbPages = titles.zip(texts).zip(pageIds).zip(revIds) map {
         case (((title, text), pageId), revId) =>
@@ -240,7 +243,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
       val slice = dbPages.take(5) ++ dbPages.drop(5).map(_.copy(revisions = Seq.empty))
       val notInDb = cache.notInDb(query, pageIds.toSet, slice).await
 
-      notInDb.toSeq === dbPages.drop(5)
+      notInDb === dbPages.drop(5)
     }
 
     "return by generator" in {
@@ -273,7 +276,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
         Generator(ListArgs.toDsl("categorymembers", Some("Category:SomeCategory"), None, Set.empty, Some("max")))
       )
 
-      val cache = new DslQueryDbCache(new DslQuery(Action(query), bot))
+      val cache = new DslQueryDbCache(new DslQuery(Action(query), bot), database)
 
       val dbPages = titles.zip(texts).zip(pageIds).zip(revIds) map {
         case (((title, text), pageId), revId) =>
@@ -287,7 +290,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
 
       val notInDb = cache.notInDb(query, pageIds.toSet, Seq.empty).await
 
-      notInDb.toSeq === dbPages
+      notInDb === dbPages
     }
 
 
@@ -327,7 +330,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
         Generator(ListArgs.toDsl("categorymembers", Some("Category:SomeCategory"), None, Set.empty, Some("max")))
       )
 
-      val cache = new DslQueryDbCache(new DslQuery(Action(query), bot))
+      val cache = new DslQueryDbCache(new DslQuery(Action(query), bot), database)
 
       val dbPages = titles.zip(texts).zip(pageIds).zip(revIds) map {
         case (((title, text), pageId), revId) =>
@@ -344,7 +347,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
         dbPages.drop(95)
       val notInDb = cache.notInDb(query, pageIds.toSet, slice).await
 
-      notInDb.toSeq === dbPages.slice(5, 95)
+      notInDb === dbPages.slice(5, 95)
     }
   }
 
@@ -366,7 +369,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
       )
 
       val notInDbIds = Seq(1L, 2L, 3L)
-      val notInDbQuery = new DslQueryDbCache(new DslQuery(Action(query), null)).notInDBQuery(query, notInDbIds)
+      val notInDbQuery = new DslQueryDbCache(new DslQuery(Action(query), null), database).notInDBQuery(query, notInDbIds)
 
       notInDbQuery === Seq(Query(
         Prop(

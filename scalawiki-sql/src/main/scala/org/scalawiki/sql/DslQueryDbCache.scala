@@ -1,35 +1,31 @@
-package org.scalawiki.query
+package org.scalawiki.sql
 
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, TitlesParam}
+import org.scalawiki.query.DslQuery
 import org.scalawiki.sql.dao.PageDao
 
 import scala.concurrent.Future
 
-class DslQueryDbCache(val dslQuery: DslQuery) {
+class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
 
   val bot = dslQuery.bot
 
   var cacheStat: Option[CacheStat] = None
 
-  def dbCache = bot.dbCache
-
   import scala.concurrent.ExecutionContext.Implicits.global
   import org.scalawiki.dto.cmd.query.Query
 
   def run(): Future[Seq[Page]] = {
-    if (!dbCache) dslQuery.run()
-    else {
       val action = dslQuery.action
       action.query.map {
         query =>
 
           val hasContent = query.revisions.exists(_.hasContent)
 
-          if (hasContent && dbCache) {
-            val mwDb = bot.mwDb.get
-            val pageDao = mwDb.pageDao
+          if (hasContent) {
+            val pageDao = database.pageDao
 
             val idsAction = Action(query.revisionsWithoutContent)
 
@@ -80,7 +76,6 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
             dslQuery.run()
           }
       }.getOrElse(Future.successful(Seq.empty))
-    }
   }
 
   def notInDb(query: Query, ids: Set[Long], dbPages: Seq[Page]): Future[Seq[Page]] = {
@@ -168,7 +163,7 @@ class DslQueryDbCache(val dslQuery: DslQuery) {
     }
 
     if (newRevPages.nonEmpty) {
-      val revisionDao = bot.mwDb.get.revisionDao
+      val revisionDao = database.revisionDao
 
       val newRevisions = newRevPages.map(_.revisions.head)
       revisionDao.insertAll(newRevisions)

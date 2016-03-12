@@ -85,6 +85,13 @@ class MwDatabase(val db: Database,
 
 object MwDatabase {
 
+  def create(host: String) = {
+    val db = Database.forURL("jdbc:h2:~/scalawiki", driver = "org.h2.Driver")
+    val database = new MwDatabase(db, Some(MwDatabase.dbName(host)))
+    database.createTables()
+    database
+  }
+
   def dbName(host: String): String = {
     host.split("\\.").toList match {
       case "commons" :: "wikimedia" :: xs => "commonswiki"

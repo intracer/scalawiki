@@ -3,8 +3,14 @@ import sbt.Keys._
 lazy val scalawiki =
   (project in file("."))
     .settings(commonSettings)
-    .dependsOn(`scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `spray-cookies`)
-    .aggregate(`scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `spray-cookies`)
+    .dependsOn(
+      `scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `scalawiki-sql`,
+      `spray-cookies`
+    )
+    .aggregate(
+      `scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `scalawiki-sql`,
+      `spray-cookies`
+    )
 
 val akkaV = "2.3.14"
 val sprayV = "1.3.3"
@@ -22,9 +28,6 @@ lazy val `scalawiki-core` =
         "com.iheart" %% "ficus" % "1.2.3",
         "com.github.nscala-time" %% "nscala-time" % "2.10.0",
         "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
-        "com.typesafe.slick" %% "slick" % "3.1.1",
-        "com.typesafe.slick" %% "slick-hikaricp" % "3.1.1",
-        "com.h2database" % "h2" % "1.4.189",
         "ch.qos.logback" % "logback-classic" % "1.1.3",
         "com.github.tototoshi" %% "scala-csv" % "1.2.2",
         "uk.co.bigbeeconsultants" %% "bee-client" % "0.29.1",
@@ -43,7 +46,6 @@ lazy val `scalawiki-bots` =
     ))
     .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
 
-
 lazy val `scalawiki-dumps` =
   (project in file("scalawiki-dumps"))
     .settings(commonSettings: _*)
@@ -58,6 +60,16 @@ lazy val `scalawiki-wlx` =
   (project in file("scalawiki-wlx"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq("com.github.wookietreiber" %% "scala-chart" % "0.5.0"))
+    .dependsOn(`scalawiki-core`, `scalawiki-sql`)
+
+lazy val `scalawiki-sql` =
+  (project in file("scalawiki-sql"))
+    .settings(commonSettings: _*)
+    .settings(libraryDependencies ++= Seq(
+      "com.typesafe.slick" %% "slick" % "3.1.1",
+      "com.typesafe.slick" %% "slick-hikaricp" % "3.1.1",
+      "com.h2database" % "h2" % "1.4.189"
+    ))
     .dependsOn(`scalawiki-core`)
 
 lazy val `spray-cookies` =
@@ -65,7 +77,7 @@ lazy val `spray-cookies` =
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
       "io.spray" %% "spray-client" % sprayV,
-      "io.spray" %%  "spray-json" % "1.2.6",
+      "io.spray" %% "spray-json" % "1.2.6",
       "com.typesafe.akka" %% "akka-actor" % akkaV,
       "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"
     ))

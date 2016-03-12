@@ -1,10 +1,11 @@
-package org.scalawiki.query
+package org.scalawiki.sql
 
 import java.util.concurrent.TimeUnit
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.{Page, Revision, User}
+import org.scalawiki.query.DummyActionArg
 import org.scalawiki.sql.MwDatabase
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.{BeforeAfter, Specification}
@@ -19,7 +20,7 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
 
   sequential
 
-  override def database = Some(mwDb)
+  def database = Some(mwDb)
 
   var bot: MwBot = _
 
@@ -38,6 +39,9 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
   override def before = {
     dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
     mwDb = new MwDatabase(dc.db)
+
+    mwDb.dropTables()
+    mwDb.createTables()
   }
 
   override def after = {
