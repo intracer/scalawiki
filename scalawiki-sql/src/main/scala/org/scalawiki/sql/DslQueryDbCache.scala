@@ -27,64 +27,72 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
   import org.scalawiki.dto.cmd.query.Query
 
   def run(): Future[Seq[Page]] = {
-      val action = dslQuery.action
-      action.query.map {
+      dslQuery.action.query.map {
         query =>
-
-          val hasContent = query.revisions.exists(_.hasContent)
-
-          if (hasContent) {
-            val pageDao = database.pageDao
-
-            val idsAction = Action(query.revisionsWithoutContent)
-
-            val idsQuery = new DslQuery(idsAction, dslQuery.bot)
-            idsQuery.run().flatMap {
-              pages =>
-
-                val ids = pages.flatMap(_.id).toSet
-                val noRevs = pages.filter(p => p.revisions.isEmpty || p.revisions.head.id.isEmpty)
-                if (noRevs.nonEmpty) {
-                  bot.log.error("No revs pages" + noRevs.toBuffer)
-                }
-
-                val revIds = pages.flatMap(_.revisions.headOption.flatMap(_.id)).toSet
-
-                if (revIds.size != ids.size) {
-                  bot.log.error(s"pageIds.size ${ids.size}, revIds.size: ${revIds.size}")
-                }
-
-                val dbPagesAll = fromDb(pageDao, pages, ids)
-
-                val dbPages = dbPagesAll.filter(p => ids.contains(p.id.get)).map {
-                  p =>
-                    if (revIds.contains(p.revisions.head.id.get)) p else p.copy(revisions = Seq.empty)
-                }
-
-                notInDb(query, ids, dbPages).map {
-                  notInDbPages =>
-
-                    if (notInDbPages.nonEmpty) {
-                      val needNewRevPageIds = dbPages.filter(_.revisions.isEmpty).flatMap(_.id).toSet
-
-                      val duplicates = notInDbPages.groupBy(_.id.get).values.filter(_.size > 1)
-                      if (duplicates.nonEmpty) {
-                        bot.log.error("Duplicates present from API" + duplicates.toBuffer)
-                      }
-
-                      toDb(pageDao, notInDbPages, needNewRevPageIds)
-                    }
-
-                    cacheStat = Some(CacheStat(notInDbPages.size, dbPages.size))
-                    bot.log.info(s"${bot.host} $cacheStat")
-
-                    dbPages.filter(_.revisions.nonEmpty) ++ notInDbPages
-                }
-            }
+          if (cachingProvided(query)) {
+            runWithCaching(query)
           } else {
             dslQuery.run()
           }
       }.getOrElse(Future.successful(Seq.empty))
+  }
+
+  def cachingProvided(query: Query): Boolean = query.revisions.exists(_.hasContent)
+
+  def runWithCaching(query: Query): Future[Seq[Page]] = {
+    val pageDao = database.pageDao
+
+    idsOnlyApiQuery(query).run().flatMap {
+      pages =>
+
+        val ids = pages.flatMap(_.id).toSet
+
+        checkUnusualCases(pages, ids)
+
+        val dbPages = fromDb(pageDao, pages, ids)
+
+        notInDb(query, ids, dbPages).map {
+          notInDbPages =>
+            mergePages(pageDao, dbPages, notInDbPages)
+        }
+    }
+  }
+
+  def checkUnusualCases(pages: Seq[Page], ids: Set[Long]): Unit = {
+    val noRevs = pages.filter(p => p.revisions.isEmpty || p.revisions.head.id.isEmpty)
+    if (noRevs.nonEmpty) {
+      bot.log.error("No revs pages" + noRevs.toBuffer)
+    }
+
+    val revIds = pages.flatMap(_.revisions.headOption.flatMap(_.id)).toSet
+
+    if (revIds.size != ids.size) {
+      bot.log.error(s"pageIds.size ${ids.size}, revIds.size: ${revIds.size}")
+    }
+  }
+
+  def idsOnlyApiQuery(query: Query): DslQuery = {
+    val idsAction = Action(query.revisionsWithoutContent)
+
+    new DslQuery(idsAction, dslQuery.bot)
+  }
+
+  def mergePages(pageDao: PageDao, dbPages: Seq[Page], notInDbPages: Seq[Page]): Seq[Page] = {
+    if (notInDbPages.nonEmpty) {
+      val needNewRevPageIds = dbPages.filter(_.revisions.isEmpty).flatMap(_.id).toSet
+
+      val duplicates = notInDbPages.groupBy(_.id.get).values.filter(_.size > 1)
+      if (duplicates.nonEmpty) {
+        bot.log.error("Duplicates present from API" + duplicates.toBuffer)
+      }
+
+      toDb(pageDao, notInDbPages, needNewRevPageIds)
+    }
+
+    cacheStat = Some(CacheStat(notInDbPages.size, dbPages.size))
+    bot.log.info(s"${bot.host} $cacheStat")
+
+    dbPages.filter(_.revisions.nonEmpty) ++ notInDbPages
   }
 
   def notInDb(query: Query, ids: Set[Long], dbPages: Seq[Page]): Future[Seq[Page]] = {
@@ -130,10 +138,10 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
       bot.log.error(s"pageIds.size ${ids.size}, revIds.size: ${revIds.size}")
     }
 
-    val pagesFromDb = pageDao.listWithText/*.filter(p => ids.contains(p.id.get)).map {
+    val pagesFromDb = pageDao.listWithText.filter(p => ids.contains(p.id.get)).map {
       p =>
         if (revIds.contains(p.revisions.head.id.get)) p else p.copy(revisions = Seq.empty)
-    }*/
+    }
 
   //  bot.log.info(s"pagesFromDb pageIds ${pagesFromDb.flatMap(_.id)}")
 
