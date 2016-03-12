@@ -1,7 +1,7 @@
 spray-cookies
 =============
 
-A cookiejar exploration for spray-client
+A cookiejar exploration for spray-client from https://github.com/martijnhoekstra/spray-cookies
 
 spray-cookies implements a cookiejar that can be plugged in to a spray-client pipeline. The cookiejar itself is mutable so that it remembers the current state
 
