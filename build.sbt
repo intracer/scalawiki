@@ -51,6 +51,12 @@ libraryDependencies ++= {
 
 scalacOptions ++= Seq("-Ybackend:GenBCode")
 
+/**
+  * For now the only reason to require Java 8 is
+  * "com.typesafe.play" %% "play-json" % "2.4.3" dependency.
+  * It is possible to implement crossbuild ([[https://github.com/intracer/scalawiki/issues/36 gh issue]])
+  * for Java 7 with play-json 2.3
+  */
 initialize := {
   val _ = initialize.value // run the previous initialization
   val required = VersionNumber("1.8")
