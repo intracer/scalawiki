@@ -1,0 +1,29 @@
+== {{int:filedesc}} ==
+{{Art Photo
+ |artist             =
+ |title              = {{uk|${title}}}
+ |description        = {{uk|${title}}}
+ |date               =
+ |medium             =
+ |dimensions         =
+ |institution        = {{Institution:NIEZ Museum}}
+ |location           = [[:uk:$location|]]
+ |references         =
+ |object history     =
+ |exhibition history =
+ |credit line        =
+ |inscriptions       =
+ |notes              =
+ |accession number   =
+ |artwork license    =
+ |place of creation  =
+ |photo description  =
+ |photo date         =
+ |photographer       =
+ |source             = {{GLAM Ukraine - National Historic-Ethnographic Reserve "Pereyaslav"}}
+ |photo license      =
+ |other_versions     =
+}}
+
+== {{int:license-header}} ==
+{{OTRS Pending}}
