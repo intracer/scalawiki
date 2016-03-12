@@ -57,9 +57,4 @@ class HttpClientBee extends HttpClient {
 
   override def postMultiPart(url: Uri, params: Map[String, String]): Future[HttpResponse] = ???
 
-  override def setCookies(cookies: Seq[HttpCookie]): Unit = {}
-
-  override def cookiesAndBody(response: HttpResponse): CookiesAndBody = {
-    CookiesAndBody(List.empty[HttpCookie], getBody(response))
-  }
 }

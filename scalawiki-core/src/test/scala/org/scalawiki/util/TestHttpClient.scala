@@ -36,8 +36,6 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
     Promise.successful(pageResponse).future
   }
 
-  override def setCookies(cookies: Seq[HttpCookie]): Unit = ???
-
   override def post(url: String, params: Map[String, String]): Future[HttpResponse] = getResponse(url, params)
 
   override def post(url: Uri, params: Map[String, String]): Future[HttpResponse] = getResponse(url, params)
@@ -52,8 +50,6 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
 
   override def getBody(response: HttpResponse): String =
     response.entity.asString(HttpCharsets.`UTF-8`)
-
-  override def cookiesAndBody(response: HttpResponse): CookiesAndBody = ???
 
   override def postMultiPart(url: Uri, params: Map[String, String]): Future[HttpResponse] = ???
 

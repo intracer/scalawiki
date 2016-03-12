@@ -7,8 +7,10 @@ import java.nio.channels.Channels
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.util.Timeout
+import net.spraycookies.tldlist.DefaultEffectiveTldList
+import net.spraycookies.{CookieHandling, CookieJar}
 import spray.client.pipelining._
-import spray.http.HttpHeaders.{`Set-Cookie`, Cookie, `Accept-Encoding`, `User-Agent`}
+import spray.http.HttpHeaders.{`Accept-Encoding`, `User-Agent`}
 import spray.http._
 import spray.httpx.encoding.Gzip
 import spray.httpx.marshalling.Marshaller
@@ -24,12 +26,6 @@ class HttpClientSpray(val system: ActorSystem) extends HttpClient {
 
   import system.dispatcher
 
-  var cookies: Seq[HttpCookie] = Seq.empty
-
-  override def setCookies(cookies: Seq[HttpCookie]): Unit = {
-    this.cookies ++= cookies
-  }
-
   // execution context for futures
   val sendAndDecode: HttpRequest => Future[HttpResponse] = sendReceive ~> decode(Gzip)
   val log = Logging(system, getClass)
@@ -37,20 +33,19 @@ class HttpClientSpray(val system: ActorSystem) extends HttpClient {
 
   override implicit val timeout: Duration = 15.minutes
 
+  val cookieJar = new CookieJar(DefaultEffectiveTldList)
+  val cookied = CookieHandling.withCookies(Some(cookieJar), Some(cookieJar)) _
+
   def submit: HttpRequest => Future[HttpResponse] = {
     implicit val timeout: Timeout = 5.minutes
     (
       addHeaders(
-        Cookie(cookies),
         `Accept-Encoding`(HttpEncodings.gzip),
         `User-Agent`(userAgent)) ~>
-        logRequest(log, Logging.InfoLevel)
-        //      logRequest(r =>
-        //        log.info(s"HttpRequest: h: ${r.headers} d:${r.entity.data.asString}")
-        //      )
-        //~> ((_:HttpRequest).mapEntity(_.flatMap(entity => HttpEntity(entity.contentType.withoutDefinedCharset, entity.data))))
-        ~> sendReceive
-        ~> decode(Gzip)
+        cookied(
+          logRequest(log, Logging.InfoLevel)
+            ~> sendReceive
+            ~> decode(Gzip))
         ~> logResponse(r => log.debug(s"HttpResponse: ${r.status}, ${r.headers}"))
       )
   }
@@ -80,7 +75,7 @@ class HttpClientSpray(val system: ActorSystem) extends HttpClient {
     val bodyParts = params.map { case (key, value) =>
       (key, BodyPart(HttpEntity(value), key))
     }
-    submit(Post(Uri(url)  , new MultipartFormData(bodyParts.values.toSeq)))
+    submit(Post(Uri(url), new MultipartFormData(bodyParts.values.toSeq)))
   }
 
   override def postMultiPart(url: Uri, params: Map[String, String]): Future[HttpResponse] = {
@@ -129,15 +124,6 @@ class HttpClientSpray(val system: ActorSystem) extends HttpClient {
     nread
   }
 
-  def cookiesAndBody(response: HttpResponse): CookiesAndBody =
-    CookiesAndBody(getCookies(response), getBody(response))
-
   def getBody(response: HttpResponse): String =
     response.entity.asString(HttpCharsets.`UTF-8`)
-
-  def getCookies(response: HttpResponse): List[HttpCookie] =
-    response.headers.collect {
-      case `Set-Cookie`(hc) => hc
-    }
-
 }

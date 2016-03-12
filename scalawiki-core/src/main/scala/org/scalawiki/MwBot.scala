@@ -86,17 +86,15 @@ class MwBotImpl(val http: HttpClient, val system: ActorSystem, val host: String,
 
     log.info(s"$host login user: $user")
 
-    http.post(apiUrl, "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json") map http.cookiesAndBody map { cb =>
-      http.setCookies(cb.cookies)
-      val json = Json.parse(cb.body)
+    http.post(apiUrl, "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json") map http.getBody map { body =>
+      val json = Json.parse(body)
       json.validate(loginResponseReads).fold({ err =>
         log.error("Could not login" + err)
         err.toString()
       }, { resp =>
         val params = Map("action" -> "login", "lgname" -> user, "lgpassword" -> password, "lgtoken" -> resp.token.get, "format" -> "json")
-        Await.result(http.post(apiUrl, params) map http.cookiesAndBody map { cb =>
-          http.setCookies(cb.cookies)
-          val json = Json.parse(cb.body)
+        Await.result(http.post(apiUrl, params) map http.getBody map { body =>
+          val json = Json.parse(body)
           val l = json.validate(loginResponseReads) // {"login":{"result":"NotExists"}}
           l.fold(err => err.toString(),
             success => {
@@ -118,7 +116,6 @@ class MwBotImpl(val http: HttpClient, val system: ActorSystem, val host: String,
   override def run(action:Action): Future[Seq[Page]] = {
     new DslQuery(action, this).run()
   }
-
 
   def get[T](reads: Reads[T], params: (String, String)*): Future[T] =
     http.get(getUri(params:_*)) map {
@@ -225,7 +222,7 @@ object MwBot {
 
   val commons = "commons.wikimedia.org"
   val ukWiki = "uk.wikipedia.org"
-  val useSpray = false
+  val useSpray = true
 
   def create(host: String, withDb: Boolean = false): MwBot = {
     val system = ActorSystem()

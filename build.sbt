@@ -3,15 +3,16 @@ import sbt.Keys._
 lazy val scalawiki =
   (project in file("."))
     .settings(commonSettings)
-    .dependsOn(`scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`)
-    .aggregate(`scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`)
+    .dependsOn(`scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `spray-cookies`)
+    .aggregate(`scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `spray-cookies`)
+
+val akkaV = "2.3.14"
+val sprayV = "1.3.3"
 
 lazy val `scalawiki-core` =
   (project in file("scalawiki-core"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= {
-      val akkaV = "2.3.14"
-      val sprayV = "1.3.3"
       Seq(
         "io.spray" %% "spray-client" % sprayV,
         "io.spray" %% "spray-caching" % sprayV,
@@ -30,7 +31,7 @@ lazy val `scalawiki-core` =
         "org.sweble.wikitext" % "swc-engine" % "2.0.0",
         "commons-codec" % "commons-codec" % "1.10"
       )
-    })
+    }).dependsOn(`spray-cookies`)
 
 lazy val `scalawiki-bots` =
   (project in file("scalawiki-bots"))
@@ -59,10 +60,19 @@ lazy val `scalawiki-wlx` =
     .settings(libraryDependencies ++= Seq("com.github.wookietreiber" %% "scala-chart" % "0.5.0"))
     .dependsOn(`scalawiki-core`)
 
+lazy val `spray-cookies` =
+  (project in file("spray-cookies"))
+    .settings(commonSettings: _*)
+    .settings(libraryDependencies ++= Seq(
+      "io.spray" %% "spray-client" % sprayV,
+      "io.spray" %%  "spray-json" % "1.2.6",
+      "com.typesafe.akka" %% "akka-actor" % akkaV,
+      "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"
+    ))
 
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
-  version := "0.4-M3",
+  version := "0.4",
   scalaVersion := "2.11.8",
 
   libraryDependencies ++= Seq(

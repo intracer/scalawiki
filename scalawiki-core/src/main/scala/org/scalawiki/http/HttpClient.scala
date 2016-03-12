@@ -8,8 +8,6 @@ import scala.concurrent.duration._
 trait HttpClient {
   val timeout: Duration = 30.minutes
 
-  def setCookies(cookies: Seq[HttpCookie])
-
   def get(url: String): Future[String]
 
   def get(url: Uri): Future[String]
@@ -27,8 +25,6 @@ trait HttpClient {
   def postMultiPart(url: Uri, params: Map[String, String]): Future[HttpResponse]
 
   def postFile(url: String, params: Map[String, String], fileParam: String, filename: String): Future[HttpResponse]
-
-  def cookiesAndBody(response: HttpResponse): CookiesAndBody
 
   def getBody(response: HttpResponse): String
 
