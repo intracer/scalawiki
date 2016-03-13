@@ -103,30 +103,16 @@ object ArticleStatBot {
   def main(args: Array[String]) {
     val bot = new ArticleStatBot()
 
-    bot.stat(Events.Culture)
-//    val weeksF = Events.allWeeks.map(bot.stat)
-//      Future.sequence(weeksF).map {
-//        stats =>
-//
-//          val events = stats.size
-//          val added = stats.sum
-//          println(s"!!!!!!!!! weeks: $events, bytes: $added")
-//          println(s"!!!!!!!!! weeks: $stats")
-//
-//      }
-//
-//    val contestF = Events.allContests.map(bot.stat)
-//    Future.sequence(contestF).map {
-//      stats =>
-//
-//        val events = stats.size
-//        val added = stats.sum
-//
-//        println(s"!!!!!!!!! contests: $events, bytes: $added")
-//        println(s"!!!!!!!!! contests: $stats")
-//    }
+    val (contests, weeks) = Events.events()
 
+    Future.sequence(weeks.map(bot.stat)).map(eventSummary)
+    Future.sequence(contests.map(bot.stat)).map(eventSummary)
+  }
 
-
+  def eventSummary(stats: Seq[Long]): Unit = {
+    val events = stats.size
+    val added = stats.sum
+    println(s"!!!!!!!!! weeks: $events, bytes: $added")
+    println(s"!!!!!!!!! weeks: $stats")
   }
 }
