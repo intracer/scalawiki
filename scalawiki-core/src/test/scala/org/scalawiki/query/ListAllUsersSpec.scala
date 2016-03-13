@@ -1,7 +1,5 @@
 package org.scalawiki.query
 
-import java.util.concurrent.TimeUnit
-
 import org.scalawiki.Timestamp
 import org.scalawiki.dto.User
 import org.scalawiki.dto.cmd.Action
@@ -9,9 +7,7 @@ import org.scalawiki.dto.cmd.query.Query
 import org.scalawiki.dto.cmd.query.list.{AllUsers, AuProp, ListParam}
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.Specification
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import spray.util.pimpFuture
 
 class ListAllUsersSpec extends Specification with MockBotSpec {
 
@@ -21,18 +17,17 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
 
       val response1 =
         """{ "query": {
-          |        "allusers": [
-          |            {
-          |                "userid": 146308,
-          |                "name": "!"
-          |            },
-          |            {
-          |                "userid": 480659,
-          |                "name": "! !"
-          |            }
-          |         ]
-          |    }
-          |}""".stripMargin
+                "allusers": [
+                    {
+                      "userid": 146308,
+                      "name": "!"
+                    },
+                    {
+                       "userid": 480659,
+                       "name": "! !"
+                    }
+                ]
+          }}"""
 
       val commands = Seq(
         new Command(Map("action" -> "query", "list" -> queryType, "continue" -> ""), response1)
@@ -49,9 +44,8 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
           )
         )
 
-      val future = bot.run(action)
+      val result = bot.run(action).await
 
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2
       val users = result.flatMap(_.lastRevisionUser)
       users(0) === User(146308, "!")
@@ -63,34 +57,33 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
 
       val response1 =
         """{ "query": {
-          |        "allusers": [
-          |             {
-          |                "userid": 3634417,
-          |                "name": "Y",
-          |                "editcount": 13892,
-          |                "registration": "2007-02-22T03:19:08Z",
-          |                "blockid": 278807,
-          |                "blockedby": "Gurch",
-          |                "blockedbyid": 241822,
-          |                "blockedtimestamp": "2006-10-17T06:53:13Z",
-          |                "blockreason": "username",
-          |                "blockexpiry": "infinity"
-          |            },
-          |            {
-          |                "userid": 53928,
-          |                "name": "Y (usurped)",
-          |                "editcount": 0,
-          |                "registration": ""
-          |            }
-          |         ]
-          |    }
-          |}""".stripMargin
+                "allusers": [
+                   {
+                      "userid": 3634417,
+                      "name": "Y",
+                      "editcount": 13892,
+                      "registration": "2007-02-22T03:19:08Z",
+                      "blockid": 278807,
+                      "blockedby": "Gurch",
+                      "blockedbyid": 241822,
+                      "blockedtimestamp": "2006-10-17T06:53:13Z",
+                      "blockreason": "username",
+                      "blockexpiry": "infinity"
+                  },
+                  {
+                      "userid": 53928,
+                      "name": "Y (usurped)",
+                      "editcount": 0,
+                      "registration": ""
+                   }
+                ]
+          }}"""
 
-      val commands = Seq(
-        new Command(Map("action" -> "query", "list" -> queryType, "auprop" -> "registration|editcount|blockinfo", "continue" -> ""), response1)
-      )
+      val query = Map("action" -> "query", "list" -> queryType,
+        "auprop" -> "registration|editcount|blockinfo",
+        "continue" -> "")
 
-      val bot = getBot(commands: _*)
+      val bot = getBot(Seq(new Command(query, response1)): _*)
 
       val action =
         Action(
@@ -101,9 +94,8 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
           )
         )
 
-      val future = bot.run(action)
+      val result = bot.run(action).await
 
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2
       val users = result.flatMap(_.lastRevisionUser)
       users(0) === new User(Some(3634417), Some("Y"), Some(13892), Some(Timestamp.parse("2007-02-22T03:19:08Z")), Some(true))
@@ -114,43 +106,43 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
       val queryType = "allusers"
 
       val response1 =
-        """{  "continue": {
-          |        "aufrom": "! ! !",
-          |        "continue": "-||"
-          |    },
-          |    "query": {
-          |        "allusers": [
-          |            {
-          |                "userid": 146308,
-          |                "name": "!"
-          |            },
-          |            {
-          |                "userid": 480659,
-          |                "name": "! !"
-          |            }
-          |         ]
-          |    }
-          |}""".stripMargin
+        """{ "continue": {
+                "aufrom": "! ! !",
+                "continue": "-||"
+              },
+              "query": {
+                 "allusers": [
+                    {
+                      "userid": 146308,
+                      "name": "!"
+                    },
+                    {
+                        "userid": 480659,
+                        "name": "! !"
+                    }
+                 ]
+              }
+           }"""
 
       val response2 =
         """{ "query": {
-          |        "allusers": [
-          |             {
-          |                "userid": 505506,
-          |                "name": "! ! !"
-          |            },
-          |            {
-          |                "userid": 553517,
-          |                "name": "! ! ! !"
-          |            }
-          |         ]
-          |    }
-          |}""".stripMargin
+                "allusers": [
+                    {
+                      "userid": 505506,
+                      "name": "! ! !"
+                    },
+                    {
+                      "userid": 553517,
+                      "name": "! ! ! !"
+                    }
+                ]
+           }}"""
+
+      val query = Map("action" -> "query", "list" -> queryType)
 
       val commands = Seq(
-        new Command(Map("action" -> "query", "list" -> queryType, "continue" -> ""), response1),
-        new Command(Map("action" -> "query", "list" -> queryType,
-          "aufrom" -> "! ! !", "continue" -> "-||"), response2)
+        new Command(query + ("continue" -> ""), response1),
+        new Command(query ++ Map("aufrom" -> "! ! !", "continue" -> "-||"), response2)
       )
 
       val bot = getBot(commands: _*)
@@ -164,9 +156,8 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
           )
         )
 
-      val future = bot.run(action)
+      val result = bot.run(action).await
 
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 4
       val users = result.flatMap(_.lastRevisionUser)
       users(0) === User(146308, "!")

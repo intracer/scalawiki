@@ -1,100 +1,92 @@
 package org.scalawiki.query
 
-import java.util.concurrent.TimeUnit
-
 import org.scalawiki.dto.Namespace
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list.ListArgs
+import org.scalawiki.dto.cmd.query.prop.{LangLinks, LlLimit, Prop}
 import org.scalawiki.dto.cmd.query.{Generator, Query}
-import org.scalawiki.dto.cmd.query.prop.{LlLimit, LangLinks, Prop}
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.Specification
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import spray.util.pimpFuture
 
 class PropLangLinksSpec extends Specification with MockBotSpec {
 
   "get lang links" should {
     "merge pages" in {
-
-      //        "https://en.wikipedia.org/w/api.php?gcmtitle=Category:Cities_of_district_significance_in_Ukraine&format=json&generator=categorymembers&gcmlimit=10&lllimit=10&gcmnamespace=0&prop=langlinks&action=query&continue="
-
       val category = "Category:Cities_of_district_significance_in_Ukraine"
 
       val response1 =
-        """|{
-          |  "continue": {
-          |    "llcontinue": "6863578|cs",
-          |    "continue": "||"
-          |  },
-          |  "query": {
-          |    "pages": {
-          |      "6863578": {
-          |        "pageid": 6863578,
-          |        "ns": 0,
-          |        "title": "Almazna",
-          |        "langlinks": [
-          |          {
-          |            "lang": "ar",
-          |            "*": "ألمازنا"
-          |          },
-          |          {
-          |            "lang": "crh",
-          |            "*": "Almazna"
-          |          }
-          |        ]
-          |      },
-          |      "45246116": {
-          |        "pageid": 45246116,
-          |        "ns": 0,
-          |        "title": "City of district significance (Ukraine)"
-          |      }
-          |    }
-          |  }
-          |}
-        """.stripMargin
+        """{
+            "continue": {
+              "llcontinue": "6863578|cs",
+              "continue": "||"
+            },
+            "query": {
+              "pages": {
+                "6863578": {
+                  "pageid": 6863578,
+                  "ns": 0,
+                  "title": "Almazna",
+                  "langlinks": [
+                    {
+                      "lang": "ar",
+                                    "*": "ألمازنا"
+                    },
+                    {
+                      "lang": "crh",
+                      "*": "Almazna"
+                    }
+                  ]
+                },
+                "45246116": {
+                  "pageid": 45246116,
+                  "ns": 0,
+                  "title": "City of district significance (Ukraine)"
+                }
+              }
+            }
+          }
+        """
 
       val response2 =
         """{
-          |  "query": {
-          |    "pages": {
-          |      "6863578": {
-          |        "pageid": 6863578,
-          |        "ns": 0,
-          |        "title": "Almazna",
-          |        "langlinks": [
-          |          {
-          |            "lang": "cs",
-          |            "*": "Almazna"
-          |          },
-          |          {
-          |            "lang": "de",
-          |            "*": "Almasna"
-          |          }
-          |        ]
-          |      },
-          |      "45246116": {
-          |        "pageid": 45246116,
-          |        "ns": 0,
-          |        "title": "City of district significance (Ukraine)"
-          |      }
-          |    }
-          |  }
-          |}
-        """.stripMargin
+            "query": {
+              "pages": {
+                "6863578": {
+                  "pageid": 6863578,
+                  "ns": 0,
+                  "title": "Almazna",
+                  "langlinks": [
+                    {
+                      "lang": "cs",
+                      "*": "Almazna"
+                    },
+                    {
+                      "lang": "de",
+                      "*": "Almasna"
+                    }
+                  ]
+                },
+                "45246116": {
+                  "pageid": 45246116,
+                  "ns": 0,
+                  "title": "City of district significance (Ukraine)"
+                }
+              }
+            }
+          }
+        """
+
+      val query = Map("action" -> "query", "prop" -> "langlinks",
+        "generator" -> "categorymembers", "gcmtitle" -> category, "gcmnamespace" -> "0",
+        "gcmlimit" -> "2", "lllimit" -> "2")
 
       val commands = Seq(
-        new Command(Map("action" -> "query",
-          "generator" -> "categorymembers", "gcmtitle" -> category, "gcmnamespace" -> "0", "gcmlimit" -> "2", "lllimit" -> "2",
-          "prop" -> "langlinks",
-          "continue" -> ""), response1),
-        new Command(Map("action" -> "query",
-          "generator" -> "categorymembers", "gcmtitle" -> category, "gcmnamespace" -> "0", "gcmlimit" -> "2", "lllimit" -> "2",
-          "prop" -> "langlinks",
+        new Command(query + ("continue" -> ""), response1),
+        new Command(query ++ Map(
           "continue" -> "||",
-          "llcontinue" -> "6863578|cs"),
-          response2)
+          "llcontinue" -> "6863578|cs"
+        ), response2)
       )
 
       val bot = getBot(commands: _*)
@@ -106,9 +98,8 @@ class PropLangLinksSpec extends Specification with MockBotSpec {
         Generator(ListArgs.toDsl("categorymembers", Some(category), None, Set(Namespace.MAIN), Some("2")))
       ))
 
-      val future = bot.run(action)
+      val result = bot.run(action).await
 
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 2
       val p1 = result.head
       p1.id === Some(6863578)
@@ -126,6 +117,4 @@ class PropLangLinksSpec extends Specification with MockBotSpec {
       p2.title === "City of district significance (Ukraine)"
     }
   }
-
-
 }
