@@ -29,7 +29,7 @@ class Parser(val action: Action) {
         val queryArg = lists.headOption.orElse[EnumArg[_]](meta.headOption)
         val queryChild = queryArg.fold("pages")(arg => arg.name)
 
-        continue = getContinue(json, jsonObj)
+        continue = getContinue(json)
 
         if (jsonObj.value.contains("query")) {
 
@@ -106,52 +106,29 @@ class Parser(val action: Action) {
     userContribs.toPage
   }
 
-  def getContinue(json: JsValue, jsonObj: JsObject): Map[String, String] = {
-    if (jsonObj.value.contains("continue")) {
-      val continueJson = (json \ "continue").get
-      continueJson match {
-        case obj: JsObject => obj.fields.toMap.mapValues[String] {
-          case JsNumber(n) => n.toString()
-          case JsString(s) => s
-          case _ => throw new scala.IllegalArgumentException(obj.toString())
-        }
-        case _ => Map.empty[String, String]
-      }
-    } else Map.empty[String, String]
+  def getContinue(json: JsValue): Map[String, String] = {
+   (json \ "continue").asOpt[JsObject].map(_.value.mapValues[String]{
+     case JsNumber(n) => n.toString()
+     case JsString(s) => s
+   }.toMap)
+     .getOrElse(Map.empty[String, String])
   }
 
   def getLangLinks(pageJson: JsObject): Map[String, String] = {
-
-    def parseArray(arr: JsArray): Seq[(String, String)] = {
-      arr.value.collect {
-        case ll: JsObject =>
-          val lang = ll.value.get("lang").map { case s: JsString => s.value }
-          val page = ll.value.get("*").map { case s: JsString => s.value }
-          lang.get -> page.get
-      }
-    }
-
-    pageJson.value.get("langlinks").toSeq.flatMap {
-      case arr: JsArray => parseArray(arr)
-      case _ => Seq.empty[(String, String)]
-    }.toMap
+    (pageJson \ "langlinks").asOpt[Seq[Map[String, String]]].map {
+      _.map(l => l("lang") -> l("*")).toMap
+    }.getOrElse(Map.empty[String, String])
   }
 
   def getLinks(pageJson: JsObject): Seq[Page] = {
-
-    def parseArray(arr: JsArray): Seq[Page] = {
-      arr.value.collect {
-        case link: JsObject =>
-          val ns = link.value.get("ns").map { case s: JsNumber => s.value.intValue() }
-          val title = link.value.get("title").map { case s: JsString => s.value }
-          new Page(id = None, ns = ns.get, title = title.get)
+    (pageJson \ "links").asOpt[JsArray].map {
+      _.value.map { l =>
+        new Page(id = None,
+          ns = (l \ "ns").as[Int],
+          title = (l \ "title").as[String]
+        )
       }
-    }
-
-    pageJson.value.get("links").toSeq.flatMap {
-      case arr: JsArray => parseArray(arr)
-      case _ => Seq.empty[Page]
-    }
+    }.getOrElse(Seq.empty[Page])
   }
 
   def parseGlobalUserInfo(json: JsObject) = {
