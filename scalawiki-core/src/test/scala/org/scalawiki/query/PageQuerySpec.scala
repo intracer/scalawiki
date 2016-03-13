@@ -1,6 +1,5 @@
 package org.scalawiki.query
 
-import java.util.concurrent.TimeUnit
 
 import akka.actor.ActorSystem
 import org.scalawiki.MwBotImpl
@@ -9,8 +8,7 @@ import org.scalawiki.util.{Command, TestHttpClient}
 import org.specs2.mutable.Specification
 
 import scala.collection.mutable
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import spray.util.pimpFuture
 
 class PageQuerySpec extends Specification {
 
@@ -40,7 +38,7 @@ class PageQuerySpec extends Specification {
           "rvprop" -> "ids|content|user|comment"), response))
 
       val future = bot.pagesById(Set(569559L, 4571809L)).revisions(Set.empty[Int], Set("ids", "content", "user", "comment"))
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+      val result = future.await
       result must have size 2
       result(0) === Page(Some(569559), 1, "Talk:Welfare reform", Seq(Revision(1, 569559).withUser(1, "u1").withComment("c1").withText(pageText1)))
       result(1) === Page(Some(4571809), 2, "User:Formator", Seq(Revision(2, 4571809).withUser(2, "u2").withComment("c2").withText(pageText2)))

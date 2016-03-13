@@ -1,16 +1,12 @@
 package org.scalawiki.query
 
-import java.util.concurrent.TimeUnit
-
 import org.scalawiki.dto.User
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
 import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.Specification
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import spray.util.pimpFuture
 
 class ListUsersSpec extends Specification with MockBotSpec {
 
@@ -39,9 +35,7 @@ class ListUsersSpec extends Specification with MockBotSpec {
           )
         )
 
-      val future = bot.run(action)
-
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+      val result = bot.run(action).await
       result must have size 0
     }
 
@@ -90,79 +84,76 @@ class ListUsersSpec extends Specification with MockBotSpec {
 
       action.pairs.toMap + ("continue" -> "") === expectedParams
 
-      val future = bot.run(action)
-
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+      val result = bot.run(action).await
       result must have size 2
       val users = result.flatMap(_.lastRevisionUser)
       users(0) === new User(Some(3634417), Some("Y"), Some(13892), None, None, Some(true))
       users(1) === new User(Some(53928), Some("Y (usurped)"), Some(0), None, None, Some(false))
     }
 
-//    "return users with continue" in {
-//      // TODO compare with actual MediaWiki behaviour
-//      val queryType = "users"
-//
-//      val response1 =
-//        """{  "continue": {
-//          |        "continue": "-||"
-//          |    },
-//          |    "query": {
-//          |        "allusers": [
-//          |            {
-//          |                "userid": 146308,
-//          |                "name": "!"
-//          |            },
-//          |            {
-//          |                "userid": 480659,
-//          |                "name": "! !"
-//          |            }
-//          |         ]
-//          |    }
-//          |}""".stripMargin
-//
-//      val response2 =
-//        """{ "query": {
-//          |        "allusers": [
-//          |             {
-//          |                "userid": 505506,
-//          |                "name": "! ! !"
-//          |            },
-//          |            {
-//          |                "userid": 553517,
-//          |                "name": "! ! ! !"
-//          |            }
-//          |         ]
-//          |    }
-//          |}""".stripMargin
-//
-//      val commands = Seq(
-//        new Command(Map("action" -> "query", "ususers" -> "!|! !|! ! !|! ! ! !", "list" -> queryType, "continue" -> ""), response1),
-//        new Command(Map("action" -> "query", "ususers" -> "!|! !|! ! !|! ! ! !", "list" -> queryType, "continue" -> "-||"), response2)
-//      )
-//
-//      val bot = getBot(commands: _*)
-//
-//      val action =
-//        Action(
-//          Query(
-//            ListParam(
-//              Users(
-//                UsUsers(Seq("!", "! !", "! ! !", "! ! ! !"))
-//              )
-//            )
-//          )
-//        )
-//
-//      val future = new DslQuery(action, bot).run()
-//
-//      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
-//      result must have size 4
-//      val users = result.flatMap(_.lastRevisionUser)
-//      users(0) === User(146308, "!")
-//      users(1) === User(480659, "! !")
-//      users(2) === User(505506, "! ! !")
-//      users(3) === User(553517, "! ! ! !")
-//    }
+    "return users with continue" in {
+      // TODO compare with actual MediaWiki behaviour
+      val queryType = "users"
+
+      val response1 =
+        """{  "continue": {
+          |        "continue": "-||"
+          |    },
+          |    "query": {
+          |        "users": [
+          |            {
+          |                "userid": 146308,
+          |                "name": "!"
+          |            },
+          |            {
+          |                "userid": 480659,
+          |                "name": "! !"
+          |            }
+          |         ]
+          |    }
+          |}""".stripMargin
+
+      val response2 =
+        """{ "query": {
+          |        "users": [
+          |             {
+          |                "userid": 505506,
+          |                "name": "! ! !"
+          |            },
+          |            {
+          |                "userid": 553517,
+          |                "name": "! ! ! !"
+          |            }
+          |         ]
+          |    }
+          |}""".stripMargin
+
+      val commands = Seq(
+        new Command(Map("action" -> "query", "ususers" -> "!|! !|! ! !|! ! ! !", "list" -> queryType, "continue" -> ""), response1),
+        new Command(Map("action" -> "query", "ususers" -> "!|! !|! ! !|! ! ! !", "list" -> queryType, "continue" -> "-||"), response2)
+      )
+
+      val bot = getBot(commands: _*)
+
+      val action =
+        Action(
+          Query(
+            ListParam(
+              Users(
+                UsUsers(Seq("!", "! !", "! ! !", "! ! ! !"))
+              )
+            )
+          )
+        )
+
+      val result = bot.run(action).await
+
+      result must have size 4
+      val users = result.flatMap(_.lastRevisionUser)
+      users(0) === User(146308, "!")
+      users(1) === User(480659, "! !")
+      users(2) === User(505506, "! ! !")
+      users(3) === User(553517, "! ! ! !")
+    }
   }
 }

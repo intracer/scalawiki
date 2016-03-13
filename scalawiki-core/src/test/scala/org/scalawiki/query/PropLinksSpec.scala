@@ -1,15 +1,12 @@
 package org.scalawiki.query
 
-import java.util.concurrent.TimeUnit
 
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.prop.{Links, Prop}
 import org.scalawiki.dto.cmd.query.{Query, TitlesParam}
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.Specification
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import spray.util.pimpFuture
 
 class PropLinksSpec extends Specification with MockBotSpec {
 
@@ -91,9 +88,8 @@ class PropLinksSpec extends Specification with MockBotSpec {
         TitlesParam(Seq(title))
       ))
 
-      val future = bot.run(action)
+      val result = bot.run(action).await
 
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
       result must have size 1
       val p1 = result.head
       p1.id === Some(48896716)
