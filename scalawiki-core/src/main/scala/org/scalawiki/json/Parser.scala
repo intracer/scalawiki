@@ -189,18 +189,18 @@ object Parser {
     }
 
   val pageReads: Reads[Page] = (
-    (__ \ "pageid").read[Long] and
-      (__ \ "ns").read[Int] and
-      (__ \ "title").read[String] and
-      (__ \ "missing").readNullable[String] and
-      (__ \ "subjectid").readNullable[Long] and
+    (__ \ "pageid").read[Long] ~
+      (__ \ "ns").read[Int] ~
+      (__ \ "title").read[String] ~
+      (__ \ "missing").readNullable[String] ~
+      (__ \ "subjectid").readNullable[Long] ~
       (__ \ "talkid").readNullable[Long]
     ) (Page.full _)
 
   val userReads: Reads[User] = (
-    (__ \ "userid").readNullable[Long] and
-      (__ \ "name").readNullable[String] and
-      (__ \ "editcount").readNullable[Long] and
+    (__ \ "userid").readNullable[Long] ~
+      (__ \ "name").readNullable[String] ~
+      (__ \ "editcount").readNullable[Long] ~
       (__ \ "registration").readNullable[DateTime](jodaDateTimeReads)
     ) (User.apply(
     _: Option[Long],
@@ -211,18 +211,18 @@ object Parser {
 
   def revisionsReads(pageId: Long): Reads[Seq[Revision]] = {
     implicit val revisionReads: Reads[Revision] = (
-      (__ \ "revid").readNullable[Long] and
-        Reads.pure[Option[Long]](Some(pageId)) and
-        (__ \ "parentid").readNullable[Long] and
+      (__ \ "revid").readNullable[Long] ~
+        Reads.pure[Option[Long]](Some(pageId)) ~
+        (__ \ "parentid").readNullable[Long] ~
         (
-          (__ \ "userid").readNullable[Long] and
+          (__ \ "userid").readNullable[Long] ~
             (__ \ "user").readNullable[String]
-          ) (Contributor.apply _) and
-        (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) and
-        (__ \ "comment").readNullable[String] and
-        (__ \ "*").readNullable[String] and
-        (__ \ "size").readNullable[Long] and
-        (__ \ "sha1").readNullable[String] //and
+          ) (Contributor.apply _) ~
+        (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) ~
+        (__ \ "comment").readNullable[String] ~
+        (__ \ "*").readNullable[String] ~
+        (__ \ "size").readNullable[Long] ~
+        (__ \ "sha1").readNullable[String] //~
       //Reads.pure[Option[Long]](None) // textId
       ) (Revision.apply(_: Option[Long],
       _: Option[Long],
@@ -239,14 +239,14 @@ object Parser {
 
   def imageInfoReads(pageId: Long, title: String): Reads[Seq[Image]] = {
     implicit val imageReads: Reads[Image] = (
-      Reads.pure[String](title) and
-        (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) and
-        (__ \ "user").readNullable[String] and
-        (__ \ "size").readNullable[Long] and
-        (__ \ "width").readNullable[Int] and
-        (__ \ "height").readNullable[Int] and
-        (__ \ "url").readNullable[String] and
-        (__ \ "descriptionurl").readNullable[String] and
+      Reads.pure[String](title) ~
+        (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) ~
+        (__ \ "user").readNullable[String] ~
+        (__ \ "size").readNullable[Long] ~
+        (__ \ "width").readNullable[Int] ~
+        (__ \ "height").readNullable[Int] ~
+        (__ \ "url").readNullable[String] ~
+        (__ \ "descriptionurl").readNullable[String] ~
         Reads.pure[Option[Long]](Some(pageId))
       //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
       //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
@@ -257,16 +257,16 @@ object Parser {
 
   def imageReads(): Reads[Seq[Image]] = {
     implicit val imageReads: Reads[Image] = (
-      (__ \ "title").read[String] and
-        (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) and
-        (__ \ "user").readNullable[String] and
-        (__ \ "size").readNullable[Long] and
-        (__ \ "width").readNullable[Int] and
-        (__ \ "height").readNullable[Int] and
-        (__ \ "url").readNullable[String] and
-        (__ \ "descriptionurl").readNullable[String] and
+      (__ \ "title").read[String] ~
+        (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) ~
+        (__ \ "user").readNullable[String] ~
+        (__ \ "size").readNullable[Long] ~
+        (__ \ "width").readNullable[Int] ~
+        (__ \ "height").readNullable[Int] ~
+        (__ \ "url").readNullable[String] ~
+        (__ \ "descriptionurl").readNullable[String] ~
         Reads.pure[Option[Long]](None)
-      //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
+      //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] ~
       //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
       ) (Image.basic _)
 
@@ -274,46 +274,38 @@ object Parser {
   }
 
   val userContribReads: Reads[UserContrib] = (
-    (__ \ "userid").read[Long] and
-      (__ \ "user").read[String] and
-      (__ \ "pageid").read[Long] and
-      (__ \ "revid").read[Long] and
-      (__ \ "parentid").read[Long] and
-      (__ \ "ns").read[Int] and
-      (__ \ "title").read[String] and
-      (__ \ "timestamp").read[DateTime](jodaDateTimeReads) and
-      //      (__ \ "new").read[String] and
-      //      (__ \ "minor").read[Boolea] and
-      (__ \ "comment").readNullable[String] and // can be hidden
+    (__ \ "userid").read[Long] ~
+      (__ \ "user").read[String] ~
+      (__ \ "pageid").read[Long] ~
+      (__ \ "revid").read[Long] ~
+      (__ \ "parentid").read[Long] ~
+      (__ \ "ns").read[Int] ~
+      (__ \ "title").read[String] ~
+      (__ \ "timestamp").read[DateTime](jodaDateTimeReads) ~
+      //      (__ \ "new").read[String] ~
+      //      (__ \ "minor").read[Boolea] ~
+      (__ \ "comment").readNullable[String] ~ // can be hidden
       (__ \ "size").readNullable[Long]
     ) (UserContrib.apply _)
 
   def globalUserInfoReads: Reads[GlobalUserInfo] = {
 
     implicit val sulAccountReads: Reads[SulAccount] = (
-      (__ \ "wiki").read[String] and
-        (__ \ "url").read[String] and
-        (__ \ "timestamp").read[DateTime](jodaDateTimeReads) and
-        (__ \ "method").read[String] and
-        (__ \ "editcount").read[Long] and
+      (__ \ "wiki").read[String] ~
+        (__ \ "url").read[String] ~
+        (__ \ "timestamp").read[DateTime](jodaDateTimeReads) ~
+        (__ \ "method").read[String] ~
+        (__ \ "editcount").read[Long] ~
         (__ \ "registration").read[DateTime](jodaDateTimeReads)
       ) (SulAccount.apply _)
 
     (
-      (__ \ "home").read[String] and
-        (__ \ "id").read[Long] and
-        (__ \ "registration").read[DateTime](jodaDateTimeReads) and
-        (__ \ "name").read[String] and
-        (__ \ "merged").read[Seq[SulAccount]] and
+      (__ \ "home").read[String] ~
+        (__ \ "id").read[Long] ~
+        (__ \ "registration").read[DateTime](jodaDateTimeReads) ~
+        (__ \ "name").read[String] ~
+        (__ \ "merged").read[Seq[SulAccount]] ~
         (__ \ "editcount").read[Long]
       ) (GlobalUserInfo.apply _)
   }
-
-  //  val langLinkRead: Reads[(String, String)] = (
-  //    (__ \ "lang").read[String] and
-  //      (__ \ "*").read[String]
-  //    )(_ -> _)
-  //
-  //  val langLinksReads: Reads[Seq[String, String]] =
-  //    (__ \ "langlinks").read[Seq[(String, String)]](langLinkRead)
 }

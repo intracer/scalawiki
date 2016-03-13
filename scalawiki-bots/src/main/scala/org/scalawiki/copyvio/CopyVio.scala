@@ -19,12 +19,13 @@ class CopyVio(val http: HttpClient) {
 
   def sourcesReads: Reads[Seq[CopyVioSource]] = {
 
-    implicit val sourceReads: Reads[CopyVioSource] = (
-      (__ \ "url").read[String] and
-        (__ \ "confidence").read[Double] and
-        (__ \ "violation").read[String] and
-        (__ \ "skipped").read[Boolean]
-      )(CopyVioSource.apply _)
+    implicit val sourceReads: Reads[CopyVioSource] =
+      (
+        (__ \ "url").read[String] ~
+          (__ \ "confidence").read[Double] ~
+          (__ \ "violation").read[String] ~
+          (__ \ "skipped").read[Boolean]
+        ) (CopyVioSource.apply _)
 
     (__ \ "sources").read[Seq[CopyVioSource]]
   }
@@ -118,13 +119,13 @@ object CopyVio extends WithBot {
             recover(sourcesFuture)
             val sources = Await.result(sourcesFuture, 30.minutes)
 
-              val suspected = sources.filterNot(_.violation == "none")//s.violation == "suspected" || s.violation == "possible")
+            val suspected = sources.filterNot(_.violation == "none") //s.violation == "suspected" || s.violation == "possible")
 
-              if (suspected.nonEmpty) {
-                for (s <- suspected) {
-                  println(s"## url: [${s.url}], violation ${s.violation}, confidence ${s.confidence}")
-                }
+            if (suspected.nonEmpty) {
+              for (s <- suspected) {
+                println(s"## url: [${s.url}], violation ${s.violation}, confidence ${s.confidence}")
               }
+            }
         }
     }
   }
