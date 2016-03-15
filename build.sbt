@@ -30,7 +30,8 @@ lazy val `scalawiki-core` =
         "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
         "ch.qos.logback" % "logback-classic" % "1.1.3",
         "uk.co.bigbeeconsultants" %% "bee-client" % "0.29.1",
-        "org.sweble.wikitext" % "swc-engine" % "2.0.0",
+        "org.sweble.wikitext" % "swc-engine" % "2.0.0" exclude("org.jsoup", "jsoup"),
+        "org.jsoup" % "jsoup" % "1.8.3",
         "commons-codec" % "commons-codec" % "1.10"
       )
     }).dependsOn(`spray-cookies`)
@@ -39,7 +40,7 @@ lazy val `scalawiki-bots` =
   (project in file("scalawiki-bots"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
-      "org.jsoup" % "jsoup" % "1.8.2"
+
       //    "org.apache.poi" % "poi-scratchpad" % "3.13",
       //    "org.apache.poi" % "poi-ooxml" % "3.13",
     ))
