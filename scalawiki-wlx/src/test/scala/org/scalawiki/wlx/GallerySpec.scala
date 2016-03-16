@@ -43,7 +43,8 @@ class GallerySpec extends Specification {
           |</gallery>""".stripMargin
 
       val actual = new Output().galleryByRegionAndId(monumentDb, imageDb)
-      actual === expected
+      // compare this way to work across different line endings
+      actual.lines.toBuffer === expected.lines.toBuffer
     }
 
 
