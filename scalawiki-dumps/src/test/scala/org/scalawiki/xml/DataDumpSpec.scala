@@ -1,20 +1,26 @@
 package org.scalawiki.xml
 
-import java.nio.file.{Paths, Files, Path}
+import java.nio.file.{FileSystem, Paths, Files, Path}
 
 import com.google.common.jimfs.{Configuration, Jimfs}
 import org.specs2.mutable.Specification
+import org.specs2.specification.BeforeEach
 
-class DataDumpSpec extends Specification {
+class DataDumpSpec extends Specification with BeforeEach {
 
   val filename = "ukwiki-20150311-pages-articles-multistream.xml.bz2"
 
+  override def before = {
+
+  }
+
   "data dump" should {
     "fill data from filesystem" in {
+      val fs = Jimfs.newFileSystem(Configuration.unix())
       val path = "/path/to"
       val fullname =  path + "/" + filename
 
-      val dd = new DumpFileInfo(Paths.get(fullname))
+      val dd = new DumpFileInfo(fs.getPath(fullname))
 
       dd.filename === filename
       dd.directory.toString === path

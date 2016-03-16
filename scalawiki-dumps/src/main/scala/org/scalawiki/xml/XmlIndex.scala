@@ -8,9 +8,10 @@ class XmlIndex(val pages: Seq[PageIndex]) {
 
   val _byId = pages.groupBy(_.id).mapValues(_.head)
   val _byTitle = pages.groupBy(_.title).mapValues(_.head)
+  val nl = System.lineSeparator()
 
   def save(os: OutputStream) = {
-    pages.map(pi => (pi.toString + "\n").getBytes).foreach(os.write)
+    pages.map(pi => (pi.toString + nl).getBytes).foreach(os.write)
   }
 
 }
