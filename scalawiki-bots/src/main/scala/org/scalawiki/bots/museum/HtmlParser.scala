@@ -9,8 +9,9 @@ object HtmlParser {
   def replaceWs(s: String): String =
     s.replace('\u00a0', ' ').replace('\u200b', ' ').replace("&nbsp;", " ")
 
-  def getLines(s: String): Seq[String] = {
-    val text = Jsoup.clean(s, "", Whitelist.none(), new OutputSettings().prettyPrint(false))
+  def trimmedLines(s: String): Seq[String] = {
+    val tags2Nl = Jsoup.clean(s, "", Whitelist.none().addTags("br", "p"), new OutputSettings().prettyPrint(true))
+    val text = Jsoup.clean(tags2Nl, "", Whitelist.none(), new OutputSettings().prettyPrint(false))
     text.split("\n").map(replaceWs _ andThen(_.trim)).filter(_.nonEmpty).toList
   }
 

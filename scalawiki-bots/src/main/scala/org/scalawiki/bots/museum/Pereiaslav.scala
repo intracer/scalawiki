@@ -1,7 +1,6 @@
 package org.scalawiki.bots.museum
 
-import java.io.File
-
+import better.files.{File => SFile}
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.dto.Monument
@@ -20,45 +19,53 @@ object Pereiaslav {
   val wlmPage = "Вікіпедія:Вікі любить пам'ятки/Київська область/Переяслав-Хмельницький"
 
   def main(args: Array[String]) {
-    listDir(new File(home))
+    subDirs(SFile(home))
+
   }
 
-  def listDir(dir: File): Unit = {
-    val dirs = subDirs(dir)
 
-    makeTable(dirs.map(_.getName))
-
-//    dirs.foreach(process)
+  def subDirs(dir: SFile): Seq[SFile] = {
+    dir.list.filter(_.isDirectory).toSeq.sortBy(_.name)
   }
 
-  def subDirs(dir: File): Array[File] = {
-    dir.listFiles.filter(_.isDirectory).sorted
-  }
+  def process(dir: SFile) = {
+    subDirs(dir)
 
-  def process(dir: File) = {
-    listDir(dir)
-
-    val files = dir.listFiles.filter(_.isFile).sorted
+    val files = getFiles(dir)
 
     val docs = files.filter(isDoc)
 
     //  docToHtml(docs)
-    val images = getImages(dir, files).getOrElse(Seq.empty)
+    val images = getImages(dir)
   }
 
-  def getImages(dir: File, files: Seq[File]) = {
-    val images = files.filter(isImage).sorted
+  def getImages(dir: SFile): Seq[SFile] = {
+    val files = getFiles(dir)
+    val images = files.filter(isImage).sortBy(_.name)
 
-    for (listFile <- files.find(_.getName.toLowerCase.startsWith("список"))) yield {
+    images
+    //    for (listFile <- files.find(_.name.toLowerCase.startsWith("список"))) yield {
+    //
+    //      println(s" == ${dir.name}/${listFile.name} (${listFile.pathAsString})== ")
 
-      println(s" == ${dir.getName}/${listFile.getName} (${listFile.getAbsolutePath})== ")
+    //      val text = ImageListParser.getDocText(listFile)
+    //      val descrs = text.replace("Список ілюстрацій", "").replace("Підписи до ілюстрацій", "").split("\n").map(_.trim).filter(_.nonEmpty)
+    //
+    //      assert(images.size == descrs.length, s" ${images.size} != ${descrs.length}, ${images.map(_.getName).mkString(",")} != ${descrs.mkString(",")}")
+    //      images.zip(descrs)
+    //    }
+  }
 
-//      val text = ImageListParser.getDocText(listFile)
-//      val descrs = text.replace("Список ілюстрацій", "").replace("Підписи до ілюстрацій", "").split("\n").map(_.trim).filter(_.nonEmpty)
-//
-//      assert(images.size == descrs.length, s" ${images.size} != ${descrs.length}, ${images.map(_.getName).mkString(",")} != ${descrs.mkString(",")}")
-//      images.zip(descrs)
+  def getImagesDescr(dir: SFile): Seq[String] = {
+    getFiles(dir).find(isHtml).toSeq.flatMap { file =>
+      val content = file.contentAsString
+      val lines = HtmlParser.trimmedLines(content)
+      lines.filter(_.head.isDigit)
     }
+  }
+
+  def getFiles(dir: SFile): Seq[SFile] = {
+    dir.list.filter(_.isRegularFile).toSeq.sortBy(_.name)
   }
 
   def makeTable(dirs: Seq[String]) = {
@@ -70,15 +77,17 @@ object Pereiaslav {
   }
 
 
-  def isImage(f: File): Boolean = {
-    val name = f.getName.toLowerCase
-    name.endsWith(".jpg") || name.endsWith(".tif")
+  def isImage(f: SFile): Boolean = isExt(f, Set(".jpg", ".tif"))
+
+  def isDoc(f: SFile): Boolean = isExt(f, Set(".doc", ".docx"))
+
+  def isHtml(f: SFile): Boolean = isExt(f, Set(".htm", ".html"))
+
+
+  def isExt(file: SFile, ext: Set[String]): Boolean = {
+    ext.contains(file.extension.getOrElse("."))
   }
 
-  def isDoc(f: File): Boolean = {
-    val name = f.getName.toLowerCase
-    name.endsWith(".doc") || name.endsWith(".docx")
-  }
 
   def wlm(): Seq[Monument] = {
     val ukWiki = MwBot.get(MwBot.ukWiki)

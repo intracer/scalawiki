@@ -12,7 +12,7 @@ class HtmlParserSpec extends Specification {
       is !== null
       val s = Source.fromInputStream(is).mkString
 
-      val lines = HtmlParser.getLines(s)
+      val lines = HtmlParser.trimmedLines(s)
       lines === Seq(
         "Image descriptions",
         "Image list",

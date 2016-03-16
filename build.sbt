@@ -40,7 +40,7 @@ lazy val `scalawiki-bots` =
   (project in file("scalawiki-bots"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
-
+      "com.github.pathikrit"  %% "better-files-akka"  % "2.15.0"
       //    "org.apache.poi" % "poi-scratchpad" % "3.13",
       //    "org.apache.poi" % "poi-ooxml" % "3.13",
     ))
@@ -90,7 +90,7 @@ lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
     "org.specs2" %% "specs2-core" % "3.6.4" % "test",
     "org.specs2" %% "specs2-matcher-extra" % "3.6.4" % "test",
-    "com.google.jimfs" % "jimfs" % "1.0" % "test"
+    "com.google.jimfs" % "jimfs" % "1.1" % "test"
   ),
 
   resolvers := Seq("spray repo" at "http://repo.spray.io",
