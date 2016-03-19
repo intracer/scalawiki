@@ -9,7 +9,7 @@ import org.scalawiki.query.DslQuery
 import scala.concurrent.Future
 
 class DbCachedBot(apiBot: MwBotImpl, database: MwDatabase)
-  extends MwBotImpl(apiBot.http, apiBot.system, apiBot.host) {
+  extends MwBotImpl(apiBot.host, apiBot.http, apiBot.system) {
 
   override def run(action: Action): Future[Seq[Page]] = {
     new DslQueryDbCache(new DslQuery(action, apiBot), database).run()

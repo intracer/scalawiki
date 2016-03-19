@@ -162,7 +162,7 @@ class MessageBot(val conf: Config) {
 object MessageBot {
 
   def main(args: Array[String]) {
-    val conf = ConfigFactory.load("flashmob.conf").getConfig("flashmob")
+    val conf = ConfigFactory.load("flashmob.conf")
 
     new MessageBot(conf).run()
   }

@@ -3,7 +3,7 @@ package org.scalawiki.xml
 import java.io.{IOException, FilterInputStream, InputStream}
 
 /**
- * Reads just the specified blocks form the underlying input stream, skipping over everything else.
+ * Reads just the specified blocks from the underlying input stream, skipping over everything else.
  * @param in underlying input stream
  * @param blocks blocks to read
  */

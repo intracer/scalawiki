@@ -54,7 +54,7 @@ trait MwBot {
   def log: LoggingAdapter
 }
 
-class MwBotImpl(val http: HttpClient, val system: ActorSystem, val host: String) extends MwBot {
+class MwBotImpl(val host: String, val http: HttpClient, val system: ActorSystem) extends MwBot {
 
   implicit val sys = system
 
@@ -201,7 +201,6 @@ class MwBotImpl(val http: HttpClient, val system: ActorSystem, val host: String)
   }
 
   override def await[T](future: Future[T]) = Await.result(future, http.timeout)
-
 }
 
 object MwBot {
@@ -219,7 +218,7 @@ object MwBot {
     val system = ActorSystem()
     val http = if (useSpray) new HttpClientSpray(system) else new HttpClientBee
 
-    val bot =new MwBotImpl(http, system, host )
+    val bot =new MwBotImpl(host, http, system)
 
     bot.await(bot.login(LoginInfo.login, LoginInfo.password))
     bot
