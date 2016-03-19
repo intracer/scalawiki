@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import akka.io.IO
 import akka.pattern.ask
-import org.scalawiki.dto.Page
+import org.scalawiki.dto.{Page, Site}
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.http.{HttpClient, HttpClientBee, HttpClientSpray}
 import org.scalawiki.json.MwReads._
@@ -54,17 +54,21 @@ trait MwBot {
   def log: LoggingAdapter
 }
 
-class MwBotImpl(val host: String, val http: HttpClient, val system: ActorSystem) extends MwBot {
+class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) extends MwBot {
+
+  def this(host: String, http: HttpClient, system: ActorSystem) = this(Site.host(host), http, system)
 
   implicit val sys = system
 
   import system.dispatcher
 
-  val baseUrl: String = "https://" + host + "/w/"
+  def host = site.domain
 
-  val indexUrl = baseUrl + "index.php"
+  val baseUrl: String = site.protocol + "://" + host + site.scriptPath
 
-  val apiUrl = baseUrl + "api.php"
+  val indexUrl = baseUrl + "/index.php"
+
+  val apiUrl = baseUrl + "/api.php"
 
   def encodeTitle(title: String): String = MwUtils.normalize(title)
 
@@ -218,7 +222,7 @@ object MwBot {
     val system = ActorSystem()
     val http = if (useSpray) new HttpClientSpray(system) else new HttpClientBee
 
-    val bot =new MwBotImpl(host, http, system)
+    val bot = new MwBotImpl(host, http, system)
 
     bot.await(bot.login(LoginInfo.login, LoginInfo.password))
     bot
