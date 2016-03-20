@@ -3,6 +3,7 @@ package org.scalawiki.wlx.stat
 import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
+import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi}
 import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
@@ -213,9 +214,11 @@ class Statistics {
           val regionHeader = s"== ${region.name} ==\n"
 
           val monuments = byRegion.getOrElse(region.code, Seq.empty)
-          val gallery = "<gallery>" +
-            monuments.map(m => s"File:${m.photo.get}|[[${m.name}]], ${m.city.getOrElse("")}").mkString("\n") +
-            "</gallery>"
+
+          val images = monuments.map(_.photo.get)
+          val descriptions = monuments.map(m => s"[[${m.name}]], ${m.city.getOrElse("")}")
+
+          val gallery = Image.gallery(images, descriptions)
 
           regionHeader + gallery
       }

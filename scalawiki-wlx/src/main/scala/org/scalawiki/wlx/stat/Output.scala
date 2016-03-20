@@ -258,9 +258,9 @@ class Output {
 
     val rows = perRegion ++ Seq(totalData)
 
-//    val authors = yearSeq.map(year => imageDbsByYear(year).head.authors)
-//    val filename = contest.contestType.name.split(" ").mkString + "In" + contest.country.name + "AuthorsByYearPie"
-//    charts.intersectionDiagram("Унікальність авторів за роками", filename, yearSeq, authors, 900, 900)
+    //    val authors = yearSeq.map(year => imageDbsByYear(year).head.authors)
+    //    val filename = contest.contestType.name.split(" ").mkString + "In" + contest.country.name + "AuthorsByYearPie"
+    //    charts.intersectionDiagram("Унікальність авторів за роками", filename, yearSeq, authors, 900, 900)
 
     new Table(columns, rows, "Authors contributed")
   }
@@ -341,15 +341,9 @@ class Output {
         case (user, images) if images.nonEmpty =>
           val userLink = s"[[User:$user|$user]]"
           val header = s"== $userLink =="
-          val gallery = images.map {
-            i =>
-              val w = i.width.get
-              val h = i.height.get
-              val mp = w * h / Math.pow(10, 6)
-              f"${i.title}| $mp%1.2f ${i.width.get} x ${i.height.get}"
-          }
+          val descriptions = images.map(i => i.mpx + " " + i.resolution)
 
-          header + gallery.mkString("\n<gallery>\n", "\n", "\n</gallery>")
+          header + Image.gallery(images.map(_.title), descriptions)
       }
 
     sections.mkString("__TOC__\n", "\n", "")
@@ -366,9 +360,10 @@ class Output {
         val ids = imageDb.idsByRegion(regionId)
         regionHeader + ids.map {
           id =>
-            s"=== $id ===\n${monumentDb.byId(id).get.name}\n<gallery>\n" +
-              imageDb.byId(id).map(_.title).sorted.mkString("\n") +
-              "\n</gallery>"
+            val images = imageDb.byId(id).map(_.title).sorted
+            s"=== $id ===\n" +
+              s"${monumentDb.byId(id).get.name}\n" +
+              Image.gallery(images)
         }.mkString("\n")
     }.mkString("\n")
   }

@@ -31,7 +31,18 @@ case class Image(title: String,
   }
 
   def pixels: Option[Long] =
-    for (w <- width; h <- height) yield w * h
+    for (w <- width; h <- height) yield
+      w * h
+
+  def mpx: Option[Double] = pixels.map(_ / Math.pow(10, 6))
+
+  def mpxStr: String = mpx.fold("")(v => f"$v%1.2f Mpx ")
+
+  def resolution: String = {
+    val maybe = for (w <- width; h <- height) yield
+      w + " x " + h
+    maybe.getOrElse("")
+  }
 
 }
 
@@ -100,4 +111,24 @@ object Image {
     url = url,
     pageUrl = pageUrl,
     pageId = pageId)
+
+  def gallery(images: Seq[String], descriptions: Seq[String] = Seq.empty): String = {
+    val fill = if (descriptions.size < images.size) {
+      Seq.fill(images.size - descriptions.size)("")
+    } else
+      Seq.empty
+
+    images.zip(descriptions ++ fill)
+      .map {
+        case (image, description) =>
+          val filed = (if (!image.startsWith("File:")) "File:" else "") + image
+
+          val piped = if (description.nonEmpty) " | " + description else ""
+
+          filed + piped
+      }
+      .mkString("<gallery>\n", "\n", "\n</gallery>")
+  }
+
+
 }
