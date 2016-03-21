@@ -4,6 +4,7 @@ import java.nio.file.{Files, Paths}
 
 import org.joda.time.DateTime
 import org.scalawiki.MwBot
+import org.scalawiki.dto.markup.Gallery
 import org.scalawiki.wikitext.TemplateParser
 
 case class Image(title: String,
@@ -43,6 +44,9 @@ case class Image(title: String,
       w + " x " + h
     maybe.getOrElse("")
   }
+
+  def resizeTo(resizeToX: Int, resizeToY: Int): Int =
+    Image.resizedWidth(width.get, height.get, resizeToX, resizeToY)
 
 }
 
@@ -112,23 +116,15 @@ object Image {
     pageUrl = pageUrl,
     pageId = pageId)
 
-  def gallery(images: Seq[String], descriptions: Seq[String] = Seq.empty): String = {
-    val fill = if (descriptions.size < images.size) {
-      Seq.fill(images.size - descriptions.size)("")
-    } else
-      Seq.empty
+  def gallery(images: Seq[String], descriptions: Seq[String] = Seq.empty): String =
+    Gallery.asWiki(images, descriptions)
 
-    images.zip(descriptions ++ fill)
-      .map {
-        case (image, description) =>
-          val filed = (if (!image.startsWith("File:")) "File:" else "") + image
+  def resizedWidth(w: Int, h: Int, resizeToX: Int, resizeToY: Int): Int = {
+    val xRatio = w.toDouble / resizeToX
+    val yRatio = h.toDouble / resizeToY
 
-          val piped = if (description.nonEmpty) " | " + description else ""
-
-          filed + piped
-      }
-      .mkString("<gallery>\n", "\n", "\n</gallery>")
+    val width = Math.min(resizeToX, w / yRatio)
+    width.toInt
   }
-
 
 }

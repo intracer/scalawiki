@@ -1,7 +1,6 @@
-package org.scalawiki.wlx.dto
+package org.scalawiki.dto
 
 import org.scalawiki.dto.markup.Template
-import org.scalawiki.dto.{Image, Page, Revision}
 import org.specs2.mutable.Specification
 
 class ImageSpec extends Specification {
@@ -78,6 +77,32 @@ class ImageSpec extends Specification {
           |File:2.jpg | Description 2
           |File:3.jpg | Description 3
           |</gallery>""".stripMargin
+    }
+  }
+
+  "resize" should {
+    "be same" in {
+      val (imageX, imageY) = (320, 200)
+      val (boxX, boxY) = (320, 200)
+
+      val px = Image.resizedWidth(imageX, imageY, boxX, boxY)
+      px === 320
+    }
+
+    "divideBy2" in {
+      val (imageX, imageY) = (640, 400)
+      val (boxX, boxY) = (320, 200)
+
+      val px = Image.resizedWidth(imageX, imageY, boxX, boxY)
+      px === 320
+    }
+
+    "vertical divide by 2" in {
+      val (imageX, imageY) = (400, 200)
+      val (boxX, boxY) = (320, 200)
+
+      val px = Image.resizedWidth(imageX, imageY, boxX, boxY)
+      px === 320
     }
   }
 
