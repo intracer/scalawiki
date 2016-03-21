@@ -2,7 +2,7 @@ package org.scalawiki.dto.markup
 
 import org.specs2.mutable.Specification
 
-class TableSpec extends Specification {
+class TableWikiSpec extends Specification {
 
   "asWiki" should {
     "make empty table" in {
