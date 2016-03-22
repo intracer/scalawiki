@@ -40,7 +40,8 @@ lazy val `scalawiki-bots` =
   (project in file("scalawiki-bots"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
-      "com.github.pathikrit"  %% "better-files-akka"  % "2.15.0"
+      "com.github.pathikrit"  %% "better-files-akka"  % "2.15.0",
+      "org.scalafx" %% "scalafx" % "8.0.60-R9"
       //    "org.apache.poi" % "poi-scratchpad" % "3.13",
       //    "org.apache.poi" % "poi-ooxml" % "3.13",
     ))
