@@ -3,7 +3,7 @@ package org.scalawiki.dto.markup
 import org.scalawiki.dto.Image
 import org.specs2.mutable.Specification
 
-class GallerySpec extends Specification {
+class GalleryThumbSpec extends Specification {
 
   "thumbUrl" should {
     "preserve url" in {
@@ -69,12 +69,5 @@ class GallerySpec extends Specification {
     }
 
   }
-
-  "asHtml" should {
-    "x" in {
-      ok
-    }
-  }
-
 }
 

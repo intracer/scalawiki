@@ -33,14 +33,25 @@ object Gallery {
     images.zip(descriptions ++ fill)
       .map {
         case (image, description) =>
+          val thumb = thumbUrl(image, width, height, false)
+          val imgUrl = image.pageUrl.getOrElse(image.url.get)
 
-          s"""|<li class="gallerybox">
-              |<div class="thumb">
-              |<a href="${image.pageUrl.getOrElse("")}" >
-              | <img class="cropped" alt="${image.title}" src="${thumbUrl(image, width, height, thumbUrl = false)}">
-              |</a>
-              |</div>
-              |</li>""".stripMargin
+          val imageHtml =
+            s"""|<li class="gallerybox">
+                |  <div class="thumb">
+                |    <a href="$imgUrl">
+                |       <img class="cropped" alt="${image.title}" src="$thumb">
+                |    </a>
+                |  </div>""".stripMargin
+
+          val descrHtml = if (description.nonEmpty) {
+            "\n" +
+              s"""|  <div class="gallerytext">
+                  |    <p>$description</p>
+                  |  </div>""".stripMargin
+          } else ""
+
+          imageHtml + descrHtml + "\n</li>"
 
       }.mkString("<ul class=\"gallery mw-gallery-traditional\">\n", "\n", "\n</ul>")
   }
