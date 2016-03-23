@@ -7,31 +7,38 @@ import scalafx.scene.control.ScrollPane
 import scalafx.scene.layout.VBox
 import scalafx.scene.web.WebView
 
-trait JavaFxBrowser extends JFXApp {
-
-  def load(browser: WebView)
+trait JavaFxBrowserAppTrait extends JFXApp {
 
   def openStage() = {
-    val browser = new WebView()
     stage = new PrimaryStage {
       title = "ScalaWiki"
       scene = new Scene {
-        root = new VBox {
-          children = Seq(new ScrollPane {
-            content = browser
-            load(browser)
-          })
-        }
+        root = new JavaFxBrowser().createRoot()
       }
     }
   }
 }
 
-object JavaFxBrowserMain extends JavaFxBrowser {
+class JavaFxBrowser {
+
+  val webView = new WebView()
+
+  def createRoot() = {
+    new VBox {
+      children = new ScrollPane {
+        content = webView
+        load(webView)
+      }
+    }
+  }
+
+  def load(browser: WebView) = {
+    browser.engine.loadContent("<b>Hello ScalaWiki</b>")
+  }
+}
+
+object JavaFxBrowser extends JavaFxBrowserAppTrait {
 
   openStage()
 
-  override def load(browser: WebView) = {
-    browser.engine.loadContent("<b>Hello ScalaWiki</b>")
-  }
 }
