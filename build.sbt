@@ -42,7 +42,11 @@ lazy val `scalawiki-bots` =
     .settings(libraryDependencies ++= Seq(
       "com.github.pathikrit"  %% "better-files-akka"  % "2.15.0",
       "org.scalafx" %% "scalafx" % "8.0.60-R9",
-      "org.loadui" % "testFx" % "3.1.0" % "test"
+      "org.testfx" % "testfx-core" % "4.0.1-alpha" % "test",
+      "org.testfx" % "testfx-junit" % "4.0.1-alpha" % "test",
+      "org.testfx" % "testfx-legacy" % "4.0.1-alpha" % "test",
+      "org.testfx" % "openjfx-monocle" % "1.8.0_20" % "test"
+
       //    "org.apache.poi" % "poi-scratchpad" % "3.13",
       //    "org.apache.poi" % "poi-ooxml" % "3.13",
     ))
