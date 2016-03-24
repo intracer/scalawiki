@@ -25,7 +25,7 @@ class PereiaslavSpec extends Specification with BeforeEach {
     imageNames.map(n => (parent / n).createIfNotExists())
   }
 
-  "direcory" should {
+  "directory" should {
     "list objects" in {
       val names = (1 to 3) map ("Object" + _)
       val dirs = names.map(n => mkdir(root / n))
@@ -59,6 +59,15 @@ class PereiaslavSpec extends Specification with BeforeEach {
 
       val list = Pereiaslav.getImagesDescr(root)
       list === descriptions
+    }
+  }
+
+  "object" should {
+    "make its gallery" in {
+      val images  = (1 to 3) map (_ + ".jpg")
+      val descrs = images.map(_ + " description")
+      val entry = Entry("name", Some("article"), None, images, descrs)
+      ok
     }
   }
 

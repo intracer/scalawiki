@@ -30,7 +30,7 @@ class JavaFxBrowserSpec extends Specification {
       val guiTest = new ScalaGuiTest(browserRoot)
       guiTest.internalSetup()
 
-      val html = browser.webView.engine.getDocument.getDocumentElement.getTextContent
+      val html = browser.webView.engine.document.getDocumentElement.getTextContent
       html === "Hello ScalaWiki"
     }
   }

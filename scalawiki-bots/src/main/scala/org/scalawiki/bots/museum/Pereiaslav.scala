@@ -4,12 +4,21 @@ import better.files.{File => SFile}
 import com.typesafe.config.ConfigFactory
 import org.scalawiki.MwBot
 import org.scalawiki.bots.FileUtils
+import org.scalawiki.dto.Image
 import org.scalawiki.dto.markup.Table
+import org.scalawiki.wikitext.TableParser
 import org.scalawiki.wlx.dto.Monument
 import org.scalawiki.wlx.dto.lists.WlmUa
 import FileUtils._
 
-case class Entry(dir: String, article: String, wlmId: String, images: Seq[String])
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+case class Entry(dir: String,
+                  article: Option[String],
+                  wlmId: Option[String],
+                  images: Seq[String],
+                  descriptions: Seq[String])
 
 object Pereiaslav {
 
@@ -21,8 +30,36 @@ object Pereiaslav {
 
   val wlmPage = conf.getString("wlm-page")
 
+  val ukWiki = MwBot.get(MwBot.ukWiki)
+
   def main(args: Array[String]) {
     subDirs(SFile(home))
+  }
+
+  def getEntries: Future[Seq[Entry]] = {
+    for (text <- ukWiki.pageText(tablePage)) yield {
+      val table = TableParser.parse(text)
+      table.data.toSeq.map { row =>
+        val seq = row.toSeq
+        val (name, article, wlmId) = (seq(0), seq(1), seq(2))
+
+        val objDir: SFile = SFile(home + name)
+        val files = getImages(objDir).map(_.pathAsString)
+        val descrs = getImagesDescr(objDir)
+
+        Entry(name, Some(article), Some(wlmId), files, descrs)
+      }
+    }
+  }
+
+  def makeGallery(entries: Seq[Entry]) = {
+    entries.map{e =>
+      e.article
+    }
+  }
+
+  def makeGallery(entry: Entry) = {
+    s"[[${entry.article}]]" + Image.gallery(entry.images, entry.descriptions)
   }
 
   def process(dir: SFile) = {
@@ -62,11 +99,11 @@ object Pereiaslav {
   }
 
   def makeTable(dirs: Seq[String]) = {
-    val bot = MwBot.get(MwBot.ukWiki)
+
     val headers = Seq("dir", "article", "wlmId")
     val data = dirs.map(d => Seq(d, d, ""))
     val string = new Table(headers, data).asWiki
-    bot.page("User:IlyaBot/test").edit("test", multi = false)
+    ukWiki.page("User:IlyaBot/test").edit("test", multi = false)
   }
 
   def wlm(): Seq[Monument] = {
