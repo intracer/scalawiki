@@ -1,14 +1,11 @@
 package org.scalawiki
 
-import java.util.concurrent.TimeUnit
-
 import akka.actor.ActorSystem
 import org.scalawiki.util.{Command, TestHttpClient}
 import org.specs2.mutable.Specification
+import spray.util.pimpFuture
 
 import scala.collection.mutable
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 
 class MwBotSpec extends Specification {
 
@@ -22,8 +19,7 @@ class MwBotSpec extends Specification {
 
       val bot = getBot(new Command(Map("title" -> "PageTitle", "action" -> "raw"), pageText, "/w/index.php"))
 
-      val future = bot.pageText("pageTitle")
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+      val result = bot.pageText("pageTitle").await
       result === pageText
     }
   }
@@ -33,8 +29,7 @@ class MwBotSpec extends Specification {
 
       val bot = getBot(new Command(Map("title" -> "PageTitle", "action" -> "raw"), null, "/w/index.php"))
 
-      val future = bot.pageText("pageTitle")
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+      val result = bot.pageText("pageTitle").await
       result === ""   // TODO error
     }
   }
@@ -50,8 +45,7 @@ class MwBotSpec extends Specification {
 //
 //      val bot = getBot(new Command(Map("action" -> "login", "lgname" -> user, "lgpassword" -> password), response1))
 //
-//      val future = bot.login(user, password)
-//      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+//      val result = bot.login(user, password).await
 //      result === pageText  TODO
 //    }
 //  }
