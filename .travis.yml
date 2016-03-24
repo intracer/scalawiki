@@ -28,8 +28,7 @@ matrix:
             - oracle-java8-installer
     - env: OS=OSX
       os: osx
-      jdk: oraclejdk8
-      
+
 before install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew cask install java; fi
