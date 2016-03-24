@@ -1,6 +1,8 @@
 package org.scalawiki.dto.markup
 
 import org.scalawiki.dto.Image
+import org.scalawiki.dto.markup.LineUtil._
+import org.specs2.matcher.ContentMatchers._
 import org.specs2.mutable.Specification
 
 class GalleryWikiSpec extends Specification {
@@ -10,36 +12,36 @@ class GalleryWikiSpec extends Specification {
     "be without descriptions" in {
       val images = (1 to 3).map(i => s"File:$i.jpg")
 
-      Image.gallery(images) ===
+      Image.gallery(images) must haveSameLinesAs(
         """<gallery>
           |File:1.jpg
           |File:2.jpg
           |File:3.jpg
-          |</gallery>""".stripMargin
+          |</gallery>""".stripMargin)
     }
 
     "be with descriptions" in {
       val images = (1 to 3).map(i => s"File:$i.jpg")
       val descriptions = (1 to 3).map("Description " + _)
 
-      Image.gallery(images, descriptions) ===
+      Image.gallery(images, descriptions) must haveSameLinesAs(
         """<gallery>
           |File:1.jpg | Description 1
           |File:2.jpg | Description 2
           |File:3.jpg | Description 3
-          |</gallery>""".stripMargin
+          |</gallery>""".stripMargin)
     }
 
     "add File:" in {
       val images = (1 to 3).map(_ + ".jpg")
       val descriptions = (1 to 3).map("Description " + _)
 
-      Image.gallery(images, descriptions) ===
+      Image.gallery(images, descriptions) must haveSameLinesAs(
         """<gallery>
           |File:1.jpg | Description 1
           |File:2.jpg | Description 2
           |File:3.jpg | Description 3
-          |</gallery>""".stripMargin
+          |</gallery>""".stripMargin)
     }
   }
 }

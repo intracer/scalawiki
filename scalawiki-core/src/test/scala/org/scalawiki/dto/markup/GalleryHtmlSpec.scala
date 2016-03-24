@@ -1,7 +1,9 @@
 package org.scalawiki.dto.markup
 
 import org.scalawiki.dto.Image
+import org.specs2.matcher.ContentMatchers._
 import org.specs2.mutable.Specification
+import org.scalawiki.dto.markup.LineUtil._
 
 class GalleryHtmlSpec extends Specification {
 
@@ -13,7 +15,7 @@ class GalleryHtmlSpec extends Specification {
         url = Some(s"http://domain/path/$title")
       ))
 
-      Gallery.asHtml(images) ===
+      Gallery.asHtml(images) must haveSameLinesAs(
         s"""|<ul class="gallery mw-gallery-traditional">
             |<li class="gallerybox">
             |  <div class="thumb">
@@ -22,7 +24,7 @@ class GalleryHtmlSpec extends Specification {
             |    </a>
             |  </div>
             |</li>
-            |</ul>""".stripMargin
+            |</ul>""".stripMargin)
     }
 
     "be with descriptions" in {
@@ -32,7 +34,7 @@ class GalleryHtmlSpec extends Specification {
         url = Some(s"http://domain/path/$title")
       ))
 
-      Gallery.asHtml(images, Seq(description)) ===
+      Gallery.asHtml(images, Seq(description)) must haveSameLinesAs(
         s"""|<ul class="gallery mw-gallery-traditional">
             |<li class="gallerybox">
             |  <div class="thumb">
@@ -44,7 +46,7 @@ class GalleryHtmlSpec extends Specification {
             |    <p>$description</p>
             |  </div>
             |</li>
-            |</ul>""".stripMargin
+            |</ul>""".stripMargin)
     }
   }
 }
