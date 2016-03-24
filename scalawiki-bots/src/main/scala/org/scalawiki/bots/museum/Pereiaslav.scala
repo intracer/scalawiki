@@ -30,7 +30,7 @@ object Pereiaslav {
 
   val wlmPage = conf.getString("wlm-page")
 
-  val ukWiki = MwBot.get(MwBot.ukWiki)
+  def ukWiki = MwBot.get(MwBot.ukWiki)
 
   def main(args: Array[String]) {
     subDirs(SFile(home))
