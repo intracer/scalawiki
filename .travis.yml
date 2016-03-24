@@ -17,21 +17,12 @@ after_success:
   - sbt coveralls
   - bash <(curl -s https://codecov.io/bash)
 
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
-
-matrix:
-  include:
-    # On OSX, run with default JDK only.
-    - os: osx
-    # On Linux, run with specific JDKs only.
-    - os: linux
-      env: CUSTOM_JDK="oraclejdk8"
-      
+os:
+  - linux
+  - osx
+  
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew cask install java; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then export JAVA_HOME=$(/usr/libexec/java_home); fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then jdk_switcher use "$CUSTOM_JDK"; fi  
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get update && sudo apt-get install oracle-java8-installer; fi  
