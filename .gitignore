@@ -84,3 +84,6 @@ hs_err_pid*
 
 
 /bin/
+.vagrant
+.temp
+native
