@@ -1,5 +1,5 @@
 # use Docker-based container (instead of OpenVZ)
-sudo: false
+sudo: true
 
 cache:
   directories:
