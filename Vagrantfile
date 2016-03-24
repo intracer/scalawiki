@@ -25,6 +25,9 @@ wget http://dl.bintray.com/sbt/debian/sbt-0.13.11.deb
 dpkg -i sbt-0.13.11.deb
 apt-get -y update
 apt-get -y install sbt
+
+# JavaFX dependencies
+apt-get -y install libswt-gtk-3-jni libswt-gtk-3-java libxslt1.1
 SCRIPT
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
