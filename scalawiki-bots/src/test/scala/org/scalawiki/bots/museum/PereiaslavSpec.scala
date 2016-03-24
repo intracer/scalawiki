@@ -5,6 +5,7 @@ import java.nio.file.FileSystem
 import better.files.Cmds._
 import better.files.{File => SFile}
 import com.google.common.jimfs.{Configuration, Jimfs}
+import org.scalawiki.bots.FileUtils
 import org.specs2.mutable.Specification
 import org.specs2.specification.BeforeEach
 
@@ -29,7 +30,7 @@ class PereiaslavSpec extends Specification with BeforeEach {
       val names = (1 to 3) map ("Object" + _)
       val dirs = names.map(n => mkdir(root / n))
 
-      val list = Pereiaslav.subDirs(root.path)
+      val list = FileUtils.subDirs(root.path)
       list === dirs
     }
 
@@ -46,7 +47,7 @@ class PereiaslavSpec extends Specification with BeforeEach {
     "get images descriptions from directory" in {
       val imageNames = (1 to 3).map(_ + ".jpg")
       val listName = "list.html"
-      val images = createFiles(root, imageNames)
+      createFiles(root, imageNames)
 
       val descriptions = (1 to 3).map(n => s"$n. Description for $n")
       val html = descriptions.mkString(

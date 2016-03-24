@@ -74,7 +74,7 @@ class MessageBot(val conf: Config) {
 
       logUsers(users, withEmail, withoutEmail)
 
-      val mailedBefore = FileLines.read("emails.txt")
+      val mailedBefore = FileUtils.read("emails.txt")
       val userNames = withEmail.flatMap(_.name).toSet -- mailedBefore.toSet
 
       messageUsers(withoutEmail, talkPageMessage)

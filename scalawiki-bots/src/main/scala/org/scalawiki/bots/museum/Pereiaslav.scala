@@ -1,31 +1,28 @@
 package org.scalawiki.bots.museum
 
 import better.files.{File => SFile}
+import com.typesafe.config.ConfigFactory
 import org.scalawiki.MwBot
+import org.scalawiki.bots.FileUtils
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.dto.Monument
 import org.scalawiki.wlx.dto.lists.WlmUa
-
+import FileUtils._
 
 case class Entry(dir: String, article: String, wlmId: String, images: Seq[String])
 
-
 object Pereiaslav {
 
-  val tablePage = "Користувач:IlyaBot/Національний історико-етнографічний заповідник «Переяслав»"
+  val conf = ConfigFactory.load("pereiaslav.conf")
 
-  val home = "/mnt/SSD/GLAM/VIKIPEDIIA_NIEZ_PEREYIASLAV"
+  val tablePage = conf.getString("table-page")
 
-  val wlmPage = "Вікіпедія:Вікі любить пам'ятки/Київська область/Переяслав-Хмельницький"
+  val home = conf.getString("home")
+
+  val wlmPage = conf.getString("wlm-page")
 
   def main(args: Array[String]) {
     subDirs(SFile(home))
-
-  }
-
-
-  def subDirs(dir: SFile): Seq[SFile] = {
-    dir.list.filter(_.isDirectory).toSeq.sortBy(_.name)
   }
 
   def process(dir: SFile) = {
@@ -41,7 +38,7 @@ object Pereiaslav {
 
   def getImages(dir: SFile): Seq[SFile] = {
     val files = getFiles(dir)
-    val images = files.filter(isImage).sortBy(_.name)
+    val images = files.filter(isImage)
 
     images
     //    for (listFile <- files.find(_.name.toLowerCase.startsWith("список"))) yield {
@@ -64,10 +61,6 @@ object Pereiaslav {
     }
   }
 
-  def getFiles(dir: SFile): Seq[SFile] = {
-    dir.list.filter(_.isRegularFile).toSeq.sortBy(_.name)
-  }
-
   def makeTable(dirs: Seq[String]) = {
     val bot = MwBot.get(MwBot.ukWiki)
     val headers = Seq("dir", "article", "wlmId")
@@ -75,19 +68,6 @@ object Pereiaslav {
     val string = new Table(headers, data).asWiki
     bot.page("User:IlyaBot/test").edit("test", multi = false)
   }
-
-
-  def isImage(f: SFile): Boolean = isExt(f, Set(".jpg", ".tif"))
-
-  def isDoc(f: SFile): Boolean = isExt(f, Set(".doc", ".docx"))
-
-  def isHtml(f: SFile): Boolean = isExt(f, Set(".htm", ".html"))
-
-
-  def isExt(file: SFile, ext: Set[String]): Boolean = {
-    ext.contains(file.extension.getOrElse("."))
-  }
-
 
   def wlm(): Seq[Monument] = {
     val ukWiki = MwBot.get(MwBot.ukWiki)
