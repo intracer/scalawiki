@@ -1,5 +1,7 @@
 package org.scalawiki.util
 
+import java.nio.charset.StandardCharsets
+
 import org.scalawiki.http.HttpClient
 import org.specs2.matcher.Matchers
 import spray.http.{HttpResponse, _}
@@ -30,7 +32,10 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
 
     val pageResponse = Option(command.response)
       .fold(HttpResponse(StatusCodes.NotFound))(
-        text => HttpResponse(StatusCodes.OK, HttpEntity(ContentTypes.`text/plain(UTF-8)`, text.getBytes))
+        text => HttpResponse(
+          StatusCodes.OK,
+          HttpEntity(ContentTypes.`text/plain(UTF-8)`, text.getBytes(StandardCharsets.UTF_8))
+        )
       )
 
     Promise.successful(pageResponse).future
