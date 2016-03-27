@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import akka.io.IO
 import akka.pattern.ask
-import org.scalawiki.dto.{Page, Site}
+import org.scalawiki.dto.{LoginResponse, Page, Site}
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.http.{HttpClient, HttpClientBee, HttpClientSpray}
 import org.scalawiki.json.MwReads._
@@ -79,26 +79,25 @@ class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) e
     require(password != null, "Password is null")
 
     log.info(s"$host login user: $user")
-    val loginParams = Map("action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json")
-    http.post(apiUrl, loginParams)
-      .map(http.getBody).map { body =>
-      val json = Json.parse(body)
-      json.validate(loginResponseReads).fold({ err =>
-        log.error("Could not login" + err)
-        err.toString()
-      }, { resp =>
-        val params = loginParams + ("lgtoken" -> resp.token.get)
-        Await.result(http.post(apiUrl, params) map http.getBody map { body =>
-          val json = Json.parse(body)
-          val l = json.validate(loginResponseReads) // {"login":{"result":"NotExists"}}
-          l.fold(err => err.toString(),
-            success => {
-              log.info(s"$host login user: $user, result: ${success.result}")
-              success.result
-            }
-          )
-        }, http.timeout)
-      })
+
+    tryLogin(user, password).flatMap {
+      loginResponse =>
+        tryLogin(user, password, loginResponse.token).map(_.result)
+    }
+  }
+
+  def tryLogin(user: String, password: String, token: Option[String] = None): Future[LoginResponse] = {
+    val loginParams = Map(
+      "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json"
+    ) ++ token.map("lgtoken" -> _)
+    http.post(apiUrl, loginParams).map { resp =>
+      val body = http.getBody(resp)
+      val jsResult = Json.parse(body).validate(loginResponseReads)
+      if (jsResult.isError) {
+        throw new RuntimeException("Parsing failed: " + jsResult)
+      } else {
+        jsResult.get
+      }
     }
   }
 
