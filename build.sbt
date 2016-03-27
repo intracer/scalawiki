@@ -14,6 +14,7 @@ lazy val scalawiki =
 
 val akkaV = "2.3.14"
 val sprayV = "1.3.3"
+val specsV = "3.7.2"
 
 lazy val `scalawiki-core` =
   (project in file("scalawiki-core"))
@@ -94,8 +95,9 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.11.8",
 
   libraryDependencies ++= Seq(
-    "org.specs2" %% "specs2-core" % "3.6.4" % "test",
-    "org.specs2" %% "specs2-matcher-extra" % "3.6.4" % "test",
+    "org.specs2" %% "specs2-core" % specsV % "test",
+    "org.specs2" %% "specs2-matcher-extra" % specsV % "test",
+    "org.specs2" % "specs2-mock_2.11" % specsV,
     "com.google.jimfs" % "jimfs" % "1.1" % "test"
   ),
 

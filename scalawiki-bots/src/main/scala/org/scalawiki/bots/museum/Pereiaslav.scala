@@ -1,11 +1,13 @@
 package org.scalawiki.bots.museum
 
+import java.nio.file.{FileSystem, FileSystems}
+
 import better.files.{File => SFile}
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import org.scalawiki.MwBot
 import org.scalawiki.bots.FileUtils
 import org.scalawiki.dto.Image
-import org.scalawiki.dto.markup.Table
+import org.scalawiki.dto.markup.{Gallery, Table}
 import org.scalawiki.wikitext.TableParser
 import org.scalawiki.wlx.dto.Monument
 import org.scalawiki.wlx.dto.lists.WlmUa
@@ -14,81 +16,65 @@ import FileUtils._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
+/**
+  * Upload entry
+  *
+  * @param dir          directory
+  * @param article      wikipedia article
+  * @param wlmId        Wiki Loves Monuments Id
+  * @param images       images in the directory
+  * @param descriptions image descriptions
+  */
 case class Entry(dir: String,
-                  article: Option[String],
-                  wlmId: Option[String],
-                  images: Seq[String],
-                  descriptions: Seq[String])
+                 article: Option[String],
+                 wlmId: Option[String],
+                 images: Seq[String],
+                 descriptions: Seq[String])
 
-object Pereiaslav {
-
-  val conf = ConfigFactory.load("pereiaslav.conf")
-
-  val tablePage = conf.getString("table-page")
+class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
 
   val home = conf.getString("home")
 
+  def ukWiki = MwBot.get(conf.getString("host"))
+
+  val tablePage = conf.getString("table-page")
+
   val wlmPage = conf.getString("wlm-page")
 
-  def ukWiki = MwBot.get(MwBot.ukWiki)
+  def getEntries: Future[Seq[Entry]] = {
+    for (tableEntries <- fromWikiTable(tablePage)) yield {
+      tableEntries.map { entry =>
 
-  def main(args: Array[String]) {
-    subDirs(SFile(home))
+        val objDir = SFile(fs.getPath(s"$home/${entry.dir}"))
+        val files = getImages(objDir).map(_.pathAsString)
+        val descriptions = getImagesDescr(objDir)
+
+        entry.copy(images = files, descriptions = descriptions)
+      }
+    }
   }
 
-  def getEntries: Future[Seq[Entry]] = {
+  def fromWikiTable(tablePage: String): Future[Seq[Entry]] = {
     for (text <- ukWiki.pageText(tablePage)) yield {
       val table = TableParser.parse(text)
       table.data.toSeq.map { row =>
         val seq = row.toSeq
         val (name, article, wlmId) = (seq(0), seq(1), seq(2))
 
-        val objDir: SFile = SFile(home + name)
-        val files = getImages(objDir).map(_.pathAsString)
-        val descrs = getImagesDescr(objDir)
-
-        Entry(name, Some(article), Some(wlmId), files, descrs)
+        Entry(name, Some(article), if (wlmId.trim.nonEmpty) Some(wlmId) else None, Seq.empty, Seq.empty)
       }
     }
   }
 
-  def makeGallery(entries: Seq[Entry]) = {
-    entries.map{e =>
-      e.article
-    }
+  def makeEntryGallery(entry: Entry) = {
+    Gallery.asHtml(
+      entry.images.map(title => new Image(title, url = Some(SFile(s"$home/${entry.dir}/$title").uri.toString))),
+      entry.descriptions
+    )
   }
 
-  def makeGallery(entry: Entry) = {
-    s"[[${entry.article}]]" + Image.gallery(entry.images, entry.descriptions)
-  }
-
-  def process(dir: SFile) = {
-    subDirs(dir)
-
-    val files = getFiles(dir)
-
-    val docs = files.filter(isDoc)
-
-    //  docToHtml(docs)
-    val images = getImages(dir)
-  }
-
-  def getImages(dir: SFile): Seq[SFile] = {
-    val files = getFiles(dir)
-    val images = files.filter(isImage)
-
-    images
-    //    for (listFile <- files.find(_.name.toLowerCase.startsWith("список"))) yield {
-    //
-    //      println(s" == ${dir.name}/${listFile.name} (${listFile.pathAsString})== ")
-
-    //      val text = ImageListParser.getDocText(listFile)
-    //      val descrs = text.replace("Список ілюстрацій", "").replace("Підписи до ілюстрацій", "").split("\n").map(_.trim).filter(_.nonEmpty)
-    //
-    //      assert(images.size == descrs.length, s" ${images.size} != ${descrs.length}, ${images.map(_.getName).mkString(",")} != ${descrs.mkString(",")}")
-    //      images.zip(descrs)
-    //    }
-  }
+  def getImages(dir: SFile): Seq[SFile] =
+    getFiles(dir).filter(isImage)
 
   def getImagesDescr(dir: SFile): Seq[String] = {
     getFiles(dir).find(isHtml).toSeq.flatMap { file =>
@@ -113,6 +99,14 @@ object Pereiaslav {
     Monument.monumentsFromText(text, wlmPage, WlmUa.templateName, WlmUa).toBuffer
   }
 
+}
+
+object Pereiaslav {
+
+  def main(args: Array[String]) {
+    val conf = ConfigFactory.load("pereiaslav.conf")
+    new Pereiaslav(conf).getEntries
+  }
 }
 
 
