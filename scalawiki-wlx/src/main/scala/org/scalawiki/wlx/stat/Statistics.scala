@@ -1,5 +1,6 @@
 package org.scalawiki.wlx.stat
 
+import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
@@ -136,12 +137,12 @@ class Statistics {
     val output = new Output()
 
     val numberOfMonuments = output.authorsMonuments(imageDb)
-    Files.write(Paths.get("authorsMonuments.txt"), numberOfMonuments.getBytes)
+    Files.write(Paths.get("authorsMonuments.txt"), numberOfMonuments.getBytes(StandardCharsets.UTF_8))
     bot.page(s"Commons:$contestPage/Number of objects pictured by uploader")
       .edit(numberOfMonuments, Some("updating"))
 
     val rating = output.authorsMonuments(imageDb, rating = true)
-    Files.write(Paths.get("authorsRating.txt"), rating.getBytes)
+    Files.write(Paths.get("authorsRating.txt"), rating.getBytes(StandardCharsets.UTF_8))
     bot.page(s"Commons:$contestPage/Rating based on number and originality of objects pictured by uploader")
       .edit(rating, Some("updating"))
 

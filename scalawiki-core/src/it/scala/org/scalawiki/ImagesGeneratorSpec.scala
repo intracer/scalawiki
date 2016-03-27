@@ -2,8 +2,7 @@ package org.scalawiki
 
 import java.util.concurrent.TimeUnit
 
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import spray.util.pimpFuture
 
 class ImagesGeneratorSpec extends BaseIntegrationSpec {
 
@@ -14,11 +13,8 @@ class ImagesGeneratorSpec extends BaseIntegrationSpec {
       result === "Success"
 
       val future = bot.page("User:Ilya/embeddedin").imageInfoByGenerator("images", "im", props = Set("timestamp", "user", "size", "url"), titlePrefix = Some(""))
-      val info = Await.result(future, Duration(5, TimeUnit.SECONDS))
+      val info = future.await
       info should not (beEmpty)
-
     }
   }
-
-
 }

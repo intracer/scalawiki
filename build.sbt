@@ -60,7 +60,7 @@ lazy val `scalawiki-dumps` =
         //    "org.codehaus.woodstox" % "woodstox-core-asl" % "4.4.1",
         "org.apache.commons" % "commons-compress" % "1.9")
     )
-    .dependsOn(`scalawiki-core`)
+    .dependsOn(`scalawiki-core` % "compile->compile;test->test")
 
 lazy val `scalawiki-wlx` =
   (project in file("scalawiki-wlx"))

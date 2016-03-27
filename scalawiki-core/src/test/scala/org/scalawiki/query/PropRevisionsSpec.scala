@@ -1,13 +1,9 @@
 package org.scalawiki.query
 
-import java.util.concurrent.TimeUnit
-
 import org.scalawiki.dto.{Page, Revision, User}
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.Specification
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import spray.util.pimpFuture
 
 class PropRevisionsSpec extends Specification with MockBotSpec {
 
@@ -43,7 +39,7 @@ class PropRevisionsSpec extends Specification with MockBotSpec {
       val future = bot.page("Category:SomeCategory")
         .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "comment"))
 
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+      val result = future.await
 
       result must have size 2
 

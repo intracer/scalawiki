@@ -1,8 +1,10 @@
 package org.scalawiki.xml
 
-import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
+import org.specs2.matcher.ContentMatchers._
 import org.specs2.mutable.Specification
+import org.scalawiki.dto.markup.LineUtil._
 
 class XmlIndexSpec extends Specification {
   "xml indexer" should {
@@ -84,7 +86,7 @@ class XmlIndexSpec extends Specification {
           |5004:3:File:Some image.jpg
           |""".stripMargin
 
-      actual === expected
+      actual must haveSameLinesAs(expected)
     }
 
   }

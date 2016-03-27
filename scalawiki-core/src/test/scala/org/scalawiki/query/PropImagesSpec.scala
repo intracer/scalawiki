@@ -1,17 +1,12 @@
 package org.scalawiki.query
 
-import java.util.concurrent.TimeUnit
-
-import org.scalawiki.dto.Page
+import org.scalawiki.dto.{Image, Page}
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.cmd.query.{Generator, TitlesParam, Query}
 import org.scalawiki.dto.cmd.query.prop.{ImageInfo, Images, Prop}
+import org.scalawiki.dto.cmd.query.{Generator, Query, TitlesParam}
 import org.scalawiki.util.{Command, MockBotSpec}
-import org.scalawiki.dto.Image
 import org.specs2.mutable.Specification
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import spray.util.pimpFuture
 
 class PropImagesSpec extends Specification with MockBotSpec {
 
@@ -52,9 +47,7 @@ class PropImagesSpec extends Specification with MockBotSpec {
         Prop(Images())
       ))
 
-      val future = bot.run(action)
-
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+      val result = bot.run(action).await
       result must have size 1
       val page = result(0)
       page === new Page(Some(736), 0, "Albert Einstein", images = Seq(
@@ -111,9 +104,7 @@ class PropImagesSpec extends Specification with MockBotSpec {
       Generator(Images())
     ))
 
-    val future = bot.run(action)
-
-    val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+    val result = bot.run(action).await
     result must have size 2
     //    val page = result(0)
     //    result(0) === new Page(Some(736), 0, "Albert Einstein", images = Seq(

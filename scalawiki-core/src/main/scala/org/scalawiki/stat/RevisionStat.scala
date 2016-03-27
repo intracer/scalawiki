@@ -1,5 +1,7 @@
 package org.scalawiki.stat
 
+import java.nio.charset.StandardCharsets
+
 import org.scalawiki.dto.filter.{AllRevisionsFilter, RevisionFilter}
 import org.scalawiki.dto.history.History
 import org.scalawiki.dto.{Page, Revision}
@@ -39,10 +41,10 @@ object RevisionStat {
 
     val byRevisionSize = annotation.byRevisionContent.map {
       case (rev, words) =>
-        rev.withoutContent -> words.map(_.getBytes.size.toLong).sum
+        rev.withoutContent -> words.map(_.getBytes(StandardCharsets.UTF_8).length.toLong).sum
     }
 
-    val byUserSize = annotation.byUserContent.mapValues(_.map(_.getBytes.size.toLong).sum)
+    val byUserSize = annotation.byUserContent.mapValues(_.map(_.getBytes(StandardCharsets.UTF_8).length.toLong).sum)
 
     new RevisionStat(
       page.copy(revisions = revFilter(page.revisions.map(_.withoutContent))),

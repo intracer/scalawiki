@@ -1,15 +1,11 @@
 package org.scalawiki.query
 
-import java.util.concurrent.TimeUnit
-
 import org.scalawiki.Timestamp
 import org.scalawiki.dto.Page
 import org.scalawiki.util.{MockBotSpec, Command}
 import org.scalawiki.dto.Image
 import org.specs2.mutable.Specification
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import spray.util.pimpFuture
 
 class PropImageInfoSpec extends Specification with MockBotSpec {
 
@@ -83,7 +79,7 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
       val future = bot.page("Category:SomeCategory")
         .imageInfoByGenerator("categorymembers", "cm", Set.empty, Set("timestamp", "user", "comment"))
 
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+      val result = future.await
 
       result must have size 2
 

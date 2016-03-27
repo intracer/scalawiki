@@ -139,7 +139,7 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
       val future = bot.page("Category:SomeCategory")
         .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "userid"))
 
-      val result = Await.result(future, Duration(2, TimeUnit.SECONDS))
+      val result = future.await
 
       result must have size 2
       result(0) === Page(Some(4571809L), 2, "User:Formator",

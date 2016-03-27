@@ -1,6 +1,7 @@
 package org.scalawiki.xml
 
-import java.io.{OutputStream, InputStream}
+import java.io.{InputStream, OutputStream}
+import java.nio.charset.StandardCharsets
 
 import scala.io.Source
 
@@ -11,7 +12,7 @@ class XmlIndex(val pages: Seq[PageIndex]) {
   val nl = System.lineSeparator()
 
   def save(os: OutputStream) = {
-    pages.map(pi => (pi.toString + nl).getBytes).foreach(os.write)
+    pages.map(pi => (pi.toString + nl).getBytes(StandardCharsets.UTF_8)).foreach(os.write)
   }
 
 }
