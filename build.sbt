@@ -41,15 +41,16 @@ lazy val `scalawiki-bots` =
   (project in file("scalawiki-bots"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
-      "com.github.pathikrit"  %% "better-files-akka"  % "2.15.0",
+      "com.github.pathikrit" %% "better-files-akka" % "2.15.0",
       "org.scalafx" %% "scalafx" % "8.0.60-R9",
       "org.testfx" % "testfx-core" % "4.0.1-alpha" % "test",
       "org.testfx" % "testfx-junit" % "4.0.1-alpha" % "test",
       "org.testfx" % "testfx-legacy" % "4.0.1-alpha" % "test",
-      "org.testfx" % "openjfx-monocle" % "1.8.0_20" % "test"
+      "org.testfx" % "openjfx-monocle" % "1.8.0_20" % "test",
 
-      //    "org.apache.poi" % "poi-scratchpad" % "3.13",
-      //    "org.apache.poi" % "poi-ooxml" % "3.13",
+      "org.apache.poi" % "poi-scratchpad" % "3.13",
+      "org.apache.poi" % "poi-ooxml" % "3.13",
+      "fr.opensagres.xdocreport" % "org.apache.poi.xwpf.converter.xhtml" % "1.0.5"
     ))
     .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
 

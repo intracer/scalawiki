@@ -1,5 +1,6 @@
 package org.scalawiki.bots.museum
 
+import java.io.File
 import java.nio.file.{FileSystem, FileSystems}
 
 import better.files.{File => SFile}
@@ -29,7 +30,8 @@ case class Entry(dir: String,
                  article: Option[String],
                  wlmId: Option[String],
                  images: Seq[String],
-                 descriptions: Seq[String])
+                 descriptions: Seq[String],
+                 text: Option[String] = None)
 
 class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
 
@@ -42,15 +44,17 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
   val wlmPage = conf.getString("wlm-page")
 
   def getEntries: Future[Seq[Entry]] = {
-    for (tableEntries <- fromWikiTable(tablePage)) yield {
-      tableEntries.map { entry =>
+    fromWikiTable(tablePage).map {
+      tableEntries =>
+        tableEntries.map { entry =>
 
-        val objDir = SFile(fs.getPath(s"$home/${entry.dir}"))
-        val files = getImages(objDir).map(_.pathAsString)
-        val descriptions = getImagesDescr(objDir)
+          val objDir = SFile(fs.getPath(s"$home/${entry.dir}"))
+          val files = getImages(objDir).map(_.pathAsString)
+          val descriptions = getImagesDescr(objDir, files)
+          val text = getArticleText(objDir)
 
-        entry.copy(images = files, descriptions = descriptions)
-      }
+          entry.copy(images = files, descriptions = descriptions, text = text)
+        }
     }
   }
 
@@ -59,16 +63,16 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
       val table = TableParser.parse(text)
       table.data.toSeq.map { row =>
         val seq = row.toSeq
-        val (name, article, wlmId) = (seq(0), seq(1), seq(2))
+        val (name, article, wlmId) = (seq(0), seq(1), if (seq.size > 2) seq(2) else "")
 
-        Entry(name, Some(article), if (wlmId.trim.nonEmpty) Some(wlmId) else None, Seq.empty, Seq.empty)
+        Entry(name, Some(article), if (wlmId.trim.nonEmpty) Some(wlmId) else None, Seq.empty, Seq.empty, None)
       }
     }
   }
 
   def makeEntryGallery(entry: Entry) = {
     Gallery.asHtml(
-      entry.images.map(title => new Image(title, url = Some(SFile(s"$home/${entry.dir}/$title").uri.toString))),
+      entry.images.map(title => new Image(title, url = Some(SFile(title).uri.toString))),
       entry.descriptions
     )
   }
@@ -76,11 +80,20 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
   def getImages(dir: SFile): Seq[SFile] =
     getFiles(dir).filter(isImage)
 
-  def getImagesDescr(dir: SFile): Seq[String] = {
-    getFiles(dir).find(isHtml).toSeq.flatMap { file =>
+  def getImagesDescr(dir: SFile, files: Seq[String]): Seq[String] = {
+    val docs = getFiles(dir).filter(isDoc).map(_.toJava)
+    ImageListParser.docToHtml(docs)
+    getFiles(dir).filter(isHtml).sortBy(_.size).headOption.toSeq.flatMap { file =>
       val content = file.contentAsString
       val lines = HtmlParser.trimmedLines(content)
-      lines.filter(_.head.isDigit)
+      val filenames = files.map(_.split(File.separator).last.split("\\.").head.toLowerCase)
+      lines.filter(l => filenames.exists(l.toLowerCase.startsWith) || l.trim.head.isDigit)
+    }
+  }
+
+  def getArticleText(dir: SFile): Option[String] = {
+    getFiles(dir).filter(isHtml).sortBy(_.size).lastOption.map { file =>
+      HtmlParser.htmlText(file.contentAsString)
     }
   }
 
@@ -105,7 +118,40 @@ object Pereiaslav {
 
   def main(args: Array[String]) {
     val conf = ConfigFactory.load("pereiaslav.conf")
-    new Pereiaslav(conf).getEntries
+    val pereiaslav = new Pereiaslav(conf)
+    pereiaslav.getEntries.map { entries =>
+      val galleries = entries.zipWithIndex.map { case (e, i) =>
+        s"""<h1 id="e$i">${e.dir}</h1>""" +
+          e.text.map(t => s"<br> $t <br>".replace("\n", "<br>")).getOrElse("") +
+          pereiaslav.makeEntryGallery(e)
+      }
+
+      val navItems = entries.zipWithIndex.map { case (e, i) =>
+        s"""<li><a href="e$i.html"> ${e.dir} (${e.images.size}, ${e.descriptions.size}) </a></li>"""
+      }
+
+      val head =
+        """<head>
+          <meta charset="UTF-8">
+          <link rel="stylesheet" media="screen" href="main.css">
+          </head>"""
+      val nav = navItems.mkString(
+        """<nav role="navigation" class="table-of-contents">
+           <ol>""",
+        "\n",
+        """</ol>
+          </nav>
+        """)
+
+      val htmls = galleries.map(g => "<html>" + head + "<body>\n" + nav + g + "\n</body></html>")
+
+      htmls.zipWithIndex.foreach { case (h, i) =>
+        SFile(s"${pereiaslav.home}/e$i.html").overwrite(h)
+      }
+    } onFailure {
+      case e =>
+        println(e)
+    }
   }
 }
 

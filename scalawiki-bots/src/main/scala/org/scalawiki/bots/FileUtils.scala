@@ -1,7 +1,9 @@
 package org.scalawiki.bots
 
 import java.nio.file.{Files, Paths}
+
 import better.files.{File => SFile}
+import org.scalawiki.AlphaNumOrdering
 
 import scala.io.{Codec, Source}
 
@@ -53,7 +55,7 @@ object FileUtils {
     * @return directory members filtered by predicate
     */
   def list(dir: SFile, predicate: SFile => Boolean): Seq[SFile] =
-    dir.list.filter(predicate).toSeq.sortBy(_.name)
+    dir.list.filter(predicate).toSeq.sortBy(_.name)(AlphaNumOrdering)
 
   def isImage(f: SFile): Boolean = hasExt(f, Set(".jpg", ".tif"))
 
