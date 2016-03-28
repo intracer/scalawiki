@@ -2,6 +2,7 @@ package org.scalawiki.bots.museum
 
 import java.io.File
 import java.nio.file.{FileSystem, FileSystems}
+import java.util.regex.Pattern
 
 import better.files.{File => SFile}
 import com.typesafe.config.{Config, ConfigFactory}
@@ -43,12 +44,14 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
 
   val wlmPage = conf.getString("wlm-page")
 
+  val sep = fs.getSeparator
+
   def getEntries: Future[Seq[Entry]] = {
     fromWikiTable(tablePage).map {
       tableEntries =>
         tableEntries.map { entry =>
 
-          val objDir = SFile(fs.getPath(s"$home/${entry.dir}"))
+          val objDir = SFile(fs.getPath(home)) / entry.dir
           val files = getImages(objDir).map(_.pathAsString)
           val descriptions = getImagesDescr(objDir, files)
           val text = getArticleText(objDir)
@@ -83,12 +86,22 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
   def getImagesDescr(dir: SFile, files: Seq[String]): Seq[String] = {
     val docs = getFiles(dir).filter(isDoc).map(_.toJava)
     ImageListParser.docToHtml(docs)
-    getFiles(dir).filter(isHtml).sortBy(_.size).headOption.toSeq.flatMap { file =>
-      val content = file.contentAsString
-      val lines = HtmlParser.trimmedLines(content)
-      val filenames = files.map(_.split(File.separator).last.split("\\.").head.toLowerCase)
-      lines.filter(l => filenames.exists(l.toLowerCase.startsWith) || l.trim.head.isDigit)
-    }
+    getFiles(dir).filter(isHtml)
+      .sortBy(_.size).headOption.toSeq
+      .flatMap { file =>
+        val content = file.contentAsString
+        val lines = HtmlParser.trimmedLines(content)
+        val filenames = files.map { name =>
+          name.split(Pattern.quote(sep))
+            .last
+            .split("\\.").head
+            .toLowerCase
+        }
+        lines.filter { line =>
+          filenames.exists(line.toLowerCase.startsWith) ||
+            line.trim.head.isDigit
+        }
+      }
   }
 
   def getArticleText(dir: SFile): Option[String] = {

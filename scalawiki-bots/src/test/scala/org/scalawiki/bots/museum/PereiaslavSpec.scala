@@ -1,5 +1,6 @@
 package org.scalawiki.bots.museum
 
+import java.io.File
 import java.nio.file.FileSystem
 
 import better.files.Cmds._
@@ -12,7 +13,6 @@ import org.scalawiki.dto.markup.Table
 import org.specs2.mutable.Specification
 import org.specs2.specification.BeforeEach
 import org.specs2.mock.Mockito
-
 import spray.util.pimpFuture
 
 import scala.concurrent.Future
@@ -22,6 +22,7 @@ import scala.collection.JavaConverters._
 class PereiaslavSpec extends Specification with BeforeEach with Mockito {
 
   var fs: FileSystem = _
+  var sep : String = _
   var root: SFile = _
   val ukWiki = "uk.wikipedia.org"
 
@@ -31,7 +32,7 @@ class PereiaslavSpec extends Specification with BeforeEach with Mockito {
 
   def config(host: String = ukWiki,
              tablePage: String = "tablePage",
-             home: String = "/data",
+             home: String = "." + fs.getSeparator + "data",
              wlmPage: String = ""): Config = {
     val map = Map(
       "host" -> host,
@@ -43,8 +44,9 @@ class PereiaslavSpec extends Specification with BeforeEach with Mockito {
   }
 
   override def before = {
-    fs = Jimfs.newFileSystem(Configuration.unix())
-    root = mkdir(SFile(fs.getPath("/data")))
+    fs = Jimfs.newFileSystem(Configuration.forCurrentPlatform())
+    sep = fs.getSeparator
+    root = mkdir(SFile(fs.getPath(s"." + sep + "data")))
   }
 
   def createFiles(parent: SFile, names: Seq[String]): Seq[SFile] = {
@@ -130,8 +132,10 @@ class PereiaslavSpec extends Specification with BeforeEach with Mockito {
 
       val entries = pereiaslav().getEntries.await
       entries.size === 2
-      entries.head === Entry("name1", Some("article1"), Some("wlmId1"), (1 to 3).map(i => s"/data/name1/$i.jpg"), Seq.empty)
-      entries.last === Entry("name2", Some("article2"), None, (11 to 13).map(i => s"/data/name2/$i.jpg"), Seq.empty)
+      entries.head === Entry("name1", Some("article1"), Some("wlmId1"),
+        (1 to 3).map(i => (root / "name1" / s"$i.jpg").toString), Seq.empty)
+      entries.last === Entry("name2", Some("article2"), None,
+        (11 to 13).map(i => (root / "name2" / s"$i.jpg").toString), Seq.empty)
     }
   }
 
