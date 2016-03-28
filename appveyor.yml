@@ -14,8 +14,6 @@ install:
   - cmd: SET SBT_OPTS=-XX:MaxPermSize=2g -Xmx4g
 build_script:
   - sbt clean compile test
-test_script:
-  - sbt test-only
 cache:
   - C:\sbt\
   - C:\Users\appveyor\.m2
