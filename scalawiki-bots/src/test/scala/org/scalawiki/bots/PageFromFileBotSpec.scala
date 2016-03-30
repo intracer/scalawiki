@@ -68,10 +68,10 @@ class PageFromFileBotSpec extends Specification {
       val pages = PageFromFileBot.pages(chunk)
       val size = pages.size
 
-      size === articles
-
       val used  = mb(runtime.totalMemory() - runtime.freeMemory()).toInt
       println(s"Used $used MB")
+
+      size === articles
     }
   }
 }
