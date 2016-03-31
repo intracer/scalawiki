@@ -1,8 +1,21 @@
 package org.scalawiki.bots
 
+import org.scalawiki.dto.Page
 import org.specs2.mutable.Specification
 
 class PageFromFileBotSpec extends Specification {
+
+  val titles = Seq("PageName", "AnotherPageName")
+
+  val texts = Seq(
+    "'''PageName'''\nText here\n",
+    "'''AnotherPageName'''\nAnother text"
+  )
+
+  val textsWithoutTitles = Seq(
+    "\nText here\n",
+    "\nAnother text"
+  )
 
   val docExample =
     """{{-start-}}
@@ -15,37 +28,54 @@ class PageFromFileBotSpec extends Specification {
       |Another text
       |{{-end-}}""".stripMargin
 
-  val docExampleOwnDelimiter =
-    """xxxx
-      |'''PageName'''
-      |Text here
-      |
-      |yyyy
-      |xxxx
-      |'''AnotherPageName'''
-      |Another text
-      |yyyy""".stripMargin
-
-  "page from file" should {
+  "pages" should {
 
     "support default start and end parameters" in {
       val pages = PageFromFileBot.pages(docExample).toBuffer
       pages.size === 2
-      pages.map(_.title) === Seq("PageName", "AnotherPageName")
-      pages.flatMap(_.text) === Seq(
-        "'''PageName'''\nText here\n",
-        "'''AnotherPageName'''\nAnother text"
-      )
+      pages.map(_.title) === titles
+      pages.flatMap(_.text) === texts
     }
 
     "support start and end parameters" in {
-      val pages = PageFromFileBot.pages(docExampleOwnDelimiter, start = "xxxx", end = "yyyy").toBuffer
+      val docExampleOwnDelimiter =
+        """xxxx
+          |'''PageName'''
+          |Text here
+          |
+          |yyyy
+          |xxxx
+          |'''AnotherPageName'''
+          |Another text
+          |yyyy""".stripMargin
+
+      val pages = PageFromFileBot.pages(docExampleOwnDelimiter, PageFromFileFormat(start = "xxxx", end = "yyyy")).toBuffer
       pages.size === 2
-      pages.map(_.title) === Seq("PageName", "AnotherPageName")
-      pages.flatMap(_.text) === Seq(
-        "'''PageName'''\nText here\n",
-        "'''AnotherPageName'''\nAnother text"
-      )
+      pages.map(_.title) === titles
+      pages.flatMap(_.text) === texts
+    }
+
+    "support noTitle" in {
+      val pages = PageFromFileBot.pages(docExample, noTitle = true).toBuffer
+      pages.size === 2
+      pages.map(_.title) === titles
+      pages.flatMap(_.text) === textsWithoutTitles
+    }
+
+    "join title in page text" in {
+      val pages = titles.zip(texts) map {
+        case (title, text) =>
+          Page(title).withText(text)
+      }
+      PageFromFileBot.join(pages, includeTitle = false) === docExample
+    }
+
+    "join include title" in {
+      val pages = titles.zip(textsWithoutTitles) map {
+        case (title, text) =>
+          Page(title).withText(text)
+      }
+      PageFromFileBot.join(pages, includeTitle = true) === docExample
     }
 
     "process many pages in" in {
@@ -68,7 +98,7 @@ class PageFromFileBotSpec extends Specification {
       val pages = PageFromFileBot.pages(chunk)
       val size = pages.size
 
-      val used  = mb(runtime.totalMemory() - runtime.freeMemory()).toInt
+      val used = mb(runtime.totalMemory() - runtime.freeMemory()).toInt
       println(s"Used $used MB")
 
       size === articles
