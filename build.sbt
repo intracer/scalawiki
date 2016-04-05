@@ -23,10 +23,10 @@ lazy val `scalawiki-core` =
       Seq(
         "io.spray" %% "spray-client" % sprayV,
         "io.spray" %% "spray-caching" % sprayV,
-        "com.typesafe.play" %% "play-json" % "2.4.3",
+        "com.typesafe.play" %% "play-json" % "2.3.10",
         "com.typesafe.akka" %% "akka-actor" % akkaV,
-        "com.typesafe" % "config" % "1.3.0",
-        "com.iheart" %% "ficus" % "1.2.3",
+        "com.typesafe" % "config" % "1.2.1",
+        "com.iheart" %% "ficus" % "1.1.3",
         "com.github.nscala-time" %% "nscala-time" % "2.10.0",
         "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
         "ch.qos.logback" % "logback-classic" % "1.1.3",
@@ -40,18 +40,6 @@ lazy val `scalawiki-core` =
 lazy val `scalawiki-bots` =
   (project in file("scalawiki-bots"))
     .settings(commonSettings: _*)
-    .settings(libraryDependencies ++= Seq(
-      "com.github.pathikrit" %% "better-files-akka" % "2.15.0",
-      "org.scalafx" %% "scalafx" % "8.0.60-R9",
-      "org.testfx" % "testfx-core" % "4.0.1-alpha" % "test",
-      "org.testfx" % "testfx-junit" % "4.0.1-alpha" % "test",
-      "org.testfx" % "testfx-legacy" % "4.0.1-alpha" % "test",
-      "org.testfx" % "openjfx-monocle" % "1.8.0_20" % "test",
-
-      "org.apache.poi" % "poi-scratchpad" % "3.13",
-      "org.apache.poi" % "poi-ooxml" % "3.13",
-      "fr.opensagres.xdocreport" % "org.apache.poi.xwpf.converter.xhtml" % "1.0.5"
-    ))
     .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
 
 lazy val `scalawiki-dumps` =
@@ -110,15 +98,9 @@ lazy val commonSettings = Seq(
   ),
   scalacOptions ++= Seq("-Ybackend:GenBCode"),
 
-  /**
-    * For now the only reason to require Java 8 is
-    * "com.typesafe.play" %% "play-json" % "2.4.3" dependency.
-    * It is possible to implement crossbuild ([[https://github.com/intracer/scalawiki/issues/36 gh issue]])
-    * for Java 7 with play-json 2.3
-    */
   initialize := {
     val _ = initialize.value // run the previous initialization
-    val required = VersionNumber("1.8")
+    val required = VersionNumber("1.7")
     val curr = VersionNumber(sys.props("java.specification.version"))
     assert(CompatibleJavaVersion(curr, required), s"Java $required or above required")
   }

@@ -33,7 +33,7 @@ class Parser(val action: Action) {
 
         if (jsonObj.value.contains("query")) {
 
-          val pagesJson = (json \ "query" \ queryChild).get
+          val pagesJson = json \ "query" \ queryChild
 
           val jsons = (queryChild match {
             case "pages" => pagesJson.asInstanceOf[JsObject].values
