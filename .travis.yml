@@ -14,7 +14,7 @@ scala:
 
 jdk:
   - openjdk7
-  - oraclejdk8
+  - oraclejdk7
 
 script: "sbt clean coverage test"
 after_success: 
