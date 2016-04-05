@@ -67,7 +67,7 @@ class PereiaslavSpec extends Specification with BeforeEach with Mockito {
       val images = createFiles(root, imageNames)
       createFiles(root, otherNames)
 
-      val list = pereiaslav().getImages(root)
+      val list = FileUtils.list(root, FileUtils.isImage)
       list === images
     }
 
