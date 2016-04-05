@@ -4,6 +4,8 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document.OutputSettings
 import org.jsoup.safety.Whitelist
 
+import scala.compat.Platform
+
 object HtmlParser {
 
   /**
@@ -38,6 +40,6 @@ object HtmlParser {
     Jsoup.clean(tags2Nl, "",
       Whitelist.none(),
       new OutputSettings().prettyPrint(false)
-    )
+    ).split(Platform.EOL).map(_.trim).mkString(Platform.EOL)
   }
 }
