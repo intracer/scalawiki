@@ -1,7 +1,5 @@
 package org.scalawiki
 
-import java.util.concurrent.TimeUnit
-
 import spray.util.pimpFuture
 
 class ImagesGeneratorSpec extends BaseIntegrationSpec {

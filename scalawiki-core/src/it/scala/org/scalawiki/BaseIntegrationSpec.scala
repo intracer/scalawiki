@@ -1,7 +1,7 @@
 package org.scalawiki
 
 import akka.actor.ActorSystem
-import org.scalawiki.http.HttpClientSpray
+import org.scalawiki.http.HttpClientAkka
 import org.specs2.mutable.Specification
 
 import scala.concurrent.{Await, Future}
@@ -14,13 +14,11 @@ class BaseIntegrationSpec extends Specification {
   val commons = "commons.wikimedia.org"
 
   val system: ActorSystem = ActorSystem()
-  val http = new HttpClientSpray(system)
+  val http = new HttpClientAkka(system)
 
-  def getUkWikiBot = new MwBot(http, system, ukWiki, None)
+  def getUkWikiBot = MwBot.get(ukWiki)
 
-  def getTestBot = new MwBot(http, system, "wikilovesearth.org", None)
-
-  def getCommonsBot = new MwBot(http, system, commons, None)
+  def getCommonsBot = MwBot.get(commons)
 
   def login(wiki: MwBot, username: String = LoginInfo.login, passwd: String = LoginInfo.password) =
     await(wiki.login(username, passwd))

@@ -2,21 +2,28 @@ package org.scalawiki.util
 
 import java.nio.charset.StandardCharsets
 
+import akka.actor.ActorSystem
 import org.scalawiki.http.HttpClient
 import org.specs2.matcher.Matchers
-import spray.http.{HttpResponse, _}
+import akka.http.scaladsl.model._
+import akka.stream.ActorMaterializer
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
+import scala.concurrent.duration._
 
 class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matchers with HttpClient {
+
+  implicit val sys = ActorSystem()
+
+  implicit val materializer = ActorMaterializer()
 
   val commands = mutable.Queue(commandsParam: _*)
 
   override def getResponse(url: String) = getResponse(Uri(url))
 
-  override def getResponse(url: Uri): Future[HttpResponse] = getResponse(url, url.query.toMap)
+  override def getResponse(url: Uri): Future[HttpResponse] = getResponse(url, url.query().toMap)
 
   def getResponse(url: Uri, params: Map[String, String]): Future[HttpResponse] = {
     require(commands.nonEmpty, "Unexpected query: " + url.toString())
@@ -34,7 +41,10 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
       .fold(HttpResponse(StatusCodes.NotFound))(
         text => HttpResponse(
           StatusCodes.OK,
-          HttpEntity(ContentTypes.`text/plain(UTF-8)`, text.getBytes(StandardCharsets.UTF_8))
+          entity = HttpEntity(
+            ContentTypes.`text/plain(UTF-8)`,
+            text.getBytes(StandardCharsets.UTF_8)
+          )
         )
       )
 
@@ -49,12 +59,12 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
 
   override def postFile(url: String, params: Map[String, String], fileParam: String, filename: String): Future[HttpResponse] = ???
 
-  override def get(url: String): Future[String] = getResponse(url) map getBody
+  override def get(url: String): Future[String] = getResponse(url) flatMap getBody
 
-  override def get(url: Uri): Future[String] = getResponse(url) map getBody
+  override def get(url: Uri): Future[String] = getResponse(url) flatMap getBody
 
-  override def getBody(response: HttpResponse): String =
-    response.entity.asString(HttpCharsets.`UTF-8`)
+  override def getBody(response: HttpResponse): Future[String] =
+    response.entity.toStrict(5 minutes).map(_.data.utf8String)
 
   override def postMultiPart(url: Uri, params: Map[String, String]): Future[HttpResponse] = ???
 

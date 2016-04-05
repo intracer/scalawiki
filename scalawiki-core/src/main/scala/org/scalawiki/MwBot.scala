@@ -6,14 +6,26 @@ import akka.io.IO
 import akka.pattern.ask
 import org.scalawiki.dto.{LoginResponse, Page, Site}
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.http.{HttpClient, HttpClientBee, HttpClientSpray}
+import org.scalawiki.http.{HttpClient, HttpClientAkka}
 import org.scalawiki.json.MwReads._
 import org.scalawiki.query.{DslQuery, PageQuery, SinglePageQuery}
 import play.api.libs.json._
-import spray.can.Http
-import spray.http._
-import spray.util._
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.client.RequestBuilding._
+import akka.http.scaladsl.coding.Gzip
+import akka.http.scaladsl.model.Multipart.FormData.BodyPart
+import akka.http.scaladsl.model.Uri.Query
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.{HttpEncodings, `Accept-Encoding`, `User-Agent`}
+import akka.stream.ActorMaterializer
+import akka.util.Timeout
+import net.spraycookies.{CookieHandling, CookieJar}
+import net.spraycookies.tldlist.DefaultEffectiveTldList
 
+import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
@@ -60,6 +72,8 @@ class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) e
 
   implicit val sys = system
 
+  implicit val materializer = ActorMaterializer()
+
   import system.dispatcher
 
   def host = site.domain
@@ -90,8 +104,7 @@ class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) e
     val loginParams = Map(
       "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json"
     ) ++ token.map("lgtoken" -> _)
-    http.post(apiUrl, loginParams).map { resp =>
-      val body = http.getBody(resp)
+    http.post(apiUrl, loginParams).flatMap (http.getBody) map { body =>
       val jsResult = Json.parse(body).validate(loginResponseReads)
       if (jsResult.isError) {
         throw new RuntimeException("Parsing failed: " + jsResult)
@@ -118,15 +131,15 @@ class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) e
     }
 
   override def getByteArray(url: String): Future[Array[Byte]] =
-    http.getResponse(url) map {
-      response => response.entity.data.toByteArray
+    http.getResponse(url) flatMap {
+      response => response.entity.toStrict(5 minutes).map(_.data.toArray)
     }
 
   override def post[T](reads: Reads[T], params: (String, String)*): Future[T] =
     post(reads, params.toMap)
 
   override def post[T](reads: Reads[T], params: Map[String, String]): Future[T] =
-    http.post(apiUrl, params) map http.getBody map {
+    http.post(apiUrl, params) flatMap http.getBody map {
       body =>
         val result = Json.parse(body).validate(reads).get
         println(result)
@@ -134,7 +147,7 @@ class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) e
     }
 
   override def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T] =
-    http.postMultiPart(apiUrl, params) map http.getBody map {
+    http.postMultiPart(apiUrl, params) flatMap http.getBody map {
       body =>
         val json = Json.parse(body)
         val response = json.validate(reads)
@@ -149,7 +162,7 @@ class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) e
     }
 
   override def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String): Future[T] =
-    http.postFile(apiUrl, params, fileParam, filename) map http.getBody map {
+    http.postFile(apiUrl, params, fileParam, filename) flatMap http.getBody map {
       body =>
         val json = Json.parse(body)
         val response = json.validate(reads)
@@ -177,10 +190,10 @@ class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) e
   }
 
   def getIndexUri(params: (String, String)*) =
-    Uri(indexUrl) withQuery (params ++ Seq("format" -> "json"): _*)
+    Uri(indexUrl) withQuery (Query(params ++ Seq("format" -> "json"): _*))
 
   def getUri(params: (String, String)*) =
-    Uri(apiUrl) withQuery (params ++ Seq("format" -> "json"): _*)
+    Uri(apiUrl) withQuery (Query(params ++ Seq("format" -> "json"): _*))
 
   override def get(params: Map[String, String]): Future[String] = {
     val uri: Uri = getUri(params)
@@ -192,16 +205,11 @@ class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) e
   override def post(params: Map[String, String]): Future[String] = {
     val uri: Uri = Uri(apiUrl)
     log.info(s"$host POST url: $uri, params: $params")
-    http.post(uri, params ++ Map("format" -> "json")) map http.getBody
+    http.post(uri, params ++ Map("format" -> "json")) flatMap http.getBody
   }
 
   def getUri(params: Map[String, String]) =
-    Uri(apiUrl) withQuery (params ++ Map("format" -> "json"))
-
-  def shutdown(): Unit = {
-    IO(Http).ask(Http.CloseAll)(1.second).await
-    system.shutdown()
-  }
+    Uri(apiUrl) withQuery (Query(params ++ Map("format" -> "json")))
 
   override def await[T](future: Future[T]) = Await.result(future, http.timeout)
 }
@@ -219,7 +227,7 @@ object MwBot {
 
   def create(host: String, withDb: Boolean = false): MwBot = {
     val system = ActorSystem()
-    val http = if (useSpray) new HttpClientSpray(system) else new HttpClientBee
+    val http = new HttpClientAkka(system)
 
     val bot = new MwBotImpl(host, http, system)
 

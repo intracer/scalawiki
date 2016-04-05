@@ -12,7 +12,7 @@ lazy val scalawiki =
       `spray-cookies`
     )
 
-val akkaV = "2.3.14"
+val akkaV = "2.4.3"
 val sprayV = "1.3.3"
 val specsV = "3.7.2"
 
@@ -23,14 +23,14 @@ lazy val `scalawiki-core` =
       Seq(
         "io.spray" %% "spray-client" % sprayV,
         "io.spray" %% "spray-caching" % sprayV,
-        "com.typesafe.play" %% "play-json" % "2.4.3",
+        "com.typesafe.play" %% "play-json" % "2.5.1",
         "com.typesafe.akka" %% "akka-actor" % akkaV,
+        "com.typesafe.akka" %% "akka-http-experimental" % akkaV,
         "com.typesafe" % "config" % "1.3.0",
         "com.iheart" %% "ficus" % "1.2.3",
         "com.github.nscala-time" %% "nscala-time" % "2.10.0",
         "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
         "ch.qos.logback" % "logback-classic" % "1.1.3",
-        "uk.co.bigbeeconsultants" %% "bee-client" % "0.29.1",
         "org.sweble.wikitext" % "swc-engine" % "2.0.0" exclude("org.jsoup", "jsoup"),
         "org.jsoup" % "jsoup" % "1.8.3",
         "commons-codec" % "commons-codec" % "1.10"
@@ -84,8 +84,7 @@ lazy val `spray-cookies` =
   (project in file("spray-cookies"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
-      "io.spray" %% "spray-client" % sprayV,
-      "io.spray" %% "spray-json" % "1.3.2",
+      "com.typesafe.akka" %% "akka-http-experimental" % akkaV,
       "com.typesafe.akka" %% "akka-actor" % akkaV,
       "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"
     ))

@@ -1,6 +1,6 @@
 package org.scalawiki.http
 
-import spray.http._
+import akka.http.scaladsl.model._
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -26,6 +26,6 @@ trait HttpClient {
 
   def postFile(url: String, params: Map[String, String], fileParam: String, filename: String): Future[HttpResponse]
 
-  def getBody(response: HttpResponse): String
+  def getBody(response: HttpResponse): Future[String]
 
 }
