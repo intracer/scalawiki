@@ -34,7 +34,9 @@ object PageFromFileBot {
     }
   }
 
-  def join(pages: Seq[Page], fmt: PageFromFileFormat = PageFromFileFormat(), includeTitle: Boolean = true) = {
+  def join(pages: Seq[Page],
+           fmt: PageFromFileFormat = PageFromFileFormat(),
+           includeTitle: Boolean = true): String = {
     pages.map { page =>
       val title = if (includeTitle)
         fmt.titleStart + page.title + fmt.titleEnd

@@ -36,17 +36,24 @@ class ImageTemplateSpec extends Specification {
       |== {{int:license-header}} ==
       |{{OTRS Pending}}""".stripMargin
 
-  "image" should {
-    "have art template" in {
+  "template" should {
+    "should resolve config params from Map" in {
       val params = Map(
-        "location" -> "Archaeological Museum",
         "title" -> "Archaeological Museum interior",
-        "description" -> "Archaeological Museum interior description"
-
+        "description" -> "Archaeological Museum interior description",
+      "location" -> "Archaeological Museum"
       )
       val resolved = ImageTemplate.resolve(params)
       resolved.isResolved === true
       resolved.getString("template") === expected
+    }
+
+    "should makeInfoPage" in {
+      ImageTemplate.makeInfoPage(
+        title = "Archaeological Museum interior",
+        description =  "Archaeological Museum interior description",
+        location = "Archaeological Museum"
+      ) === expected
     }
   }
 

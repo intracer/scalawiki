@@ -1,38 +1,22 @@
 package org.scalawiki.bots.museum
 
-import java.io.File
 import java.nio.file.{FileSystem, FileSystems}
-import java.util.regex.Pattern
 
+import better.files.File.Order
 import better.files.{File => SFile}
 import com.typesafe.config.{Config, ConfigFactory}
+import net.ceedubs.ficus.Ficus._
 import org.scalawiki.MwBot
-import org.scalawiki.bots.FileUtils
-import org.scalawiki.dto.Image
-import org.scalawiki.dto.markup.{Gallery, Table}
+import org.scalawiki.bots.FileUtils._
+import org.scalawiki.bots.PageFromFileBot
+import org.scalawiki.dto.Page
+import org.scalawiki.dto.markup.Table
 import org.scalawiki.wikitext.TableParser
 import org.scalawiki.wlx.dto.Monument
 import org.scalawiki.wlx.dto.lists.WlmUa
-import FileUtils._
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-
-/**
-  * Upload entry
-  *
-  * @param dir          directory
-  * @param article      wikipedia article
-  * @param wlmId        Wiki Loves Monuments Id
-  * @param images       images in the directory
-  * @param descriptions image descriptions
-  */
-case class Entry(dir: String,
-                 article: Option[String],
-                 wlmId: Option[String],
-                 images: Seq[String],
-                 descriptions: Seq[String],
-                 text: Option[String] = None)
+import scala.concurrent.Future
 
 class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
 
@@ -44,20 +28,22 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
 
   val wlmPage = conf.getString("wlm-page")
 
+  val convertDocs = conf.getOrElse[Boolean]("convert-docs", false)
+
   val sep = fs.getSeparator
 
+  private val homeDir = SFile(fs.getPath(home))
+
   def getEntries: Future[Seq[Entry]] = {
-    fromWikiTable(tablePage).map {
-      tableEntries =>
-        tableEntries.map { entry =>
+    for (entries <- fromWikiTable(tablePage)) yield entries.map { entry =>
 
-          val objDir = SFile(fs.getPath(home)) / entry.dir
-          val files = getImages(objDir).map(_.pathAsString)
-          val descriptions = getImagesDescr(objDir, files)
-          val text = getArticleText(objDir)
+      val objDir = homeDir / entry.dir
+      val files = list(objDir, isImage).map(_.pathAsString)
 
-          entry.copy(images = files, descriptions = descriptions, text = text)
-        }
+      entry.copy(images = files,
+        descriptions = getImagesDescr(objDir, files),
+        text = getArticleText(objDir)
+      )
     }
   }
 
@@ -73,39 +59,28 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
     }
   }
 
-  def makeEntryGallery(entry: Entry) = {
-    Gallery.asHtml(
-      entry.images.map(title => new Image(title, url = Some(SFile(title).uri.toString))),
-      entry.descriptions
-    )
+  def getImagesDescr(dir: SFile, files: Seq[String]): Seq[String] = {
+    docsToHtml(dir)
+    val descFile = list(dir, isHtml)(Order.bySize).headOption.toSeq
+    descFile.flatMap { file =>
+      val content = file.contentAsString
+      val lines = HtmlParser.trimmedLines(content)
+      val filenames = files.map(path => SFile(path).nameWithoutExtension)
+      lines.filter { line =>
+        filenames.exists(line.toLowerCase.startsWith) || line.head.isDigit
+      }
+    }
   }
 
-  def getImages(dir: SFile): Seq[SFile] =
-    getFiles(dir).filter(isImage)
-
-  def getImagesDescr(dir: SFile, files: Seq[String]): Seq[String] = {
-    val docs = getFiles(dir).filter(isDoc).map(_.toJava)
-    ImageListParser.docToHtml(docs)
-    getFiles(dir).filter(isHtml)
-      .sortBy(_.size).headOption.toSeq
-      .flatMap { file =>
-        val content = file.contentAsString
-        val lines = HtmlParser.trimmedLines(content)
-        val filenames = files.map { name =>
-          name.split(Pattern.quote(sep))
-            .last
-            .split("\\.").head
-            .toLowerCase
-        }
-        lines.filter { line =>
-          filenames.exists(line.toLowerCase.startsWith) ||
-            line.trim.head.isDigit
-        }
-      }
+  def docsToHtml(dir: SFile): Unit = {
+    if (convertDocs) {
+      val docs = list(dir, isDoc).map(_.toJava)
+      ImageListParser.docToHtml(docs)
+    }
   }
 
   def getArticleText(dir: SFile): Option[String] = {
-    getFiles(dir).filter(isHtml).sortBy(_.size).lastOption.map { file =>
+    list(dir, isHtml)(Order.bySize).lastOption.map { file =>
       HtmlParser.htmlText(file.contentAsString)
     }
   }
@@ -118,6 +93,35 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
     ukWiki.page("User:IlyaBot/test").edit("test", multi = false)
   }
 
+  def makeUploadFiles(entries: Seq[Entry]): Unit = {
+    entries.foreach {
+      entry =>
+        val file = homeDir / entry.dir / "upload.txt"
+        val text = makeUploadFile(entry)
+        file.overwrite(text)
+    }
+  }
+
+  def makeUploadFile(entry: Entry): String = {
+    val pages = entry.images.zip(entry.descriptions).zipWithIndex.map {
+      case ((image, description), index) =>
+        val imageTitle = s"${entry.dir} $index"
+        Page(entry.dir).withText(ImageTemplate.makeInfoPage(
+          title = entry.dir,
+          description = entry.article.get,
+          location = "")
+        )
+    }
+
+    PageFromFileBot.join(pages)
+  }
+
+  def makeGallery(entries: Seq[Entry]): Unit = {
+    HtmlOutput.makeGalleries(entries).zipWithIndex.foreach { case (h, i) =>
+      SFile(s"$home/e$i.html").overwrite(h)
+    }
+  }
+
   def wlm(): Seq[Monument] = {
     val ukWiki = MwBot.get(MwBot.ukWiki)
     val text = ukWiki.await(ukWiki.pageText(wlmPage))
@@ -125,6 +129,12 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
     Monument.monumentsFromText(text, wlmPage, WlmUa.templateName, WlmUa).toBuffer
   }
 
+  def run() = {
+    getEntries.map { entries =>
+      makeGallery(entries)
+      makeUploadFiles(entries)
+    } onFailure { case e => println(e) }
+  }
 }
 
 object Pereiaslav {
@@ -132,39 +142,7 @@ object Pereiaslav {
   def main(args: Array[String]) {
     val conf = ConfigFactory.load("pereiaslav.conf")
     val pereiaslav = new Pereiaslav(conf)
-    pereiaslav.getEntries.map { entries =>
-      val galleries = entries.zipWithIndex.map { case (e, i) =>
-        s"""<h1 id="e$i">${e.dir}</h1>""" +
-          e.text.map(t => s"<br> $t <br>".replace("\n", "<br>")).getOrElse("") +
-          pereiaslav.makeEntryGallery(e)
-      }
-
-      val navItems = entries.zipWithIndex.map { case (e, i) =>
-        s"""<li><a href="e$i.html"> ${e.dir} (${e.images.size}, ${e.descriptions.size}) </a></li>"""
-      }
-
-      val head =
-        """<head>
-          <meta charset="UTF-8">
-          <link rel="stylesheet" media="screen" href="main.css">
-          </head>"""
-      val nav = navItems.mkString(
-        """<nav role="navigation" class="table-of-contents">
-           <ol>""",
-        "\n",
-        """</ol>
-          </nav>
-        """)
-
-      val htmls = galleries.map(g => "<html>" + head + "<body>\n" + nav + g + "\n</body></html>")
-
-      htmls.zipWithIndex.foreach { case (h, i) =>
-        SFile(s"${pereiaslav.home}/e$i.html").overwrite(h)
-      }
-    } onFailure {
-      case e =>
-        println(e)
-    }
+    pereiaslav.run()
   }
 }
 

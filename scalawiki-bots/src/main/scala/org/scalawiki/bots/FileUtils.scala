@@ -2,6 +2,7 @@ package org.scalawiki.bots
 
 import java.nio.file.{Files, Paths}
 
+import better.files.File.Order
 import better.files.{File => SFile}
 import org.scalawiki.AlphaNumOrdering
 
@@ -13,6 +14,8 @@ import scala.io.{Codec, Source}
 object FileUtils {
 
   val nl = System.lineSeparator
+
+  val byAlphaNumName = Ordering.by[SFile, String](_.name)(AlphaNumOrdering)
 
   /**
     * Read lines from file
@@ -54,8 +57,8 @@ object FileUtils {
     * @param predicate
     * @return directory members filtered by predicate
     */
-  def list(dir: SFile, predicate: SFile => Boolean): Seq[SFile] =
-    dir.list.filter(predicate).toSeq.sortBy(_.name)(AlphaNumOrdering)
+  def list(dir: SFile, predicate: SFile => Boolean)(implicit order: Order = byAlphaNumName): Seq[SFile] =
+    dir.list.filter(predicate).toSeq.sorted(order)
 
   def isImage(f: SFile): Boolean = hasExt(f, Set(".jpg", ".tif"))
 

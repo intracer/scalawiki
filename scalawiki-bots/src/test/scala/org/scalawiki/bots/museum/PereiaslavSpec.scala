@@ -1,6 +1,5 @@
 package org.scalawiki.bots.museum
 
-import java.io.File
 import java.nio.file.FileSystem
 
 import better.files.Cmds._
@@ -10,14 +9,14 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.scalawiki.MwBot
 import org.scalawiki.bots.FileUtils
 import org.scalawiki.dto.markup.Table
+import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import org.specs2.specification.BeforeEach
-import org.specs2.mock.Mockito
 import spray.util.pimpFuture
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class PereiaslavSpec extends Specification with BeforeEach with Mockito {
 
@@ -46,7 +45,7 @@ class PereiaslavSpec extends Specification with BeforeEach with Mockito {
   override def before = {
     fs = Jimfs.newFileSystem(Configuration.forCurrentPlatform())
     sep = fs.getSeparator
-    root = mkdir(SFile(fs.getPath(s"." + sep + "data")))
+    root = mkdir(SFile(fs.getPath(".")) / "data")
   }
 
   def createFiles(parent: SFile, names: Seq[String]): Seq[SFile] = {

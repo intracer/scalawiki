@@ -20,5 +20,27 @@ class HtmlParserSpec extends Specification {
         "2. Archaeological Museum. Exposition."
       )
     }
+
+    "htmlText" should {
+      "join new lines" in {
+        HtmlParser.htmlText(
+          """ line1
+            | line2
+            |
+            | line3
+          """.stripMargin) === "line1 line2 line3"
+      }
+
+      "preserve html paragraphs" in {
+        HtmlParser.htmlText(
+          """<p>line1
+            |line2</p>
+            |<p>line3</p>
+          """.stripMargin).trim ===
+          """line1 line2
+            |line3""".stripMargin
+      }
+
+    }
   }
 }
