@@ -32,12 +32,14 @@ class PereiaslavSpec extends Specification with BeforeEach with Mockito {
   def config(host: String = ukWiki,
              tablePage: String = "tablePage",
              home: String = "." + fs.getSeparator + "data",
+             lang: String = "uk",
              wlmPage: String = ""): Config = {
     val map = Map(
       "host" -> host,
       "table-page" -> tablePage,
       "home" -> home,
-      "wlm-page" -> wlmPage
+      "wlm-page" -> wlmPage,
+      "lang" -> lang
     )
     ConfigFactory.parseMap(map.asJava)
   }

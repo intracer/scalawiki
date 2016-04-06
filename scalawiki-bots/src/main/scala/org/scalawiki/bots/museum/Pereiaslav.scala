@@ -4,12 +4,10 @@ import java.nio.file.{FileSystem, FileSystems}
 
 import better.files.File.Order
 import better.files.{File => SFile}
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions, ConfigValueFactory}
 import net.ceedubs.ficus.Ficus._
 import org.scalawiki.MwBot
 import org.scalawiki.bots.FileUtils._
-import org.scalawiki.bots.PageFromFileBot
-import org.scalawiki.dto.Page
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wikitext.TableParser
 import org.scalawiki.wlx.dto.Monument
@@ -21,6 +19,8 @@ import scala.concurrent.Future
 class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
 
   val home = conf.getString("home")
+
+  val lang = conf.getString("lang")
 
   def ukWiki = MwBot.get(conf.getString("host"))
 
@@ -65,7 +65,7 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
     descFile.flatMap { file =>
       val content = file.contentAsString
       val lines = HtmlParser.trimmedLines(content)
-      val filenames = files.map(path => SFile(path).nameWithoutExtension)
+      val filenames = files.map(path => SFile(path).nameWithoutExtension.toLowerCase)
       lines.filter { line =>
         filenames.exists(line.toLowerCase.startsWith) || line.head.isDigit
       }
@@ -96,24 +96,46 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
   def makeUploadFiles(entries: Seq[Entry]): Unit = {
     entries.foreach {
       entry =>
-        val file = homeDir / entry.dir / "upload.txt"
-        val text = makeUploadFile(entry)
-        file.overwrite(text)
+        val file = homeDir / entry.dir / "upload.conf"
+        val config = makeUploadFileConfig(entry)
+        val renderOptions = ConfigRenderOptions.concise().setFormatted(true)
+        val text = config.root().render(renderOptions)
+        if (!file.exists) {
+          println(s"Creating ${file.pathAsString}")
+          file.overwrite(text)
+        }
     }
   }
 
-  def makeUploadFile(entry: Entry): String = {
-    val pages = entry.images.zip(entry.descriptions).zipWithIndex.map {
-      case ((image, description), index) =>
-        val imageTitle = s"${entry.dir} $index"
-        Page(entry.dir).withText(ImageTemplate.makeInfoPage(
-          title = entry.dir,
-          description = entry.article.get,
-          location = "")
-        )
-    }
+  def descriptionLang(description: String, lang: String) = {
+    val screened = description.replace("|", "{{!}}").replace("=", "{{=}}")
+    s"{{$lang|$description}}"
+  }
 
-    PageFromFileBot.join(pages)
+  def interWikiLink(target: String, title: String = "", lang: String) = {
+    val screened = title.replace("|", "{{!}}")
+    s"[[:$lang:$target|$title]]"
+  }
+
+  def makeUploadFileConfig(entry: Entry): Config = {
+    import scala.collection.JavaConverters._
+
+    val maps = entry.images.zip(entry.descriptions).zipWithIndex.map {
+      case ((image, description), index) =>
+        val article = entry.article.get
+        val wikiDescription = descriptionLang(
+          description + ", " + interWikiLink(article, lang = lang),
+          lang
+        )
+
+        Map(
+          "title" -> s"${entry.dir} ${index + 1}",
+          "file" -> image,
+          "description" -> wikiDescription
+        ) ++ entry.wlmId.map("wlm-id" -> _)
+    }
+    val value = ConfigValueFactory.fromIterable(maps.map(_.asJava).asJava)
+    ConfigFactory.empty().withValue("images", value)
   }
 
   def makeGallery(entries: Seq[Entry]): Unit = {
