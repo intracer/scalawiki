@@ -1,5 +1,7 @@
 package org.scalawiki.bots.museum
 
+import org.specs2.matcher.ContentMatchers._
+import org.scalawiki.dto.markup.LineUtil._
 import org.specs2.mutable.Specification
 
 import scala.io.Source
@@ -36,11 +38,11 @@ class HtmlParserSpec extends Specification {
           """<p>line1
             |line2</p>
             |<p>line3</p>
-          """.stripMargin).trim ===
+          """.stripMargin).trim  must haveSameLinesAs(
           """line1 line2
             |line3""".stripMargin
+        )
       }
-
     }
   }
 }
