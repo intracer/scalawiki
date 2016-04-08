@@ -50,12 +50,7 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
   def fromWikiTable(tablePage: String): Future[Seq[Entry]] = {
     for (text <- ukWiki.pageText(tablePage)) yield {
       val table = TableParser.parse(text)
-      table.data.toSeq.map { row =>
-        val seq = row.toSeq
-        val (name, article, wlmId) = (seq(0), seq(1), if (seq.size > 2) seq(2) else "")
-
-        Entry(name, Some(article), if (wlmId.trim.nonEmpty) Some(wlmId) else None, Seq.empty, Seq.empty, None)
-      }
+      table.data.map(Entry.fromRow).toSeq
     }
   }
 
@@ -94,48 +89,18 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
   }
 
   def makeUploadFiles(entries: Seq[Entry]): Unit = {
+    val renderOptions = ConfigRenderOptions.concise().setFormatted(true)
+
     entries.foreach {
       entry =>
         val file = homeDir / entry.dir / "upload.conf"
-        val config = makeUploadFileConfig(entry)
-        val renderOptions = ConfigRenderOptions.concise().setFormatted(true)
+        val config = entry.toConfig
         val text = config.root().render(renderOptions)
         if (!file.exists) {
           println(s"Creating ${file.pathAsString}")
           file.overwrite(text)
         }
     }
-  }
-
-  def descriptionLang(description: String, lang: String) = {
-    val screened = description.replace("|", "{{!}}").replace("=", "{{=}}")
-    s"{{$lang|$description}}"
-  }
-
-  def interWikiLink(target: String, title: String = "", lang: String) = {
-    val screened = title.replace("|", "{{!}}")
-    s"[[:$lang:$target|$title]]"
-  }
-
-  def makeUploadFileConfig(entry: Entry): Config = {
-    import scala.collection.JavaConverters._
-
-    val maps = entry.images.zip(entry.descriptions).zipWithIndex.map {
-      case ((image, description), index) =>
-        val article = entry.article.get
-        val wikiDescription = descriptionLang(
-          description + ", " + interWikiLink(article, lang = lang),
-          lang
-        )
-
-        Map(
-          "title" -> s"${entry.dir} ${index + 1}",
-          "file" -> image,
-          "description" -> wikiDescription
-        ) ++ entry.wlmId.map("wlm-id" -> _)
-    }
-    val value = ConfigValueFactory.fromIterable(maps.map(_.asJava).asJava)
-    ConfigFactory.empty().withValue("images", value)
   }
 
   def makeGallery(entries: Seq[Entry]): Unit = {
