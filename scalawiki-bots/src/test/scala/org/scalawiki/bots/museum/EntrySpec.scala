@@ -175,15 +175,34 @@ class EntrySpec extends Specification {
     }
   }
 
-//  "diff reporter" should {
-//    "tell article change in wikidescription" in {
-//
-//      val entry = Entry("dir", article = Some("article1"), wlmId = Some("wlm-id"),
-//        images = Seq(
-//          EntryImage("image", Some("description"))
-//        ))
-//
-//      val changedArticle = entry.copy(article = Some("article2"))
-//    }
-//  }
+  "diff reporter" should {
+
+    "be quite" in {
+      val image = EntryImage("image", Some("description1"), Some("wiki-description1"))
+      val entry = Entry("dir", article = Some("article1"), wlmId = Some("wlm-id"), images = Seq(image))
+
+      entry.diff(entry) === Seq.empty
+    }
+
+    "tell wiki description change" in {
+
+      val image = EntryImage("image", Some("description1"), Some("wiki-description1"))
+      val entry = Entry("dir", article = Some("article1"), wlmId = Some("wlm-id"), images = Seq(image))
+
+      val changed = entry.copy(images = Seq(image.copy(wikiDescription = Some("wiki-description2"))))
+
+      entry.diff(changed) === Seq(Diff("wikiDescription", Some("wiki-description1"), Some("wiki-description2")))
+    }
+
+    "tell wiki description change" in {
+
+      val image = EntryImage("image", Some("description1"), Some("wiki-description1"))
+      val entry = Entry("dir", article = Some("article1"), wlmId = Some("wlm-id"), images = Seq(image))
+
+      val changed = entry.copy(images = Seq(image.copy(wikiDescription = Some("wiki-description2"))))
+
+      entry.diff(changed) === Seq(Diff("wikiDescription", Some("wiki-description1"), Some("wiki-description2")))
+    }
+
+  }
 }

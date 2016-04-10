@@ -3,11 +3,28 @@ package org.scalawiki.bots.museum
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import net.ceedubs.ficus.FicusConfig
 
+case class Diff[T](name: String, before: T, after: T)
+
 case class EntryImage(filePath: String,
                       sourceDescription: Option[String] = None,
                       wikiDescription: Option[String] = None,
                       wlmId: Option[String] = None
-                     )
+                     ) {
+  def diff(other: EntryImage): Seq[Diff[_]] = {
+    (if (filePath != other.filePath)
+      Seq(Diff("filePath", filePath, other.filePath))
+    else Nil) ++
+      (if (sourceDescription != other.sourceDescription)
+        Seq(Diff("sourceDescription", sourceDescription, other.sourceDescription))
+      else Nil) ++
+      (if (wikiDescription != other.wikiDescription)
+        Seq(Diff("wikiDescription", wikiDescription, other.wikiDescription))
+      else Nil) ++
+      (if (wlmId != other.wlmId)
+        Seq(Diff("wlmId", wlmId, other.wlmId))
+      else Nil)
+  }
+}
 
 
 /**
@@ -71,6 +88,24 @@ case class Entry(dir: String,
     ) ++ wlmId.map("wlm-id" -> _)
 
     ConfigFactory.parseMap(map.asJava)
+  }
+
+  def diff(other: Entry): Seq[Diff[_]] = {
+    (if (dir != other.dir)
+      Seq(Diff("dir", dir, other.dir))
+    else Nil) ++
+      (if (article != other.article)
+        Seq(Diff("article", article, other.article))
+      else Nil) ++
+      (if (wlmId != other.wlmId)
+        Seq(Diff("wlmId", wlmId, other.wlmId))
+      else Nil) ++
+      (if (images != other.images) {
+        images.zip(other.images)
+          .flatMap { case (img1, img2) => img1.diff(img2)
+          }
+      }
+      else Nil)
   }
 }
 
