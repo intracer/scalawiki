@@ -21,7 +21,7 @@ import scala.concurrent.Future
 class PereiaslavSpec extends Specification with BeforeEach with Mockito {
 
   var fs: FileSystem = _
-  var sep : String = _
+  var sep: String = _
   var root: SFile = _
   val ukWiki = "uk.wikipedia.org"
 
@@ -108,8 +108,8 @@ class PereiaslavSpec extends Specification with BeforeEach with Mockito {
 
       val entries = pereiaslav().getEntries.await
       entries.size === 2
-      entries.head === Entry("name1", Some("article1"), Some("wlmId1"), Seq.empty, Seq.empty)
-      entries.last === Entry("name2", Some("article2"), None, Seq.empty, Seq.empty)
+      entries.head === Entry("name1", Some("article1"), Some("wlmId1"), Seq.empty)
+      entries.last === Entry("name2", Some("article2"), None, Seq.empty)
     }
 
     "return entries with images" in {
@@ -134,9 +134,11 @@ class PereiaslavSpec extends Specification with BeforeEach with Mockito {
       val entries = pereiaslav().getEntries.await
       entries.size === 2
       entries.head === Entry("name1", Some("article1"), Some("wlmId1"),
-        (1 to 3).map(i => (root / "name1" / s"$i.jpg").toString), Seq.empty)
+        (1 to 3).map { i => EntryImage((root / "name1" / s"$i.jpg").toString, None) }
+      )
       entries.last === Entry("name2", Some("article2"), None,
-        (11 to 13).map(i => (root / "name2" / s"$i.jpg").toString), Seq.empty)
+        (11 to 13).map { i => EntryImage((root / "name2" / s"$i.jpg").toString, None) }
+      )
     }
   }
 

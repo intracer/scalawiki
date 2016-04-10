@@ -1,23 +1,28 @@
 package org.scalawiki.bots.museum
 
 import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
+import net.ceedubs.ficus.FicusConfig
+
+case class EntryImage(filePath: String,
+                      description: Option[String] = None,
+                      wlmId: Option[String] = None)
 
 /**
   * Upload entry
   *
-  * @param dir          directory
-  * @param article      wikipedia article
-  * @param wlmId        Wiki Loves Monuments Id
-  * @param images       images in the directory
-  * @param descriptions image descriptions
+  * @param dir     directory
+  * @param article wikipedia article
+  * @param wlmId   Wiki Loves Monuments Id
+  * @param images  images in the directory
   */
 case class Entry(dir: String,
                  article: Option[String] = None,
                  wlmId: Option[String] = None,
-                 images: Seq[String] = Seq.empty,
-                 descriptions: Seq[String] = Seq.empty,
+                 images: Seq[EntryImage] = Seq.empty,
                  text: Option[String] = None,
                  lang: String = "uk") {
+
+  val articleOrDir = article.getOrElse(dir)
 
   def descriptionLang(description: String) =
     s"{{$lang|$description}}"
@@ -26,13 +31,12 @@ case class Entry(dir: String,
     s"[[:$lang:$target|$title]]"
 
   def imagesMaps: Seq[Map[String, String]] = {
-    val maps = images.zip(descriptions).zipWithIndex.map {
-      case ((image, description), index) =>
-        val articleOrDir = article.getOrElse(dir)
-        val wikiDescription = descriptionLang(description + ", " + interWikiLink(articleOrDir))
+    val maps = images.zipWithIndex.map {
+      case (image, index) =>
+        val wikiDescription = descriptionLang(image.description.fold("")(_ + ", ") + interWikiLink(articleOrDir))
         Map(
           "title" -> s"$articleOrDir ${index + 1}",
-          "file" -> image,
+          "file" -> image.filePath,
           "description" -> wikiDescription
         ) ++ wlmId.map("wlm-id" -> _)
     }
@@ -44,8 +48,10 @@ case class Entry(dir: String,
 
     val javaMaps = imagesMaps.map(_.asJava).asJava
     val imagesConf = ConfigValueFactory.fromIterable(javaMaps)
-    ConfigFactory.empty()
-      .withValue("images", imagesConf)
+    ConfigFactory.parseMap(Map(
+      "article" -> articleOrDir,
+      "images" -> imagesConf
+    ).asJava)
   }
 }
 
@@ -62,6 +68,29 @@ object Entry {
     Entry(dir,
       article.filter(_.trim.nonEmpty),
       wlmId.filter(_.trim.nonEmpty),
-      Seq.empty, Seq.empty, None)
+      Seq.empty, None)
   }
+
+  def fromConfig(javaConfig: Config, dir: String) = {
+    import net.ceedubs.ficus.Ficus._
+    val cfg: FicusConfig = javaConfig
+
+    val article = cfg.getOrElse[String]("article", dir)
+    val wlmId = cfg.getAs[String]("wlm-id")
+    val imagesCfg = cfg.as[Seq[FicusConfig]]("images")
+
+    val images = imagesCfg.map { imageCfg =>
+      val path = imageCfg.as[String]("file")
+      val description = imageCfg.getAs[String]("description")
+      EntryImage(path, description)
+    }
+
+    Entry(dir,
+      Some(article),
+      wlmId,
+      images,
+      None
+    )
+  }
+
 }

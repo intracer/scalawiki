@@ -10,7 +10,7 @@ object HtmlOutput {
     def makeToC: String = {
       val navItems = entries.zipWithIndex.map { case (e, i) =>
         val link = s"e$i.html"
-        val title = s"${e.dir} (${e.images.size}, ${e.descriptions.size})"
+        val title = s"${e.dir} (${e.images.size})"
         s"""<li><a href="$link"> $title </a></li>"""
       }
 
@@ -42,8 +42,11 @@ object HtmlOutput {
 
   def makeEntryGallery(entry: Entry) = {
     Gallery.asHtml(
-      entry.images.map(title => new Image(title, url = Some(SFile(title).uri.toString))),
-      entry.descriptions
+      entry.images.map { entry => new Image(
+        entry.filePath,
+        url = Some(SFile(entry.filePath).uri.toString))
+      },
+      entry.images.map(_.description.getOrElse(""))
     )
   }
 }

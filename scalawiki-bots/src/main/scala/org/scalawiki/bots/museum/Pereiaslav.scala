@@ -40,10 +40,10 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
       val objDir = homeDir / entry.dir
       val files = list(objDir, isImage).map(_.pathAsString)
 
-      entry.copy(images = files,
-        descriptions = getImagesDescr(objDir, files),
-        text = getArticleText(objDir)
-      )
+      val descriptions = getImagesDescr(objDir, files).map(Option.apply).padTo(files.size, None)
+      val images = files.zip(descriptions).map { case (f, d) => EntryImage(f, d) }
+
+      entry.copy(images = images, text = getArticleText(objDir))
     }
   }
 
