@@ -86,13 +86,13 @@ class EntrySpec extends Specification {
       roundTrip(entry, "dir") === entry
     }
 
-//    "" in {
-//      val entry = Entry("dir", article = Some("article"),
-//        images = Seq(
-//          EntryImage("image", Some("description"))
-//        ))
-//      roundTrip(entry, "dir") === entry
-//    }
+    "read image" in {
+      val entry = Entry("dir", article = Some("article"),
+        images = Seq(
+          EntryImage("image", Some("description"))
+        ))
+      roundTrip(entry, "dir") === entry
+    }
 
   }
 }

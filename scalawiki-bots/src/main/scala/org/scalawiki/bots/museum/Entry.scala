@@ -87,7 +87,7 @@ object Entry {
 
     val images = imagesCfg.map { imageCfg =>
       val path = imageCfg.as[String]("file")
-      val description = imageCfg.getAs[String]("description")
+      val description = imageCfg.getAs[String]("source-description")
       EntryImage(path, description)
     }
 
