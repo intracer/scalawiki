@@ -6,6 +6,8 @@ import org.specs2.mutable.Specification
 
 class EntrySpec extends Specification {
 
+  val entry0 = Entry("dir", article = Some("article"))
+
   "fromRow" should {
     "get dir" in {
       Entry.fromRow(Seq("dir")) === Entry("dir")
@@ -42,7 +44,7 @@ class EntrySpec extends Specification {
         images = Seq(
           EntryImage("image", Some("description"))
         )
-      ).withWikiDescriptions.imagesMaps === Seq(
+      ).genImageFields.imagesMaps === Seq(
         Map(
           "title" -> "dir 1",
           "file" -> "image",
@@ -58,7 +60,7 @@ class EntrySpec extends Specification {
         images = Seq(
           EntryImage("image", Some("description"))
         )
-      ).withWikiDescriptions.imagesMaps === Seq(
+      ).genImageFields.imagesMaps === Seq(
         Map(
           "title" -> "article 1",
           "file" -> "image",
@@ -75,7 +77,7 @@ class EntrySpec extends Specification {
           EntryImage("image", Some("description"))
         ),
         wlmId = Some("parent-wlm-id")
-      ).withWikiDescriptions.imagesMaps === Seq(
+      ).genImageFields.imagesMaps === Seq(
         Map(
           "title" -> "article 1",
           "file" -> "image",
@@ -93,7 +95,7 @@ class EntrySpec extends Specification {
           EntryImage("image2", Some("description2"), wlmId = Some("specific-wlm-id"))
         ),
         wlmId = Some("parent-wlm-id")
-      ).withWikiDescriptions
+      ).genImageFields
 
       val maps = entry.imagesMaps
 
@@ -130,42 +132,54 @@ class EntrySpec extends Specification {
     }
 
     "map dir" in {
-      val entry = Entry("dir", Some("article"))
-      roundTrip(entry, "dir") === entry
+      roundTrip(entry0, "dir") === entry0
     }
 
     "read image" in {
-      val entry = Entry("dir", article = Some("article"),
+      val entry = entry0.copy(
         images = Seq(
           EntryImage("image", Some("description"))
-        )).withWikiDescriptions
+        )).genImageFields
 
       roundTrip(entry, "dir") === entry
     }
 
     "read parent wlmId" in {
-      val entry = Entry("dir", article = Some("article"), wlmId = Some("wlm-id"),
+      val entry = entry0.copy(wlmId = Some("wlm-id"),
         images = Seq(
           EntryImage("image", Some("description"))
-        )).withWikiDescriptions
+        )).genImageFields
 
       roundTrip(entry, "dir") === entry
     }
 
     "read entry and image wlmId" in {
-      val entry = Entry("dir", article = Some("article"), wlmId = Some("parent-wlm-id"),
+      val entry = entry0.copy(wlmId = Some("parent-wlm-id"),
         images = Seq(
           EntryImage("image", Some("description"), wlmId = Some("image-wlm"))
-        )).withWikiDescriptions
+        )).genImageFields
 
       roundTrip(entry, "dir") === entry
+    }
+
+    "read uploadTitle" in {
+      val origEntry = Entry("dir", article = Some("article"),
+        images = Seq(
+          EntryImage("image1", Some("description1"))
+        )).genImageFields
+
+      val str = origEntry.toConfig.root().render().replace("article 1", "article 2")
+      val cfg = ConfigFactory.parseString(str)
+      val entry = Entry.fromConfig(cfg, "dir")
+      val image = entry.images.head
+      image.uploadTitle === Some("article 2")
     }
 
     "read wiki-description" in {
       val origEntry = Entry("dir", article = Some("article"),
         images = Seq(
           EntryImage("image1", Some("description1"))
-        )).withWikiDescriptions
+        )).genImageFields
 
       val str = origEntry.toConfig.root().render().replace("{{uk|description1", "{{uk|description2")
       val cfg = ConfigFactory.parseString(str)
@@ -179,30 +193,25 @@ class EntrySpec extends Specification {
 
     "be quite" in {
       val image = EntryImage("image", Some("description1"), Some("wiki-description1"))
-      val entry = Entry("dir", article = Some("article1"), wlmId = Some("wlm-id"), images = Seq(image))
+      val entry = entry0.copy(wlmId = Some("wlm-id"), images = Seq(image))
 
       entry.diff(entry) === Seq.empty
     }
 
-    "tell wiki description change" in {
+    "tell image entry field change" in {
 
-      val image = EntryImage("image", Some("description1"), Some("wiki-description1"))
-      val entry = Entry("dir", article = Some("article1"), wlmId = Some("wlm-id"), images = Seq(image))
-
-      val changed = entry.copy(images = Seq(image.copy(wikiDescription = Some("wiki-description2"))))
-
-      entry.diff(changed) === Seq(Diff("wikiDescription", Some("wiki-description1"), Some("wiki-description2")))
-    }
-
-    "tell wiki description change" in {
-
-      val image = EntryImage("image", Some("description1"), Some("wiki-description1"))
-      val entry = Entry("dir", article = Some("article1"), wlmId = Some("wlm-id"), images = Seq(image))
+      val image = EntryImage("image", Some("description1"), wikiDescription = Some("wiki-description1"))
+      val entry = entry0.copy(wlmId = Some("wlm-id"), images = Seq(image))
 
       val changed = entry.copy(images = Seq(image.copy(wikiDescription = Some("wiki-description2"))))
 
       entry.diff(changed) === Seq(Diff("wikiDescription", Some("wiki-description1"), Some("wiki-description2")))
     }
 
+    "tell wlm id change" in {
+      val entry = entry0.copy(wlmId = Some("wlm-id1"))
+      val changed = entry.copy(wlmId = Some("wlm-id2"))
+      entry.diff(changed) === Seq(Diff("wlmId", Some("wlm-id1"), Some("wlm-id2")))
+    }
   }
 }
