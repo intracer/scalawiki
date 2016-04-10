@@ -4,20 +4,11 @@ import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
 import net.ceedubs.ficus.FicusConfig
 
 case class EntryImage(filePath: String,
-                      description: Option[String] = None,
-                      wlmId: Option[String] = None,
-                      lang: String = "uk") {
+                      sourceDescription: Option[String] = None,
+                      wikiDescription: Option[String] = None,
+                      wlmId: Option[String] = None
+                     )
 
-  def descriptionLang(description: String) =
-    s"{{$lang|$description}}"
-
-  def interWikiLink(target: String, title: String = "") =
-    s"[[:$lang:$target|$title]]"
-
-  def wikiDescription(article: String, imageOrParentWlmId: Option[String]) =
-    descriptionLang(description.fold("")(_ + ", ") + interWikiLink(article)) +
-      imageOrParentWlmId.fold("")(id => s" {{Monument Ukraine|$id}}")
-}
 
 /**
   * Upload entry
@@ -36,17 +27,34 @@ case class Entry(dir: String,
 
   val articleOrDir = article.getOrElse(dir)
 
+  def descriptionLang(description: String) =
+    s"{{$lang|$description}}"
+
+  def interWikiLink(target: String) =
+    s"[[:$lang:$target|]]"
+
+  def imageOrParentWlmId(image: EntryImage) = image.wlmId.orElse(wlmId)
+
+  def genWikiDescription(image: EntryImage): String =
+    descriptionLang(image.sourceDescription.fold("")(_ + ", ") + interWikiLink(articleOrDir)) +
+      imageOrParentWlmId(image).fold("")(id => s" {{Monument Ukraine|$id}}")
+
+  def withWikiDescriptions: Entry = {
+    copy(images = images.map { img =>
+      img.copy(wikiDescription = Some(genWikiDescription(img)))
+    })
+  }
+
   def imagesMaps: Seq[Map[String, String]] = {
     val maps = images.zipWithIndex.map {
       case (image, index) =>
-        val imageOrParentWlmId = image.wlmId.orElse(wlmId)
         Map(
           "title" -> s"$articleOrDir ${index + 1}",
-          "file" -> image.filePath,
-          "description" -> image.wikiDescription(articleOrDir, imageOrParentWlmId)
+          "file" -> image.filePath
         ) ++
+          image.wikiDescription.map("description" -> _) ++
           image.wlmId.map("wlm-id" -> _) ++
-          image.description.map("source-description" -> _)
+          image.sourceDescription.map("source-description" -> _)
     }
     maps
   }
@@ -94,8 +102,9 @@ object Entry {
     val images = imagesCfg.map { imageCfg =>
       val path = imageCfg.as[String]("file")
       val description = imageCfg.getAs[String]("source-description")
+      val wikiDescription = imageCfg.getAs[String]("description")
       val imageWlmId = imageCfg.getAs[String]("wlm-id")
-      EntryImage(path, description, imageWlmId)
+      EntryImage(path, description, wikiDescription, imageWlmId)
     }
 
     Entry(dir,

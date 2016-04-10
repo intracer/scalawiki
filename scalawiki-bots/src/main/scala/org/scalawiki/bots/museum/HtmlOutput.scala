@@ -46,7 +46,7 @@ object HtmlOutput {
         entry.filePath,
         url = Some(SFile(entry.filePath).uri.toString))
       },
-      entry.images.map(_.description.getOrElse(""))
+      entry.images.map(_.sourceDescription.getOrElse(""))
     )
   }
 }

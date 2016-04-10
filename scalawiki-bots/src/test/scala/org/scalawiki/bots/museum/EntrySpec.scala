@@ -1,5 +1,6 @@
 package org.scalawiki.bots.museum
 
+import com.typesafe.config.ConfigFactory
 import net.ceedubs.ficus.FicusConfig
 import org.specs2.mutable.Specification
 
@@ -41,7 +42,7 @@ class EntrySpec extends Specification {
         images = Seq(
           EntryImage("image", Some("description"))
         )
-      ).imagesMaps === Seq(
+      ).withWikiDescriptions.imagesMaps === Seq(
         Map(
           "title" -> "dir 1",
           "file" -> "image",
@@ -57,7 +58,7 @@ class EntrySpec extends Specification {
         images = Seq(
           EntryImage("image", Some("description"))
         )
-      ).imagesMaps === Seq(
+      ).withWikiDescriptions.imagesMaps === Seq(
         Map(
           "title" -> "article 1",
           "file" -> "image",
@@ -74,7 +75,7 @@ class EntrySpec extends Specification {
           EntryImage("image", Some("description"))
         ),
         wlmId = Some("parent-wlm-id")
-      ).imagesMaps === Seq(
+      ).withWikiDescriptions.imagesMaps === Seq(
         Map(
           "title" -> "article 1",
           "file" -> "image",
@@ -92,7 +93,8 @@ class EntrySpec extends Specification {
           EntryImage("image2", Some("description2"), wlmId = Some("specific-wlm-id"))
         ),
         wlmId = Some("parent-wlm-id")
-      )
+      ).withWikiDescriptions
+
       val maps = entry.imagesMaps
 
       maps.size === 2
@@ -136,7 +138,8 @@ class EntrySpec extends Specification {
       val entry = Entry("dir", article = Some("article"),
         images = Seq(
           EntryImage("image", Some("description"))
-        ))
+        )).withWikiDescriptions
+
       roundTrip(entry, "dir") === entry
     }
 
@@ -144,7 +147,8 @@ class EntrySpec extends Specification {
       val entry = Entry("dir", article = Some("article"), wlmId = Some("wlm-id"),
         images = Seq(
           EntryImage("image", Some("description"))
-        ))
+        )).withWikiDescriptions
+
       roundTrip(entry, "dir") === entry
     }
 
@@ -152,9 +156,34 @@ class EntrySpec extends Specification {
       val entry = Entry("dir", article = Some("article"), wlmId = Some("parent-wlm-id"),
         images = Seq(
           EntryImage("image", Some("description"), wlmId = Some("image-wlm"))
-        ))
+        )).withWikiDescriptions
+
       roundTrip(entry, "dir") === entry
     }
 
+    "read wiki-description" in {
+      val origEntry = Entry("dir", article = Some("article"),
+        images = Seq(
+          EntryImage("image1", Some("description1"))
+        )).withWikiDescriptions
+
+      val str = origEntry.toConfig.root().render().replace("{{uk|description1", "{{uk|description2")
+      val cfg = ConfigFactory.parseString(str)
+      val entry = Entry.fromConfig(cfg, "dir")
+      val image = entry.images.head
+      image.wikiDescription === Some("{{uk|description2, [[:uk:article|]]}}")
+    }
   }
+
+//  "diff reporter" should {
+//    "tell article change in wikidescription" in {
+//
+//      val entry = Entry("dir", article = Some("article1"), wlmId = Some("wlm-id"),
+//        images = Seq(
+//          EntryImage("image", Some("description"))
+//        ))
+//
+//      val changedArticle = entry.copy(article = Some("article2"))
+//    }
+//  }
 }
