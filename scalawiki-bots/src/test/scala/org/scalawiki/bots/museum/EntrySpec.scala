@@ -45,7 +45,8 @@ class EntrySpec extends Specification {
         Map(
           "title" -> "dir 1",
           "file" -> "image",
-          "description" -> "{{uk|description, [[:uk:dir|]]}}"
+          "description" -> "{{uk|description, [[:uk:dir|]]}}",
+          "source-description" -> "description"
         )
       )
     }
@@ -60,7 +61,8 @@ class EntrySpec extends Specification {
         Map(
           "title" -> "article 1",
           "file" -> "image",
-          "description" -> "{{uk|description, [[:uk:article|]]}}"
+          "description" -> "{{uk|description, [[:uk:article|]]}}",
+          "source-description" -> "description"
         )
       )
     }

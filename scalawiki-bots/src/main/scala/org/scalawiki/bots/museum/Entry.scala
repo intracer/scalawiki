@@ -5,7 +5,18 @@ import net.ceedubs.ficus.FicusConfig
 
 case class EntryImage(filePath: String,
                       description: Option[String] = None,
-                      wlmId: Option[String] = None)
+                      wlmId: Option[String] = None,
+                      lang: String = "uk") {
+
+  def descriptionLang(description: String) =
+    s"{{$lang|$description}}"
+
+  def interWikiLink(target: String, title: String = "") =
+    s"[[:$lang:$target|$title]]"
+
+  def wikiDescription(article: String) =
+    descriptionLang(description.fold("")(_ + ", ") + interWikiLink(article))
+}
 
 /**
   * Upload entry
@@ -24,21 +35,16 @@ case class Entry(dir: String,
 
   val articleOrDir = article.getOrElse(dir)
 
-  def descriptionLang(description: String) =
-    s"{{$lang|$description}}"
-
-  def interWikiLink(target: String, title: String = "") =
-    s"[[:$lang:$target|$title]]"
-
   def imagesMaps: Seq[Map[String, String]] = {
     val maps = images.zipWithIndex.map {
       case (image, index) =>
-        val wikiDescription = descriptionLang(image.description.fold("")(_ + ", ") + interWikiLink(articleOrDir))
         Map(
           "title" -> s"$articleOrDir ${index + 1}",
           "file" -> image.filePath,
-          "description" -> wikiDescription
-        ) ++ wlmId.map("wlm-id" -> _)
+          "description" -> image.wikiDescription(articleOrDir)
+        ) ++
+          image.wlmId.orElse(wlmId).map("wlm-id" -> _) ++
+          image.description.map("source-description" -> _)
     }
     maps
   }
@@ -92,5 +98,4 @@ object Entry {
       None
     )
   }
-
 }
