@@ -66,6 +66,52 @@ class EntrySpec extends Specification {
         )
       )
     }
+
+    "use parent wlm id" in {
+      Entry("dir",
+        Some("article"),
+        images = Seq(
+          EntryImage("image", Some("description"))
+        ),
+        wlmId = Some("parent-wlm-id")
+      ).imagesMaps === Seq(
+        Map(
+          "title" -> "article 1",
+          "file" -> "image",
+          "description" -> "{{uk|description, [[:uk:article|]]}} {{Monument Ukraine|parent-wlm-id}}",
+          "source-description" -> "description"
+        )
+      )
+    }
+
+    "override parent wlm id" in {
+      val entry = Entry("dir",
+        Some("article"),
+        images = Seq(
+          EntryImage("image1", Some("description1"), wlmId = None),
+          EntryImage("image2", Some("description2"), wlmId = Some("specific-wlm-id"))
+        ),
+        wlmId = Some("parent-wlm-id")
+      )
+      val maps = entry.imagesMaps
+
+      maps.size === 2
+
+      maps.head === Map(
+        "title" -> "article 1",
+        "file" -> "image1",
+        "description" -> "{{uk|description1, [[:uk:article|]]}} {{Monument Ukraine|parent-wlm-id}}",
+        "source-description" -> "description1"
+      )
+
+      maps.last === Map(
+        "title" -> "article 2",
+        "file" -> "image2",
+        "description" -> "{{uk|description2, [[:uk:article|]]}} {{Monument Ukraine|specific-wlm-id}}",
+        "source-description" -> "description2",
+        "wlm-id" -> "specific-wlm-id"
+      )
+    }
   }
 
   "to/fromConfig" should {
@@ -90,6 +136,22 @@ class EntrySpec extends Specification {
       val entry = Entry("dir", article = Some("article"),
         images = Seq(
           EntryImage("image", Some("description"))
+        ))
+      roundTrip(entry, "dir") === entry
+    }
+
+    "read parent wlmId" in {
+      val entry = Entry("dir", article = Some("article"), wlmId = Some("wlm-id"),
+        images = Seq(
+          EntryImage("image", Some("description"))
+        ))
+      roundTrip(entry, "dir") === entry
+    }
+
+    "read entry and image wlmId" in {
+      val entry = Entry("dir", article = Some("article"), wlmId = Some("parent-wlm-id"),
+        images = Seq(
+          EntryImage("image", Some("description"), wlmId = Some("image-wlm"))
         ))
       roundTrip(entry, "dir") === entry
     }

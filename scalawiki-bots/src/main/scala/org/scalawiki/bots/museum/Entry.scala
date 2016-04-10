@@ -14,8 +14,9 @@ case class EntryImage(filePath: String,
   def interWikiLink(target: String, title: String = "") =
     s"[[:$lang:$target|$title]]"
 
-  def wikiDescription(article: String) =
-    descriptionLang(description.fold("")(_ + ", ") + interWikiLink(article))
+  def wikiDescription(article: String, imageOrParentWlmId: Option[String]) =
+    descriptionLang(description.fold("")(_ + ", ") + interWikiLink(article)) +
+      imageOrParentWlmId.fold("")(id => s" {{Monument Ukraine|$id}}")
 }
 
 /**
@@ -38,12 +39,13 @@ case class Entry(dir: String,
   def imagesMaps: Seq[Map[String, String]] = {
     val maps = images.zipWithIndex.map {
       case (image, index) =>
+        val imageOrParentWlmId = image.wlmId.orElse(wlmId)
         Map(
           "title" -> s"$articleOrDir ${index + 1}",
           "file" -> image.filePath,
-          "description" -> image.wikiDescription(articleOrDir)
+          "description" -> image.wikiDescription(articleOrDir, imageOrParentWlmId)
         ) ++
-          image.wlmId.orElse(wlmId).map("wlm-id" -> _) ++
+          image.wlmId.map("wlm-id" -> _) ++
           image.description.map("source-description" -> _)
     }
     maps
@@ -54,14 +56,18 @@ case class Entry(dir: String,
 
     val javaMaps = imagesMaps.map(_.asJava).asJava
     val imagesConf = ConfigValueFactory.fromIterable(javaMaps)
-    ConfigFactory.parseMap(Map(
+
+    val map = Map(
       "article" -> articleOrDir,
       "images" -> imagesConf
-    ).asJava)
+    ) ++ wlmId.map("wlm-id" -> _)
+
+    ConfigFactory.parseMap(map.asJava)
   }
 }
 
 object Entry {
+
   def fromRow(row: Iterable[String]) = {
     val seq = row.toSeq
 
@@ -88,7 +94,8 @@ object Entry {
     val images = imagesCfg.map { imageCfg =>
       val path = imageCfg.as[String]("file")
       val description = imageCfg.getAs[String]("source-description")
-      EntryImage(path, description)
+      val imageWlmId = imageCfg.getAs[String]("wlm-id")
+      EntryImage(path, description, imageWlmId)
     }
 
     Entry(dir,
