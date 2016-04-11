@@ -119,7 +119,16 @@ class MwBotImpl(val site: Site,
   def get[T](reads: Reads[T], params: (String, String)*): Future[T] =
     http.get(getUri(params: _*)) map {
       body =>
-        Json.parse(body).validate(reads).get
+        parseJson(reads, body).get
+    }
+
+  def parseJson[T](reads: Reads[T], body: String): JsResult[T] =
+    Json.parse(body).validate(reads)
+
+  def parseResponse[T](reads: Reads[T], response: Future[HttpResponse]): Future[T] =
+    response map http.getBody map {
+      body =>
+        parseJson(reads, body).get
     }
 
   override def getByteArray(url: String): Future[Array[Byte]] =
@@ -131,40 +140,13 @@ class MwBotImpl(val site: Site,
     post(reads, params.toMap)
 
   override def post[T](reads: Reads[T], params: Map[String, String]): Future[T] =
-    http.post(apiUrl, params) map http.getBody map {
-      body =>
-        val result = Json.parse(body).validate(reads).get
-        println(result)
-        result
-    }
+    parseResponse(reads, http.post(apiUrl, params))
 
   override def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T] =
-    http.postMultiPart(apiUrl, params) map http.getBody map {
-      body =>
-        val json = Json.parse(body)
-        val response = json.validate(reads)
-        //        response.fold[T](err => {
-        //          json.validate(errorReads)
-        //        },
-        //          success => success
-        //        )
-        val result = response.get
-        println(result)
-        result
-    }
+    parseResponse(reads, http.postMultiPart(apiUrl, params))
 
   override def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String): Future[T] =
-    http.postFile(apiUrl, params, fileParam, filename) map http.getBody map {
-      body =>
-        val json = Json.parse(body)
-        val response = json.validate(reads)
-        //        response.fold[T](err => {
-        //          json.validate(errorReads)
-        //        },
-        //          success => success
-        //        )
-        response.get
-    }
+    parseResponse(reads, http.postFile(apiUrl, params, fileParam, filename))
 
   def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)
 
