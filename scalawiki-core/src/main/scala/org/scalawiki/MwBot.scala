@@ -160,7 +160,9 @@ class MwBotImpl(val site: Site,
   def parseResponse[T](reads: Reads[T], response: Future[HttpResponse]): Future[T] =
     response map http.getBody map {
       body =>
-        parseJson(reads, body).get
+        parseJson(reads, body).getOrElse{
+          throw parseJson(errorReads, body).get
+        }
     }
 
   override def getByteArray(url: String): Future[Array[Byte]] =

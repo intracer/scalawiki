@@ -116,7 +116,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       bot.post(editResponseReads, params)
   }
 
-  override def upload(filename: String, text: Option[String] = None, comment: Option[String] = None) = {
+  override def upload(filename: String, text: Option[String] = None, comment: Option[String] = None): Future[String] = {
     val page = query.right.toOption.fold(filename)(_.head)
     val token = bot.token
     val fileContents = Files.readAllBytes(Paths.get(filename))
