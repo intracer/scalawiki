@@ -42,7 +42,9 @@ object FileUtils {
   def writeWithBackup(file: SFile, content: String)(implicit codec: Codec) = {
     if (file.exists) {
       val backup = backupName(file)
-      file.moveTo(file.parent / backup)
+      if (file.contentAsString != content) {
+        file.moveTo(file.parent / backup)
+      }
     }
     file.overwrite(content)
   }

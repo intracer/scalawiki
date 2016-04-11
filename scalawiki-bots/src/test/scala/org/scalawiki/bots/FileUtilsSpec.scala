@@ -58,5 +58,14 @@ class FileUtilsSpec extends Specification with BeforeEach {
       file.contentAsString === "text2"
       (root / "test.txt.1").contentAsString === "text1"
     }
+
+    "do not backup unchanged file" in {
+      val file = (root / "test.txt").overwrite("text1")
+
+      FileUtils.writeWithBackup(file, "text1")
+
+      file.contentAsString === "text1"
+      (root / "test.txt.1").exists === false
+    }
   }
 }
