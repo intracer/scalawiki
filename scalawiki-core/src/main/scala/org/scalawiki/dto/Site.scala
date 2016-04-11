@@ -9,11 +9,16 @@ case class Site(
 
 object Site {
 
+
   def wikipedia(langCode: String) = project(langCode, "wikipedia")
 
-  def commons = wikimedia("commons")
+  val commons = wikimedia("commons")
 
-  def meta = wikimedia("meta")
+  val meta = wikimedia("meta")
+
+  val enWiki = wikipedia("en")
+
+  val ukWiki = wikipedia("uk")
 
   def project(langCode: String, family: String) =
     Site(Some(langCode), family, s"$langCode.$family.org")
@@ -28,5 +33,7 @@ object Site {
       case _ => Site(None, host, host)
     }
   }
+
+
 
 }

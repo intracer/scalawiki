@@ -54,9 +54,14 @@ trait MwBot {
   def log: LoggingAdapter
 }
 
-class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) extends MwBot {
+class MwBotImpl(val site: Site,
+                val http: HttpClient = new HttpClientSpray(MwBot.system),
+                val system: ActorSystem = MwBot.system
+               ) extends MwBot {
 
-  def this(host: String, http: HttpClient, system: ActorSystem) = this(Site.host(host), http, system)
+  def this(host: String) = this(Site.host(host))
+
+  def this(host: String, http: HttpClient) = this(Site.host(host), http)
 
   implicit val sys = system
 
@@ -158,9 +163,7 @@ class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) e
         //        },
         //          success => success
         //        )
-        val result = response.get
-        println(result)
-        result
+        response.get
     }
 
   def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)
@@ -213,15 +216,10 @@ object MwBot {
   import scala.concurrent.ExecutionContext.Implicits.global
   import scala.concurrent._
 
-  val commons = "commons.wikimedia.org"
-  val ukWiki = "uk.wikipedia.org"
-  val useSpray = true
+  val system = ActorSystem()
 
-  def create(host: String, withDb: Boolean = false): MwBot = {
-    val system = ActorSystem()
-    val http = if (useSpray) new HttpClientSpray(system) else new HttpClientBee
-
-    val bot = new MwBotImpl(host, http, system)
+  def create(site: Site): MwBot = {
+    val bot = new MwBotImpl(site)
 
     bot.await(bot.login(LoginInfo.login, LoginInfo.password))
     bot
@@ -230,12 +228,20 @@ object MwBot {
   val cache: Cache[MwBot] = LruCache()
 
   def get(host: String): MwBot = {
-    Await.result(cache(host) {
+    get(Site.host(host))
+  }
+
+  def get(site: Site): MwBot = {
+    Await.result(cache(site.domain) {
       Future {
-        create(host)
+        create(site)
       }
     }, 1.minute)
   }
+
+  val commons = Site.commons.domain
+
+  val ukWiki = Site.ukWiki.domain
 }
 
 
