@@ -28,8 +28,27 @@ case class EntryImage(filePath: String,
         Seq(Diff(prefix + "wlmId", wlmId, other.wlmId))
       else Nil)
   }
-}
 
+  def updateFrom(other: EntryImage, names: Set[String] = Set.empty): EntryImage = {
+    this.copy(
+      filePath =
+        if (names.contains("filePath")) other.filePath
+        else filePath,
+      uploadTitle =
+        if (names.contains("uploadTitle")) other.uploadTitle
+        else uploadTitle,
+      sourceDescription =
+        if (names.contains("sourceDescription")) other.sourceDescription
+        else sourceDescription,
+      wikiDescription =
+        if (names.contains("wikiDescription")) other.wikiDescription
+        else wikiDescription,
+      wlmId =
+        if (names.contains("wlmId")) other.wlmId
+        else wlmId
+    )
+  }
+}
 
 /**
   * Upload entry
@@ -118,6 +137,29 @@ case class Entry(dir: String,
           }
       }
       else Nil)
+  }
+
+  def updateFrom(other: Entry,
+                 names: Set[String] = Set.empty,
+                 imageNames: Set[String] = Set.empty): Entry = {
+    this.copy(
+      dir =
+        if (names.contains("dir")) other.dir
+        else dir,
+      article =
+        if (names.contains("article")) other.article
+        else article,
+      wlmId =
+        if (names.contains("wlmId")) other.wlmId
+        else wlmId,
+      images =
+        if (imageNames.nonEmpty && images.size == other.images.size) {
+          images.zip(other.images) map {
+            case (img1, img2) => img1.updateFrom(img2, imageNames)
+          }
+        }
+        else images
+    )
   }
 }
 

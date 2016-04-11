@@ -208,10 +208,65 @@ class EntrySpec extends Specification {
       entry.diff(changed) === Seq(Diff("images[0].wikiDescription", Some("wiki-description1"), Some("wiki-description2")))
     }
 
-    "tell wlm id change" in {
+    "tell entry field change" in {
       val entry = entry0.copy(wlmId = Some("wlm-id1"))
       val changed = entry.copy(wlmId = Some("wlm-id2"))
       entry.diff(changed) === Seq(Diff("wlmId", Some("wlm-id1"), Some("wlm-id2")))
+    }
+
+    "tell all fields change" in {
+
+      val image1 = EntryImage("image1", Some("description1"), Some("upload-title1"), Some("wiki-description1"), Some("wlm-id11"))
+      val entry1 = Entry("dir1", Some("article1"), Some("wlm-id1"), Seq(image1))
+
+      val image2 = EntryImage("image2", Some("description2"), Some("upload-title2"), Some("wiki-description2"), Some("wlm-id12"))
+      val entry2 = Entry("dir2", Some("article2"), Some("wlm-id2"), Seq(image2))
+
+      entry1.diff(entry2) === Seq(
+        Diff("dir", "dir1", "dir2"),
+        Diff("article", Some("article1"), Some("article2")),
+        Diff("wlmId", Some("wlm-id1"), Some("wlm-id2")),
+        Diff("images[0].filePath", "image1", "image2"),
+        Diff("images[0].uploadTitle", Some("upload-title1"), Some("upload-title2")),
+        Diff("images[0].sourceDescription", Some("description1"), Some("description2")),
+        Diff("images[0].wikiDescription", Some("wiki-description1"), Some("wiki-description2")),
+        Diff("images[0].wlmId", Some("wlm-id11"), Some("wlm-id12"))
+      )
+    }
+  }
+
+  "update from" should {
+
+    "change nothing" in {
+
+      val image1 = EntryImage("image1", Some("description1"), Some("upload-title1"), Some("wiki-description1"), Some("wlm-id11"))
+      val entry1 = Entry("dir1", Some("article1"), Some("wlm-id1"), Seq(image1))
+
+      val image2 = EntryImage("image2", Some("description2"), Some("upload-title2"), Some("wiki-description2"), Some("wlm-id12"))
+      val entry2 = Entry("dir2", Some("article2"), Some("wlm-id2"), Seq(image2))
+
+      val updated = entry1.updateFrom(
+        entry2,
+        Set.empty,
+        Set.empty
+      )
+      updated === entry1
+    }
+
+    "change all" in {
+
+      val image1 = EntryImage("image1", Some("description1"), Some("upload-title1"), Some("wiki-description1"), Some("wlm-id11"))
+      val entry1 = Entry("dir1", Some("article1"), Some("wlm-id1"), Seq(image1))
+
+      val image2 = EntryImage("image2", Some("description2"), Some("upload-title2"), Some("wiki-description2"), Some("wlm-id12"))
+      val entry2 = Entry("dir2", Some("article2"), Some("wlm-id2"), Seq(image2))
+
+      val updated = entry1.updateFrom(
+        entry2,
+        Set("dir", "article", "wlmId"),
+        Set("filePath", "uploadTitle", "sourceDescription", "wikiDescription", "wlmId")
+      )
+      updated === entry2
     }
   }
 }
