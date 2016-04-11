@@ -11,21 +11,21 @@ case class EntryImage(filePath: String,
                       wikiDescription: Option[String] = None,
                       wlmId: Option[String] = None
                      ) {
-  def diff(other: EntryImage): Seq[Diff[_]] = {
+  def diff(other: EntryImage, prefix: String = ""): Seq[Diff[_]] = {
     (if (filePath != other.filePath)
-      Seq(Diff("filePath", filePath, other.filePath))
+      Seq(Diff(prefix + "filePath", filePath, other.filePath))
     else Nil) ++
       (if (uploadTitle != other.uploadTitle)
-        Seq(Diff("uploadTitle", uploadTitle, other.uploadTitle))
+        Seq(Diff(prefix + "uploadTitle", uploadTitle, other.uploadTitle))
       else Nil) ++
       (if (sourceDescription != other.sourceDescription)
-        Seq(Diff("sourceDescription", sourceDescription, other.sourceDescription))
+        Seq(Diff(prefix + "sourceDescription", sourceDescription, other.sourceDescription))
       else Nil) ++
       (if (wikiDescription != other.wikiDescription)
-        Seq(Diff("wikiDescription", wikiDescription, other.wikiDescription))
+        Seq(Diff(prefix + "wikiDescription", wikiDescription, other.wikiDescription))
       else Nil) ++
       (if (wlmId != other.wlmId)
-        Seq(Diff("wlmId", wlmId, other.wlmId))
+        Seq(Diff(prefix + "wlmId", wlmId, other.wlmId))
       else Nil)
   }
 }
@@ -113,8 +113,8 @@ case class Entry(dir: String,
         Seq(Diff("wlmId", wlmId, other.wlmId))
       else Nil) ++
       (if (images != other.images) {
-        images.zip(other.images)
-          .flatMap { case (img1, img2) => img1.diff(img2)
+        images.zip(other.images).zipWithIndex
+          .flatMap { case ((img1, img2), index) => img1.diff(img2, s"images[$index].")
           }
       }
       else Nil)

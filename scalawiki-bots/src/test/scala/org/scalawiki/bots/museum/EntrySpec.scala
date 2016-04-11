@@ -205,7 +205,7 @@ class EntrySpec extends Specification {
 
       val changed = entry.copy(images = Seq(image.copy(wikiDescription = Some("wiki-description2"))))
 
-      entry.diff(changed) === Seq(Diff("wikiDescription", Some("wiki-description1"), Some("wiki-description2")))
+      entry.diff(changed) === Seq(Diff("images[0].wikiDescription", Some("wiki-description1"), Some("wiki-description2")))
     }
 
     "tell wlm id change" in {
