@@ -4,9 +4,9 @@ import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import akka.io.IO
 import akka.pattern.ask
-import org.scalawiki.dto.{LoginResponse, Page, Site}
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.http.{HttpClient, HttpClientBee, HttpClientSpray}
+import org.scalawiki.dto.{LoginResponse, Page, Site}
+import org.scalawiki.http.{HttpClient, HttpClientSpray}
 import org.scalawiki.json.MwReads._
 import org.scalawiki.query.{DslQuery, PageQuery, SinglePageQuery}
 import play.api.libs.json._
@@ -200,10 +200,13 @@ object MwBot {
 
   val system = ActorSystem()
 
-  def create(site: Site): MwBot = {
+  def create(site: Site, loginInfo: Option[LoginInfo]): MwBot = {
     val bot = new MwBotImpl(site)
 
-    bot.await(bot.login(LoginInfo.login, LoginInfo.password))
+    loginInfo.foreach {
+      info =>
+        bot.await(bot.login(info.login, info.password))
+    }
     bot
   }
 
@@ -213,10 +216,12 @@ object MwBot {
     get(Site.host(host))
   }
 
-  def get(site: Site): MwBot = {
+  def get(site: Site,
+          loginInfo: Option[LoginInfo] = LoginInfo.fromEnv()
+         ): MwBot = {
     Await.result(cache(site.domain) {
       Future {
-        create(site)
+        create(site, loginInfo)
       }
     }, 1.minute)
   }
