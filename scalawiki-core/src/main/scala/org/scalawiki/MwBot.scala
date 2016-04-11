@@ -260,9 +260,9 @@ object MwBot {
     }, 1.minute)
   }
 
-  val commons = Site.commons.domain
+  val commons: String = Site.commons.domain
 
-  val ukWiki = Site.ukWiki.domain
+  val ukWiki: String = Site.ukWiki.domain
 
 }
 

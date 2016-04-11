@@ -116,7 +116,10 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       bot.post(editResponseReads, params)
   }
 
-  override def upload(filename: String, text: Option[String] = None, comment: Option[String] = None): Future[String] = {
+  override def upload(filename: String,
+                      text: Option[String] = None,
+                      comment: Option[String] = None,
+                      ignoreWarnings: Boolean = false): Future[String] = {
     val page = query.right.toOption.fold(filename)(_.head)
     val token = bot.token
     val fileContents = Files.readAllBytes(Paths.get(filename))
@@ -127,11 +130,11 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       "format" -> "json",
       "comment" -> "update",
       "filesize" -> fileContents.size.toString,
-      "ignorewarnings" -> "true",
       "assert" -> "user",
       "assert" -> "bot") ++
-    text.map("text" -> _) ++
-    comment.map("comment" -> _)
+      text.map("text" -> _) ++
+      comment.map("comment" -> _) ++
+      (if (ignoreWarnings) Seq("ignorewarnings" -> "true") else Seq.empty)
 
     bot.postFile(uploadResponseReads, params, "file", filename)
   }

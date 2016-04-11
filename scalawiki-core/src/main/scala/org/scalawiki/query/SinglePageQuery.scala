@@ -16,23 +16,26 @@ trait SinglePageQuery {
                             generator: String, generatorPrefix: String,
                             namespaces: Set[Int] = Set.empty, props: Set[String] = Set.empty,
                             continueParam: Option[(String, String)] = None,
-                            limit:String = "max",
+                            limit: String = "max",
                             titlePrefix: Option[String] = None): Future[Seq[Page]]
 
   def imageInfoByGenerator(
                             generator: String, generatorPrefix: String,
                             namespaces: Set[Int] = Set(),
-                            props: Set[String] = Set("timestamp", "user", "size", "url"/*, "extmetadata"*/),
+                            props: Set[String] = Set("timestamp", "user", "size", "url" /*, "extmetadata"*/),
                             continueParam: Option[(String, String)] = None,
-                            limit:String = "max",
+                            limit: String = "max",
                             titlePrefix: Option[String] = None): Future[Seq[Page]]
 
   def edit(text: String,
            summary: Option[String] = None,
            section: Option[String] = None,
            token: Option[String] = None,
-           multi:Boolean = true): Future[Any]  // TODO specific result
+           multi: Boolean = true): Future[Any] // TODO specific result
 
-  def upload(filename: String, text: Option[String] = None, comment: Option[String] = None): Future[String]
+  def upload(filename: String,
+             text: Option[String] = None,
+             comment: Option[String] = None,
+             ignoreWarnings: Boolean = false): Future[String]
 
 }

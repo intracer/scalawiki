@@ -43,7 +43,7 @@ class HttpClientSpray(val system: ActorSystem) extends HttpClient {
         `Accept-Encoding`(HttpEncodings.gzip),
         `User-Agent`(userAgent)) ~>
         cookied(
-          logRequest(log, Logging.InfoLevel)
+          logRequest(log, Logging.DebugLevel)
             ~> sendReceive
             ~> decode(Gzip))
         ~> logResponse(r => log.debug(s"HttpResponse: ${r.status}, ${r.headers}"))
