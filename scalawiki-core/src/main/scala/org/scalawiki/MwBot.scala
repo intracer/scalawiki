@@ -54,6 +54,25 @@ trait MwBot {
   def log: LoggingAdapter
 }
 
+case class MediaWikiVersion(version: String) extends Ordered[MediaWikiVersion] {
+  override def compare(that: MediaWikiVersion): Int =
+    version.compareTo(that.version)
+}
+
+object MediaWikiVersion {
+
+  val UNKNOWN = MediaWikiVersion("(UNKNOWN)")
+
+  val MW_1_24 = MediaWikiVersion("1.24")
+
+  def fromGenerator(generator: String) = {
+    "MediaWiki (\\d+\\.\\d+)".r
+      .findFirstMatchIn(generator)
+      .map(_.group(1))
+      .fold(UNKNOWN)(MediaWikiVersion.apply)
+  }
+}
+
 class MwBotImpl(val site: Site,
                 val http: HttpClient = new HttpClientSpray(MwBot.system),
                 val system: ActorSystem = MwBot.system
@@ -106,9 +125,22 @@ class MwBotImpl(val site: Site,
     }
   }
 
-  override lazy val token = await(getToken)
+  override lazy val token: String = await(getToken)
 
-  def getToken = get(tokenReads, "action" -> "query", "meta" -> "tokens")
+  lazy val mediaWikiVersion: MediaWikiVersion = await(getMediaWikiVersion)
+
+  def getMediaWikiVersion: Future[MediaWikiVersion] =
+    get(siteInfoReads, "action" -> "query", "meta" -> "siteinfo") map MediaWikiVersion.fromGenerator
+
+  def getToken: Future[String] = {
+    val isMW_1_24 = mediaWikiVersion >= MediaWikiVersion.MW_1_24
+
+    if (isMW_1_24) {
+      get(tokenReads, "action" -> "query", "meta" -> "tokens")
+    } else {
+      get(editTokenReads, "action" -> "query", "prop" -> "info", "intoken"-> "edit", "titles" -> "foo")
+    }
+  }
 
   def getTokens = get(tokensReads, "action" -> "tokens")
 
@@ -229,6 +261,7 @@ object MwBot {
   val commons = Site.commons.domain
 
   val ukWiki = Site.ukWiki.domain
+
 }
 
 

@@ -28,6 +28,10 @@ object MwReads {
 
   def uploadResponseReads: Reads[String] = (__ \ "upload" \ "result").read[String]
 
+  def siteInfoReads: Reads[String] = (__ \ "query" \ "general" \ "generator").read[String]
+
+  def editTokenReads: Reads[String] = (__ \\ "edittoken").read[String]
+
   def errorReads: Reads[MwException] = (
     (__ \ "error" \ "code").read[String] and
       (__ \ "error" \ "info").read[String]
