@@ -22,5 +22,5 @@ This library uses [Scala Futures](http://docs.scala-lang.org/overviews/core/futu
 
 # Goals
   * Fully support [MediaWiki API](https://www.mediawiki.org/wiki/API:Main_page)
-  * Support different backends - MediaWiki API, [xml dumps](https://meta.wikimedia.org/wiki/Data_dumps), [MediWiki database](https://www.mediawiki.org/wiki/Manual:Database_layout). Support coping data between backends (importing and exporting xml dumps to database, storing data retrived by MediaWiki API to xml dumps or database).
+  * Support different backends - MediaWiki API, [xml dumps](https://meta.wikimedia.org/wiki/Data_dumps), [MediWiki database](https://www.mediawiki.org/wiki/Manual:Database_layout). Support copying data between backends (importing and exporting xml dumps to database, storing data retrived by MediaWiki API to xml dumps or database).
   * Good test coverage
