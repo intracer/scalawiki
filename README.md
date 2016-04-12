@@ -14,7 +14,7 @@ scalawiki is an experimental MediaWiki client in Scala on early stages of develo
 
 Why [another client library for MediaWiki](https://www.mediawiki.org/wiki/API:Client_code)?
 
-I didn't know any Java client that supports [generators](https://www.mediawiki.org/wiki/API:Query#Generators) (fetching properties from articles listed by list query in a single request). JWBF [only recently] (https://github.com/eldur/jwbf/issues/21) got the ability to query more than 1 page at a time. 
+I didn't know any Java client that supported [generators](https://www.mediawiki.org/wiki/API:Query#Generators) (fetching properties from articles listed by list query in a single request). JWBF [only recently] (https://github.com/eldur/jwbf/issues/21) got the ability to query more than 1 page at a time. 
 
 When Wikipedia sites are real Big Data it is just a show stopper. Fetching information about Wiki Loves Monuments uploads in such ineffective way will take almost a day even for one country, when could be done in several minutes otherwise in batches.
 
