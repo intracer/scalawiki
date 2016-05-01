@@ -7,7 +7,7 @@ import scala.collection.immutable.SortedSet
 case class Country(
                code: String,
                name: String,
-               languageCodes: Seq[String],
+               languageCodes: Seq[String] = Seq.empty,
                regions: Seq[Region] = Seq.empty) {
 
   val regionIds = SortedSet(regions.map(_.code): _*)
