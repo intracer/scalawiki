@@ -1,6 +1,6 @@
 package org.scalawiki.bots.museum
 
-import com.typesafe.config.{Config, ConfigFactory, ConfigValueFactory}
+import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions, ConfigValueFactory}
 import net.ceedubs.ficus.FicusConfig
 
 case class Diff[T](name: String, before: T, after: T)
@@ -9,7 +9,9 @@ case class EntryImage(filePath: String,
                       sourceDescription: Option[String] = None,
                       uploadTitle: Option[String] = None,
                       wikiDescription: Option[String] = None,
-                      wlmId: Option[String] = None
+                      wlmId: Option[String] = None,
+                      size: Option[Long] = None,
+                      uploaded: Option[Boolean] = None
                      ) {
   def diff(other: EntryImage, prefix: String = ""): Seq[Diff[_]] = {
     (if (filePath != other.filePath)
@@ -119,6 +121,11 @@ case class Entry(dir: String,
     ) ++ wlmId.map("wlm-id" -> _)
 
     ConfigFactory.parseMap(map.asJava)
+  }
+
+  def toConfigString: String = {
+    val renderOptions = ConfigRenderOptions.concise().setFormatted(true)
+    toConfig.root().render(renderOptions)
   }
 
   def diff(other: Entry): Seq[Diff[_]] = {

@@ -4,10 +4,11 @@ import java.nio.file.{FileSystem, FileSystems}
 
 import better.files.File.Order
 import better.files.{File => SFile}
-import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions, ConfigValueFactory}
+import com.typesafe.config.{Config, ConfigFactory}
 import net.ceedubs.ficus.Ficus._
 import org.scalawiki.MwBot
 import org.scalawiki.bots.FileUtils._
+import org.scalawiki.dto.Site
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wikitext.TableParser
 import org.scalawiki.wlx.dto.Monument
@@ -38,10 +39,13 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
     for (entries <- fromWikiTable(tablePage)) yield entries.map { entry =>
 
       val objDir = homeDir / entry.dir
-      val files = list(objDir, isImage).map(_.pathAsString)
+      val files = list(objDir, isImage)
+      val paths = files.map(_.pathAsString)
 
-      val descriptions = getImagesDescr(objDir, files).map(Option.apply).padTo(files.size, None)
-      val images = files.zip(descriptions).map { case (f, d) => EntryImage(f, d) }
+      val descriptions = getImagesDescr(objDir, paths).map(Option.apply).padTo(paths.size, None)
+      val images = files.zip(descriptions).map { case (f, d) =>
+        EntryImage(f.pathAsString, d, size = Some(f.size))
+      }
 
       entry.copy(images = images, text = getArticleText(objDir))
     }
@@ -89,17 +93,26 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
   }
 
   def makeUploadFiles(entries: Seq[Entry]): Unit = {
-    val renderOptions = ConfigRenderOptions.concise().setFormatted(true)
-
     entries.foreach {
       entry =>
         val file = homeDir / entry.dir / "upload.conf"
-        val config = entry.toConfig
-        val text = config.root().render(renderOptions)
+        val text = entry.toConfigString
         if (!file.exists) {
           println(s"Creating ${file.pathAsString}")
           file.overwrite(text)
         }
+    }
+  }
+
+  def readUploadFiles(entries: Seq[Entry]): Seq[Entry] = {
+    entries.flatMap {
+      entry =>
+        val file = homeDir / entry.dir / "upload.conf"
+        if (file.exists) {
+          val cfg = ConfigFactory.parseFile(file.toJava)
+          val loaded = Entry.fromConfig(cfg, entry.dir)
+          Some(loaded)
+        } else None
     }
   }
 
@@ -116,17 +129,101 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
     Monument.monumentsFromText(text, wlmPage, WlmUa.templateName, WlmUa).toBuffer
   }
 
+  def stat(entries: Seq[Entry]) = {
+
+    val objects = entries.size
+    val images = entries.map(_.images.size).sum
+    //    val bytes = entries.map(_.images.flatMap(_.size).sum).sum
+    val bytes = entries.map(_.images.map(i => SFile(i.filePath).size).sum).sum
+    val Mb = bytes / (1024 * 1024)
+
+    println(s"Objects: $objects, images: $images, MBytes: $Mb")
+  }
+
   def run() = {
-    getEntries.map { entries =>
-      makeGallery(entries)
-      makeUploadFiles(entries)
+
+    getEntries.map { original =>
+
+      val genOrinal = original.map(_.genImageFields)
+
+      val loaded = readUploadFiles(original)
+      val genLoaded = loaded.map(_.genImageFields)
+
+      stat(genLoaded)
+
+      val commons = Site.commons
+      val bot = MwBot.get(commons)
+
+      val images = genLoaded.flatMap(_.images)
+      val count = images.size
+
+      images.zipWithIndex.foreach {
+        case (image, i) =>
+
+          val file = SFile(image.filePath)
+          val size = file.size
+
+          val fileTitle = image.uploadTitle.get + file.extension.getOrElse("")
+          val fileFileTitle = "File:" + fileTitle
+          val url = commons.pageUrl(fileFileTitle, urlEncode = false)
+          val link = s"""    <li> <a href="$url">$url</a>"""
+          println(link)
+//          print(s"Uploading image $i/$count $fileTitle ${size / 1024} KB ")
+          //val result = upload(image, bot).await
+
+          //println(result)
+      }
+
     } onFailure { case e => println(e) }
   }
+
+  def upload(entry: EntryImage, bot: MwBot): Future[String] = {
+    val page = ImageTemplate.makeInfoPage(entry.uploadTitle.get, entry.wikiDescription.get, "")
+    val file = SFile(entry.filePath)
+    val fileTitle = entry.uploadTitle.get + file.extension.getOrElse("")
+
+    bot.page("File:" + fileTitle).upload(entry.filePath, Some(page), ignoreWarnings = true)
+  }
+
+
+  //      genLoaded.zip(loaded).foreach {
+  //        case (o, l) =>
+  //          val diffs = o.genImageFields.diff(l)
+  //          if (diffs.nonEmpty) {
+  //            println(o.dir)
+  //            diffs.foreach(println)
+  //          }
+  //      }
+
+  //val withSourceDescr = l.updateFrom(o, Set.empty, Set("sourceDescription"))
+
+  // FileUtils.writeWithBackup(homeDir / l.dir / "upload.conf", withSourceDescr.toConfigString)
+  //      }
+  //      loaded.foreach {
+  //        entry =>
+  //          val diffs = entry.genImageFields.diff(entry)
+  //          if (diffs.nonEmpty) {
+  //            println(entry.dir)
+  //            diffs.foreach(println)
+  //          }
+  //      }
+  //    }
+
+  //    getEntries.map { entries =>
+  //      makeGallery(entries)
+  //      makeUploadFiles(entries)
+  //    } onFailure { case e => println(e) }
+  //  }
+
 }
 
 object Pereiaslav {
 
   def main(args: Array[String]) {
+
+    //    val localhost = Site.localhost
+    //    val bot = MwBot.get(localhost)
+
     val conf = ConfigFactory.load("pereiaslav.conf")
     val pereiaslav = new Pereiaslav(conf)
     pereiaslav.run()
