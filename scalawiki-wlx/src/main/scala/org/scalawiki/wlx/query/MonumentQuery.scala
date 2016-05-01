@@ -36,14 +36,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
 
   val listConfig = contest.uploadConfigs.head.listConfig
 
-  def getHost = {
-    val langCode = contest.country.languageCode
-
-    if (langCode.contains("."))
-      langCode
-    else
-      langCode + ".wikipedia.org"
-  }
+  def getHost = contest.listsHost
 
   override def byMonumentTemplateAsync(template: String, date: Option[DateTime] = None): Future[Seq[Monument]] = {
 

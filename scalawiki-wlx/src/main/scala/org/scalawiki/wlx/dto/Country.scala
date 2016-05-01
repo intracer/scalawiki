@@ -1,21 +1,40 @@
 package org.scalawiki.wlx.dto
 
+import java.util.Locale
+
 import scala.collection.immutable.SortedSet
 
-class Country(
-               val code: String,
-               val name: String,
-               val languageCode: String,
-               val regions: Seq[Region] = Seq.empty) {
+case class Country(
+               code: String,
+               name: String,
+               languageCodes: Seq[String],
+               regions: Seq[Region] = Seq.empty) {
 
-  val regionIds = SortedSet(regions.map(_.code):_*)
+  val regionIds = SortedSet(regions.map(_.code): _*)
   val regionNames = regions.sortBy(_.code).map(_.name)
   val regionById = regions.groupBy(_.code).mapValues(_.head)
 
 }
 
 object Country {
-  val Ukraine = new Country("ua", "Ukraine", "uk",
+
+  val Armenia = new Country("am", "Armenia & Nagorno-Karabakh", Seq("hy"))
+
+  val Austria = new Country("au", "Austria", Seq("de"))
+
+  val Catalonia = new Country("ca", "Andorra & Catalan areas", Seq("ca"))
+
+  val Azerbaijan = new Country("az", "Azerbaijan", Seq("az"))
+
+  val Estonia = new Country("ee", "Estonia", Seq("et"))
+
+  val Nepal = new Country("np", "Nepal", Seq("en"))
+
+  val Russia = new Country("ru", "Russia", Seq("ru.wikivoyage.org"))
+
+  val Switzerland = new Country("ch", "Switzerland", Seq("commons.wikimedia.org"))
+
+  val Ukraine = new Country("ua", "Ukraine", Seq("uk"),
     Map(
       "80" -> "Київ",
       "07" -> "Волинська область",
@@ -44,23 +63,43 @@ object Country {
       "53" -> "Полтавська область",
       "21" -> "Закарпатська область",
       "51" -> "Одеська область"
-    ).map {case (code, name) => Region(code, name)}.toSeq
+    ).map { case (code, name) => Region(code, name) }.toSeq
   )
 
-  val Armenia = new Country("am", "Armenia & Nagorno-Karabakh", "hy")
+  def langMap: Map[String, Seq[String]] = {
+    Locale.getAvailableLocales
+      .groupBy(_.getCountry)
+      .map {
+        case (countryCode, locales) =>
 
-  val Austria = new Country("au", "Austria", "de")
+          val langs = locales.flatMap {
+            locale =>
+              Option(locale.getLanguage)
+                .filter(_.nonEmpty)
+          }
+          countryCode -> langs.toSeq
+      }
+  }
 
-  val Catalonia = new Country("ca", "Andorra & Catalan areas", "ca")
 
-  val Azerbaijan = new Country("az", "Azerbaijan", "az")
+  def fromJavaLocales: Seq[Country] = {
 
-  val Estonia = new Country("ee", "Estonia", "et")
+    val countryLangs = langMap
 
-  val Nepal = new Country("np", "Nepal", "en")
+    Locale.getISOCountries.map { countryCode =>
 
-  val Russia = new Country("ru", "Russia", "ru.wikivoyage.org")
+      val langCodes = countryLangs.getOrElse(countryCode, Seq.empty)
 
-  val Switzerland = new Country("ch", "Switzerland", "commons.wikimedia.org")
+      val locales = langCodes.map(langCode => new Locale(langCode, countryCode))
 
+      val locale = locales.headOption.getOrElse(new Locale("", countryCode))
+
+      val langs = locales.map(_.getDisplayLanguage(Locale.ENGLISH)).toSet.toSeq
+
+      new Country(locale.getCountry,
+        locale.getDisplayCountry(Locale.ENGLISH),
+        langs
+      )
+    }
+  }
 }

@@ -35,6 +35,14 @@ class Contest(
     */
   def fileTemplate: Option[String] = uploadConfigs.headOption.map(_.fileTemplate)
 
+  def listsHost = {
+    val langCode = country.languageCodes.head
+
+    if (langCode.contains("."))
+      langCode
+    else
+      langCode + ".wikipedia.org"
+  }
 }
 
 /**
