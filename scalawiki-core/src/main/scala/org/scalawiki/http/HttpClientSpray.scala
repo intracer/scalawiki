@@ -9,6 +9,7 @@ import akka.event.Logging
 import akka.util.Timeout
 import net.spraycookies.tldlist.DefaultEffectiveTldList
 import net.spraycookies.{CookieHandling, CookieJar}
+import org.scalawiki.MwBot
 import spray.client.pipelining._
 import spray.http.HttpHeaders.{`Accept-Encoding`, `User-Agent`}
 import spray.http._
@@ -18,7 +19,7 @@ import spray.httpx.marshalling.Marshaller
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class HttpClientSpray(val system: ActorSystem) extends HttpClient {
+class HttpClientSpray(val system: ActorSystem = MwBot.system) extends HttpClient {
 
   implicit val sys = system
 

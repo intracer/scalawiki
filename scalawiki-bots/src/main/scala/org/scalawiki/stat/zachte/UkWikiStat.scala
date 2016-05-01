@@ -1,6 +1,5 @@
 package org.scalawiki.stat.zachte
 
-import akka.actor.ActorSystem
 import org.jsoup.Jsoup
 import org.scalawiki.MwBot
 import org.scalawiki.http.HttpClientSpray
@@ -12,8 +11,7 @@ object UkWikiStat {
 
 
   def main(args: Array[String]) {
-    val system = ActorSystem()
-    val http = new HttpClientSpray(system)
+    val http = new HttpClientSpray()
     val bot = MwBot.get(MwBot.commons)
     val lang = "UK"
     val site = "Wikipedia"

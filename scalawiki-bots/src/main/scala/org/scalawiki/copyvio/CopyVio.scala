@@ -1,6 +1,5 @@
 package org.scalawiki.copyvio
 
-import akka.actor.ActorSystem
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
@@ -91,8 +90,7 @@ object CopyVio extends WithBot {
   }
 
   def main(args: Array[String]) {
-    val system = ActorSystem()
-    val copyVio = new CopyVio(new HttpClientSpray(system))
+    val copyVio = new CopyVio(new HttpClientSpray())
 
     val revIdsFuture = pagesWithTemplate("Вікіпедія любить пам'ятки")
     recover(revIdsFuture)
@@ -136,8 +134,5 @@ object CopyVio extends WithBot {
         println("Error : " + t)
         throw t
     }
-
   }
-
-
 }
