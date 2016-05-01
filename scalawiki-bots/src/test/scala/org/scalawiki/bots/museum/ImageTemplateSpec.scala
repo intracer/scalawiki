@@ -10,12 +10,12 @@ class ImageTemplateSpec extends Specification {
       |{{Art Photo
       | |artist             =
       | |title              = {{uk|Archaeological Museum interior}}
-      | |description        = {{uk|Archaeological Museum interior description}}
+      | |description        = Archaeological Museum interior description
       | |date               =
       | |medium             =
       | |dimensions         =
       | |institution        = {{Institution:NIEZ Museum}}
-      | |location           = [[:uk:Archaeological Museum|]]
+      | |location           =
       | |references         =
       | |object history     =
       | |exhibition history =
@@ -34,7 +34,8 @@ class ImageTemplateSpec extends Specification {
       |}}
       |
       |== {{int:license-header}} ==
-      |{{OTRS Pending}}""".stripMargin
+      |{{OTRS Pending}}
+      |[[Category:National Historic-Ethnographic Reserve "Pereyaslav"]]""".stripMargin
 
   "template" should {
     "should resolve config params from Map" in {

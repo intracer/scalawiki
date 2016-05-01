@@ -134,10 +134,10 @@ class PereiaslavSpec extends Specification with BeforeEach with Mockito {
       val entries = pereiaslav().getEntries.await
       entries.size === 2
       entries.head === Entry("name1", Some("article1"), Some("wlmId1"),
-        (1 to 3).map { i => EntryImage((root / "name1" / s"$i.jpg").toString, None) }
+        (1 to 3).map { i => EntryImage((root / "name1" / s"$i.jpg").toString, None, size = Some(0)) }
       )
       entries.last === Entry("name2", Some("article2"), None,
-        (11 to 13).map { i => EntryImage((root / "name2" / s"$i.jpg").toString, None) }
+        (11 to 13).map { i => EntryImage((root / "name2" / s"$i.jpg").toString, None, size = Some(0)) }
       )
     }
   }
