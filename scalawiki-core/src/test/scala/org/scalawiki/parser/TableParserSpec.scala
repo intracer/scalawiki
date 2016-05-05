@@ -10,7 +10,7 @@ class TableParserSpec extends Specification {
 
   "table parser" should {
     "parse empty table" in {
-      val wiki = "{|\n|}" //new Table("", Seq.empty, Seq.empty, "")
+      val wiki = "{|\n|}"
       parser.parse(wiki).asWiki === wiki
     }
 
@@ -81,6 +81,11 @@ class TableParserSpec extends Specification {
     "parse table with 2 columns header and 1 column data" in {
       val wiki = "{|\n! header1 !! header2\n|-\n| data11 ||\n|}"
       parser.parse(wiki) === Table(Seq("header1", "header2"), Seq(Seq("data11", "")), "", "")
+    }
+
+    "parse table with 2 rows header" in {
+      val wiki = "{|\n! header1 !! header2\n|-\n! data11 || data12\n|}"
+      parser.parse(wiki) === Table(Seq("header1", "header2"), Seq(Seq("data11", "data12")), "", "")
     }
   }
 }
