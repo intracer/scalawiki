@@ -1,6 +1,6 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.wlx.dto.Country
+import org.scalawiki.wlx.dto.{ContestType, Country}
 import org.specs2.mutable.Specification
 
 import scala.io.{Codec, Source}
@@ -16,6 +16,9 @@ class CountryListParserSpec extends Specification {
       val contests = CountryParser.parse(wiki)
 
       val countries = contests.map(_.country.copy(languageCodes = Seq.empty))
+
+      contests.map(_.contestType).toSet == Set(ContestType.WLE)
+      contests.map(_.year).toSet == Set(2016)
 
       countries === Seq(
         Country("DZ", "Algeria"),
