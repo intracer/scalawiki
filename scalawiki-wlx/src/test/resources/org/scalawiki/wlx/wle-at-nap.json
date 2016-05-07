@@ -1,0 +1,36 @@
+{
+  "enabled": true,
+  "title": "Wiki Loves Earth in Austria",
+  "display": {
+    "headerLabel": "{{Wiki Loves Earth is running|at|{{Upload campaign header wle-at}}}}",
+    "thanksLabel": "{{Upload campaign use Wiki Loves Earth}}"
+  },
+  "defaults": {
+    "categories": [
+      "National parks of Austria"
+    ]
+  },
+  "autoAdd": {
+    "categories": [
+      "National parks of Austria needing check"
+    ],
+    "wikitext": "{{subst:Wiki Loves Earth is running|at|{{Wiki Loves Earth 2016|at}}}}"
+  },
+  "licensing": {
+    "ownWorkDefault": "own",
+    "ownWork": {
+      "licenses": [
+        "cc-by-sa-4.0"
+      ]
+    }
+  },
+  "fields": [
+    {
+      "wikitext": "{{Nationalpark Österreich|$1}}",
+      "label": "Name laut Liste"
+    }
+  ],
+  "tutorial": {
+    "skip": true
+  }
+}
