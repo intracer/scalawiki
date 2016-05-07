@@ -3,16 +3,13 @@ package org.scalawiki.bots.museum
 import org.specs2.matcher.ContentMatchers._
 import org.scalawiki.dto.markup.LineUtil._
 import org.specs2.mutable.Specification
-
-import scala.io.Source
+import org.scalawiki.util.TestUtils._
 
 class HtmlParserSpec extends Specification {
 
   "HtmlParser" should {
     "get list of images" in {
-      val is = getClass.getResourceAsStream("/org/scalawiki/bots/museum/imageList.html")
-      is !== null
-      val s = Source.fromInputStream(is).mkString
+      val s = resourceAsString("/org/scalawiki/bots/museum/imageList.html")
 
       val lines = HtmlParser.trimmedLines(s)
       lines === Seq(

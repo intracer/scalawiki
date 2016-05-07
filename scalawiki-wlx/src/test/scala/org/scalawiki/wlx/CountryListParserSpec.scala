@@ -1,17 +1,14 @@
 package org.scalawiki.wlx
 
+import org.scalawiki.util.TestUtils._
 import org.scalawiki.wlx.dto.{ContestType, Country}
 import org.specs2.mutable.Specification
-
-import scala.io.{Codec, Source}
 
 class CountryListParserSpec extends Specification {
 
   "parser" should {
     "parse wle 2016" in {
-      val is = getClass.getResourceAsStream("/org/scalawiki/wlx/wle_2016_participating.wiki")
-      is !== null
-      val wiki = Source.fromInputStream(is)(Codec.UTF8).mkString
+      val wiki = resourceAsString("/org/scalawiki/wlx/wle_2016_participating.wiki")
 
       val contests = CountryParser.parse(wiki)
 

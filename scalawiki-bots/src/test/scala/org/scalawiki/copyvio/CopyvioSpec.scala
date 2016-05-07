@@ -2,8 +2,7 @@ package org.scalawiki.copyvio
 
 import org.scalawiki.util.TestHttpClient
 import org.specs2.mutable.Specification
-
-import scala.io.Source
+import org.scalawiki.util.TestUtils._
 
 class CopyvioSpec extends Specification {
 
@@ -11,9 +10,7 @@ class CopyvioSpec extends Specification {
     "detect obama mama" in {
 
       val copyVio = new CopyVio(new TestHttpClient("", Seq.empty))
-      val is = getClass.getResourceAsStream("/org/scalawiki/copyvio/barack.json")
-      is !== null
-      val s = Source.fromInputStream(is).mkString
+      val s = resourceAsString("/org/scalawiki/copyvio/barack.json")
 
       val seq = copyVio.parseResponse(s)
 

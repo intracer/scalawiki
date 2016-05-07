@@ -5,10 +5,10 @@ import org.scalawiki.dto.cmd.query.list.{EmbeddedIn, ListParam}
 import org.scalawiki.dto.cmd.query.prop.{LangLinks, LlLimit, Prop, Revisions}
 import org.scalawiki.dto.cmd.query.{PageIdsParam, Query, TitlesParam}
 import org.scalawiki.dto.{MwException, Page}
+import org.scalawiki.util.TestUtils._
 import org.specs2.matcher.MatchResult
 import org.specs2.mutable.Specification
 
-import scala.io.Source
 import scala.util.Failure
 
 class ParserSpec extends Specification {
@@ -87,9 +87,7 @@ class ParserSpec extends Specification {
 
   "parser" should {
     "parse page with lang links" in {
-      val is = getClass.getResourceAsStream("/org/scalawiki/query/langLinks.json")
-      is !== null
-      val s = Source.fromInputStream(is).mkString
+      val s = resourceAsString("/org/scalawiki/query/langLinks.json")
 
       val action = Action(Query(
         Prop(

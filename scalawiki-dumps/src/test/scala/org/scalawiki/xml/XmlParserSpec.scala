@@ -8,6 +8,7 @@ import org.scalawiki.dto.{IpContributor, Revision, User}
 import org.scalawiki.xml.XmlHelper._
 import org.specs2.matcher.MatchResult
 import org.specs2.mutable.Specification
+import org.scalawiki.util.TestUtils._
 
 import scala.io.Source
 
@@ -233,9 +234,7 @@ class XmlParserSpec extends Specification {
   }
 
   "filter by page title" in {
-    val is = getClass.getResourceAsStream("/org/scalawiki/xml/export-demo.xml")
-    is !== null
-    val s = Source.fromInputStream(is).mkString
+    val s = resourceAsString("/org/scalawiki/xml/export-demo.xml")
 
     val parser = XmlParser.parseString(s, PageFilter.titles(Set("Page title")))
 

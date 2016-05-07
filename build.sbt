@@ -68,7 +68,7 @@ lazy val `scalawiki-wlx` =
   (project in file("scalawiki-wlx"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq("com.github.wookietreiber" %% "scala-chart" % "0.5.0"))
-    .dependsOn(`scalawiki-core`, `scalawiki-sql`)
+    .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-sql`)
 
 lazy val `scalawiki-sql` =
   (project in file("scalawiki-sql"))

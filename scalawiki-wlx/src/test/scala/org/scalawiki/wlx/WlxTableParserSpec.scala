@@ -1,10 +1,9 @@
 package org.scalawiki.wlx
 
 import org.scalawiki.dto.markup.Table
+import org.scalawiki.util.TestUtils._
 import org.scalawiki.wlx.dto.lists.WleTh
 import org.specs2.mutable.Specification
-
-import scala.io.{Codec, Source}
 
 class WlxTableParserSpec extends Specification {
 
@@ -66,9 +65,7 @@ class WlxTableParserSpec extends Specification {
     }
 
     "parse thailand" in {
-      val is = getClass.getResourceAsStream("/org/scalawiki/wlx/thailand_wle_table.wiki")
-      is !== null
-      val wiki = Source.fromInputStream(is)(Codec.UTF8).mkString
+      val wiki = resourceAsString("/org/scalawiki/wlx/thailand_wle_table.wiki")
 
       val parser = new WlxTableParser(WleTh)
 
