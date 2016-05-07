@@ -36,12 +36,10 @@ class Contest(
   def fileTemplate: Option[String] = uploadConfigs.headOption.map(_.fileTemplate)
 
   def listsHost = {
-    val langCode = country.languageCodes.head
-
-    if (langCode.contains("."))
-      langCode
-    else
-      langCode + ".wikipedia.org"
+    uploadConfigs.head.listsHost
+      .getOrElse(
+        country.languageCodes.head + ".wikipedia.org"
+      )
   }
 }
 
@@ -91,11 +89,11 @@ object Contest {
 
   def WLERussia(year: Int, startDate: String, endDate: String) =
     new Contest(ContestType.WLE, Country.Russia, year, startDate, endDate,
-      Seq(UploadConfig("wle-ru", "monument", "Protected Area Russia", lists.WleRu)))
+      Seq(UploadConfig("wle-ru", "monument", "Protected Area Russia", lists.WleRu, Some("ru.wikivoyage.org"))))
 
   def WLESwitzerland(year: Int, startDate: String, endDate: String) =
     new Contest(ContestType.WLE, Country.Switzerland, year, startDate, endDate,
-      Seq(UploadConfig("wle-ch", "Naturalistic heritage CH row", "", lists.WleCh)))
+      Seq(UploadConfig("wle-ch", "Naturalistic heritage CH row", "", lists.WleCh, Some("commons.wikimedia.org"))))
 
   def allWLE = {
     val year = 2015
@@ -110,7 +108,6 @@ object Contest {
       WLEUkraine(year, start, end)
     )
   }
-
 
 }
 

@@ -8,4 +8,4 @@ import org.scalawiki.wlx.dto.lists.ListConfig
   * @param fileTemplate name of template that marks a contest image with monument id
   * @param listConfig   configuration of monument list fields
   */
-case class UploadConfig(campaign: String, listTemplate: String, fileTemplate: String, listConfig: ListConfig)
+case class UploadConfig(campaign: String, listTemplate: String, fileTemplate: String, listConfig: ListConfig, listsHost: Option[String] = None)

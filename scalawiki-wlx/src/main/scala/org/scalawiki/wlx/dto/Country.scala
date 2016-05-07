@@ -30,9 +30,9 @@ object Country {
 
   val Nepal = new Country("np", "Nepal", Seq("en"))
 
-  val Russia = new Country("ru", "Russia", Seq("ru.wikivoyage.org"))
+  val Russia = new Country("ru", "Russia", Seq("ru"))
 
-  val Switzerland = new Country("ch", "Switzerland", Seq("commons.wikimedia.org"))
+  val Switzerland = new Country("ch", "Switzerland")
 
   val Ukraine = new Country("ua", "Ukraine", Seq("uk"),
     Map(
@@ -94,7 +94,7 @@ object Country {
 
       val locale = locales.headOption.getOrElse(new Locale("", countryCode))
 
-      val langs = locales.map(_.getDisplayLanguage(Locale.ENGLISH)).toSet.toSeq
+      val langs = locales.map(_.getDisplayLanguage(Locale.ENGLISH)).distinct
 
       new Country(locale.getCountry,
         locale.getDisplayCountry(Locale.ENGLISH),
