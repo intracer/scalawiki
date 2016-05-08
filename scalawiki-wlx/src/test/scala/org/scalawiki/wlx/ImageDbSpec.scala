@@ -15,7 +15,7 @@ class ImageDbSpec extends Specification {
           page = "",
           id = regionId + "-001-" + f"$i%04d",
           name = "Monument in " + Ukraine.regionById(regionId).name,
-          listConfig = WlmUa
+          listConfig = Some(WlmUa)
         )
       }
   }

@@ -54,7 +54,7 @@ class WlxTableParser(val config: ListConfig) {
           photo = byIndex(image),
           gallery = byIndex(gallery),
           otherParams = otherParams,
-        listConfig =  config)
+          listConfig =  Some(config))
     }
   }
 }

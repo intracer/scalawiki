@@ -11,7 +11,7 @@ class MonumentStatSpec extends Specification {
   val contest = Contest.WLMUkraine(2015)
 
   def monument(id: String, name: String) =
-    new Monument(id = id, name = name, listConfig = WlmUa)
+    new Monument(id = id, name = name, listConfig = Some(WlmUa))
 
   def monuments(n: Int, regionId: String, namePrefix: String, startId: Int = 1): Seq[Monument] =
     (startId until startId + n).map(i => monument(s"$regionId-xxx-000$i", namePrefix + i))

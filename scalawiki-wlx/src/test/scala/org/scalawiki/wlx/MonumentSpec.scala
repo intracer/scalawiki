@@ -113,14 +113,36 @@ class MonumentSpec extends Specification {
   }
 
   "asWiki" should {
-    "output WLE fields" in {
-      val m = new Monument("page1", "id1", "name1", photo = Some("Image.jpg"), gallery = Some("category1"), listConfig = WleUa)
+
+    "output default fields" in {
+      val m = new Monument("page1", "id1", "name1", photo = Some("Image.jpg"), gallery = Some("category1"), listConfig = None)
 
       val longest = WleUa.namesMap.values.map(_.length).max
 
       val names = WleUa.namesMap.mapValues(_.padTo(longest, ' '))
       val keys = names.filterKeys(Set("ID", "name", "year", "description", "photo", "gallery").contains)
-      val text = m.asWiki
+      val text = m.asWiki(Some("WLE-row"), pad = false)
+      val lines = text.split("\\n", -1).toSeq
+      lines ===
+        Seq(
+          "{{WLE-row",
+          "|ID = id1",
+          "|name = name1",
+          "|photo = Image.jpg",
+          "|gallery = category1",
+          "}}",
+          ""
+        )
+    }
+    
+    "output WLE fields" in {
+      val m = new Monument("page1", "id1", "name1", photo = Some("Image.jpg"), gallery = Some("category1"), listConfig = Some(WleUa))
+
+      val longest = WleUa.namesMap.values.map(_.length).max
+
+      val names = WleUa.namesMap.mapValues(_.padTo(longest, ' '))
+      val keys = names.filterKeys(Set("ID", "name", "year", "description", "photo", "gallery").contains)
+      val text = m.asWiki()
       val lines = text.split("\\n", -1).toSeq
       lines ===
         Seq(
@@ -143,12 +165,12 @@ class MonumentSpec extends Specification {
     }
 
     "output WLM fields" in {
-      val m = new Monument("page1", "id1", "name1", photo = Some("Image.jpg"), gallery = Some("category1"), listConfig = WlmUa)
+      val m = new Monument("page1", "id1", "name1", photo = Some("Image.jpg"), gallery = Some("category1"), listConfig = Some(WlmUa))
 
       val longest = WlmUa.namesMap.values.map(_.length).max
 
       val names = WlmUa.namesMap.mapValues(_.padTo(longest, ' '))
-      val text = m.asWiki
+      val text = m.asWiki()
       val lines = text.split("\\n", -1).toSeq
 
       val expected = Seq(
@@ -168,7 +190,6 @@ class MonumentSpec extends Specification {
         ""
       )
       lines === expected
-
     }
 
   }

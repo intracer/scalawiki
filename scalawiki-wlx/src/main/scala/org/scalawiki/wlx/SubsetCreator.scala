@@ -66,7 +66,7 @@ object SubsetCreator {
         buf.append(s"|-\n|colspan=9 bgcolor=lightyellow|\n=== [[$page|$title]] ===\n|-\n")
         byPage(page).foreach {
           monument =>
-            val text = monument.asWiki.split("\\|\\}")(0)
+            val text = monument.asWiki().split("\\|\\}")(0)
             buf.append(s"{{WLM-рядок$text")
         }
       }
@@ -101,7 +101,7 @@ object SubsetCreator {
         buf.append(s"|-\n|colspan=9 bgcolor=lightyellow|\n=== [[$page|$title]] ===\n|-\n")
         byPage(page).foreach {
           monument =>
-            val text = monument.asWiki.split("\\|\\}")(0)
+            val text = monument.asWiki().split("\\|\\}")(0)
             buf.append(s"{{WLM-рядок$text")
         }
       }

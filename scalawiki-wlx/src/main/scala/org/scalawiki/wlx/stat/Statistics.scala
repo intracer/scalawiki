@@ -12,19 +12,19 @@ import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
-class Statistics {
+class Statistics(contest: Contest) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  val currentYear = 2015
+  val currentYear = contest.year
 
-  val previousContests = (2012 until currentYear).map(year => Contest.WLMUkraine(year, "05-01", "05-31"))
+  val previousContests = (2013 until currentYear).map(year => Contest.WLEUkraine(year, "05-01", "05-31"))
 
   private val bot = MwBot.get(MwBot.commons)
 
-  def init(contest: Contest): Unit = {
+  def init(): Unit = {
 
-    val (monumentDb, monumentDbOld) = MonumentDB.getMonumentDbRange(contest)
+    val (monumentDb, monumentDbOld) = (Some(MonumentDB.getMonumentDb(contest)), None)
 
     imagesStatistics(contest, monumentDb, monumentDbOld)
   }
@@ -49,12 +49,10 @@ class Statistics {
 
       val totalImageDb = new ImageDB(contest, totalImages, monumentDb)
 
-      photoWithoutArticle(monumentDb.get, totalImageDb)
-
+      //photoWithoutArticle(monumentDb.get, totalImageDb)
 
       regionalStat(contest, monumentDb, imageQuery, imageDb, totalImageDb)
 
-      Thread.sleep(5000)
     }
   }
 
@@ -64,12 +62,12 @@ class Statistics {
     imageDbFuture map {
       imageDb =>
 
-        new SpecialNominations().specialNominations(contest, imageDb)
+        //new SpecialNominations().specialNominations(contest, imageDb)
 
 
         authorsStat(imageDb)
         //        byDayAndRegion(imageDb)
-        new SpecialNominations().specialNominations(contest, imageDb)
+        //new SpecialNominations().specialNominations(contest, imageDb)
         lessThan2MpGallery(contest, imageDb)
 
         monumentDb.foreach { mDb =>
@@ -232,9 +230,9 @@ class Statistics {
   object Statistics {
     def main(args: Array[String]) {
 
-      val stat = new Statistics()
+      val stat = new Statistics(Contest.WLEUkraine(2016, "05-01", "05-31"))
 
-      stat.init(Contest.WLMUkraine(2015, "05-01", "05-31"))
+      stat.init()
 
     }
   }
