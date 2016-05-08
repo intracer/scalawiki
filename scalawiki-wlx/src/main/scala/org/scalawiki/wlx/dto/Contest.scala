@@ -15,8 +15,8 @@ class Contest(
                val contestType: ContestType,
                val country: Country,
                val year: Int,
-               val startDate: String,
-               val endDate: String,
+               val startDate: String = "",
+               val endDate: String = "",
                val uploadConfigs: Seq[UploadConfig],
                val specialNominations: Seq[SpecialNomination] = Seq.empty) {
 

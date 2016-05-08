@@ -4,6 +4,7 @@ import org.jfree.data.category.DefaultCategoryDataset
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.dto.markup.Table
+import org.scalawiki.wikitext.TableParser
 import org.scalawiki.wlx.dto._
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
@@ -331,6 +332,11 @@ class Output {
     val total = "|}" + s"\n[[Category:${contest.contestType.name} ${contest.year} in ${country.name}]]"
 
     header + text + total
+  }
+
+  def authorsMonumentsTable(imageDb: ImageDB, rating: Boolean = false): Table = {
+    val wiki = authorsMonuments(imageDb, rating)
+    TableParser.parse(wiki)
   }
 
   def authorsImages(byAuthor: Map[String, Seq[Image]], monumentDb: Option[MonumentDB]) = {
