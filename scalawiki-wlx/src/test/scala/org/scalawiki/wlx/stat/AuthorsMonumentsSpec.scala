@@ -10,7 +10,7 @@ class AuthorsMonumentsSpec extends Specification {
 
   val contest = new Contest(ContestType.WLE, Country.Ukraine, 2013, uploadConfigs = Seq.empty[UploadConfig])
 
-  def getTable(images: Seq[Image], monuments: Seq[Monument]): Table = {
+  def getTable(images: Seq[Image], monuments: Seq[Monument], contest: Contest = contest): Table = {
     val mdb = Some(new MonumentDB(contest, monuments))
 
     val db = new ImageDB(contest, images, mdb, mdb)
@@ -21,13 +21,7 @@ class AuthorsMonumentsSpec extends Specification {
   "stat" should {
     "be empty without regions" in {
       val noRegions = contest.copy(country = Country.Azerbaijan)
-      val images = Seq.empty[Image]
-      val monuments = Seq.empty[Monument]
-      val mdb = Some(new MonumentDB(noRegions, monuments))
-
-      val db = new ImageDB(noRegions, images, mdb, mdb)
-
-      val table = new Output().authorsMonumentsTable(db)
+      val table = getTable(Seq.empty[Image], Seq.empty[Monument], noRegions)
 
       table.headers === Seq("User", "Objects pictured", "Photos uploaded")
 
@@ -74,7 +68,7 @@ class AuthorsMonumentsSpec extends Specification {
       )
     }
 
-    "have 1 image with author and monument" in {
+    "have 1 image with author and monument with undefined regions" in {
       val user = "user"
       val images = Seq(Image("image1.jpg", author = Some(user), monumentId = Some("123")))
       val monuments = Seq( new Monument(id = "123", name = "123 monument"))
@@ -86,6 +80,22 @@ class AuthorsMonumentsSpec extends Specification {
       table.data === Seq(
         Seq("Total", "1", "1") ++ Seq.fill(contest.country.regions.size)("0"),
         Seq("[[User:user|user]]", "1", "1") ++ Seq.fill(contest.country.regions.size)("0")
+      )
+    }
+
+    "have 1 image with author and monument no regions" in {
+      val noRegions = contest.copy(country = Country.Azerbaijan)
+      val user = "user"
+      val images = Seq(Image("image1.jpg", author = Some(user), monumentId = Some("123")))
+      val monuments = Seq( new Monument(id = "123", name = "123 monument"))
+
+      val table = getTable(images, monuments, noRegions)
+
+      table.headers === Seq("User", "Objects pictured", "Photos uploaded")
+
+      table.data === Seq(
+        Seq("Total", "1", "1"),
+        Seq("[[User:user|user]]", "1", "1")
       )
     }
   }

@@ -11,14 +11,14 @@ package org.scalawiki.wlx.dto
   * @param uploadConfigs
   * @param specialNominations
   */
-class Contest(
-               val contestType: ContestType,
-               val country: Country,
-               val year: Int,
-               val startDate: String = "",
-               val endDate: String = "",
-               val uploadConfigs: Seq[UploadConfig],
-               val specialNominations: Seq[SpecialNomination] = Seq.empty) {
+case class Contest(
+               contestType: ContestType,
+               country: Country,
+               year: Int,
+               startDate: String = "",
+               endDate: String = "",
+               uploadConfigs: Seq[UploadConfig],
+               specialNominations: Seq[SpecialNomination] = Seq.empty) {
 
   /**
     * @return Name of category containing contest images
