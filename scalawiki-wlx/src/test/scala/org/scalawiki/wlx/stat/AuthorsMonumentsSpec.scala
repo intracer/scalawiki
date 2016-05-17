@@ -30,6 +30,22 @@ class AuthorsMonumentsSpec extends Specification {
       )
     }
 
+    "work without old monument db" in {
+      val noRegions = contest.copy(country = Country.Azerbaijan)
+
+      val mdb = Some(new MonumentDB(contest, Seq.empty[Monument]))
+
+      val db = new ImageDB(noRegions, Seq.empty[Image], mdb, None)
+
+      val table = new Output().authorsMonumentsTable(db)
+
+      table.headers === Seq("User", "Objects pictured", "Photos uploaded")
+
+      table.data === Seq(
+        Seq("Total") ++ Seq.fill(2)("0")
+      )
+    }
+
     "be empty with regions" in {
       val images = Seq.empty[Image]
       val monuments = Seq.empty[Monument]
@@ -71,7 +87,7 @@ class AuthorsMonumentsSpec extends Specification {
     "have 1 image with author and monument with undefined regions" in {
       val user = "user"
       val images = Seq(Image("image1.jpg", author = Some(user), monumentId = Some("123")))
-      val monuments = Seq( new Monument(id = "123", name = "123 monument"))
+      val monuments = Seq(new Monument(id = "123", name = "123 monument"))
 
       val table = getTable(images, monuments)
 
@@ -87,7 +103,7 @@ class AuthorsMonumentsSpec extends Specification {
       val noRegions = contest.copy(country = Country.Azerbaijan)
       val user = "user"
       val images = Seq(Image("image1.jpg", author = Some(user), monumentId = Some("123")))
-      val monuments = Seq( new Monument(id = "123", name = "123 monument"))
+      val monuments = Seq(new Monument(id = "123", name = "123 monument"))
 
       val table = getTable(images, monuments, noRegions)
 
@@ -96,6 +112,39 @@ class AuthorsMonumentsSpec extends Specification {
       table.data === Seq(
         Seq("Total", "1", "1"),
         Seq("[[User:user|user]]", "1", "1")
+      )
+    }
+
+    "count user's images and monuments" in {
+      val noRegions = contest.copy(country = Country.Azerbaijan)
+      val (user1, user2) = ("user1", "user2")
+      val images = Seq(
+        Image("image11.jpg", author = Some(user1), monumentId = Some("11")),
+        Image("image12.jpg", author = Some(user1), monumentId = Some("11")),
+        Image("image13.jpg", author = Some(user1), monumentId = Some("12")),
+
+        Image("image21.jpg", author = Some(user2), monumentId = Some("21")),
+        Image("image22.jpg", author = Some(user2), monumentId = Some("22")),
+        Image("image23.jpg", author = Some(user2), monumentId = Some("22")),
+        Image("image24.jpg", author = Some(user2), monumentId = Some("23")),
+        Image("image25.jpg", author = Some(user2), monumentId = Some("24"))
+      )
+
+      val monuments = Seq(
+        Monument(id = "11", name = "11 m"), Monument(id = "12", name = "12 m"),
+
+        Monument(id = "21", name = "21 m"), Monument(id = "22", name = "22 m"),
+        Monument(id = "23", name = "23 m"), Monument(id = "24", name = "24 m")
+      )
+
+      val table = getTable(images, monuments, noRegions)
+
+      table.headers === Seq("User", "Objects pictured", "Photos uploaded")
+
+      table.data === Seq(
+        Seq("Total", "6", "8"),
+        Seq("[[User:user2|user2]]", "4", "5"),
+        Seq("[[User:user1|user1]]", "2", "3")
       )
     }
   }

@@ -275,28 +275,33 @@ class Output {
       else Seq("Objects pictured")) ++
       Seq("Photos uploaded") ++ country.regionNames
 
-    val allIds = imageDb.monumentDb.get.monuments.filter(_.photo.isDefined).map(_.id).toSet
-    val oldIds = imageDb.oldMonumentDb.get.monuments.filter(_.photo.isDefined).map(_.id).toSet
-
-    val newIds = allIds -- oldIds
+    val oldIds = imageDb.oldMonumentDb.fold(Set.empty[String])(_.withImages.map(_.id).toSet)
 
     val header = "{| class='wikitable sortable'\n" +
       "|+ Number of objects pictured by uploader\n" +
       columns.mkString("!", "!!", "\n")
 
+    def ratingData(ids: Set[String], oldIds: Set[String]): Seq[Int] = {
+      Seq(
+        ids.size,
+        (ids intersect oldIds).size,
+        (ids -- oldIds).size,
+        ids.size + (ids -- oldIds).size
+      )
+    }
+
+    def rowData(ids: Set[String], images: Int, regionData: String => Int, rating: Boolean = false): Seq[Int] = {
+      (if (rating) {
+        ratingData(ids, oldIds)
+      } else {
+        Seq(ids.size)
+      }) ++
+        Seq(images) ++ country.regionIds.toSeq.map(regId => regionData(regId))
+    }
+
     var text = ""
     val totalData = Seq("Total") ++
-      (if (rating) {
-        Seq(
-          imageDb.ids.size,
-          (imageDb.ids intersect oldIds).size,
-          (imageDb.ids -- oldIds).size,
-          imageDb.ids.size + (imageDb.ids -- oldIds).size
-        )
-      } else {
-        Seq(imageDb.ids.size)
-      }) ++
-      Seq(imageDb.images.size) ++ country.regionIds.toSeq.map(regId => imageDb.idsByRegion(regId).size)
+      rowData(imageDb.ids, imageDb.images.size, regId => imageDb.idsByRegion(regId).size)
 
     text += totalData.mkString("|-\n| ", " || ", "\n")
 
@@ -304,27 +309,17 @@ class Output {
     for (user <- authors) {
       val noTemplateUser = user.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
       val userLink = s"[[User:$noTemplateUser|$noTemplateUser]]"
-      val columnData = Seq(userLink) ++
-        (if (rating) {
-          Seq(
-            imageDb._authorsIds(user).size,
-            (imageDb._authorsIds(user) intersect oldIds).size,
-            (imageDb._authorsIds(user) -- oldIds).size,
-            imageDb._authorsIds(user).size + (imageDb._authorsIds(user) -- oldIds).size,
-            imageDb._byAuthor(user).size
-          )
+
+      def userRating(regId: String) = {
+        val regionIds = imageDb._authorIdsByRegion(user).getOrElse(regId, Seq.empty).toSet
+        if (rating) {
+          regionIds.size + (regionIds -- oldIds).size
         } else {
-          Seq(imageDb._authorsIds(user).size, imageDb._byAuthor(user).size)
+          regionIds.size
         }
-          ) ++ country.regionIds.toSeq.map {
-        regId =>
-          val regionIds = imageDb._authorIdsByRegion(user).getOrElse(regId, Seq.empty).toSet
-          if (rating) {
-            regionIds.size + (regionIds -- oldIds).size
-          } else {
-            regionIds.size
-          }
       }
+      val columnData = Seq(userLink) ++
+        rowData(imageDb._authorsIds(user), imageDb._byAuthor(user).size, userRating)
 
       text += columnData.mkString("|-\n| ", " || ", "\n")
     }
