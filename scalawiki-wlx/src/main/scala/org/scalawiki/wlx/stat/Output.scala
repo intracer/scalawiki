@@ -266,7 +266,7 @@ class Output {
     new Table(columns, rows, "Authors contributed")
   }
 
-  def authorsMonuments(imageDb: ImageDB, rating: Boolean = false) = {
+  def authorsMonumentsTable(imageDb: ImageDB, rating: Boolean = false): Table = {
 
     val contest = imageDb.contest
     val country = contest.country
@@ -276,10 +276,6 @@ class Output {
       Seq("Photos uploaded") ++ country.regionNames
 
     val oldIds = imageDb.oldMonumentDb.fold(Set.empty[String])(_.withImages.map(_.id).toSet)
-
-    val header = "{| class='wikitable sortable'\n" +
-      "|+ Number of objects pictured by uploader\n" +
-      columns.mkString("!", "!!", "\n")
 
     def ratingData(ids: Set[String], oldIds: Set[String]): Seq[Int] = {
       Seq(
@@ -299,14 +295,11 @@ class Output {
         Seq(images) ++ country.regionIds.toSeq.map(regId => regionData(regId))
     }
 
-    var text = ""
     val totalData = Seq("Total") ++
-      rowData(imageDb.ids, imageDb.images.size, regId => imageDb.idsByRegion(regId).size)
-
-    text += totalData.mkString("|-\n| ", " || ", "\n")
+      rowData(imageDb.ids, imageDb.images.size, regId => imageDb.idsByRegion(regId).size).map(_.toString)
 
     val authors = imageDb.authors.toSeq.sortBy(user => -imageDb._authorsIds(user).size)
-    for (user <- authors) {
+    val authorsData = authors.map { user =>
       val noTemplateUser = user.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
       val userLink = s"[[User:$noTemplateUser|$noTemplateUser]]"
 
@@ -318,20 +311,17 @@ class Output {
           regionIds.size
         }
       }
-      val columnData = Seq(userLink) ++
-        rowData(imageDb._authorsIds(user), imageDb._byAuthor(user).size, userRating)
-
-      text += columnData.mkString("|-\n| ", " || ", "\n")
+      Seq(userLink) ++
+        rowData(imageDb._authorsIds(user), imageDb._byAuthor(user).size, userRating).map(_.toString)
     }
 
-    val total = "|}" + s"\n[[Category:${contest.contestType.name} ${contest.year} in ${country.name}]]"
-
-    header + text + total
+    new Table(columns, Seq(totalData) ++ authorsData, "Number of objects pictured by uploader")
   }
 
-  def authorsMonumentsTable(imageDb: ImageDB, rating: Boolean = false): Table = {
-    val wiki = authorsMonuments(imageDb, rating)
-    TableParser.parse(wiki)
+  def authorsMonuments(imageDb: ImageDB, rating: Boolean = false): String = {
+    val table = authorsMonumentsTable(imageDb, rating)
+    val contest = imageDb.contest
+    table.asWiki + s"\n[[Category:${contest.contestType.name} ${contest.year} in ${contest.country.name}]]"
   }
 
   def authorsImages(byAuthor: Map[String, Seq[Image]], monumentDb: Option[MonumentDB]) = {
