@@ -12,10 +12,19 @@ import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class Statistics(
-                  contest: Contest,
-                  startYear: Option[Int] = None,
-                  bot: MwBot = MwBot.get(MwBot.commons)) {
+
+case class ContestStat(contest: Contest,
+                       startYear: Int,
+                       monumentDb: Option[MonumentDB],
+                       monumentDbOld: Option[MonumentDB],
+                       currentYearImageDb: ImageDB,
+                       totalImageDb: Option[ImageDB],
+                       dbsByYear: Seq[ImageDB] = Seq.empty
+                      )
+
+class Statistics(contest: Contest,
+                 startYear: Option[Int] = None,
+                 bot: MwBot = MwBot.get(MwBot.commons)) {
 
   val currentYear = contest.year
 
@@ -23,36 +32,39 @@ class Statistics(
     (year until currentYear).map(year => contest.copy(year = year))
   }
 
-  def gatherData() = {
+  def gatherData(total: Boolean = false, byYear: Boolean = false): Future[ContestStat] = {
 
     val (monumentDb, monumentDbOld) = (Some(MonumentDB.getMonumentDb(contest)), None)
 
-    val imageQuery = ImageQuery.create(db = false)
+    val imageQuery = ImageQuery.create()
 
     val imageDbFuture = ImageDB.create(contest, imageQuery, monumentDb, monumentDbOld)
-    val totalFuture = new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)
 
-    for (imageDB <- imageDbFuture) {
-      currentYear(contest, imageDB)
+    val totalFuture = if (total)
+      new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest).map {
+        images =>
+          Some(new ImageDB(contest, images, monumentDb))
+      } else Future.successful(None)
 
-      for (totalImages <- totalFuture) {
-        val totalImageDb = new ImageDB(contest, totalImages, monumentDb)
+    val byYearFuture = if (byYear)
+      Future.sequence(previousContests.map(contest => ImageDB.create(contest, imageQuery, monumentDb)) ++ Seq(imageDbFuture))
+    else Future.successful(Seq.empty)
 
-        photoWithoutArticle(totalImageDb)
-
-        val dbsByYear = previousContests.map(contest => ImageDB.create(contest, imageQuery, monumentDb)) ++ Seq(Future.successful(imageDB))
-        Future.sequence(dbsByYear).map {
-          imageDbs =>
-
-            regionalStat(contest, imageDbs, imageDB, totalImageDb)
-
-        }
-      }
-    }
+    for (imageDB <- imageDbFuture;
+         totalImages <- totalFuture;
+         byYear <- byYearFuture)
+      yield ContestStat(contest, startYear.getOrElse(contest.year), monumentDb, monumentDbOld, imageDB, totalImages, byYear)
   }
 
   def init(): Unit = {
-    gatherData()
+    gatherData().map {
+      data =>
+        currentYear(data.contest, data.currentYearImageDb)
+
+        for (totalImageDb <- data.totalImageDb) {
+          regionalStat(data.contest, data.dbsByYear, data.currentYearImageDb, totalImageDb)
+        }
+    }
   }
 
   def articleStatistics(monumentDb: MonumentDB) = {
@@ -71,10 +83,11 @@ class Statistics(
     byDayAndRegion(imageDb)
     lessThan2MpGallery(contest, imageDb)
 
-    imageDb.monumentDb.foreach { mDb =>
-      wrongIds(contest, imageDb, mDb)
+    imageDb.monumentDb.foreach {
+      mDb =>
+        wrongIds(contest, imageDb, mDb)
 
-      fillLists(mDb, imageDb)
+        fillLists(mDb, imageDb)
     }
   }
 
@@ -172,9 +185,10 @@ class Statistics(
 
     bot.page(s"Commons:$categoryName/Total number of objects pictured by uploader").edit(authorsByRegionTotal, Some("updating"))
 
-    monumentDb.map { db =>
-      val mostPopularMonuments = output.mostPopularMonuments(imageDbs, totalImageDb, db)
-      bot.page(s"Commons:$categoryName/Most photographed objects").edit(mostPopularMonuments, Some("updating"))
+    monumentDb.map {
+      db =>
+        val mostPopularMonuments = output.mostPopularMonuments(imageDbs, totalImageDb, db)
+        bot.page(s"Commons:$categoryName/Most photographed objects").edit(mostPopularMonuments, Some("updating"))
     }
   }
 
