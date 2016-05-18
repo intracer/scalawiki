@@ -37,25 +37,27 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
 object MonumentDB {
 
-  def getMonumentDbRange(contest: Contest): (Option[MonumentDB], Option[MonumentDB]) = {
-    if (contest.uploadConfigs.nonEmpty) {
-      val date = new DateTime(contest.year, 9, 1, 0, 0, 0)
-      (Some(getMonumentDb(contest)),
-        Some(getMonumentDb(contest, Some(date))))
-    } else {
-      (None, None)
-    }
-  }
-
-  def getMonumentDb(contest: Contest, date: Option[DateTime] = None): MonumentDB = {
-    val monumentQuery = MonumentQuery.create(contest)
-    var allMonuments = monumentQuery.byMonumentTemplate(contest.uploadConfigs.head.listTemplate, date)
+  def getMonumentDb(contest: Contest, monumentQuery: MonumentQuery, date: Option[DateTime] = None): MonumentDB = {
+    var allMonuments = monumentQuery.byMonumentTemplate(date = date)
 
     if (contest.country.code == "ru") {
       allMonuments = allMonuments.filter(_.page.contains("Природные памятники России"))
     }
 
     new MonumentDB(contest, allMonuments)
+  }
+
+  def getMonumentDb(contest: Contest, date: Option[DateTime]): MonumentDB =
+    getMonumentDb(contest, MonumentQuery.create(contest), date)
+
+  def getMonumentDbRange(contest: Contest): (Option[MonumentDB], Option[MonumentDB]) = {
+    if (contest.uploadConfigs.nonEmpty) {
+      val date = new DateTime(contest.year, 9, 1, 0, 0, 0)
+      (Some(getMonumentDb(contest, None)),
+        Some(getMonumentDb(contest, Some(date))))
+    } else {
+      (None, None)
+    }
   }
 
 }

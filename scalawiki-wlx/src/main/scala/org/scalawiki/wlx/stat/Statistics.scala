@@ -6,7 +6,7 @@ import java.nio.file.{Files, Paths}
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.Contest
-import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi}
+import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
 import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -24,7 +24,10 @@ case class ContestStat(contest: Contest,
 
 class Statistics(contest: Contest,
                  startYear: Option[Int] = None,
-                 bot: MwBot = MwBot.get(MwBot.commons)) {
+                 monumentQuery: MonumentQuery,
+                 imageQuery: ImageQuery = ImageQuery.create(),
+                 bot: MwBot = MwBot.get(MwBot.commons)
+                ) {
 
   val currentYear = contest.year
 
@@ -34,9 +37,7 @@ class Statistics(contest: Contest,
 
   def gatherData(total: Boolean = false, byYear: Boolean = false): Future[ContestStat] = {
 
-    val (monumentDb, monumentDbOld) = (Some(MonumentDB.getMonumentDb(contest)), None)
-
-    val imageQuery = ImageQuery.create()
+    val (monumentDb, monumentDbOld) = (Some(MonumentDB.getMonumentDb(contest, monumentQuery)), None)
 
     val imageDbFuture = ImageDB.create(contest, imageQuery, monumentDb, monumentDbOld)
 
@@ -231,9 +232,9 @@ class Statistics(contest: Contest,
 object Statistics {
   def main(args: Array[String]) {
 
-    val stat = new Statistics(Contest.WLEUkraine(2016, "05-01", "05-31"))
+    val contest: Contest = Contest.WLEUkraine(2016, "05-01", "05-31")
+    val stat = new Statistics(contest, monumentQuery = MonumentQuery.create(contest))
 
     stat.init()
-
   }
 }
