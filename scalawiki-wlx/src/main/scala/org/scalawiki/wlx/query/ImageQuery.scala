@@ -89,7 +89,7 @@ class ImageQueryCached(underlying: ImageQuery) extends ImageQuery {
 
 object ImageQuery {
 
-  def create(db: Boolean = true, caching: Boolean = true, pickling: Boolean = false): ImageQuery = {
+  def create(db: Boolean = false, caching: Boolean = true, pickling: Boolean = false): ImageQuery = {
     val query = new ImageQueryApi
 
     if (caching)

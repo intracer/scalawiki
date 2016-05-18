@@ -9,24 +9,50 @@ import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi}
 import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.control.NonFatal
 
-class Statistics(contest: Contest) {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+class Statistics(
+                  contest: Contest,
+                  startYear: Option[Int] = None,
+                  bot: MwBot = MwBot.get(MwBot.commons)) {
 
   val currentYear = contest.year
 
-  val previousContests = (2013 until currentYear).map(year => Contest.WLEUkraine(year, "05-01", "05-31"))
+  val previousContests = startYear.fold(Seq.empty[Contest]) { year =>
+    (year until currentYear).map(year => contest.copy(year = year))
+  }
 
-  private val bot = MwBot.get(MwBot.commons)
-
-  def init(): Unit = {
+  def gatherData() = {
 
     val (monumentDb, monumentDbOld) = (Some(MonumentDB.getMonumentDb(contest)), None)
 
-    imagesStatistics(contest, monumentDb, monumentDbOld)
+    val imageQuery = ImageQuery.create(db = false)
+
+    val imageDbFuture = ImageDB.create(contest, imageQuery, monumentDb, monumentDbOld)
+    val totalFuture = new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)
+
+    for (imageDB <- imageDbFuture) {
+      currentYear(contest, imageDB)
+
+      for (totalImages <- totalFuture) {
+        val totalImageDb = new ImageDB(contest, totalImages, monumentDb)
+
+        photoWithoutArticle(totalImageDb)
+
+        val dbsByYear = previousContests.map(contest => ImageDB.create(contest, imageQuery, monumentDb)) ++ Seq(Future.successful(imageDB))
+        Future.sequence(dbsByYear).map {
+          imageDbs =>
+
+            regionalStat(contest, imageDbs, imageDB, totalImageDb)
+
+        }
+      }
+    }
+  }
+
+  def init(): Unit = {
+    gatherData()
   }
 
   def articleStatistics(monumentDb: MonumentDB) = {
@@ -37,52 +63,24 @@ class Statistics(contest: Contest) {
     users.map(name => s"{{#target:User talk:$name}}")
   }
 
-  def imagesStatistics(contest: Contest, monumentDb: Option[MonumentDB], oldMonumentDb: Option[MonumentDB] = None) {
-    val imageQuery = ImageQuery.create(db = false)
+  def currentYear(contest: Contest, imageDb: ImageDB) = {
 
-    val imageDbF = currentYear(contest, monumentDb, oldMonumentDb, imageQuery)
-    val totalF = new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)
+    new SpecialNominations().specialNominations(contest, imageDb)
 
+    authorsStat(imageDb)
+    byDayAndRegion(imageDb)
+    lessThan2MpGallery(contest, imageDb)
 
-    for (imageDb <- imageDbF;
-         totalImages <- totalF) {
+    imageDb.monumentDb.foreach { mDb =>
+      wrongIds(contest, imageDb, mDb)
 
-      val totalImageDb = new ImageDB(contest, totalImages, monumentDb)
-
-      //photoWithoutArticle(monumentDb.get, totalImageDb)
-
-      regionalStat(contest, monumentDb, imageQuery, imageDb, totalImageDb)
-
-    }
-  }
-
-  def currentYear(contest: Contest, monumentDb: Option[MonumentDB], oldMonumentDb: Option[MonumentDB], imageQueryApi: ImageQuery) = {
-    val imageDbFuture = ImageDB.create(contest, imageQueryApi, monumentDb, oldMonumentDb)
-
-    imageDbFuture map {
-      imageDb =>
-
-        //new SpecialNominations().specialNominations(contest, imageDb)
-
-
-        authorsStat(imageDb)
-        //        byDayAndRegion(imageDb)
-        //new SpecialNominations().specialNominations(contest, imageDb)
-        lessThan2MpGallery(contest, imageDb)
-
-        monumentDb.foreach { mDb =>
-          wrongIds(contest, imageDb, mDb)
-
-          fillLists(mDb, imageDb)
-        }
-        imageDb
+      fillLists(mDb, imageDb)
     }
   }
 
   def message(bot: MwBot, user: String, msg: String => String): Unit = {
     bot.page("User_talk:" + user).edit(msg(user), section = Some("new"))
   }
-
 
   def lessThan2MpGallery(contest: Contest, imageDb: ImageDB) = {
     val lessThan2Mp = imageDb.byMegaPixelFilterAuthorMap(_ < 2)
@@ -139,100 +137,89 @@ class Statistics(contest: Contest) {
     bot.page(s"Commons:$contestPage/Number of objects pictured by uploader")
       .edit(numberOfMonuments, Some("updating"))
 
-    val rating = output.authorsMonuments(imageDb, rating = true)
-    Files.write(Paths.get("authorsRating.txt"), rating.getBytes(StandardCharsets.UTF_8))
-    bot.page(s"Commons:$contestPage/Rating based on number and originality of objects pictured by uploader")
-      .edit(rating, Some("updating"))
+    if (contest.rating) {
+      val rating = output.authorsMonuments(imageDb, rating = true)
+      Files.write(Paths.get("authorsRating.txt"), rating.getBytes(StandardCharsets.UTF_8))
+      bot.page(s"Commons:$contestPage/Rating based on number and originality of objects pictured by uploader")
+        .edit(rating, Some("updating"))
+
+    }
 
   }
 
   def regionalStat(wlmContest: Contest,
-                   monumentDb: Option[MonumentDB],
-                   imageQueryDb: ImageQuery,
+                   imageDbs: Seq[ImageDB],
                    currentYear: ImageDB,
                    totalImageDb: ImageDB) {
 
     val contest = currentYear.contest
     val categoryName = contest.contestType.name + " in " + contest.country.name
+    val monumentDb = currentYear.monumentDb
 
-    val dbsByYear = previousContests.map(contest => ImageDB.create(contest, imageQueryDb, monumentDb)) ++ Seq(Future.successful(currentYear))
+    val output = new Output()
 
-    Future.sequence(dbsByYear).map {
-      imageDbs =>
+    val idsStat = monumentDb.map(db => output.monumentsPictured(imageDbs, totalImageDb, db)).getOrElse("")
 
-        try {
+    val authorStat = output.authorsContributed(imageDbs, totalImageDb, monumentDb)
 
-          val output = new Output()
+    val toc = "__TOC__"
+    val category = s"\n[[Category:$categoryName]]"
+    val regionalStat = toc + idsStat + authorStat + category
 
-          val idsStat = monumentDb.map(db => output.monumentsPictured(imageDbs, totalImageDb, db)).getOrElse("")
+    bot.page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, Some("updating"))
 
-          val authorStat = output.authorsContributed(imageDbs, totalImageDb, monumentDb)
+    val authorsByRegionTotal = output.authorsMonuments(totalImageDb) + s"\n[[Category:$categoryName]]"
 
-          val toc = "__TOC__"
-          val category = s"\n[[Category:$categoryName]]"
-          val regionalStat = toc + idsStat + authorStat + category
+    bot.page(s"Commons:$categoryName/Total number of objects pictured by uploader").edit(authorsByRegionTotal, Some("updating"))
 
-          bot.page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, Some("updating"))
-
-          val authorsByRegionTotal = output.authorsMonuments(totalImageDb) + s"\n[[Category:$categoryName]]"
-
-          bot.page(s"Commons:$categoryName/Total number of objects pictured by uploader").edit(authorsByRegionTotal, Some("updating"))
-
-          monumentDb.map { db =>
-            val mostPopularMonuments = output.mostPopularMonuments(imageDbs, totalImageDb, db)
-            bot.page(s"Commons:$categoryName/Most photographed objects").edit(mostPopularMonuments, Some("updating"))
-          }
-
-          }
-          catch {
-            case NonFatal(e) =>
-              println(e)
-              e.printStackTrace()
-              throw e
-          }
-        }
-    }
-
-    def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
-      ListFiller.fillLists(monumentDb, imageDb)
-    }
-
-    def photoWithoutArticle(monumentDb: MonumentDB, imageDb: ImageDB): String = {
-
-      val all = monumentDb.monuments.filter(m =>
-        m.photo.isDefined &&
-          m.article.isEmpty && !m.name.contains("[[") &&
-          m.types.map(_.toLowerCase).exists(_.contains("нац")
-            && imageDb.authorsCountById.getOrElse(m.id, 0) > 1
-            && imageDb.byId(m.id).size > 2)
-      )
-      val byRegion = all.groupBy(_.regionId)
-
-      val perRegion = monumentDb.contest.country.regions.sortBy(_.name).map {
-        region =>
-          val regionHeader = s"== ${region.name} ==\n"
-
-          val monuments = byRegion.getOrElse(region.code, Seq.empty)
-
-          val images = monuments.map(_.photo.get)
-          val descriptions = monuments.map(m => s"[[${m.name}]], ${m.city.getOrElse("")}")
-
-          val gallery = Image.gallery(images, descriptions)
-
-          regionHeader + gallery
-      }
-
-      perRegion.mkString("\n")
-    }
-
-  }
-
-  object Statistics {
-    def main(args: Array[String]) {
-
-      val stat = new Statistics(Contest.WLEUkraine(2016, "05-01", "05-31"))
-
-      stat.init()
-
+    monumentDb.map { db =>
+      val mostPopularMonuments = output.mostPopularMonuments(imageDbs, totalImageDb, db)
+      bot.page(s"Commons:$categoryName/Most photographed objects").edit(mostPopularMonuments, Some("updating"))
     }
   }
+
+  def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
+    ListFiller.fillLists(monumentDb, imageDb)
+  }
+
+  def photoWithoutArticle(imageDb: ImageDB): String = {
+
+    val monumentDb = imageDb.monumentDb.get
+
+    val all = monumentDb.monuments.filter(m =>
+      m.photo.isDefined &&
+        m.article.isEmpty && !m.name.contains("[[") &&
+        m.types.map(_.toLowerCase).exists(_.contains("нац")
+          && imageDb.authorsCountById.getOrElse(m.id, 0) > 1
+          && imageDb.byId(m.id).size > 2)
+    )
+    val byRegion = all.groupBy(_.regionId)
+
+    val perRegion = monumentDb.contest.country.regions.sortBy(_.name).map {
+      region =>
+        val regionHeader = s"== ${region.name} ==\n"
+
+        val monuments = byRegion.getOrElse(region.code, Seq.empty)
+
+        val images = monuments.map(_.photo.get)
+        val descriptions = monuments.map(m => s"[[${m.name}]], ${m.city.getOrElse("")}")
+
+        val gallery = Image.gallery(images, descriptions)
+
+        regionHeader + gallery
+    }
+
+    perRegion.mkString("\n")
+  }
+
+}
+
+object Statistics {
+  def main(args: Array[String]) {
+
+    val stat = new Statistics(Contest.WLEUkraine(2016, "05-01", "05-31"))
+
+    stat.init()
+
+  }
+}
