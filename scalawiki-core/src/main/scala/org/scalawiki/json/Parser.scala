@@ -67,8 +67,9 @@ class Parser(val action: Action) {
     val images = getImages(pageJson, page)
     val langLinks = getLangLinks(pageJson)
     val links = getLinks(pageJson)
+    val categoryInfo = getCategoryInfo(pageJson)
 
-    page.copy(revisions = revisions, images = images, langLinks = langLinks, links = links)
+    page.copy(revisions = revisions, images = images, langLinks = langLinks, links = links, categoryInfo = categoryInfo)
   }
 
   def getImages(pageJson: JsObject, page: Page): Seq[Image] = {
@@ -130,6 +131,9 @@ class Parser(val action: Action) {
       }
     }.getOrElse(Seq.empty[Page])
   }
+
+  def getCategoryInfo(pageJson: JsObject): Option[CategoryInfo] =
+   pageJson.validate(Parser.categoryInfoReadsInPage).getOrElse(None)
 
   def parseGlobalUserInfo(json: JsObject) = {
     if (!json.value.contains("missing")) {
@@ -254,6 +258,15 @@ object Parser {
 
     (__ \ "imageinfo").read[Seq[Image]]
   }
+
+  implicit val categoryInfoReads: Reads[CategoryInfo] = (
+    (__ \ "size").read[Long] ~
+      (__ \ "pages").read[Long] ~
+      (__ \ "files").read[Long] ~
+      (__ \ "subcats").read[Long]
+    ) (CategoryInfo.apply _)
+
+  val categoryInfoReadsInPage = (__ \ "categoryinfo").readNullable[CategoryInfo]
 
   def imageReads(): Reads[Seq[Image]] = {
     implicit val imageReads: Reads[Image] = (
