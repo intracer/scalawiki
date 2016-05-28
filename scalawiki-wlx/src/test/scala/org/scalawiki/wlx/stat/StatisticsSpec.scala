@@ -4,13 +4,15 @@ import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto._
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
+import org.specs2.concurrent.ExecutionEnv
+import org.specs2.matcher.FutureMatchers
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
 import scala.concurrent.Future
 
-class StatisticsSpec extends Specification with Mockito {
+class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mockito with FutureMatchers {
 
   val contest = Contest.WLEUkraine(2016, "05-01", "05-31")
 
@@ -54,4 +56,22 @@ class StatisticsSpec extends Specification with Mockito {
     data.dbsByYear === Seq.empty
     data.totalImageDb.isEmpty === true
   }
+
+  "handle image query error" in {
+
+    val monuments = Seq.empty[Monument]
+
+    val bot = mock[MwBot]
+    val monumentQuery = mock[MonumentQuery]
+    val imageQuery = mock[ImageQuery]
+
+    imageQuery.imagesFromCategoryAsync(contest.category, contest) returns Future.failed(new RuntimeException("Error 123"))
+    monumentQuery.byMonumentTemplate(date = None) returns monuments
+
+    val stat = new Statistics(contest, None, monumentQuery, imageQuery, bot)
+
+    stat.gatherData() must throwA[RuntimeException].await
+  }
 }
+
+
