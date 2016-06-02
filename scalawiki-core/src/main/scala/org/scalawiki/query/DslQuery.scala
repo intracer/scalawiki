@@ -8,6 +8,8 @@ import org.scalawiki.json.Parser
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
+case class QueryProgress(pages: Long, done: Boolean, action: Action, bot: MwBot)
+
 class DslQuery(val action: Action, val bot: MwBot) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -22,9 +24,10 @@ class DslQuery(val action: Action, val bot: MwBot) {
 
     val params = action.pairs ++ Seq("format" -> "json") ++ continue
 
-    bot.log.info(s"${bot.host} pages: ${pages.size} action: $params")
     if (startTime == 0)
       startTime = System.nanoTime()
+
+    onProgress(pages.size)
 
     bot.post(params.toMap) flatMap {
       body =>
@@ -36,9 +39,8 @@ class DslQuery(val action: Action, val bot: MwBot) {
 
             val newContinue = parser.continue
             if (newContinue.isEmpty || limit.exists(_ <= allPages.size)) {
-              val estimatedTime = (System.nanoTime() - startTime) / Math.pow(10, 9)
 
-              bot.log.info(s"${bot.host} Action completed with ${allPages.size} pages in $estimatedTime seconds,  $params")
+              onProgress(allPages.size, done = true)
               Future.successful(allPages)
             } else {
               run(newContinue, allPages, limit)
@@ -64,5 +66,19 @@ class DslQuery(val action: Action, val bot: MwBot) {
     pages.map { p =>
       if (p.id.isEmpty || !intersection.contains(p.id.get)) p else p.appendLists(newById(p.id.get).head)
     } ++ newPages.filterNot(p => p.id.isDefined && intersection.contains(p.id.get))
+  }
+
+  def onProgress(pages: Long, done: Boolean = false) = {
+    if (done) {
+      val estimatedTime = (System.nanoTime() - startTime) / Math.pow(10, 9)
+
+      bot.log.info(s"${bot.host} Action completed with $pages pages in $estimatedTime seconds,  $action.pairs")
+    } else {
+      bot.log.info(s"${bot.host} pages: $pages action: $action.pairs")
+    }
+
+    val progress = new QueryProgress(pages, done, action, bot)
+
+    bot.system.eventStream.publish(progress)
   }
 }
