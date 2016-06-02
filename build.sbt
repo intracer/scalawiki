@@ -30,7 +30,6 @@ lazy val `scalawiki-core` =
         "com.github.nscala-time" %% "nscala-time" % "2.10.0",
         "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
         "ch.qos.logback" % "logback-classic" % "1.1.3",
-        "uk.co.bigbeeconsultants" %% "bee-client" % "0.29.1",
         "org.sweble.wikitext" % "swc-engine" % "2.0.0" exclude("org.jsoup", "jsoup"),
         "org.jsoup" % "jsoup" % "1.8.3",
         "commons-codec" % "commons-codec" % "1.10"
