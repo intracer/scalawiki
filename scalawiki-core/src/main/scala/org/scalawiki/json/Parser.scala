@@ -63,7 +63,9 @@ class Parser(val action: Action) {
   def parsePage(pageJson: JsObject): Page = {
     val page = pageJson.validate(Parser.pageReads).get
 
-    val revisions = pageJson.validate(Parser.revisionsReads(page.id.get)).getOrElse(Seq.empty)
+    val revisions = page.id.fold(Seq.empty[Revision]) { pageId =>
+      pageJson.validate(Parser.revisionsReads(pageId)).getOrElse(Seq.empty)
+    }
     val images = getImages(pageJson, page)
     val langLinks = getLangLinks(pageJson)
     val links = getLinks(pageJson)
@@ -108,11 +110,11 @@ class Parser(val action: Action) {
   }
 
   def getContinue(json: JsValue): Map[String, String] = {
-   (json \ "continue").asOpt[JsObject].map(_.value.mapValues[String]{
-     case JsNumber(n) => n.toString()
-     case JsString(s) => s
-   }.toMap)
-     .getOrElse(Map.empty[String, String])
+    (json \ "continue").asOpt[JsObject].map(_.value.mapValues[String] {
+      case JsNumber(n) => n.toString()
+      case JsString(s) => s
+    }.toMap)
+      .getOrElse(Map.empty[String, String])
   }
 
   def getLangLinks(pageJson: JsObject): Map[String, String] = {
@@ -133,7 +135,7 @@ class Parser(val action: Action) {
   }
 
   def getCategoryInfo(pageJson: JsObject): Option[CategoryInfo] =
-   pageJson.validate(Parser.categoryInfoReadsInPage).getOrElse(None)
+    pageJson.validate(Parser.categoryInfoReadsInPage).getOrElse(None)
 
   def parseGlobalUserInfo(json: JsObject) = {
     if (!json.value.contains("missing")) {
@@ -193,7 +195,7 @@ object Parser {
     }
 
   val pageReads: Reads[Page] = (
-    (__ \ "pageid").read[Long] ~
+    (__ \ "pageid").readNullable[Long] ~
       (__ \ "ns").read[Int] ~
       (__ \ "title").read[String] ~
       (__ \ "missing").readNullable[String] ~

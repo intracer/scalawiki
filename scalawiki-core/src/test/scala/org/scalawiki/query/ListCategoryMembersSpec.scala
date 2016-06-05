@@ -41,7 +41,7 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
   }
 
   "get category number" should {
-    "return category number for 3 entries" in {
+    "return category number for 3 entries and missing entry" in {
       val queryType = "categorymembers"
 
       val response1 =
@@ -49,6 +49,11 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
           |    "batchcomplete": "",
           |    "query": {
           |        "pages": {
+          |            "-1": {
+          |                "ns": 0,
+          |                "title": "NoSuchTitle",
+          |                "missing": ""
+          |            },
           |            "736": {
           |                "pageid": 736,
           |                "ns": 0,
@@ -83,20 +88,22 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
 
       val commands = Seq(
         new Command(Map("action" -> "query", "prop" -> "categoryinfo",
-          "titles" -> "Albert Einstein|Category:Foo|Category:Infobox_templates", "continue" -> ""), response1)
+          "titles" -> "Albert Einstein|Category:Foo|Category:Infobox_templates|NoSuchTitle", "continue" -> ""), response1)
       )
 
       val bot = getBot(commands: _*)
 
-      val query = Action(Query(TitlesParam(Seq("Albert Einstein", "Category:Foo", "Category:Infobox_templates")), Prop(CategoryInfo)))
+      val query = Action(Query(TitlesParam(Seq("Albert Einstein", "Category:Foo", "Category:Infobox_templates", "NoSuchTitle")),
+        Prop(CategoryInfo)))
 
       val result = bot.run(query).await
-      result must have size 3
-      result(0) === Page(736, 0, "Albert Einstein")
-      result(1) === Page(50177636, 14, "Category:Foo").copy(
+      result must have size 4
+      result(0) === new Page(None, 0, "NoSuchTitle", missing = true)
+      result(1) === Page(736, 0, "Albert Einstein")
+      result(2) === Page(50177636, 14, "Category:Foo").copy(
         categoryInfo = Some(org.scalawiki.dto.CategoryInfo(5, 3, 2, 0))
       )
-      result(2) === Page(3108204, 14, "Category:Infobox templates").copy(
+      result(3) === Page(3108204, 14, "Category:Infobox templates").copy(
         categoryInfo = Some(org.scalawiki.dto.CategoryInfo(29, 15, 0, 14))
       )
     }

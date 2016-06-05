@@ -43,13 +43,13 @@ case class Page(
 object Page {
 
   def full(
-            id: Long,
+            id: Option[Long],
             ns: Int,
             title: String,
             missing: Option[String],
             subjectId: Option[Long],
             talkId: Option[Long]) = {
-    new Page(Some(id), ns, title,
+    new Page(id, ns, title,
       missing = missing.fold(false)(_ => true),
       subjectId = subjectId,
       talkId = talkId)
