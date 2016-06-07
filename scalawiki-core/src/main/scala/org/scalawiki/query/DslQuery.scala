@@ -8,9 +8,9 @@ import org.scalawiki.json.Parser
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-case class QueryProgress(pages: Long, done: Boolean, action: Action, bot: MwBot)
+case class QueryProgress(pages: Long, done: Boolean, action: Action, bot: MwBot, context: Map[String, String] = Map.empty)
 
-class DslQuery(val action: Action, val bot: MwBot) {
+class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] = Map.empty) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -77,7 +77,7 @@ class DslQuery(val action: Action, val bot: MwBot) {
       bot.log.info(s"${bot.host} pages: $pages action: $action.pairs")
     }
 
-    val progress = new QueryProgress(pages, done, action, bot)
+    val progress = new QueryProgress(pages, done, action, bot, context)
 
     bot.system.eventStream.publish(progress)
   }
