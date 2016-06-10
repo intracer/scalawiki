@@ -10,7 +10,7 @@ class CountryParser(val table: Table) {
   val campaignIndex = headers.indexWhere(_.contains("Campaign"))
   val uploadsIndex = headers.indexWhere(_.contains("Uploads"))
 
-    val categoryLinkRegex = "\\[\\[\\:Category\\:Images from ([a-zA-Z ]+) (\\d+) in ([a-zA-Z ]+)".r
+  val categoryLinkRegex = "\\[\\[\\:Category\\:Images from ([a-zA-Z ]+) (\\d+) in ([a-zA-Z ]+)".r
 
   def rowToContest(data: Iterable[String]): Option[Contest] = {
     val indexed = data.toIndexedSeq
@@ -27,14 +27,12 @@ class CountryParser(val table: Table) {
         val countryStr = m.group(3)
 
         val _type = ContestType.byName(typeStr)
-        val country = countries.find(_.name == countryStr).get
+        val country = countries.find(_.name == countryStr).getOrElse(new Country("", countryStr))
         val year = yearStr.toInt
 
-      new Contest(_type.get, country, year, null, null, Seq.empty)
+        new Contest(_type.get, country, year, null, null, Seq.empty)
     }
-
   }
-
 }
 
 object CountryParser {
