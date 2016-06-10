@@ -61,7 +61,7 @@ lazy val `scalawiki-wlx` =
   (project in file("scalawiki-wlx"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq("com.github.wookietreiber" %% "scala-chart" % "0.5.0"))
-    .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-sql`)
+    .dependsOn(`scalawiki-core` % "compile->compile;test->test")
 
 lazy val `scalawiki-sql` =
   (project in file("scalawiki-sql"))
@@ -91,7 +91,7 @@ lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
     "org.specs2" %% "specs2-core" % specsV % "test",
     "org.specs2" %% "specs2-matcher-extra" % specsV % "test",
-    "org.specs2" % "specs2-mock_2.11" % specsV,
+    "org.specs2" % "specs2-mock_2.11" % specsV % "test",
     "com.google.jimfs" % "jimfs" % "1.1" % "test"
   ),
 
