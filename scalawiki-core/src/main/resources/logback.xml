@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true">
 
-    <conversionRule conversionWord="traceToken" converterClass="kamon.trace.logging.LogbackTraceTokenConverter"/>
+<!--  <conversionRule conversionWord="traceToken" converterClass="kamon.trace.logging.LogbackTraceTokenConverter"/> -->
 
     <!-- Enable JMX access; which allows us to change logging at runtime -->
     <jmxConfigurator />
@@ -12,8 +12,6 @@
             <pattern>%date{MM/dd HH:mm:ss} %-5level[%.15thread] %logger{1} %msg%n</pattern>
         </encoder>
     </appender>
-
-    <logger name="scala.slick" level="INFO" />
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
