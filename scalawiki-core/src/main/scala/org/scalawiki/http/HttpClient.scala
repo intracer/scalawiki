@@ -19,7 +19,7 @@ trait HttpClient {
 
   def post(url: String, params: Map[String, String]): Future[HttpResponse]
 
-  def post(url: Uri, params: Map[String, String]): Future[HttpResponse]
+  def postUri(url: Uri, params: Map[String, String]): Future[HttpResponse]
 
   def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse]
   def postMultiPart(url: Uri, params: Map[String, String]): Future[HttpResponse]

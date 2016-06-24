@@ -68,7 +68,7 @@ class HttpClientSpray(val system: ActorSystem = MwBot.system) extends HttpClient
     submit(Post(url, FormData(params)))
   }
 
-  override def post(url: Uri, params: Map[String, String]): Future[HttpResponse] = {
+  override def postUri(url: Uri, params: Map[String, String]): Future[HttpResponse] = {
     submit(Post(url, FormData(params)))
   }
 

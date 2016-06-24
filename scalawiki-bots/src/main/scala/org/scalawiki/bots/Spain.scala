@@ -16,7 +16,7 @@ object Spain {
   var bot: MwBot = _
 
   def main(args: Array[String]) {
-    bot = MwBot.get(MwBot.commons)
+    bot = MwBot.fromHost(MwBot.commons)
 
     val action = Action(Query(
       Prop(

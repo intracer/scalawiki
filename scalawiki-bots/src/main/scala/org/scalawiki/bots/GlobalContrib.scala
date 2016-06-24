@@ -14,7 +14,7 @@ import scala.concurrent.Future
 
 class GlobalContrib {
 
-  val bot = MwBot.get(MwBot.commons)
+  val bot = MwBot.fromHost(MwBot.commons)
 
   def guiAction(username: String) = Action(Query(MetaParam(
     GlobalUserInfo(
@@ -36,7 +36,7 @@ class GlobalContrib {
 
   def editsBefore(user: User, acc: SulAccount, start: DateTime): Future[Long] = {
     val host = acc.url.replace("https://", "")
-    val siteBot = MwBot.get(host)
+    val siteBot = MwBot.fromHost(host)
 
     val action = contribs(user.name.get, TimeRange(None, Some(start)))
     siteBot.run(action).map{ edits =>

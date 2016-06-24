@@ -12,7 +12,7 @@ object SubsetCreator {
 
 
   def main(args: Array[String]) {
-    val ukWiki = MwBot.get("uk.wikipedia.org")
+    val ukWiki = MwBot.fromHost("uk.wikipedia.org")
 
     val specialNomination = "національного значення"
 

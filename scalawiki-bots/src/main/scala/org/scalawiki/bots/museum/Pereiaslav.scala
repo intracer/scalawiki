@@ -23,7 +23,7 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
 
   val lang = conf.getString("lang")
 
-  def ukWiki = MwBot.get(conf.getString("host"))
+  def ukWiki = MwBot.fromHost(conf.getString("host"))
 
   val tablePage = conf.getString("table-page")
 
@@ -123,7 +123,7 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
   }
 
   def wlm(): Seq[Monument] = {
-    val ukWiki = MwBot.get(MwBot.ukWiki)
+    val ukWiki = MwBot.fromHost(MwBot.ukWiki)
     val text = ukWiki.await(ukWiki.pageText(wlmPage))
 
     Monument.monumentsFromText(text, wlmPage, WlmUa.templateName, WlmUa).toBuffer
@@ -152,7 +152,7 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
       stat(genLoaded)
 
       val commons = Site.commons
-      val bot = MwBot.get(commons)
+      val bot = MwBot.fromSite(commons)
 
       val images = genLoaded.flatMap(_.images)
       val count = images.size

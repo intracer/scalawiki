@@ -1,10 +1,41 @@
 package org.scalawiki
 
+import org.mockito.Matchers
+import org.scalawiki.http.HttpClient
 import org.scalawiki.util.{Command, MockBotSpec}
+import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
+import spray.http.{ContentTypes, HttpEntity, HttpResponse, StatusCodes}
 import spray.util.pimpFuture
 
-class MwBotSpec extends Specification with MockBotSpec {
+import scala.concurrent.Future
+
+class MwBotSpec extends Specification with MockBotSpec with Mockito {
+
+  "create bot" should {
+    val site = "uk.wikipedia.org"
+    val loginInfo = Some(
+      LoginInfoValue("login", "password")
+    )
+    val loginResponse =
+      """{"login":
+        |{"result": "Success",
+        |"lguserid": 678,
+        |"lgusername": "IlyaBot",
+        |"lgtoken": "8afaf1c733a4e667628be1f3ac176cdd",
+        |"cookieprefix": "ukwiki",
+        |"sessionid": "f4bf2533e14517401478383ca458feee"}}""".stripMargin
+
+    "get error response" in {
+      val http = mock[HttpClient]
+      http.post(anyString, Matchers.any(classOf[Map[String, String]])) returns (
+        Future successful HttpResponse(status = StatusCodes.InternalServerError)
+        )
+
+      val bot = MwBot.fromHost(site, loginInfo, http)
+      bot !== null
+    }
+  }
 
   "get page text" should {
     "return a page text" in {

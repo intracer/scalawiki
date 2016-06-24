@@ -184,17 +184,17 @@ class Output {
       val chart = charts.createChart(dataset, "Регіон")
       val byRegionFile = filenamePrefix + "PicturedByYear"
       charts.saveCharts(chart, byRegionFile, 900, 1200)
-      MwBot.get(MwBot.commons).page(byRegionFile + ".png").upload(byRegionFile + ".png")
+      MwBot.fromHost(MwBot.commons).page(byRegionFile + ".png").upload(byRegionFile + ".png")
 
       val chartTotal = charts.createChart(charts.createTotalDataset(yearSeq, idsSize), "")
 
       val chartTotalFile = filenamePrefix + "PicturedByYearTotal.png"
       charts.saveAsPNG(chartTotal, chartTotalFile, 900, 200)
-      MwBot.get(MwBot.commons).page(chartTotalFile).upload(chartTotalFile)
+      MwBot.fromHost(MwBot.commons).page(chartTotalFile).upload(chartTotalFile)
 
       val intersectionFile = filenamePrefix + "PicturedByYearPie"
       charts.intersectionDiagram("Унікальність фотографій пам'яток за роками", intersectionFile, yearSeq, ids, 900, 800)
-      MwBot.get(MwBot.commons).page(intersectionFile + ".png").upload(intersectionFile + ".png")
+      MwBot.fromHost(MwBot.commons).page(intersectionFile + ".png").upload(intersectionFile + ".png")
     }
     images
   }

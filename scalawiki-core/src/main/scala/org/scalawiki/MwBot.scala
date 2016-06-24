@@ -138,7 +138,7 @@ class MwBotImpl(val site: Site,
     if (isMW_1_24) {
       get(tokenReads, "action" -> "query", "meta" -> "tokens")
     } else {
-      get(editTokenReads, "action" -> "query", "prop" -> "info", "intoken"-> "edit", "titles" -> "foo")
+      get(editTokenReads, "action" -> "query", "prop" -> "info", "intoken" -> "edit", "titles" -> "foo")
     }
   }
 
@@ -160,7 +160,7 @@ class MwBotImpl(val site: Site,
   def parseResponse[T](reads: Reads[T], response: Future[HttpResponse]): Future[T] =
     response map http.getBody map {
       body =>
-        parseJson(reads, body).getOrElse{
+        parseJson(reads, body).getOrElse {
           throw parseJson(errorReads, body).get
         }
     }
@@ -211,7 +211,7 @@ class MwBotImpl(val site: Site,
   override def post(params: Map[String, String]): Future[String] = {
     val uri: Uri = Uri(apiUrl)
     log.info(s"$host POST url: $uri, params: $params")
-    http.post(uri, params ++ Map("format" -> "json")) map http.getBody
+    http.postUri(uri, params ++ Map("format" -> "json")) map http.getBody
   }
 
   def getUri(params: Map[String, String]) =
@@ -234,8 +234,11 @@ object MwBot {
 
   val system = ActorSystem()
 
-  def create(site: Site, loginInfo: Option[LoginInfo]): MwBot = {
-    val bot = new MwBotImpl(site)
+  def create(site: Site,
+             loginInfo: Option[LoginInfo],
+             http: HttpClient = new HttpClientSpray(MwBot.system)
+            ): MwBot = {
+    val bot = new MwBotImpl(site, http)
 
     loginInfo.foreach {
       info =>
@@ -246,16 +249,20 @@ object MwBot {
 
   val cache: Cache[MwBot] = LruCache()
 
-  def get(host: String): MwBot = {
-    get(Site.host(host))
+  def fromHost(host: String,
+               loginInfo: Option[LoginInfo] = LoginInfo.fromEnv(),
+               http: HttpClient = new HttpClientSpray(MwBot.system)
+         ): MwBot = {
+    fromSite(Site.host(host), loginInfo, http)
   }
 
-  def get(site: Site,
-          loginInfo: Option[LoginInfo] = LoginInfo.fromEnv()
+  def fromSite(site: Site,
+               loginInfo: Option[LoginInfo] = LoginInfo.fromEnv(),
+               http: HttpClient = new HttpClientSpray(MwBot.system)
          ): MwBot = {
     Await.result(cache(site.domain) {
       Future {
-        create(site, loginInfo)
+        create(site, loginInfo, http)
       }
     }, 1.minute)
   }

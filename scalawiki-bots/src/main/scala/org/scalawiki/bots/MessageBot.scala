@@ -50,7 +50,7 @@ class MessageBot(val conf: Config) {
     */
   val talkPageMessage = conf.as[Message]("talk-page")
 
-  lazy val bot = MwBot.get(host)
+  lazy val bot = MwBot.fromHost(host)
 
   def run() = {
     for (users <- fetchUsers(userListPage))

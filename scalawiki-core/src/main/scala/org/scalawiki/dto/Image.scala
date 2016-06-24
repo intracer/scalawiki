@@ -27,7 +27,7 @@ case class Image(title: String,
 
   def download(filename: String) {
     import scala.concurrent.ExecutionContext.Implicits.global
-    for (bytes <- MwBot.get(Site.commons).getByteArray(url.get))
+    for (bytes <- MwBot.fromSite(Site.commons).getByteArray(url.get))
       Files.write(Paths.get(filename), bytes)
   }
 

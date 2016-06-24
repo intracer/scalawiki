@@ -43,7 +43,7 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
 
   override def post(url: String, params: Map[String, String]): Future[HttpResponse] = getResponse(url, params)
 
-  override def post(url: Uri, params: Map[String, String]): Future[HttpResponse] = getResponse(url, params)
+  override def postUri(url: Uri, params: Map[String, String]): Future[HttpResponse] = getResponse(url, params)
 
   override def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse] = ???
 

@@ -26,7 +26,7 @@ class Statistics(contest: Contest,
                  startYear: Option[Int] = None,
                  monumentQuery: MonumentQuery,
                  imageQuery: ImageQuery = ImageQuery.create(),
-                 bot: MwBot = MwBot.get(MwBot.commons)
+                 bot: MwBot = MwBot.fromHost(MwBot.commons)
                 ) {
 
   val currentYear = contest.year

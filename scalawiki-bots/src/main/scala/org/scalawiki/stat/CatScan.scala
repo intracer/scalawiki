@@ -53,7 +53,7 @@ object CatScan {
     val host = lang + ".wikipedia.org"
     val title = cats(lang)
 
-    val bot = MwBot.get(host)
+    val bot = MwBot.fromHost(host)
 
     val countFuture = getCountCached(bot, title)
 

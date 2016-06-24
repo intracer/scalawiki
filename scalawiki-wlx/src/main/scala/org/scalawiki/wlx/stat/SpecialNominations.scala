@@ -17,7 +17,7 @@ class SpecialNominations {
 
     val stat = specialNomination(contest, imageDbs)
 
-    MwBot.get(MwBot.commons).page(s"Commons:Wiki Loves ${contest.contestType.name} ${contest.year} in ${contest.country.name}/Special nominations statistics").edit(stat, Some("updating"))
+    MwBot.fromHost(MwBot.commons).page(s"Commons:Wiki Loves ${contest.contestType.name} ${contest.year} in ${contest.country.name}/Special nominations statistics").edit(stat, Some("updating"))
   }
 
   def getMonumentsMap(monumentQuery: MonumentQuery): Map[SpecialNomination, Seq[Monument]] = {
@@ -71,7 +71,7 @@ class SpecialNominations {
       }
     }
 
-    MwBot.get(MwBot.commons).page(imagesPage).edit(imagesText, Some("updating"))
+    MwBot.fromHost(MwBot.commons).page(imagesPage).edit(imagesText, Some("updating"))
     columnData
   }
 }

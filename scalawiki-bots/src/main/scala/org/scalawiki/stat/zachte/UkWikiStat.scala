@@ -12,7 +12,7 @@ object UkWikiStat {
 
   def main(args: Array[String]) {
     val http = new HttpClientSpray()
-    val bot = MwBot.get(MwBot.commons)
+    val bot = MwBot.fromHost(MwBot.commons)
     val lang = "UK"
     val site = "Wikipedia"
     val url  = s"https://stats.wikimedia.org/EN/Tables$site$lang.htm"
