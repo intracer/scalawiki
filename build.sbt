@@ -85,7 +85,7 @@ lazy val `spray-cookies` =
 
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
-  version := "0.5-SNAPSHOT",
+  version := "0.4.3",
   scalaVersion := "2.11.8",
 
   libraryDependencies ++= Seq(
