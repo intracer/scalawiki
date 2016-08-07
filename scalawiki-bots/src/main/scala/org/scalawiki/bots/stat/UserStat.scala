@@ -1,4 +1,4 @@
-package org.scalawiki.stat
+package org.scalawiki.bots.stat
 
 class UserStat(revisionStats: Seq[RevisionStat]) {
   val users = revisionStats.foldLeft(Set.empty[String]) {

@@ -1,4 +1,4 @@
-package org.scalawiki.stat
+package org.scalawiki.bots.stat
 
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap

@@ -1,4 +1,4 @@
-package org.scalawiki.dto.history
+package org.scalawiki.bots.stat
 
 import java.util
 

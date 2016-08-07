@@ -1,4 +1,4 @@
-package org.scalawiki.stat
+package org.scalawiki.bots.stat
 
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action

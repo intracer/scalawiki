@@ -28,10 +28,8 @@ lazy val `scalawiki-core` =
         "com.typesafe" % "config" % "1.3.0",
         "com.iheart" %% "ficus" % "1.2.3",
         "com.github.nscala-time" %% "nscala-time" % "2.10.0",
-        "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
         "ch.qos.logback" % "logback-classic" % "1.1.3",
         "org.sweble.wikitext" % "swc-engine" % "2.0.0" exclude("org.jsoup", "jsoup"),
-        "org.jsoup" % "jsoup" % "1.8.3",
         "commons-codec" % "commons-codec" % "1.10"
       )
     }).dependsOn(`spray-cookies`)
@@ -41,6 +39,8 @@ lazy val `scalawiki-bots` =
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
       "com.github.pathikrit" %% "better-files-akka" % "2.15.0",
+      "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
+      "org.jsoup" % "jsoup" % "1.8.3",
       "org.apache.poi" % "poi-scratchpad" % "3.13",
       "org.apache.poi" % "poi-ooxml" % "3.13",
       "fr.opensagres.xdocreport" % "org.apache.poi.xwpf.converter.xhtml" % "1.0.5"

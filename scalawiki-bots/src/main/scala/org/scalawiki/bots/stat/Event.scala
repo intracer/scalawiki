@@ -1,4 +1,4 @@
-package org.scalawiki.stat
+package org.scalawiki.bots.stat
 
 import com.typesafe.config.{Config, ConfigFactory}
 import org.joda.time.DateTime

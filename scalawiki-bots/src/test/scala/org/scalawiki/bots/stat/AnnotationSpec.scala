@@ -1,6 +1,6 @@
-package org.scalawiki.dto
+package org.scalawiki.bots.stat
 
-import org.scalawiki.dto.history.Annotation
+import org.scalawiki.dto.{Page, Revision}
 import org.specs2.mutable.Specification
 
 

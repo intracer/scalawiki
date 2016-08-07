@@ -1,4 +1,4 @@
-package org.scalawiki.stat
+package org.scalawiki.bots.stat
 
 class NumericArrayStat(val name: String, val data: Seq[Long]) {
   val sum = data.sum

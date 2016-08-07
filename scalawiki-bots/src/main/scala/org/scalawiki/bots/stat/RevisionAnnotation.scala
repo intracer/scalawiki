@@ -1,8 +1,7 @@
-package org.scalawiki.stat
+package org.scalawiki.bots.stat
 
-import org.scalawiki.dto.{Revision, Page}
 import org.scalawiki.dto.filter.{AllRevisionsFilter, RevisionFilter}
-import org.scalawiki.dto.history.Annotation
+import org.scalawiki.dto.{Page, Revision}
 import org.xwiki.blame.AnnotatedElement
 
 class RevisionAnnotation(val page: Page, revFilter: RevisionFilter = AllRevisionsFilter) {

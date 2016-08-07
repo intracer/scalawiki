@@ -1,4 +1,4 @@
-package org.scalawiki.stat.zachte
+package org.scalawiki.bots.stat.zachte
 
 import org.jsoup.Jsoup
 import org.scalawiki.MwBot
