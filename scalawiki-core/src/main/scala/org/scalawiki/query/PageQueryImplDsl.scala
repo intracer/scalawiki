@@ -16,8 +16,10 @@ import scala.concurrent.Future
 
 class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
                        bot: MwBot,
-                       context: Map[String, String] = Map.empty
-                      ) extends PageQuery with SinglePageQuery {
+                       context: Map[String, String] = Map.empty) extends PageQuery with SinglePageQuery {
+
+  override def withContext(context: Map[String, String]) =
+    new PageQueryImplDsl(query, bot, context)
 
   override def revisions(namespaces: Set[Int], props: Set[String], continueParam: Option[(String, String)]): Future[Seq[Page]] = {
 

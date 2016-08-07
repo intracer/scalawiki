@@ -38,4 +38,5 @@ trait SinglePageQuery {
              comment: Option[String] = None,
              ignoreWarnings: Boolean = false): Future[String]
 
+  def withContext(context: Map[String, String]): SinglePageQuery
 }
