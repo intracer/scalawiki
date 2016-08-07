@@ -14,7 +14,10 @@ import org.scalawiki.json.MwReads._
 
 import scala.concurrent.Future
 
-class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extends PageQuery with SinglePageQuery {
+class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
+                       bot: MwBot,
+                       context: Map[String, String] = Map.empty
+                      ) extends PageQuery with SinglePageQuery {
 
   override def revisions(namespaces: Set[Int], props: Set[String], continueParam: Option[(String, String)]): Future[Seq[Page]] = {
 
@@ -36,7 +39,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       )
     ))
 
-    bot.run(action)
+    bot.run(action, context)
   }
 
   override def revisionsByGenerator(
@@ -59,7 +62,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
     ))
 
-    bot.run(action)
+    bot.run(action, context)
   }
 
   override def imageInfoByGenerator(
@@ -84,7 +87,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
     ))
 
-    bot.run(action)
+    bot.run(action, context)
   }
 
   override def edit(text: String, summary: Option[String] = None, section: Option[String] = None, token: Option[String] = None, multi: Boolean = true) = {
@@ -155,7 +158,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       )
     ))
 
-    bot.run(action)
+    bot.run(action, context)
   }
 
   override def categoryMembers(namespaces: Set[Int], continueParam: Option[(String, String)]): Future[Seq[Page]] = {
@@ -174,6 +177,6 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       )
     ))
 
-    bot.run(action)
+    bot.run(action, context)
   }
 }
