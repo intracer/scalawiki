@@ -16,7 +16,7 @@ trait DateTimeReaders {
   implicit val DateTimeReader: ValueReader[DateTime] = new ValueReader[DateTime] {
     def read(config: Config, path: String): DateTime = config.getValue(path).valueType match {
       case NUMBER => new DateTime(config.getLong(path))
-      case STRING => try (new DateTime(config.getString(path))) catch {
+      case STRING => try new DateTime(config.getString(path)) catch {
         case e: IllegalArgumentException => throw new BadValue(path, e.getMessage, e)
       }
       case t => throw new WrongType(config.origin, path,

@@ -23,7 +23,7 @@ trait MwBot {
 
   def login(user: String, password: String): Future[String]
 
-  def run(action: Action): Future[Seq[Page]]
+  def run(action: Action, context: Map[String, String] = Map.empty): Future[Seq[Page]]
 
   def get(params: Map[String, String]): Future[String]
 
@@ -144,8 +144,8 @@ class MwBotImpl(val site: Site,
 
   def getTokens = get(tokensReads, "action" -> "tokens")
 
-  override def run(action: Action): Future[Seq[Page]] = {
-    new DslQuery(action, this).run()
+  override def run(action: Action, context: Map[String, String] = Map.empty): Future[Seq[Page]] = {
+    new DslQuery(action, this, context).run()
   }
 
   def get[T](reads: Reads[T], params: (String, String)*): Future[T] =

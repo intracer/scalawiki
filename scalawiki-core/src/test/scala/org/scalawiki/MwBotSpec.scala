@@ -57,6 +57,3 @@ class MwBotSpec extends Specification with MockBotSpec with Mockito {
     }
   }
 }
-
-
-
