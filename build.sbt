@@ -1,5 +1,43 @@
 import sbt.Keys._
 
+val akkaV = "2.3.14"
+val sprayV = "1.3.3"
+val specsV = "3.7.2"
+
+lazy val commonSettings = Seq(
+  organization := "org.scalawiki",
+  version := "0.4.4",
+  scalaVersion := "2.11.8",
+
+  libraryDependencies ++= Seq(
+    "org.specs2" %% "specs2-core" % specsV % "test",
+    "org.specs2" %% "specs2-matcher-extra" % specsV % "test",
+    "org.specs2" % "specs2-mock_2.11" % specsV % "test",
+    "com.google.jimfs" % "jimfs" % "1.1" % "test"
+  ),
+
+  resolvers := Seq("spray repo" at "http://repo.spray.io",
+    "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
+    "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
+    Resolver.jcenterRepo,
+    Resolver.bintrayRepo("rick-beton", "maven")
+  ),
+  scalacOptions ++= Seq("-Ybackend:GenBCode"),
+
+  /**
+    * For now the only reason to require Java 8 is
+    * "com.typesafe.play" %% "play-json" % "2.4.3" dependency.
+    * It is possible to implement crossbuild ([[https://github.com/intracer/scalawiki/issues/36 gh issue]])
+    * for Java 7 with play-json 2.3
+    */
+  initialize := {
+    val _ = initialize.value // run the previous initialization
+    val required = VersionNumber("1.8")
+    val curr = VersionNumber(sys.props("java.specification.version"))
+    assert(CompatibleJavaVersion(curr, required), s"Java $required or above required")
+  }
+)
+
 lazy val scalawiki =
   (project in file("."))
     .settings(commonSettings)
@@ -11,10 +49,6 @@ lazy val scalawiki =
       `scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `scalawiki-sql`,
       `spray-cookies`
     )
-
-val akkaV = "2.3.14"
-val sprayV = "1.3.3"
-val specsV = "3.7.2"
 
 lazy val `scalawiki-core` =
   (project in file("scalawiki-core"))
@@ -82,41 +116,6 @@ lazy val `spray-cookies` =
       "com.typesafe.akka" %% "akka-actor" % akkaV,
       "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"
     ))
-
-lazy val commonSettings = Seq(
-  organization := "org.scalawiki",
-  version := "0.4.3",
-  scalaVersion := "2.11.8",
-
-  libraryDependencies ++= Seq(
-    "org.specs2" %% "specs2-core" % specsV % "test",
-    "org.specs2" %% "specs2-matcher-extra" % specsV % "test",
-    "org.specs2" % "specs2-mock_2.11" % specsV % "test",
-    "com.google.jimfs" % "jimfs" % "1.1" % "test"
-  ),
-
-  resolvers := Seq("spray repo" at "http://repo.spray.io",
-    "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
-    "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
-    Resolver.jcenterRepo,
-    Resolver.bintrayRepo("rick-beton", "maven")
-  ),
-  scalacOptions ++= Seq("-Ybackend:GenBCode"),
-
-  /**
-    * For now the only reason to require Java 8 is
-    * "com.typesafe.play" %% "play-json" % "2.4.3" dependency.
-    * It is possible to implement crossbuild ([[https://github.com/intracer/scalawiki/issues/36 gh issue]])
-    * for Java 7 with play-json 2.3
-    */
-  initialize := {
-    val _ = initialize.value // run the previous initialization
-    val required = VersionNumber("1.8")
-    val curr = VersionNumber(sys.props("java.specification.version"))
-    assert(CompatibleJavaVersion(curr, required), s"Java $required or above required")
-  }
-)
-
 
 
 
