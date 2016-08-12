@@ -1,25 +1,10 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.dto.markup.Table
 import org.scalawiki.wikitext.TableParser
 import org.scalawiki.wlx.dto.{Contest, ContestType, Country, NoAdmDivision}
 
+import scala.util.Try
 import scala.util.matching.Regex.Match
-
-class CountryParser(val table: Table) {
-
-  val headers = table.headers.toIndexedSeq
-  val campaignIndex = headers.indexWhere(_.contains("Campaign"))
-  val uploadsIndex = headers.indexWhere(_.contains("Uploads"))
-
-  def rowToContest(data: Iterable[String]): Option[Contest] = {
-    val indexed = data.toIndexedSeq
-
-    val uploadsCell = indexed(uploadsIndex)
-
-    CountryParser.fromCategoryName(uploadsCell)
-  }
-}
 
 object CountryParser {
 
@@ -30,24 +15,51 @@ object CountryParser {
   val contestRegex = contestCategory.r
   val contestWithCountryRegex = (contestCategory + " in ([a-zA-Z ]+)").r
 
-  def parse(wiki: String): Seq[Contest] = {
+  val contestLinkRegex = "\\[\\[Commons\\:([a-zA-Z ]+) (\\d+) in ([a-zA-Z\\& ]+)\\|".r
+
+  def parseTable(wiki: String) = {
     val table = TableParser.parse(wiki)
-    val parser = new CountryParser(table)
-    table.data.toSeq.flatMap(parser.rowToContest)
+
+    val headers = table.headers.toIndexedSeq
+    val uploadsIndex = headers.indexWhere(_.contains("Uploads"))
+
+    if (uploadsIndex < 0) throw
+      new IllegalArgumentException("Could not find the country lists")
+
+    def rowToContest(data: Iterable[String]): Option[Contest] = {
+      CountryParser.fromCategoryName(data.toIndexedSeq(uploadsIndex))
+    }
+
+    table.data.toSeq.flatMap(rowToContest)
+  }
+
+  def parsePageLinks(wiki: String) = {
+    contestLinkRegex.findAllMatchIn(wiki).map(matchToContestWithCountry).toSeq.distinct
+  }
+
+  def parse(wiki: String): Seq[Contest] = {
+    (Try {
+      parseTable(wiki)
+    } recover {
+      case _ =>
+        parsePageLinks(wiki)
+    }).get
   }
 
   def fromCategoryName(uploadsCell: String): Option[Contest] = {
-    contestWithCountryRegex.findFirstMatchIn(uploadsCell).map {
-      m =>
-        val contest = categoryToContest(m)
+    contestWithCountryRegex.findFirstMatchIn(uploadsCell).map(matchToContestWithCountry)
+      .orElse {
+        contestRegex.findFirstMatchIn(uploadsCell).map(categoryToContest)
+      }
+  }
 
-        val countryStr = m.group(3)
-        val country = countries.find(_.name == countryStr).getOrElse(new Country("", countryStr))
+  def matchToContestWithCountry(m: Match): Contest = {
+    val contest = categoryToContest(m)
 
-        contest.copy(country = country)
-    }.orElse {
-      contestRegex.findFirstMatchIn(uploadsCell).map(categoryToContest)
-    }
+    val countryStr = m.group(3)
+    val country = countries.find(_.name == countryStr).getOrElse(new Country("", countryStr))
+
+    contest.copy(country = country)
   }
 
   def categoryToContest(m: Match): Contest = {

@@ -1,5 +1,6 @@
 package org.scalawiki.wlx
 
+import org.scalawiki.dto.markup.Table
 import org.scalawiki.util.TestUtils._
 import org.scalawiki.wlx.dto.{Contest, ContestType, Country, NoAdmDivision}
 import org.specs2.mutable.Specification
@@ -34,6 +35,16 @@ class CountryListParserSpec extends Specification {
   }
 
   "table parser" should {
+
+    "not parse no table" in {
+      CountryParser.parse("nothing useful") === Seq.empty
+    }
+
+    "not parse bad table" in {
+      val wiki = new Table(Seq("Pigs", "Dogs"), Seq(Seq("1", "2"))).asWiki
+      CountryParser.parse(wiki) === Seq.empty
+    }
+
     "parse wle 2016" in {
       val wiki = resourceAsString("/org/scalawiki/wlx/wle_2016_participating.wiki")
 
@@ -68,5 +79,55 @@ class CountryListParserSpec extends Specification {
         Country("UA", "Ukraine")
       )
     }
+
+    "parse wlm 2016" in {
+      val wiki = resourceAsString("/org/scalawiki/wlx/wlm_2016_participating.wiki")
+
+      val contests = CountryParser.parse(wiki)
+
+      val countries = contests.map(_.country.withoutLangCodes)
+
+      contests.map(_.contestType).toSet == Set(ContestType.WLM)
+      contests.map(_.year).toSet == Set(2016)
+
+      countries === Seq(
+        Country("DZ", "Algeria"),
+        Country("", "Andorra and Catalan Areas"),
+        Country("AZ", "Azerbaijan"),
+        Country("BD", "Bangladesh"),
+        Country("", "Belgium & Luxembourg"),
+        Country("BR", "Brazil"),
+        Country("BG", "Bulgaria"),
+        Country("CM", "Cameroon"),
+        Country("GR", "Greece"),
+        Country("EG", "Egypt"),
+        Country("FR", "France"),
+        Country("GE", "Georgia"),
+        Country("GH", "Ghana"),
+        Country("IR", "Iran"),
+        Country("IE", "Ireland"),
+        Country("IL", "Israel"),
+        Country("IT", "Italy"),
+        Country("LV", "Latvia"),
+        Country("MY", "Malaysia"),
+        Country("NP", "Nepal"),
+        Country("NG", "Nigeria"),
+        Country("PK", "Pakistan"),
+        Country("PA", "Panama"),
+        Country("PE", "Peru"),
+        Country("RU", "Russia"),
+        Country("RS", "Serbia"),
+        Country("SK", "Slovakia"),
+        Country("KR", "South Korea"),
+        Country("ES", "Spain"),
+        Country("SE", "Sweden"),
+        Country("TH", "Thailand"),
+        Country("TN", "Tunisia"),
+        Country("UA", "Ukraine"),
+        Country("", "the United Kingdom"),
+        Country("", "Esperantujo")
+      )
+    }
+
   }
 }
