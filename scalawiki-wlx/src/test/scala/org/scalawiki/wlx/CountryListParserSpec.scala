@@ -1,18 +1,45 @@
 package org.scalawiki.wlx
 
 import org.scalawiki.util.TestUtils._
-import org.scalawiki.wlx.dto.{ContestType, Country}
+import org.scalawiki.wlx.dto.{Contest, ContestType, Country, NoAdmDivision}
 import org.specs2.mutable.Specification
 
 class CountryListParserSpec extends Specification {
 
-  "parser" should {
+  "category name parser" should {
+
+    "parse WLE" in {
+      CountryParser.fromCategoryName("Category:Images from Wiki Loves Earth 2015") === Some(
+        Contest(ContestType.WLE, NoAdmDivision(), 2015, uploadConfigs = Seq.empty)
+      )
+    }
+
+    "parse WLM" in {
+      CountryParser.fromCategoryName("Category:Images from Wiki Loves Monuments 2015") === Some(
+        Contest(ContestType.WLM, NoAdmDivision(), 2015, uploadConfigs = Seq.empty)
+      )
+    }
+
+    "parse WLE country" in {
+      CountryParser.fromCategoryName("Category:Images from Wiki Loves Earth 2015 in Algeria") === Some(
+        Contest(ContestType.WLE, Country("DZ", "Algeria", Seq("ar")), 2015, uploadConfigs = Seq.empty)
+      )
+    }
+
+    "parse WLM country" in {
+      CountryParser.fromCategoryName("Category:Images from Wiki Loves Monuments 2015 in Algeria") === Some(
+        Contest(ContestType.WLM, Country("DZ", "Algeria", Seq("ar")), 2015, uploadConfigs = Seq.empty)
+      )
+    }
+  }
+
+  "table parser" should {
     "parse wle 2016" in {
       val wiki = resourceAsString("/org/scalawiki/wlx/wle_2016_participating.wiki")
 
       val contests = CountryParser.parse(wiki)
 
-      val countries = contests.map(_.country.copy(languageCodes = Seq.empty))
+      val countries = contests.map(_.country.withoutLangCodes)
 
       contests.map(_.contestType).toSet == Set(ContestType.WLE)
       contests.map(_.year).toSet == Set(2016)

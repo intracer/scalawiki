@@ -18,7 +18,7 @@ class MonumentDbStat {
 
     val data = monumentDbs.map { db =>
       val country = db.contest.country.code
-      val lang = db.contest.listsHost
+      val lang = db.contest.listsHost.getOrElse("")
       val total = db.ids.size
 
       val monuments = db.monuments

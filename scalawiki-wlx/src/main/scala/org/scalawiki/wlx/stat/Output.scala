@@ -21,7 +21,7 @@ class Output {
     val header = "\n==Most photographed objects==\n"
 
     val contest = monumentDb.contest
-    val categoryName = contest.contestType.name + " in " + contest.country.name
+    val categoryName = contest.category
     val category = s"\n[[Category:$categoryName]]"
 
     header + table.asWiki + category
@@ -85,8 +85,8 @@ class Output {
 
   def monumentsPicturedTable(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB, uploadImages: Boolean = false): (String, Table) = {
     val contest = monumentDb.contest
-    val filenamePrefix = contest.contestType.name.split(" ").mkString + "In" + contest.country.name
-    val categoryName = contest.contestType.name + " in " + contest.country.name
+    val categoryName = contest.category
+    val filenamePrefix = categoryName.replace("_", "")
 
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
     val yearSeq = imageDbsByYear.keys.toSeq.sorted
@@ -103,7 +103,9 @@ class Output {
 
     val dataset = new DefaultCategoryDataset()
 
-    val regionIds = monumentDb._byRegion.keySet.intersect(monumentDb.contest.country.regionIds).toSeq.sortBy(identity)
+    val regionIds = monumentDb._byRegion.keySet
+      .intersect(contest.country.regionIds)
+      .toSeq.sortBy(identity)
 
     val withPhotoInLists = monumentDb.monuments.filter(_.photo.isDefined).map(_.id).toSet
 
@@ -128,7 +130,7 @@ class Output {
           )
       }
 
-      val regionName = monumentDb.contest.country.regionById(regionId).name
+      val regionName = contest.country.regionName(regionId)
       val columnData = (Seq(
         regionName,
         allMonumentsInRegion,
@@ -247,13 +249,21 @@ class Output {
     val perRegion = monumentDb.fold(Seq.empty[Seq[String]]) {
       db =>
         val contest = db.contest
-        val regionIds = db._byRegion.keySet.toSeq.filter(contest.country.regionIds.contains).sortBy(identity)
+        val regionIds = db._byRegion.keySet.toSeq
+          .filter(contest.country.regionIds.contains).sorted
+
         regionIds.map {
           regionId =>
-            (Seq(
-              contest.country.regionById(regionId).name,
-              totalImageDb.authorsByRegion(regionId).size) ++
-              yearSeq.map(year => imageDbsByYear(year).head.authorsByRegion(regionId).size)).map(_.toString)
+            val nameAndTotal = Seq(
+              contest.country.regionName(regionId),
+              totalImageDb.authorsByRegion(regionId).size.toString
+            )
+            val totalByYear = yearSeq.map { year =>
+              imageDbsByYear(year).headOption
+                .fold("")(_.authorsByRegion(regionId).size.toString)
+            }
+
+            nameAndTotal ++ totalByYear
         }
     }
 

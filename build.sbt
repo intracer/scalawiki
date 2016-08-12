@@ -6,7 +6,7 @@ val specsV = "3.7.2"
 
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
-  version := "0.4.4",
+  version := "0.5-SNAPSHOT",
   scalaVersion := "2.11.8",
 
   libraryDependencies ++= Seq(

@@ -9,11 +9,11 @@ class CountrySpec extends Specification {
     val countries = Country.fromJavaLocales
 
     "contain Ukraine" in {
-      countries.find(_.code == "UA") === Some(new Country("UA", "Ukraine", Seq("Ukrainian")))
+      countries.find(_.code == "UA") === Some(new Country("UA", "Ukraine", Seq("uk")))
     }
 
     "contain Switzerland" in {
-      countries.find(_.code == "CH") === Some(new Country("CH", "Switzerland", Seq("French", "German", "Italian")))
+      countries.find(_.code == "CH") === Some(new Country("CH", "Switzerland", Seq("fr", "de", "it")))
     }
   }
 

@@ -50,7 +50,7 @@ object SubsetCreator {
 
     for (regionId <- regionIds) {
 
-      val regionTitle = contest.country.regionById.get(regionId).fold("-")(_.name)
+      val regionTitle = contest.country.regionName(regionId)
       val regionLink = "Вікіпедія:Вікі любить пам'ятки/" + regionTitle
 
       buf.append(s"\n== $regionTitle ==\n")
@@ -84,7 +84,7 @@ object SubsetCreator {
   def regionPerPage(ukWiki: MwBot, specialNomination: String, contest: Contest, byRegion: Map[String, Seq[Monument]], regionIds: SortedSet[String]) {
     for (regionId <- regionIds) {
 
-      val regionTitle = contest.country.regionById.get(regionId).fold("-")(_.name)
+      val regionTitle = contest.country.regionName(regionId)
       val regionLink = "Вікіпедія:Вікі любить пам'ятки/" + regionTitle
 
       val regionMonuments = byRegion(regionId)

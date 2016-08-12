@@ -14,7 +14,7 @@ class MonumentDbSpec extends Specification {
         Monument(
           page = "",
           id = regionId + "-001-" + f"$i%04d",
-          name = "Monument in " +  Ukraine.regionById(regionId).name,
+          name = "Monument in " +  Ukraine.regionName(regionId),
           listConfig = Some(WleUa)
         )
       }

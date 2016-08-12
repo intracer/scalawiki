@@ -32,7 +32,7 @@ trait MonumentQuery {
 
 class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot {
 
-  val host = getHost
+  val host = getHost.get
 
   val listConfig = contest.uploadConfigs.head.listConfig
 

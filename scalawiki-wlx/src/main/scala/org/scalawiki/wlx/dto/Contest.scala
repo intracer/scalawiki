@@ -13,7 +13,7 @@ package org.scalawiki.wlx.dto
   */
 case class Contest(
                     contestType: ContestType,
-                    country: Country,
+                    country: AdmDivision,
                     year: Int,
                     startDate: String = "",
                     endDate: String = "",
@@ -36,10 +36,10 @@ case class Contest(
     */
   def fileTemplate: Option[String] = uploadConfigs.headOption.map(_.fileTemplate)
 
-  def listsHost = {
+  def listsHost: Option[String] = {
     uploadConfigs.head.listsHost
-      .getOrElse(
-        country.languageCodes.head + ".wikipedia.org"
+      .orElse(
+        country.languageCodes.headOption.map(_ + ".wikipedia.org")
       )
   }
 }
@@ -109,7 +109,6 @@ object Contest {
       WLEUkraine(year, start, end)
     )
   }
-
 }
 
 

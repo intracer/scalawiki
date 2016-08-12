@@ -1,7 +1,7 @@
 package org.scalawiki.wlx.stat
 
 import org.scalawiki.wlx.MonumentDB
-import org.scalawiki.wlx.dto.{Country, Monument}
+import org.scalawiki.wlx.dto.{AdmDivision, Monument}
 import org.scalawiki.wlx.stat.generic._
 
 object Stats {
@@ -30,5 +30,4 @@ object MonumentsWithArticles extends Aggregation[Monument, Int](
 
 object All extends Aggregation[Any, Int]("All", _.size)
 
-class RegionNameById(country: Country) extends Mapping[String, String](
-  "Region name", id => country.regionById.get(id).map(_.name).getOrElse(""))
+class RegionNameById(country: AdmDivision) extends Mapping[String, String]("Region name", country.regionName)

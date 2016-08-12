@@ -4,16 +4,37 @@ import java.util.Locale
 
 import scala.collection.immutable.SortedSet
 
-case class Country(
-               code: String,
-               name: String,
-               languageCodes: Seq[String] = Seq.empty,
-               regions: Seq[Region] = Seq.empty) {
+trait AdmDivision {
+  def code: String
+
+  def name: String
+
+  def regions: Seq[AdmDivision] = Seq.empty
+
+  def languageCodes: Seq[String] = Seq.empty
+
+  def withoutLangCodes = this
 
   val regionIds = SortedSet(regions.map(_.code): _*)
+
   val regionNames = regions.sortBy(_.code).map(_.name)
+
   val regionById = regions.groupBy(_.code).mapValues(_.head)
 
+  def regionName(regId: String) = regionById.get(regId).map(_.name).getOrElse("")
+
+}
+
+case class NoAdmDivision(code: String = "", name: String = "") extends AdmDivision
+
+case class Country(
+                    code: String,
+                    name: String,
+                    override val languageCodes: Seq[String] = Seq.empty,
+                    override val regions: Seq[AdmDivision] = Seq.empty
+                  ) extends AdmDivision {
+
+  override def withoutLangCodes = copy(languageCodes = Seq.empty)
 }
 
 object Country {
@@ -98,7 +119,7 @@ object Country {
 
       new Country(locale.getCountry,
         locale.getDisplayCountry(Locale.ENGLISH),
-        langs
+        langCodes
       )
     }
   }
