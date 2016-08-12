@@ -3,7 +3,7 @@ package org.scalawiki.query
 import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
-import org.scalawiki.dto.Page
+import org.scalawiki.dto.{Namespace, Page}
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.edit._
 import org.scalawiki.dto.cmd.query._
@@ -169,13 +169,17 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
       titles => CmTitle(titles.head)
     )
 
+    val cmTypes = namespaces.filter(_ == Namespace.CATEGORY).map(_ => CmTypeSubCat) ++
+      namespaces.filter(_ == Namespace.FILE).map(_ => CmTypeFile)
+
+    val cmParams = Seq(pages,
+      CmLimit("max"),
+      CmNamespace(namespaces.toSeq)
+    ) ++ (if (cmTypes.nonEmpty) Seq(CmType(cmTypes.toSeq: _*)) else Seq.empty)
+
     val action = Action(Query(
       ListParam(
-        CategoryMembers(
-          pages,
-          CmLimit("max"),
-          CmNamespace(namespaces.toSeq)
-        )
+        CategoryMembers(cmParams: _*)
       )
     ))
 

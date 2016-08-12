@@ -2,6 +2,7 @@ package org.scalawiki.dto.cmd.query.list
 
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.query.Module
+import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
 
 case class CategoryMembers(override val params: CmParam[Any]*)
   extends Module[ListArg]("cm", "categorymembers", "List all pages in a given category.")
@@ -23,6 +24,11 @@ case class CategoryMembers(override val params: CmParam[Any]*)
 
 trait CmParam[+T] extends Parameter[T]
 
+trait CmTypeArg extends EnumArg[CmTypeArg] {
+  val param = CmType
+}
+
+
 case class CmTitle(override val arg: String) extends StringParameter("cmtitle",
   "Title to search. Cannot be used together with cmpageid.") with CmParam[String]
 
@@ -36,6 +42,14 @@ case class CmNamespace(override val args: Seq[Int]) extends IntListParameter("cm
 
 case class CmLimit(override val arg: String) extends StringParameter("cmlimit",
   "How many total pages to return.") with CmParam[String]
+
+case class CmType(override val args: CmTypeArg*)
+  extends EnumParameter[CmTypeArg]("cmtype", "Which type of category members to include") with CmParam[CmTypeArg]
+
+object CmTypePage extends EnumArgument[CmTypeArg]("page", "pages") with CmTypeArg
+object CmTypeSubCat extends EnumArgument[CmTypeArg]("subcat", "subcats") with CmTypeArg
+object CmTypeFile extends EnumArgument[CmTypeArg]("file", "files") with CmTypeArg
+
 
 //cmprop
 //Which pieces of information to include:
