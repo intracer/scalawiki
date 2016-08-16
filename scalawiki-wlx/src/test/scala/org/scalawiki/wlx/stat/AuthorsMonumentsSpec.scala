@@ -18,7 +18,7 @@ class AuthorsMonumentsSpec extends Specification {
     new AuthorsStat().authorsMonumentsTable(db)
   }
 
-  "stat" should {
+  "authorsMonumentsTable" should {
     "be empty without regions" in {
       val noRegions = contest.copy(country = Country.Azerbaijan)
       val table = getTable(Seq.empty[Image], Seq.empty[Monument], noRegions)

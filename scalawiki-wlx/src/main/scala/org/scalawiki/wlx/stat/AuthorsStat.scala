@@ -6,7 +6,6 @@ import java.nio.file.{Files, Paths}
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.dto.markup.Table
-import org.scalawiki.wlx.dto.AdmDivision
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 class AuthorsStat {
@@ -51,14 +50,11 @@ class AuthorsStat {
     val perRegion = monumentDb.fold(Seq.empty[Seq[String]]) {
       db =>
         val country = db.contest.country
-        val regionIds = db.regionIds
-
-        regionIds.map {
+        db.regionIds.map {
           regionId =>
             val regionName = country.regionName(regionId)
 
-            Seq(regionName) ++  dbs.map(_.authorsByRegion(regionId).size.toString)
-
+            Seq(regionName) ++ dbs.map(_.authorsByRegion(regionId).size.toString)
         }
     }
 
@@ -71,35 +67,35 @@ class AuthorsStat {
 
   def authorsMonumentsTable(imageDb: ImageDB, rating: Boolean = false): Table = {
 
-    val contest = imageDb.contest
-    val country = contest.country
-    val columns = Seq("User") ++
-      (if (rating) Seq("Objects pictured", "Existing", "New", "Rating")
-      else Seq("Objects pictured")) ++
-      Seq("Photos uploaded") ++ country.regionNames
+    val country = imageDb.contest.country
+    val columns = Seq("User", "Objects pictured") ++
+      (if (rating) Seq("Existing", "New", "Rating") else Seq.empty) ++
+      Seq("Photos uploaded") ++
+      country.regionNames
+
+    def ratingFunc(allIds: Set[String], oldIds: Set[String]): Int =
+      if (rating)
+        allIds.size + (allIds -- oldIds).size
+      else
+        allIds.size
 
     val oldIds = imageDb.oldMonumentDb.fold(Set.empty[String])(_.withImages.map(_.id).toSet)
 
-    def ratingData(ids: Set[String], oldIds: Set[String]): Seq[Int] = {
-      Seq(
-        ids.size,
-        (ids intersect oldIds).size,
-        (ids -- oldIds).size,
-        ids.size + (ids -- oldIds).size
-      )
-    }
-
-    def rowData(ids: Set[String], images: Int, regionData: String => Int, rating: Boolean = false): Seq[Int] = {
-      (if (rating) {
-        ratingData(ids, oldIds)
-      } else {
-        Seq(ids.size)
-      }) ++
-        Seq(images) ++ country.regionIds.toSeq.map(regId => regionData(regId))
+    def rowData(ids: Set[String], images: Int, regionRating: String => Int, rating: Boolean = false): Seq[Int] = {
+      Seq(ids.size) ++
+        (if (rating) {
+          Seq(
+            (ids intersect oldIds).size,
+            (ids -- oldIds).size,
+            ratingFunc(ids, oldIds)
+          )
+        } else Seq.empty[Int]) ++
+        Seq(images) ++
+        country.regionIds.toSeq.map(regionRating)
     }
 
     val totalData = Seq("Total") ++
-      rowData(imageDb.ids, imageDb.images.size, regId => imageDb.idsByRegion(regId).size).map(_.toString)
+      rowData(imageDb.ids, imageDb.images.size, regId => imageDb.idsByRegion(regId).size, rating).map(_.toString)
 
     val authors = imageDb.authors.toSeq.sortBy(user => -imageDb._authorsIds(user).size)
     val authorsData = authors.map { user =>
@@ -108,14 +104,10 @@ class AuthorsStat {
 
       def userRating(regId: String) = {
         val regionIds = imageDb._authorIdsByRegion(user).getOrElse(regId, Seq.empty).toSet
-        if (rating) {
-          regionIds.size + (regionIds -- oldIds).size
-        } else {
-          regionIds.size
-        }
+        ratingFunc(regionIds, oldIds)
       }
       Seq(userLink) ++
-        rowData(imageDb._authorsIds(user), imageDb._byAuthor(user).size, userRating).map(_.toString)
+        rowData(imageDb._authorsIds(user), imageDb._byAuthor(user).size, userRating, rating).map(_.toString)
     }
 
     new Table(columns, Seq(totalData) ++ authorsData, "Number of objects pictured by uploader")
