@@ -73,13 +73,13 @@ class ImageDbSpec extends Specification {
 
       val imageDb = new ImageDB(contest, allImages, Some(new MonumentDB(contest, Seq.empty)))
 
-      imageDb.byMegaPixels(None) === Seq(noRes)
-      imageDb.byMegaPixels(Some(0)) === Seq(halfMinus, halfPlus)
-      imageDb.byMegaPixels(Some(1)) === Seq(one, onePlus)
-      imageDb.byMegaPixels(Some(2)) === Seq(twoPlus)
-      imageDb.byMegaPixels(Some(12)) === Seq(mp12)
-      imageDb.byMegaPixels(Some(24)) === Seq(mp24)
-      imageDb.byMegaPixels(Some(50)) === Seq.empty
+//      imageDb.byMegaPixels(None) === Seq(noRes)
+      imageDb.byMegaPixels(0) === Seq(halfMinus, halfPlus)
+      imageDb.byMegaPixels(1) === Seq(one, onePlus)
+      imageDb.byMegaPixels(2) === Seq(twoPlus)
+      imageDb.byMegaPixels(12) === Seq(mp12)
+      imageDb.byMegaPixels(24) === Seq(mp24)
+      imageDb.byMegaPixels(50) === Seq.empty
     }
 
     "show image authors" in {
@@ -100,9 +100,9 @@ class ImageDbSpec extends Specification {
 
       val imageDb = new ImageDB(contest, allImages, Some(new MonumentDB(contest, Seq.empty)))
 
-      imageDb._byMegaPixelsAndAuthor(Some(0)) === Map("user1" -> Seq(halfMinus), "user2" -> Seq(halfPlus))
-      imageDb._byMegaPixelsAndAuthor(Some(1)) === Map("user1" -> Seq(one), "user2" -> Seq(onePlus))
-      imageDb._byMegaPixelsAndAuthor(Some(2)) === Map("user1" -> Seq(twoPlus))
+      imageDb._byMegaPixelsAndAuthor(0) === Map("user1" -> Seq(halfMinus), "user2" -> Seq(halfPlus))
+      imageDb._byMegaPixelsAndAuthor(1) === Map("user1" -> Seq(one), "user2" -> Seq(onePlus))
+      imageDb._byMegaPixelsAndAuthor(2) === Map("user1" -> Seq(twoPlus))
 
       imageDb.byMegaPixelFilterAuthorMap(_ < 2) === Map("user1" -> Seq(halfMinus, one), "user2" -> Seq(halfPlus, onePlus))
     }
