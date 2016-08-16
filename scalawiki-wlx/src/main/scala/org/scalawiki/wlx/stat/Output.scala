@@ -103,9 +103,7 @@ class Output {
 
     val dataset = new DefaultCategoryDataset()
 
-    val regionIds = monumentDb._byRegion.keySet
-      .intersect(contest.country.regionIds)
-      .toSeq.sortBy(identity)
+    val regionIds = monumentDb.regionIds
 
     val withPhotoInLists = monumentDb.monuments.filter(_.photo.isDefined).map(_.id).toSet
 

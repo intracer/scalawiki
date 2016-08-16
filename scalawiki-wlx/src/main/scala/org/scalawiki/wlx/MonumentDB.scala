@@ -25,6 +25,8 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
   def byRegion(regId: String) = _byRegion.getOrElse(regId, Seq.empty[Monument])
 
+  def regionIds = _byRegion.keySet.toSeq.filter(contest.country.regionIds.contains).sorted
+
   def isIdCorrect(id: String) = {
     val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
     id.matches(idRegex) && contest.country.regionIds.contains(Monument.getRegionId(id))

@@ -6,6 +6,7 @@ import java.nio.file.{Files, Paths}
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.dto.markup.Table
+import org.scalawiki.wlx.dto.AdmDivision
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 class AuthorsStat {
@@ -40,41 +41,30 @@ class AuthorsStat {
   def authorsContributedTable(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: Option[MonumentDB]): Table = {
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
     val yearSeq = imageDbsByYear.keys.toSeq.sorted
+
     val numYears = yearSeq.size
+
+    val dbs = Seq(totalImageDb) ++ yearSeq.flatMap { year => imageDbsByYear(year).headOption }
 
     val columns = Seq("Region", s"$numYears years total") ++ yearSeq.map(_.toString)
 
-    val totalData = (Seq(
-      "Total",
-      totalImageDb.authors.size) ++ yearSeq.map(year => imageDbsByYear(year).head.authors.size)).map(_.toString)
-
-
     val perRegion = monumentDb.fold(Seq.empty[Seq[String]]) {
       db =>
-        val contest = db.contest
-        val regionIds = db._byRegion.keySet.toSeq
-          .filter(contest.country.regionIds.contains).sorted
+        val country = db.contest.country
+        val regionIds = db.regionIds
 
         regionIds.map {
           regionId =>
-            val nameAndTotal = Seq(
-              contest.country.regionName(regionId),
-              totalImageDb.authorsByRegion(regionId).size.toString
-            )
-            val totalByYear = yearSeq.map { year =>
-              imageDbsByYear(year).headOption
-                .fold("")(_.authorsByRegion(regionId).size.toString)
-            }
+            val regionName = country.regionName(regionId)
 
-            nameAndTotal ++ totalByYear
+            Seq(regionName) ++  dbs.map(_.authorsByRegion(regionId).size.toString)
+
         }
     }
 
-    val rows = perRegion ++ Seq(totalData)
+    val totalData = Seq("Total") ++ dbs.map(_.authors.size.toString)
 
-    //    val authors = yearSeq.map(year => imageDbsByYear(year).head.authors)
-    //    val filename = contest.contestType.name.split(" ").mkString + "In" + contest.country.name + "AuthorsByYearPie"
-    //    charts.intersectionDiagram("Унікальність авторів за роками", filename, yearSeq, authors, 900, 900)
+    val rows = perRegion ++ Seq(totalData)
 
     new Table(columns, rows, "Authors contributed")
   }
