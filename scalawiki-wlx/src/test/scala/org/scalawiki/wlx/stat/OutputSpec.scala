@@ -253,7 +253,7 @@ class OutputSpec extends Specification {
 
   "authorsContributed" should {
     "work on no monuments" in {
-      val output = new Output
+      val output = new AuthorsStat
       val monumentDb = new MonumentDB(contest, Seq.empty)
       val table = output.authorsContributedTable(Seq.empty, new ImageDB(contest, Seq.empty, monumentDb), Some(monumentDb))
 
@@ -262,7 +262,7 @@ class OutputSpec extends Specification {
     }
 
     "work on no images" in {
-      val output = new Output
+      val output = new AuthorsStat
 
       val monumentDb = new MonumentDB(contest,
         monuments(2, "01", "Crimea") ++
@@ -282,7 +282,7 @@ class OutputSpec extends Specification {
     }
 
     "work with images" in {
-      val output = new Output
+      val output = new AuthorsStat
 
       val images = Seq(
         Image("File:Img11.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimea")),
@@ -310,7 +310,7 @@ class OutputSpec extends Specification {
     }
 
     "work with images 2 years" in {
-      val output = new Output
+      val output = new AuthorsStat
 
       val images1 = Seq(
         Image("File:Img11y1f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimea")),

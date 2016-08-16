@@ -15,7 +15,7 @@ class AuthorsMonumentsSpec extends Specification {
 
     val db = new ImageDB(contest, images, mdb, mdb)
 
-    new Output().authorsMonumentsTable(db)
+    new AuthorsStat().authorsMonumentsTable(db)
   }
 
   "stat" should {
@@ -37,7 +37,7 @@ class AuthorsMonumentsSpec extends Specification {
 
       val db = new ImageDB(noRegions, Seq.empty[Image], mdb, None)
 
-      val table = new Output().authorsMonumentsTable(db)
+      val table = new AuthorsStat().authorsMonumentsTable(db)
 
       table.headers === Seq("User", "Objects pictured", "Photos uploaded")
 

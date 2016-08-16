@@ -1,8 +1,5 @@
 package org.scalawiki.wlx.stat
 
-import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths}
-
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.Contest
@@ -80,7 +77,7 @@ class Statistics(contest: Contest,
 
     new SpecialNominations().specialNominations(contest, imageDb)
 
-    authorsStat(imageDb)
+    new AuthorsStat().authorsStat(imageDb, bot)
     byDayAndRegion(imageDb)
     lessThan2MpGallery(contest, imageDb)
 
@@ -98,7 +95,7 @@ class Statistics(contest: Contest,
 
   def lessThan2MpGallery(contest: Contest, imageDb: ImageDB) = {
     val lessThan2Mp = imageDb.byMegaPixelFilterAuthorMap(_ < 2)
-    val gallery = new Output().authorsImages(lessThan2Mp, imageDb.monumentDb)
+    val gallery = new AuthorsStat().authorsImages(lessThan2Mp, imageDb.monumentDb)
     val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
 
     bot.page(s"Commons:$contestPage/Less than 2Mp").edit(gallery, Some("updating"))
@@ -140,27 +137,6 @@ class Statistics(contest: Contest,
     //    MwBot.get(MwBot.commons).page(dayPage).edit(text, "updating")
   }
 
-  def authorsStat(imageDb: ImageDB) {
-    val contest = imageDb.contest
-    val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
-
-    val output = new Output()
-
-    val numberOfMonuments = output.authorsMonuments(imageDb)
-    Files.write(Paths.get("authorsMonuments.txt"), numberOfMonuments.getBytes(StandardCharsets.UTF_8))
-    bot.page(s"Commons:$contestPage/Number of objects pictured by uploader")
-      .edit(numberOfMonuments, Some("updating"))
-
-    if (contest.rating) {
-      val rating = output.authorsMonuments(imageDb, rating = true)
-      Files.write(Paths.get("authorsRating.txt"), rating.getBytes(StandardCharsets.UTF_8))
-      bot.page(s"Commons:$contestPage/Rating based on number and originality of objects pictured by uploader")
-        .edit(rating, Some("updating"))
-
-    }
-
-  }
-
   def regionalStat(wlmContest: Contest,
                    imageDbs: Seq[ImageDB],
                    currentYear: ImageDB,
@@ -171,18 +147,19 @@ class Statistics(contest: Contest,
     val monumentDb = currentYear.monumentDb
 
     val output = new Output()
+    val authorsStat = new AuthorsStat()
 
     val idsStat = monumentDb.map(db => output.monumentsPictured(imageDbs, totalImageDb, db)).getOrElse("")
 
-    val authorStat = output.authorsContributed(imageDbs, totalImageDb, monumentDb)
+    val authorsContributed = authorsStat.authorsContributed(imageDbs, totalImageDb, monumentDb)
 
     val toc = "__TOC__"
     val category = s"\n[[Category:$categoryName]]"
-    val regionalStat = toc + idsStat + authorStat + category
+    val regionalStat = toc + idsStat + authorsContributed + category
 
     bot.page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, Some("updating"))
 
-    val authorsByRegionTotal = output.authorsMonuments(totalImageDb) + s"\n[[Category:$categoryName]]"
+    val authorsByRegionTotal = authorsStat.authorsMonuments(totalImageDb) + s"\n[[Category:$categoryName]]"
 
     bot.page(s"Commons:$categoryName/Total number of objects pictured by uploader").edit(authorsByRegionTotal, Some("updating"))
 
