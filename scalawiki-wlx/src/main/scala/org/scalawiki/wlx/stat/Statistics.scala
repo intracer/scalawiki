@@ -133,17 +133,13 @@ class Statistics(contest: Contest,
 
     bot.page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, Some("updating"))
 
-    val authorsByRegionTotal = authorsStat.authorsMonuments(totalImageDb) + s"\n[[Category:$categoryName]]"
+    updateReport(new AuthorMonuments(currentYear))
 
-    bot.page(s"Commons:$categoryName/Total number of objects pictured by uploader").edit(authorsByRegionTotal, Some("updating"))
+    monumentDb.map (_ => updateReport(new MostPopularMonuments(stat)))
+  }
 
-    monumentDb.map {
-      db =>
-        val mostPopularMonuments = new MostPopularMonuments(stat)
-
-        bot.page(mostPopularMonuments.page)
-          .edit(mostPopularMonuments.asText, Some("updating"))
-    }
+  def updateReport(reporter: Reporter) = {
+    bot.page(reporter.page).edit(reporter.asText, Some("updating"))
   }
 
   def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {

@@ -10,12 +10,16 @@ class AuthorsMonumentsSpec extends Specification {
 
   val contest = new Contest(ContestType.WLE, Country.Ukraine, 2013, uploadConfigs = Seq.empty[UploadConfig])
 
-  def getTable(images: Seq[Image], monuments: Seq[Monument], contest: Contest = contest): Table = {
+  def getTable(
+                images: Seq[Image],
+                monuments: Seq[Monument],
+                contest: Contest = contest,
+                gallery: Boolean = false): Table = {
     val mdb = Some(new MonumentDB(contest, monuments))
 
     val db = new ImageDB(contest, images, mdb, mdb)
 
-    new AuthorsStat().authorsMonumentsTable(db)
+    new AuthorMonuments(db, gallery = gallery).table
   }
 
   "authorsMonumentsTable" should {
@@ -37,7 +41,7 @@ class AuthorsMonumentsSpec extends Specification {
 
       val db = new ImageDB(noRegions, Seq.empty[Image], mdb, None)
 
-      val table = new AuthorsStat().authorsMonumentsTable(db)
+      val table = new AuthorMonuments(db).table
 
       table.headers === Seq("User", "Objects pictured", "Photos uploaded")
 
@@ -112,6 +116,22 @@ class AuthorsMonumentsSpec extends Specification {
       table.data === Seq(
         Seq("Total", "1", "1"),
         Seq("[[User:user|user]]", "1", "1")
+      )
+    }
+
+    "link to user details" in {
+      val noRegions = contest.copy(country = Country.Azerbaijan)
+      val user = "user"
+      val images = Seq(Image("image1.jpg", author = Some(user), monumentId = Some("123")))
+      val monuments = Seq(new Monument(id = "123", name = "123 monument"))
+
+      val table = getTable(images, monuments, noRegions, gallery = true)
+
+      table.headers === Seq("User", "Objects pictured", "Photos uploaded")
+
+      table.data === Seq(
+        Seq("Total", "1", "1"),
+        Seq("[[User:user|user]]", "[[Commons:Wiki Loves Earth 2013 in Azerbaijan/user|1]]", "1")
       )
     }
 

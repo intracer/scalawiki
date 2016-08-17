@@ -39,7 +39,7 @@ object ReporterRegistry {
     new MonumentDbStat().getStat(Seq(db))
 
   def authorsMonuments(imageDb: ImageDB, rating: Boolean = false): String =
-    new AuthorsStat().authorsMonuments(imageDb, rating)
+    new AuthorMonuments(imageDb, rating).asText
 
   def authorsImages(imageDb: ImageDB, monumentDb: Option[MonumentDB]): String =
     new AuthorsStat().authorsImages(imageDb._byAuthor, monumentDb)

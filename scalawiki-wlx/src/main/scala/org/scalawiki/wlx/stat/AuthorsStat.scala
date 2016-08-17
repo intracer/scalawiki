@@ -14,15 +14,14 @@ class AuthorsStat {
     val contest = imageDb.contest
     val contestPage = contest.name
 
-
-    val numberOfMonuments = authorsMonuments(imageDb)
+    val numberOfMonuments = new AuthorMonuments(imageDb).asText
 
     Files.write(Paths.get("authorsMonuments.txt"), numberOfMonuments.getBytes(StandardCharsets.UTF_8))
     bot.page(s"Commons:$contestPage/Number of objects pictured by uploader")
       .edit(numberOfMonuments, Some("updating"))
 
     if (contest.rating) {
-      val rating = authorsMonuments(imageDb, rating = true)
+      val rating = new AuthorMonuments(imageDb, rating = true).asText
       Files.write(Paths.get("authorsRating.txt"), rating.getBytes(StandardCharsets.UTF_8))
       bot.page(s"Commons:$contestPage/Rating based on number and originality of objects pictured by uploader")
         .edit(rating, Some("updating"))
@@ -68,59 +67,6 @@ class AuthorsStat {
     new Table(columns, rows, "Authors contributed")
   }
 
-  def authorsMonumentsTable(imageDb: ImageDB, rating: Boolean = false): Table = {
-
-    val country = imageDb.contest.country
-    val columns = Seq("User", "Objects pictured") ++
-      (if (rating) Seq("Existing", "New", "Rating") else Seq.empty) ++
-      Seq("Photos uploaded") ++
-      country.regionNames
-
-    def ratingFunc(allIds: Set[String], oldIds: Set[String]): Int =
-      if (rating)
-        allIds.size + (allIds -- oldIds).size
-      else
-        allIds.size
-
-    val oldIds = imageDb.oldMonumentDb.fold(Set.empty[String])(_.withImages.map(_.id).toSet)
-
-    def rowData(ids: Set[String], images: Int, regionRating: String => Int, rating: Boolean = false): Seq[Int] = {
-      Seq(ids.size) ++
-        (if (rating) {
-          Seq(
-            (ids intersect oldIds).size,
-            (ids -- oldIds).size,
-            ratingFunc(ids, oldIds)
-          )
-        } else Seq.empty[Int]) ++
-        Seq(images) ++
-        country.regionIds.toSeq.map(regionRating)
-    }
-
-    val totalData = Seq("Total") ++
-      rowData(imageDb.ids, imageDb.images.size, regId => imageDb.idsByRegion(regId).size, rating).map(_.toString)
-
-    val authors = imageDb.authors.toSeq.sortBy(user => -imageDb._authorsIds(user).size)
-    val authorsData = authors.map { user =>
-      val noTemplateUser = user.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
-      val userLink = s"[[User:$noTemplateUser|$noTemplateUser]]"
-
-      def userRating(regId: String) = {
-        val regionIds = imageDb._authorIdsByRegion(user).getOrElse(regId, Seq.empty).toSet
-        ratingFunc(regionIds, oldIds)
-      }
-      Seq(userLink) ++
-        rowData(imageDb._authorsIds(user), imageDb._byAuthor(user).size, userRating, rating).map(_.toString)
-    }
-
-    new Table(columns, Seq(totalData) ++ authorsData, "Number of objects pictured by uploader")
-  }
-
-  def authorsMonuments(imageDb: ImageDB, rating: Boolean = false): String = {
-    val table = authorsMonumentsTable(imageDb, rating)
-    val contest = imageDb.contest
-    table.asWiki + s"\n[[Category:${contest.name}]]"
-  }
 
   def authorsImages(byAuthor: Map[String, Seq[Image]], monumentDb: Option[MonumentDB]): String = {
 
