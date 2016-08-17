@@ -20,11 +20,11 @@ class ReporterRegistry(stat: ContestStat) {
   def specialNominations(): String =
     RR.specialNominations(stat.currentYearImageDb)
 
-  def mostPopularMonuments: Option[String] =
-    RR.mostPopularMonuments(stat.dbsByYear, stat.totalImageDb, stat.monumentDb)
+  def mostPopularMonuments: String =
+    new MostPopularMonuments(stat).asText
 
-  def monumentsPictured: Option[String] =
-    RR.monumentsPictured(stat.dbsByYear, stat.totalImageDb, stat.monumentDb)
+  def monumentsPictured: String =
+    new MonumentsPicturedByRegion(stat).asText
 
   def galleryByRegionAndId: Option[String] =
     RR.galleryByRegionAndId(stat.monumentDb, stat.currentYearImageDb)
@@ -49,12 +49,6 @@ object ReporterRegistry {
 
   def specialNominations(imageDB: ImageDB): String =
     new SpecialNominations(imageDB.contest, imageDB).specialNomination()
-
-  def mostPopularMonuments(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: Option[MonumentDB]): Option[String] =
-    monumentDb.map(db => new Output().mostPopularMonuments(imageDbs, totalImageDb, db))
-
-  def monumentsPictured(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: Option[MonumentDB]): Option[String] =
-    monumentDb.map(db => new Output().monumentsPictured(imageDbs, totalImageDb, db))
 
   def galleryByRegionAndId(monumentDb: Option[MonumentDB], imageDb: ImageDB): Option[String] =
     monumentDb.map(db => new Output()galleryByRegionAndId(db, imageDb))

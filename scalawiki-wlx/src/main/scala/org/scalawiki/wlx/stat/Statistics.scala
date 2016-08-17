@@ -13,10 +13,10 @@ import scala.concurrent.Future
 case class ContestStat(contest: Contest,
                        startYear: Int,
                        monumentDb: Option[MonumentDB],
-                       monumentDbOld: Option[MonumentDB],
                        currentYearImageDb: ImageDB,
                        totalImageDb: Option[ImageDB],
-                       dbsByYear: Seq[ImageDB] = Seq.empty
+                       dbsByYear: Seq[ImageDB] = Seq.empty,
+                       monumentDbOld: Option[MonumentDB]  = None
                       )
 
 class Statistics(contest: Contest,
@@ -51,16 +51,16 @@ class Statistics(contest: Contest,
     for (imageDB <- imageDbFuture;
          totalImages <- totalFuture;
          byYear <- byYearFuture)
-      yield ContestStat(contest, startYear.getOrElse(contest.year), monumentDb, monumentDbOld, imageDB, totalImages, byYear)
+      yield ContestStat(contest, startYear.getOrElse(contest.year), monumentDb, imageDB, totalImages, byYear, monumentDbOld)
   }
 
   def init(): Unit = {
     gatherData().map {
       data =>
-        currentYear(data.contest, data.currentYearImageDb)
+        currentYear(data.contest, data.currentYearImageDb, data)
 
         for (totalImageDb <- data.totalImageDb) {
-          regionalStat(data.contest, data.dbsByYear, data.currentYearImageDb, totalImageDb)
+          regionalStat(data.contest, data.dbsByYear, data.currentYearImageDb, totalImageDb, data)
         }
     }
   }
@@ -73,17 +73,16 @@ class Statistics(contest: Contest,
     users.map(name => s"{{#target:User talk:$name}}")
   }
 
-  def currentYear(contest: Contest, imageDb: ImageDB) = {
+  def currentYear(contest: Contest, imageDb: ImageDB, stat: ContestStat) = {
 
     new SpecialNominations(contest, imageDb).specialNominations()
 
     new AuthorsStat().authorsStat(imageDb, bot)
-    byDayAndRegion(imageDb)
     lessThan2MpGallery(contest, imageDb)
 
     imageDb.monumentDb.foreach {
       mDb =>
-        wrongIds(contest, imageDb, mDb)
+        wrongIds(imageDb, mDb)
 
         fillLists(mDb, imageDb)
     }
@@ -101,7 +100,7 @@ class Statistics(contest: Contest,
     bot.page(s"Commons:$contestPage/Less than 2Mp").edit(gallery, Some("updating"))
   }
 
-  def wrongIds(wlmContest: Contest, imageDb: ImageDB, monumentDb: MonumentDB) {
+  def wrongIds(imageDb: ImageDB, monumentDb: MonumentDB) {
 
     val wrongIdImages = imageDb.images.filterNot(image => image.monumentId.fold(false)(monumentDb.ids.contains))
 
@@ -112,44 +111,19 @@ class Statistics(contest: Contest,
     bot.page(s"Commons:$contestPage/Images with bad ids").edit(text, Some("updating"))
   }
 
-  def byDayAndRegion(imageDb: ImageDB): Unit = {
-    //    val byDay = imageDb.withCorrectIds.groupBy(_.date.map(_.toDate))
-    //
-    //    val firstSlice = (16 to 16).flatMap(day => byDay.get)//.getOrElse(day.toString, Seq.empty))
-    //
-    //    val byRegion = firstSlice.groupBy(im => Monument.getRegionId(im.monumentId))
-    //
-    //    var text = ""
-    //
-    //    val contest = imageDb.contest
-    //    val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
-    //
-    //    val dayPage = s"Commons:$contestPage/Day 2"
-    //    for (regionId <- SortedSet(byRegion.keySet.toSeq: _*)) {
-    //      val regionName: String = imageDb.monumentDb.contest.country.regionById(regionId).name
-    //      val pageName = s"$dayPage Region $regionName"
-    //      val gallery = byRegion(regionId).map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
-    //
-    //      text += s"* [[$pageName|$regionName]]\n"
-    //
-    //      MwBot.get(MwBot.commons).page(pageName).edit(gallery, "updating")
-    //    }
-    //    MwBot.get(MwBot.commons).page(dayPage).edit(text, "updating")
-  }
-
   def regionalStat(wlmContest: Contest,
                    imageDbs: Seq[ImageDB],
                    currentYear: ImageDB,
-                   totalImageDb: ImageDB) {
+                   totalImageDb: ImageDB,
+                   stat: ContestStat) {
 
     val contest = currentYear.contest
     val categoryName = contest.contestType.name + " in " + contest.country.name
     val monumentDb = currentYear.monumentDb
 
-    val output = new Output()
     val authorsStat = new AuthorsStat()
 
-    val idsStat = monumentDb.map(db => output.monumentsPictured(imageDbs, Some(totalImageDb), db)).getOrElse("")
+    val idsStat = monumentDb.map(db => new MonumentsPicturedByRegion(stat, uploadImages = true)).getOrElse("")
 
     val authorsContributed = authorsStat.authorsContributed(imageDbs, Some(totalImageDb), monumentDb)
 
@@ -165,8 +139,10 @@ class Statistics(contest: Contest,
 
     monumentDb.map {
       db =>
-        val mostPopularMonuments = output.mostPopularMonuments(imageDbs, Some(totalImageDb), db)
-        bot.page(s"Commons:$categoryName/Most photographed objects").edit(mostPopularMonuments, Some("updating"))
+        val mostPopularMonuments = new MostPopularMonuments(stat)
+
+        bot.page(mostPopularMonuments.page)
+          .edit(mostPopularMonuments.asText, Some("updating"))
     }
   }
 
