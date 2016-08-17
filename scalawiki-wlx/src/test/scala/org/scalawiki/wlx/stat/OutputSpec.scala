@@ -27,7 +27,7 @@ class OutputSpec extends Specification {
       val totalImageDb = new ImageDB(contest, Seq.empty, monumentDb)
       val imageDbs = Seq.empty
 
-      val (images: String, table: Table) = output.monumentsPicturedTable(imageDbs, totalImageDb, monumentDb)
+      val (images: String, table: Table) = output.monumentsPicturedTable(imageDbs, Some(totalImageDb), monumentDb)
 
       table.headers === Seq("Region", "Objects in lists", "0 years total", "0 years percentage")
       table.data === Seq(
@@ -48,7 +48,7 @@ class OutputSpec extends Specification {
       val totalImageDb = new ImageDB(contest, Seq.empty, monumentDb)
       val imageDbs = Seq.empty
 
-      val (images: String, table: Table) = output.monumentsPicturedTable(imageDbs, totalImageDb, monumentDb)
+      val (images: String, table: Table) = output.monumentsPicturedTable(imageDbs, Some(totalImageDb), monumentDb)
 
       table.headers === Seq("Region", "Objects in lists", "0 years total", "0 years percentage")
       table.data === Seq(
@@ -74,7 +74,7 @@ class OutputSpec extends Specification {
       val totalImageDb = new ImageDB(contest, Seq(image), monumentDb)
       val imageDbs = Seq.empty
 
-      val (images: String, table: Table) = output.monumentsPicturedTable(imageDbs, totalImageDb, monumentDb)
+      val (images: String, table: Table) = output.monumentsPicturedTable(imageDbs, Some(totalImageDb), monumentDb)
 
       table.headers === Seq("Region", "Objects in lists", "0 years total", "0 years percentage")
       table.data === Seq(
@@ -103,7 +103,7 @@ class OutputSpec extends Specification {
       val totalImageDb = new ImageDB(contest, images, monumentDb)
       val imageDbs = images.zipWithIndex.map { case (img, i) => new ImageDB(Contest.WLMUkraine(2014 + i), Seq(img), monumentDb) }
 
-      val (imgStr: String, table: Table) = output.monumentsPicturedTable(imageDbs, totalImageDb, monumentDb)
+      val (imgStr: String, table: Table) = output.monumentsPicturedTable(imageDbs, Some(totalImageDb), monumentDb)
 
       table.headers === Seq("Region", "Objects in lists", "2 years total", "2 years percentage",
         "2014 Objects", "2014 Pictures", "2015 Objects", "2015 Pictures")
@@ -134,7 +134,7 @@ class OutputSpec extends Specification {
       val totalImageDb = new ImageDB(contest, images, monumentDb)
       val imageDbs = images.zipWithIndex.map { case (img, i) => new ImageDB(Contest.WLMUkraine(2012 + i), Seq(img), monumentDb) }
 
-      val (imgStr: String, table: Table) = output.monumentsPicturedTable(imageDbs, totalImageDb, monumentDb)
+      val (imgStr: String, table: Table) = output.monumentsPicturedTable(imageDbs, Some(totalImageDb), monumentDb)
 
       table.headers === Seq("Region", "Objects in lists", "4 years total", "4 years percentage",
         "2012 Objects", "2012 Pictures",
@@ -160,7 +160,7 @@ class OutputSpec extends Specification {
       "work on no monuments" in {
         val output = new Output
         val monumentDb = new MonumentDB(contest, Seq.empty)
-        val table = output.mostPopularMonumentsTable(Seq.empty, new ImageDB(contest, Seq.empty, monumentDb), monumentDb)
+        val table = output.mostPopularMonumentsTable(Seq.empty, Some(new ImageDB(contest, Seq.empty, monumentDb)), monumentDb)
 
         table.headers === Seq("Id", "Name", "0 years photos", "0 years authors")
         table.data.isEmpty === true
@@ -175,7 +175,7 @@ class OutputSpec extends Specification {
             monuments(7, "07", "Volyn")
         )
 
-        val table = output.mostPopularMonumentsTable(Seq.empty, new ImageDB(contest, Seq.empty, monumentDb), monumentDb)
+        val table = output.mostPopularMonumentsTable(Seq.empty, Some(new ImageDB(contest, Seq.empty, monumentDb)), monumentDb)
 
         table.headers === Seq("Id", "Name", "0 years photos", "0 years authors")
         table.data.isEmpty === true
@@ -198,7 +198,7 @@ class OutputSpec extends Specification {
             monuments(7, "07", "Volyn")
         )
 
-        val table = output.mostPopularMonumentsTable(Seq.empty, new ImageDB(contest, images, monumentDb), monumentDb)
+        val table = output.mostPopularMonumentsTable(Seq.empty, Some(new ImageDB(contest, images, monumentDb)), monumentDb)
 
         table.headers === Seq("Id", "Name", "0 years photos", "0 years authors")
         table.data === Seq(
@@ -236,7 +236,7 @@ class OutputSpec extends Specification {
 
       val table = output.mostPopularMonumentsTable(
         Seq(images1, images2).zipWithIndex.map { case (images, i) => new ImageDB(Contest.WLMUkraine(2014 + i), images, monumentDb) },
-        new ImageDB(contest, images1 ++ images2, monumentDb),
+        Some(new ImageDB(contest, images1 ++ images2, monumentDb)),
         monumentDb)
 
       table.headers === Seq("Id", "Name", "2 years photos", "2 years authors", "2014 photos", "2014 authors", "2015 photos", "2015 authors")

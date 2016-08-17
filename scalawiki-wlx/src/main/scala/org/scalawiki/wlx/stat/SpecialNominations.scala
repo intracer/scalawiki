@@ -6,16 +6,11 @@ import org.scalawiki.wlx.ImageDB
 import org.scalawiki.wlx.dto.{Contest, Country, Monument, SpecialNomination}
 import org.scalawiki.wlx.query.MonumentQuery
 
-class SpecialNominations {
+class SpecialNominations(contest: Contest, imageDb: ImageDB) {
 
-  def specialNominations(contest: Contest, imageDb: ImageDB) {
-    val monumentQuery = MonumentQuery.create(contest)
+  def specialNominations(): Unit = {
 
-    val imageDbs = SpecialNomination.nominations.map { nomination =>
-      nomination -> imageDb.subSet(getMonumentsMap(monumentQuery)(nomination))
-    }.toMap
-
-    val stat = specialNomination(contest, imageDbs)
+    val stat = specialNomination()
 
     val pageName = s"Commons:${contest.name}/Special nominations statistics"
     MwBot.fromHost(MwBot.commons).page(pageName).edit(stat, Some("updating"))
@@ -28,12 +23,15 @@ class SpecialNominations {
     }.toMap
   }
 
-  def specialNomination(contest: Contest, imageDbs: Map[SpecialNomination, ImageDB]) = {
+  def specialNomination(): String = {
+    val monumentQuery = MonumentQuery.create(contest)
 
-    val headers = Seq("Special nomination", "authors", "monuments", "photos")
-
+    val imageDbs = SpecialNomination.nominations.map { nomination =>
+      nomination -> imageDb.subSet(getMonumentsMap(monumentQuery)(nomination))
+    }.toMap
     val nominations: Seq[SpecialNomination] = imageDbs.keySet.toSeq.sortBy(_.name)
 
+    val headers = Seq("Special nomination", "authors", "monuments", "photos")
     val rows = for (nomination <- nominations) yield {
 
       val imagesPage = s"Commons:Images from ${contest.name} special nomination ${nomination.name}"
@@ -54,7 +52,7 @@ class SpecialNominations {
     table.asWiki + s"\n[[Category:${contest.name}]]"
   }
 
-  def makeSpecNominationGallery(imagesPage: String, imageDb: ImageDB) = {
+  def makeSpecNominationGallery(imagesPage: String, imageDb: ImageDB): Unit = {
     var imagesText = "__TOC__"
 
     for (region <- Country.Ukraine.regions) {
@@ -73,7 +71,7 @@ object SpecialNominations {
   def main(args: Array[String]) {
     val contest = Contest.WLMUkraine(2015, "05-01", "05-31")
     val query = MonumentQuery.create(contest)
-    val map = new SpecialNominations().getMonumentsMap(query)
+    val map = new SpecialNominations(contest, new ImageDB(contest, Seq.empty)).getMonumentsMap(query)
     println(map.values.map(_.size).mkString(", "))
   }
 }

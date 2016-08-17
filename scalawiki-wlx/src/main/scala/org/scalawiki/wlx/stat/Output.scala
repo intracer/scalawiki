@@ -14,7 +14,7 @@ class Output {
 
   val charts = new Charts()
 
-  def mostPopularMonuments(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB) = {
+  def mostPopularMonuments(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: MonumentDB): String = {
 
     val table = mostPopularMonumentsTable(imageDbs, totalImageDb, monumentDb)
 
@@ -27,26 +27,27 @@ class Output {
     header + table.asWiki + category
   }
 
-  def mostPopularMonumentsTable(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB): Table = {
+  def mostPopularMonumentsTable(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: MonumentDB): Table = {
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
 
     val yearSeq = imageDbsByYear.keys.toSeq.sorted
     val numYears = yearSeq.size
 
-    val columns = Seq("Id", "Name",
-      s"$numYears years photos", s"$numYears years authors") ++
+    val columns = Seq("Id", "Name") ++
+      totalImageDb.map(_ => Seq(s"$numYears years photos", s"$numYears years authors")).getOrElse(Seq.empty) ++
       yearSeq.flatMap(year => Seq(s"$year photos", s"$year authors"))
 
-    val photosCountTotal = totalImageDb.imageCountById
-    val authorsCountTotal = totalImageDb.authorsCountById
+    val photosCountTotal = totalImageDb.map(_.imageCountById)
+    val authorsCountTotal = totalImageDb.map(_.authorsCountById)
 
     val photoCounts = yearSeq.map(year => imageDbsByYear(year).head.imageCountById)
     val authorCounts = yearSeq.map(year => imageDbsByYear(year).head.authorsCountById)
 
-    val counts = Seq(photosCountTotal, authorsCountTotal) ++ (0 until numYears).flatMap(i => Seq(photoCounts(i), authorCounts(i)))
+    val counts = Seq(photosCountTotal, authorsCountTotal).flatten ++
+      (0 until numYears).flatMap(i => Seq(photoCounts(i), authorCounts(i)))
 
-    val topPhotos = (Set(photosCountTotal) ++ photoCounts).flatMap(topN(12, _).toSet)
-    val topAuthors = (Set(authorsCountTotal) ++ authorCounts).flatMap(topN(12, _).toSet)
+    val topPhotos = (photosCountTotal.toSet ++ photoCounts).flatMap(topN(12, _).toSet)
+    val topAuthors = (authorsCountTotal.toSet ++ authorCounts).flatMap(topN(12, _).toSet)
 
     val allTop = topPhotos ++ topAuthors
     val allTopOrdered = allTop.toSeq.sorted
@@ -65,25 +66,17 @@ class Output {
 
   def topN(n: Int, stat: Map[String, Int]) = stat.toSeq.sortBy(-_._2).take(n).map(_._1)
 
-  def monumentsPictured(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB) = {
+  def monumentsPictured(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: MonumentDB): String = {
 
-    try {
-      val header = "\n==Objects pictured==\n"
+    val header = "\n==Objects pictured==\n"
 
-      val (images: String, table: Table) = monumentsPicturedTable(imageDbs, totalImageDb, monumentDb, uploadImages = true)
+    val (images: String, table: Table) = monumentsPicturedTable(imageDbs, totalImageDb, monumentDb, uploadImages = true)
 
-      header + table.asWiki + images
-    }
+    header + table.asWiki + images
 
-    catch {
-      case NonFatal(e) =>
-        println(e)
-        e.printStackTrace()
-        throw e
-    }
   }
 
-  def monumentsPicturedTable(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: MonumentDB, uploadImages: Boolean = false): (String, Table) = {
+  def monumentsPicturedTable(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: MonumentDB, uploadImages: Boolean = false): (String, Table) = {
     val contest = monumentDb.contest
     val categoryName = contest.category
     val filenamePrefix = categoryName.replace("_", "")
@@ -110,7 +103,10 @@ class Output {
     val rows = regionIds.map { regionId =>
 
       val withPhotoInListsCurrentRegion = withPhotoInLists.filter(id => Monument.getRegionId(id) == regionId)
-      val picturedMonumentsInRegionSet = (totalImageDb.idsByRegion(regionId) ++ withPhotoInListsCurrentRegion).toSet
+      val picturedMonumentsInRegionSet = (
+        totalImageDb.map(_.idsByRegion(regionId)).getOrElse(Set.empty) ++
+          withPhotoInListsCurrentRegion
+        ).toSet
       val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
       val allMonumentsInRegion = monumentDb.byRegion(regionId).size
 
@@ -142,8 +138,7 @@ class Output {
     }
 
     val allMonuments = monumentDb.monuments.size
-    val picturedMonuments = (totalImageDb.ids ++ withPhotoInLists).size
-
+    val picturedMonuments = (totalImageDb.map(_.ids).getOrElse(Set.empty) ++ withPhotoInLists).size
 
     val ids = yearSeq.map(year => imageDbsByYear(year).head.ids)
 
@@ -224,13 +219,13 @@ class Output {
     }
   }
 
-  def galleryByRegionAndId(monumentDb: MonumentDB, imageDb: ImageDB) = {
+  def galleryByRegionAndId(monumentDb: MonumentDB, imageDb: ImageDB): String = {
     val country = monumentDb.contest.country
     val regionIds = country.regionIds.filter(id => imageDb.idsByRegion(id).nonEmpty)
 
     regionIds.map {
       regionId =>
-        val regionName: String = country.regionById(regionId).name
+        val regionName = country.regionById(regionId).name
         val regionHeader = s"== [[:uk:Вікіпедія:Вікі любить Землю/$regionName|$regionName]] ==\n"
         val ids = imageDb.idsByRegion(regionId)
         regionHeader + ids.map {

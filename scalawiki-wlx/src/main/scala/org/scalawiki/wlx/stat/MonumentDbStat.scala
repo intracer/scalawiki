@@ -47,8 +47,6 @@ class MonumentDbStat {
     table.asWiki
   }
 
-
-
 }
 
 

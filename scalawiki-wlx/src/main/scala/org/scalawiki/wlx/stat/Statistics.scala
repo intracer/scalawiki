@@ -75,7 +75,7 @@ class Statistics(contest: Contest,
 
   def currentYear(contest: Contest, imageDb: ImageDB) = {
 
-    new SpecialNominations().specialNominations(contest, imageDb)
+    new SpecialNominations(contest, imageDb).specialNominations()
 
     new AuthorsStat().authorsStat(imageDb, bot)
     byDayAndRegion(imageDb)
@@ -149,9 +149,9 @@ class Statistics(contest: Contest,
     val output = new Output()
     val authorsStat = new AuthorsStat()
 
-    val idsStat = monumentDb.map(db => output.monumentsPictured(imageDbs, totalImageDb, db)).getOrElse("")
+    val idsStat = monumentDb.map(db => output.monumentsPictured(imageDbs, Some(totalImageDb), db)).getOrElse("")
 
-    val authorsContributed = authorsStat.authorsContributed(imageDbs, totalImageDb, monumentDb)
+    val authorsContributed = authorsStat.authorsContributed(imageDbs, Some(totalImageDb), monumentDb)
 
     val toc = "__TOC__"
     val category = s"\n[[Category:$categoryName]]"
@@ -165,7 +165,7 @@ class Statistics(contest: Contest,
 
     monumentDb.map {
       db =>
-        val mostPopularMonuments = output.mostPopularMonuments(imageDbs, totalImageDb, db)
+        val mostPopularMonuments = output.mostPopularMonuments(imageDbs, Some(totalImageDb), db)
         bot.page(s"Commons:$categoryName/Most photographed objects").edit(mostPopularMonuments, Some("updating"))
     }
   }

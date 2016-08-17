@@ -16,6 +16,7 @@ class AuthorsStat {
 
 
     val numberOfMonuments = authorsMonuments(imageDb)
+
     Files.write(Paths.get("authorsMonuments.txt"), numberOfMonuments.getBytes(StandardCharsets.UTF_8))
     bot.page(s"Commons:$contestPage/Number of objects pictured by uploader")
       .edit(numberOfMonuments, Some("updating"))
@@ -29,7 +30,7 @@ class AuthorsStat {
     }
   }
 
-  def authorsContributed(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: Option[MonumentDB]) = {
+  def authorsContributed(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: Option[MonumentDB]) = {
 
     val table = authorsContributedTable(imageDbs, totalImageDb, monumentDb)
 
@@ -37,15 +38,17 @@ class AuthorsStat {
     header + table.asWiki
   }
 
-  def authorsContributedTable(imageDbs: Seq[ImageDB], totalImageDb: ImageDB, monumentDb: Option[MonumentDB]): Table = {
+  def authorsContributedTable(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: Option[MonumentDB]): Table = {
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
     val yearSeq = imageDbsByYear.keys.toSeq.sorted
 
     val numYears = yearSeq.size
 
-    val dbs = Seq(totalImageDb) ++ yearSeq.flatMap { year => imageDbsByYear(year).headOption }
+    val dbs = totalImageDb.toSeq ++ yearSeq.flatMap { year => imageDbsByYear(year).headOption }
 
-    val columns = Seq("Region", s"$numYears years total") ++ yearSeq.map(_.toString)
+    val columns = Seq("Region") ++
+      totalImageDb.map(_ => s"$numYears years total").toSeq ++
+      yearSeq.map(_.toString)
 
     val perRegion = monumentDb.fold(Seq.empty[Seq[String]]) {
       db =>
@@ -119,7 +122,7 @@ class AuthorsStat {
     table.asWiki + s"\n[[Category:${contest.name}]]"
   }
 
-  def authorsImages(byAuthor: Map[String, Seq[Image]], monumentDb: Option[MonumentDB]) = {
+  def authorsImages(byAuthor: Map[String, Seq[Image]], monumentDb: Option[MonumentDB]): String = {
 
     val sections = byAuthor
       .mapValues(images => monumentDb.fold(images)(db => images.filter(_.monumentId.fold(false)(db.ids.contains))))
