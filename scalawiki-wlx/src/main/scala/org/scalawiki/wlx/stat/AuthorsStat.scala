@@ -12,7 +12,7 @@ class AuthorsStat {
 
   def authorsStat(imageDb: ImageDB, bot: MwBot) {
     val contest = imageDb.contest
-    val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
+    val contestPage = contest.name
 
 
     val numberOfMonuments = authorsMonuments(imageDb)
@@ -116,7 +116,7 @@ class AuthorsStat {
   def authorsMonuments(imageDb: ImageDB, rating: Boolean = false): String = {
     val table = authorsMonumentsTable(imageDb, rating)
     val contest = imageDb.contest
-    table.asWiki + s"\n[[Category:${contest.contestType.name} ${contest.year} in ${contest.country.name}]]"
+    table.asWiki + s"\n[[Category:${contest.name}]]"
   }
 
   def authorsImages(byAuthor: Map[String, Seq[Image]], monumentDb: Option[MonumentDB]) = {

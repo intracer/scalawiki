@@ -96,7 +96,7 @@ class Statistics(contest: Contest,
   def lessThan2MpGallery(contest: Contest, imageDb: ImageDB) = {
     val lessThan2Mp = imageDb.byMegaPixelFilterAuthorMap(_ < 2)
     val gallery = new AuthorsStat().authorsImages(lessThan2Mp, imageDb.monumentDb)
-    val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
+    val contestPage = contest.name
 
     bot.page(s"Commons:$contestPage/Less than 2Mp").edit(gallery, Some("updating"))
   }
@@ -106,7 +106,7 @@ class Statistics(contest: Contest,
     val wrongIdImages = imageDb.images.filterNot(image => image.monumentId.fold(false)(monumentDb.ids.contains))
 
     val contest = imageDb.contest
-    val contestPage = s"${contest.contestType.name} ${contest.year} in ${contest.country.name}"
+    val contestPage = contest.name
 
     val text = wrongIdImages.map(_.title).mkString("<gallery>", "\n", "</gallery>")
     bot.page(s"Commons:$contestPage/Images with bad ids").edit(text, Some("updating"))

@@ -21,10 +21,12 @@ case class Contest(
                     specialNominations: Seq[SpecialNomination] = Seq.empty,
                     rating: Boolean = false) {
 
+  def name = s"${contestType.name} $year in ${country.name}"
+
   /**
     * @return Name of category containing contest images
     */
-  def category: String = s"Category:Images from ${contestType.name} $year in ${country.name}".replaceAll(" ", "_")
+  def category: String = s"Category:Images from $name".replaceAll(" ", "_")
 
   /**
     * @return name of template that monument lists consist of

@@ -1,23 +1,24 @@
 package org.scalawiki.wlx.stat
 
 import org.scalawiki.MwBot
+import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.ImageDB
-import org.scalawiki.wlx.dto.{Monument, Country, SpecialNomination, Contest}
+import org.scalawiki.wlx.dto.{Contest, Country, Monument, SpecialNomination}
 import org.scalawiki.wlx.query.MonumentQuery
 
 class SpecialNominations {
 
   def specialNominations(contest: Contest, imageDb: ImageDB) {
     val monumentQuery = MonumentQuery.create(contest)
-    val monumentsMap = getMonumentsMap(monumentQuery)
 
-    val imageDbs: Map[SpecialNomination, ImageDB] = SpecialNomination.nominations.map { nomination =>
-      (nomination, imageDb.subSet(monumentsMap(nomination)))
+    val imageDbs = SpecialNomination.nominations.map { nomination =>
+      nomination -> imageDb.subSet(getMonumentsMap(monumentQuery)(nomination))
     }.toMap
 
     val stat = specialNomination(contest, imageDbs)
 
-    MwBot.fromHost(MwBot.commons).page(s"Commons:Wiki Loves ${contest.contestType.name} ${contest.year} in ${contest.country.name}/Special nominations statistics").edit(stat, Some("updating"))
+    val pageName = s"Commons:${contest.name}/Special nominations statistics"
+    MwBot.fromHost(MwBot.commons).page(pageName).edit(stat, Some("updating"))
   }
 
   def getMonumentsMap(monumentQuery: MonumentQuery): Map[SpecialNomination, Seq[Monument]] = {
@@ -29,38 +30,31 @@ class SpecialNominations {
 
   def specialNomination(contest: Contest, imageDbs: Map[SpecialNomination, ImageDB]) = {
 
-    val columns = Seq("Special nomination", "authors", "monuments", "photos")
+    val headers = Seq("Special nomination", "authors", "monuments", "photos")
 
-    val header = "{| class='wikitable sortable'\n" +
-      "|+ Special nomination statistics\n" +
-      columns.mkString("!", "!!", "\n")
-
-    var text = ""
     val nominations: Seq[SpecialNomination] = imageDbs.keySet.toSeq.sortBy(_.name)
-    for (nomination <- nominations) {
 
-      val columnData: Seq[Any] = makeGallery(contest, imageDbs, nomination)
+    val rows = for (nomination <- nominations) yield {
 
-      text += columnData.mkString("|-\n| ", " || ", "\n")
+      val imagesPage = s"Commons:Images from ${contest.name} special nomination ${nomination.name}"
+      val imageDb = imageDbs(nomination)
+
+      makeSpecNominationGallery(imagesPage, imageDb)
+
+      Seq(
+        nomination.name,
+        imageDb.authors.size.toString,
+        imageDb.ids.size.toString,
+        s"[[$imagesPage|${imageDb.images.size}]]"
+      )
     }
 
-    val total = "|}" + s"\n[[Category:Wiki Loves ${contest.contestType.name} ${contest.year} in ${contest.country.name}]]"
+    val table = new Table(headers, rows)
 
-    header + text + total
+    table.asWiki + s"\n[[Category:${contest.name}]]"
   }
 
-
-  def makeGallery(contest: Contest, imageDbs: Map[SpecialNomination, ImageDB], nomination: SpecialNomination): Seq[Any] = {
-    val imagesPage = s"Commons:Images from Wiki Loves ${contest.contestType.name} ${contest.year} in ${contest.country.name} special nomination ${nomination.name}"
-
-    val imageDb = imageDbs(nomination)
-    val columnData = Seq(
-      nomination.name,
-      imageDb.authors.size,
-      imageDb.ids.size,
-      s"[[$imagesPage|${imageDb.images.size}]]"
-    )
-
+  def makeSpecNominationGallery(imagesPage: String, imageDb: ImageDB) = {
     var imagesText = "__TOC__"
 
     for (region <- Country.Ukraine.regions) {
@@ -72,7 +66,6 @@ class SpecialNominations {
     }
 
     MwBot.fromHost(MwBot.commons).page(imagesPage).edit(imagesText, Some("updating"))
-    columnData
   }
 }
 
