@@ -67,7 +67,6 @@ class AuthorsStat {
     new Table(columns, rows, "Authors contributed")
   }
 
-
   def authorsImages(byAuthor: Map[String, Seq[Image]], monumentDb: Option[MonumentDB]): String = {
 
     val sections = byAuthor
@@ -83,5 +82,4 @@ class AuthorsStat {
 
     sections.mkString("__TOC__\n", "\n", "")
   }
-
 }

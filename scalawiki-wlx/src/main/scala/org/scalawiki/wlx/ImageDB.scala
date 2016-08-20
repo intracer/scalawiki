@@ -16,6 +16,7 @@ class ImageDB(val contest: Contest, val images: Seq[Image],
 
   // images
   val _byMegaPixels: Map[Int, Seq[Image]] = images.filter(_.mpx.isDefined).groupBy (i => i.mpx.map(_.toInt).getOrElse(-1))
+
   def byMegaPixels(mp: Int): Seq[Image] = _byMegaPixels.getOrElse(mp, Seq.empty[Image])
 
   val withCorrectIds = monumentDb.fold(images)(db => images.filter(_.monumentId.fold(false)(db.ids.contains)))
