@@ -26,10 +26,27 @@ class Grouping[T, F](name: String, val f: F => T, data: Seq[F]) {
 
   def headOptionBy(key: T): Option[F] = by(key).headOption
 
-  def compose(g: F => T): Map[T, Grouping[T, F]] =
-    grouped.mapValues(v => new Grouping("", g, v))
+  def compose(g: F => T): NestedGrouping[T, F] =
+    new NestedGrouping(
+      grouped.mapValues(v => new Grouping("", g, v))
+    )
 
 }
+
+class NestedGrouping[T, F](val grouped: Map[T, Grouping[T, F]]) {
+
+  val keys: Set[T] = grouped.keySet
+
+  def by(key: T): Grouping[T, F] = grouped.getOrElse(key, new Grouping[T, F]("", null, Seq.empty))
+
+  def by(key1: T, key2: T): Seq[F] = by(key1).by(key2)
+
+  def headBy(key1: T, key2: T): F = by(key1).headBy(key2)
+
+  def headOptionBy(key1: T, key2: T): Option[F] = by(key1).headOptionBy(key2)
+
+}
+
 
 object ImageGrouping {
 
@@ -41,5 +58,5 @@ object ImageGrouping {
 
   def byAuthor = (i: Image) => i.author.getOrElse("")
 
-  }
+}
 
