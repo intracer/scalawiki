@@ -6,71 +6,73 @@ import org.scalawiki.wlx.query.ImageQuery
 
 import scala.concurrent.Future
 
+
 class ImageDB(val contest: Contest, val images: Seq[Image],
-              val monumentDb: Option[MonumentDB],
-              val oldMonumentDb: Option[MonumentDB] = None) {
+                     val monumentDb: Option[MonumentDB],
+                     val oldMonumentDb: Option[MonumentDB] = None) {
 
   def this(contest: Contest, images: Seq[Image]) = this(contest, images, None)
 
   def this(contest: Contest, images: Seq[Image], monumentDb: MonumentDB) = this(contest, images, Some(monumentDb))
 
   // images
-  val _byMegaPixels: Map[Int, Seq[Image]] = images.filter(_.mpx.isDefined).groupBy (i => i.mpx.map(_.toInt).getOrElse(-1))
+  val _byMegaPixels: Grouping[Int, Image] = new Grouping("mpx", ImageGrouping.byMpx, images)
 
-  def byMegaPixels(mp: Int): Seq[Image] = _byMegaPixels.getOrElse(mp, Seq.empty[Image])
-
-  val withCorrectIds = monumentDb.fold(images)(db => images.filter(_.monumentId.fold(false)(db.ids.contains)))
-
-  val _byId: Map[String, Seq[Image]] = withCorrectIds.groupBy(_.monumentId.getOrElse(""))
-
-  val _imagesByRegion: Map[String, Seq[Image]] = withCorrectIds.groupBy(im => Monument.getRegionId(im.monumentId))
-
-  val _idsByRegion: Map[String, Set[String]] = ids.groupBy(Monument.getRegionId)
-
-  val _byAuthor: Map[String, Seq[Image]] = withCorrectIds.groupBy(_.author.getOrElse(""))
-
-  val _authorsByRegion: Map[String, Set[String]] = _imagesByRegion.mapValues {
-    images => images.groupBy(_.author.getOrElse("")).keySet
+  val withCorrectIds: Seq[Image] = monumentDb.fold(images) {
+    db => images.filter(_.monumentId.exists(db.ids.contains))
   }
-  val _authorsIds: Map[String, Set[String]] = _byAuthor.mapValues(images => images.groupBy(_.monumentId.getOrElse("")).keySet)
 
-  val _authorIdsByRegion = _authorsIds.mapValues(ids => ids.groupBy(id => Monument.getRegionId(id)))
+  val _byId: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byMonument, withCorrectIds)
 
-  val _byMegaPixelsAndAuthor = _byMegaPixels.mapValues {
+  val _byRegion: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byRegion, withCorrectIds)
+
+  val _byAuthor: Grouping[String, Image] = new Grouping("author", ImageGrouping.byAuthor, withCorrectIds)
+
+  val _byRegionAndId: NestedGrouping[String, Image] = _byRegion.compose(ImageGrouping.byMonument)
+
+  val _byRegionAndAuthor: NestedGrouping[String, Image] = _byRegion.compose(ImageGrouping.byAuthor)
+
+  val _byAuthorAndId: NestedGrouping[String, Image] = _byAuthor.compose(ImageGrouping.byMonument)
+
+  val _byAuthorAndRegion: NestedGrouping[String, Image] = _byAuthor.compose(ImageGrouping.byRegion)
+
+  val _byMegaPixelsAndAuthor = _byMegaPixels.grouped.mapValues {
     images => images.groupBy(_.author.getOrElse(""))
   }
 
-  def ids: Set[String] = _byId.keySet
+  def byMegaPixels(mp: Int): Seq[Image] = _byMegaPixels.by(mp)
 
-  def authors: Set[String] = _byAuthor.keySet
+  def ids: Set[String] = _byId.keys
 
-  def byId(id: String) = _byId.getOrElse(id, Seq.empty[Image])
+  def authors: Set[String] = _byAuthor.keys
+
+  def byId(id: String) = _byId.by(id)
 
   def containsId(id: String) = _byId.contains(id)
 
-  def imagesByRegion(regId: String) = _imagesByRegion.getOrElse(regId, Seq.empty[Image])
+  def imagesByRegion(regId: String) = _byRegion.by(regId)
 
-  def idsByRegion(regId: String) = _idsByRegion.getOrElse(regId, Seq.empty[String])
+  def idsByRegion(regId: String) = _byRegionAndId.by(regId).keys
 
-  def authorsByRegion(regId: String) = _authorsByRegion.getOrElse(regId, Seq.empty[String])
+  def authorsByRegion(regId: String) = _byRegionAndAuthor.by(regId).keys
 
   def byMegaPixelFilterAuthorMap(predicate: (Int => Boolean)): Map[String, Seq[Image]] = {
-    _byMegaPixels.filterKeys(predicate).values.flatten.toSeq.groupBy(_.author.getOrElse(""))
+    _byMegaPixels.grouped.filterKeys(mpx => mpx >= 0 && predicate(mpx)).values.flatten.toSeq.groupBy(_.author.getOrElse(""))
   }
 
-  def authorsCountById: Map[String, Int] = _byId.mapValues(_.flatMap(_.author).toSet.size)
+  def authorsCountById: Map[String, Int] = _byId.grouped.mapValues(_.flatMap(_.author).toSet.size)
 
-  def imageCountById: Map[String, Int] = _byId.mapValues(_.size)
+  def imageCountById: Map[String, Int] = _byId.grouped.mapValues(_.size)
 
   def byNumberOfAuthors: Map[Int, Map[String, Seq[Image]]] = {
-    _byId.groupBy {
+    _byId.grouped.groupBy {
       case (id, photos) =>
         photos.flatMap(_.author).toSet.size
     }.mapValues(_.toMap)
   }
 
   def byNumberOfPhotos: Map[Int, Map[String, Seq[Image]]] = {
-    _byId.groupBy {
+    _byId.grouped.groupBy {
       case (id, photos) => photos.size
     }.mapValues(_.toMap)
   }
@@ -80,6 +82,56 @@ class ImageDB(val contest: Contest, val images: Seq[Image],
     val subSetImages = images.filter(_.monumentId.fold(false)(subSetMonumentDb.ids.contains))
     new ImageDB(contest, subSetImages, Some(subSetMonumentDb))
   }
+
+}
+
+class Grouping[T, F](name: String, val f: F => T, data: Seq[F]) {
+
+  val grouped: Map[T, Seq[F]] = data.groupBy(f)
+
+  def by(key: T): Seq[F] = grouped.getOrElse(key, Seq.empty)
+
+  def contains(id: T): Boolean = grouped.contains(id)
+
+  def headBy(key: T): F = by(key).head
+
+  def headOptionBy(key: T): Option[F] = by(key).headOption
+
+  def keys: Set[T] = grouped.keySet
+
+  def size = grouped.size
+
+  def compose(g: F => T): NestedGrouping[T, F] =
+    new NestedGrouping(
+      grouped.mapValues(v => new Grouping("", g, v))
+    )
+
+}
+
+class NestedGrouping[T, F](val grouped: Map[T, Grouping[T, F]]) {
+
+  val keys: Set[T] = grouped.keySet
+
+  def by(key: T): Grouping[T, F] = grouped.getOrElse(key, new Grouping[T, F]("", null, Seq.empty))
+
+  def by(key1: T, key2: T): Seq[F] = by(key1).by(key2)
+
+  def headBy(key1: T, key2: T): F = by(key1).headBy(key2)
+
+  def headOptionBy(key1: T, key2: T): Option[F] = by(key1).headOptionBy(key2)
+
+}
+
+object ImageGrouping {
+
+  def byMpx = (i: Image) => i.mpx.map(_.toInt).getOrElse(-1)
+
+  def byMonument = (i: Image) => i.monumentId.getOrElse("")
+
+  def byRegion = (i: Image) => Monument.getRegionId(i.monumentId)
+
+  def byAuthor = (i: Image) => i.author.getOrElse("")
+
 }
 
 object ImageDB {

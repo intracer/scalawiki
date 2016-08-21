@@ -52,17 +52,17 @@ class AuthorMonuments(val imageDb: ImageDB, rating: Boolean = false, gallery: Bo
     val totalData = Seq("Total") ++
       rowData(imageDb.ids, imageDb.images.size, regId => imageDb.idsByRegion(regId).size, rating)
 
-    val authors = imageDb.authors.toSeq.sortBy(user => -imageDb._authorsIds(user).size)
+    val authors = imageDb.authors.toSeq.sortBy(user => -imageDb._byAuthorAndId.by(user).size)
     val authorsData = authors.map { user =>
       val noTemplateUser = user.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
       val userLink = s"[[User:$noTemplateUser|$noTemplateUser]]"
 
       def userRating(regId: String) = {
-        val regionIds = imageDb._authorIdsByRegion(user).getOrElse(regId, Seq.empty).toSet
-        ratingFunc(regionIds, oldIds)
+        val monumnentsInRegion = imageDb._byAuthorAndRegion.by(user, regId).flatMap(_.monumentId).toSet
+        ratingFunc(monumnentsInRegion, oldIds)
       }
       Seq(userLink) ++
-        rowData(imageDb._authorsIds(user), imageDb._byAuthor(user).size, userRating, rating, Some(user))
+        rowData(imageDb._byAuthorAndId.by(user).keys, imageDb._byAuthor.by(user).size, userRating, rating, Some(user))
     }
 
     new Table(columns, Seq(totalData) ++ authorsData, "Number of objects pictured by uploader")
