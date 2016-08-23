@@ -61,7 +61,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
         Info(),
         Revisions(RvProp(RvPropArgs.byNames(props.toSeq): _*))
       ),
-      Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
+      Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)).get)
     ))
 
     bot.run(action, context)
@@ -80,14 +80,24 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
     val pageId: Option[Long] = query.left.toOption.map(_.head)
     val title: Option[String] = query.right.toOption.map(_.head)
 
-    val action = Action(Query(
+    val listArg = ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit))
+
+    val generatorArg = listArg.getOrElse(new Images(ImLimit(limit)))
+    val titlesParam = listArg match {
+      case None => title.map(t => TitlesParam(Seq(t)))
+      case _ => None
+    }
+
+    val queryParams = titlesParam.toSeq ++ Seq(
       Prop(
         ImageInfo(
           IiProp(IiPropArgs.byNames(props.toSeq): _*)
         )
       ),
-      Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
-    ))
+      Generator(generatorArg)
+    )
+
+    val action = Action(Query(queryParams:_*))
 
     bot.run(action, context)
   }

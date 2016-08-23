@@ -95,7 +95,7 @@ class PropLangLinksSpec extends Specification with MockBotSpec {
         Prop(
           LangLinks(LlLimit("2"))
         ),
-        Generator(ListArgs.toDsl("categorymembers", Some(category), None, Set(Namespace.MAIN), Some("2")))
+        Generator(ListArgs.toDsl("categorymembers", Some(category), None, Set(Namespace.MAIN), Some("2")).get)
       ))
 
       val result = bot.run(action).await

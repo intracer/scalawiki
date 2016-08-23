@@ -129,7 +129,7 @@ object CatScan {
       Prop(
         LangLinks(LlLimit("max"))
       ),
-      Generator(ListArgs.toDsl("categorymembers", Some(title), None, namespaces, Some("max")))
+      Generator(ListArgs.toDsl("categorymembers", Some(title), None, namespaces, Some("max")).get)
     ))
 
     bot.run(action)
