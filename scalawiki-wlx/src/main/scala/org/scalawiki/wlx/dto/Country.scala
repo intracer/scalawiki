@@ -38,6 +38,7 @@ case class Country(
 }
 
 object Country {
+  val Romania = new Country("ro", "Romania", Seq("ro"))
 
   val Armenia = new Country("am", "Armenia & Nagorno-Karabakh", Seq("hy"))
 
