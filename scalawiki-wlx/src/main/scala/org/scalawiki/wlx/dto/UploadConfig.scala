@@ -20,7 +20,6 @@ object UploadConfig {
       c.getString("listTemplate"),
       c.getString("fileTemplate"))
 
-
     val listConfig = ListConfig.fromConfig(c)
 
     new UploadConfig(campaign, listTemplate, fileTemplate, listConfig)
