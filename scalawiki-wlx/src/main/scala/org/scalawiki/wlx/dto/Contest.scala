@@ -1,6 +1,6 @@
 package org.scalawiki.wlx.dto
 
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
 import org.scalawiki.wlx.dto.lists.ListConfig
 
 /**
@@ -54,36 +54,32 @@ case class Contest(
   */
 object Contest {
 
+  def load(name: String): Option[Contest] = {
+    fromConfig(ConfigFactory.load(name))
+  }
+
   def fromConfig(config: Config): Option[Contest] = {
     val (typeStr, countryStr, year) = (
       config.getString("type"),
       config.getString("country"),
       config.getInt("year"))
 
-    for (contestType <- ContestType.byName(typeStr.toLowerCase);
+    val uploadConfig = UploadConfig.fromConfig(config)
+
+    for (contestType <- ContestType.byCode(typeStr.toLowerCase);
          country <- Country.fromJavaLocales.find(country => country.name == countryStr || country.code == countryStr))
-      yield new Contest(contestType, country, year)
+      yield new Contest(contestType, country, year, uploadConfigs = Seq(uploadConfig))
   }
 
   def ESPCUkraine(year: Int, startDate: String = "01-09", endDate: String = "30-09") =
     new Contest(ContestType.ESPC, Country.Ukraine, year, startDate, endDate, Seq.empty)
 
-  def WLMUkraine(year: Int, startDate: String = "01-09", endDate: String = "30-09") =
-    new Contest(ContestType.WLM, Country.Ukraine, year, startDate, endDate,
-      Seq(UploadConfig("wlm-ua", "ВЛП-рядок", "Monument Ukraine", ListConfig.WlmUa)))
+  def WLMUkraine(year: Int) =
+    load("wlm_ua.conf").get.copy(year = year)
 
-  def WLEUkraine(year: Int, startDate: String, endDate: String) =
-    new Contest(ContestType.WLE, Country.Ukraine, year, startDate, endDate,
-      Seq(UploadConfig("wle-ua", "ВЛЗ-рядок", "UkrainianNaturalHeritageSite", ListConfig.WleUa)))
+  def WLEUkraine(year: Int) =
+    load("wle_ua.conf").get.copy(year = year)
 
-
-  def allWLE = {
-    val year = 2015
-    val (start, end) = ("01-05", "31-05")
-    Seq(
-      WLEUkraine(year, start, end)
-    )
-  }
 }
 
 

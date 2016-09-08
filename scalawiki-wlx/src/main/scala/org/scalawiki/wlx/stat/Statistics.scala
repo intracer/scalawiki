@@ -177,7 +177,7 @@ class Statistics(contest: Contest,
 object Statistics {
   def main(args: Array[String]) {
 
-    val contest: Contest = Contest.WLEUkraine(2016, "05-01", "05-31")
+    val contest: Contest = Contest.WLEUkraine(2016)
     val stat = new Statistics(contest, monumentQuery = MonumentQuery.create(contest))
 
     stat.init()

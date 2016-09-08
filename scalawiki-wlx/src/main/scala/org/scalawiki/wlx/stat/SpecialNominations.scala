@@ -69,7 +69,7 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
 
 object SpecialNominations {
   def main(args: Array[String]) {
-    val contest = Contest.WLMUkraine(2015, "05-01", "05-31")
+    val contest = Contest.WLMUkraine(2015)
     val query = MonumentQuery.create(contest)
     val map = new SpecialNominations(contest, new ImageDB(contest, Seq.empty)).getMonumentsMap(query)
     println(map.values.map(_.size).mkString(", "))

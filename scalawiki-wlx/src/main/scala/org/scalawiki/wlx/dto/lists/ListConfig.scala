@@ -21,8 +21,7 @@ object ListConfig {
   import scala.collection.JavaConverters._
 
   def load(name: String): ListConfig = {
-    val c = ConfigFactory.load(name)
-    ListConfig.fromConfig(c)
+    fromConfig(ConfigFactory.load(name))
   }
 
   def fromConfig(c: Config): ListConfig = {
@@ -34,7 +33,7 @@ object ListConfig {
         entry.getKey -> entry.getValue.unwrapped().toString
     }
 
-    new ListConfigImpl(c.getString("templateName"), ListMap(kvs: _*))
+    new ListConfigImpl(c.getString("listTemplate"), ListMap(kvs: _*))
   }
 
   val WleUa = load("wle_ua.conf")

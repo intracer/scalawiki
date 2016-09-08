@@ -76,7 +76,7 @@ class CountryListParserSpec extends Specification {
         Country("CH", "Switzerland"),
         Country("TH", "Thailand"),
         Country("TN", "Tunisia"),
-        Country("UA", "Ukraine")
+        Country.Ukraine.withoutLangCodes
       )
     }
 
@@ -123,7 +123,7 @@ class CountryListParserSpec extends Specification {
         Country("SE", "Sweden"),
         Country("TH", "Thailand"),
         Country("TN", "Tunisia"),
-        Country("UA", "Ukraine"),
+        Country.Ukraine.withoutLangCodes,
         Country("", "the United Kingdom"),
         Country("", "Esperantujo")
       )

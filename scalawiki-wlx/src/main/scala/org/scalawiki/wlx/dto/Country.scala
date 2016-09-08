@@ -3,6 +3,7 @@ package org.scalawiki.wlx.dto
 import java.util.Locale
 
 import scala.collection.immutable.SortedSet
+import scala.collection.mutable
 
 trait AdmDivision {
   def code: String
@@ -38,23 +39,8 @@ case class Country(
 }
 
 object Country {
-  val Romania = new Country("ro", "Romania", Seq("ro"))
-
-  val Armenia = new Country("am", "Armenia & Nagorno-Karabakh", Seq("hy"))
-
-  val Austria = new Country("au", "Austria", Seq("de"))
-
-  val Catalonia = new Country("ca", "Andorra & Catalan areas", Seq("ca"))
 
   val Azerbaijan = new Country("az", "Azerbaijan", Seq("az"))
-
-  val Estonia = new Country("ee", "Estonia", Seq("et"))
-
-  val Nepal = new Country("np", "Nepal", Seq("en"))
-
-  val Russia = new Country("ru", "Russia", Seq("ru"))
-
-  val Switzerland = new Country("ch", "Switzerland")
 
   val Ukraine = new Country("ua", "Ukraine", Seq("uk"),
     Map(
@@ -108,7 +94,7 @@ object Country {
 
     val countryLangs = langMap
 
-    Locale.getISOCountries.map { countryCode =>
+    val fromJava = Locale.getISOCountries.map { countryCode =>
 
       val langCodes = countryLangs.getOrElse(countryCode, Seq.empty)
 
@@ -122,6 +108,8 @@ object Country {
         locale.getDisplayCountry(Locale.ENGLISH),
         langCodes
       )
-    }
+    }.filterNot(_.code == "ua")
+
+    Seq(Ukraine) ++ fromJava
   }
 }

@@ -11,4 +11,8 @@ object ContestType {
 
   def byName(name: String): Option[ContestType] =
     all.find(_.name == name)
+
+  def byCode(code: String): Option[ContestType] =
+    all.find(_.code == code)
+
 }

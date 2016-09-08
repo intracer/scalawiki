@@ -16,7 +16,7 @@ object SubsetCreator {
 
     val specialNomination = "національного значення"
 
-    val contest = Contest.WLMUkraine(2014, "", "")
+    val contest = Contest.WLMUkraine(2014)
     val query = MonumentQuery.create(contest)
     query.byMonumentTemplateAsync(contest.listTemplate.get).map {
       monuments =>

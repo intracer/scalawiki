@@ -22,7 +22,7 @@ class MonumentDbSpec extends Specification {
 
    "monument db" should {
      "contain monuments ids" in {
-       val contest = Contest.WLMUkraine(2014, "09-15", "10-15")
+       val contest = Contest.WLMUkraine(2014)
 
        val db = new MonumentDB(contest, monuments.toSeq)
 
@@ -31,7 +31,7 @@ class MonumentDbSpec extends Specification {
      }
 
     "group monuments by regions" in {
-      val contest = Contest.WLMUkraine(2014, "09-15", "10-15")
+      val contest = Contest.WLMUkraine(2014)
 
       val db = new MonumentDB(contest, monuments.toSeq)
 

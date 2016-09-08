@@ -37,7 +37,7 @@ class ImageDbSpec extends Specification {
   }
 
   val allImages = images(2012) ++ images(2013) ++ images(2014)
-  val contest = Contest.WLMUkraine(2014, "09-15", "10-15")
+  val contest = Contest.WLMUkraine(2014)
 
 
 //    "group images by regions" in {

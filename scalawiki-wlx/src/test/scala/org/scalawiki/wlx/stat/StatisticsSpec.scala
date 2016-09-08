@@ -14,7 +14,7 @@ import scala.concurrent.Future
 
 class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mockito with FutureMatchers {
 
-  val contest = Contest.WLEUkraine(2016, "05-01", "05-31")
+  val contest = Contest.WLEUkraine(2016)
 
   def mockedStat(monuments: Seq[Monument], images: Seq[Image]): Statistics = {
     val bot = mock[MwBot]
