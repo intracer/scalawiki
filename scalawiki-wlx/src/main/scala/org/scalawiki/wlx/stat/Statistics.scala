@@ -133,13 +133,9 @@ class Statistics(contest: Contest,
 
     bot.page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, Some("updating"))
 
-    updateReport(new AuthorMonuments(currentYear))
+    new AuthorMonuments(currentYear).updateWiki(bot)
 
-    monumentDb.map (_ => updateReport(new MostPopularMonuments(stat)))
-  }
-
-  def updateReport(reporter: Reporter) = {
-    bot.page(reporter.page).edit(reporter.asText, Some("updating"))
+    monumentDb.map (_ => new MostPopularMonuments(stat).updateWiki(bot))
   }
 
   def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {

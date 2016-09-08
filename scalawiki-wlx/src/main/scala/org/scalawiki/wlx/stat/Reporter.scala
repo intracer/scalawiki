@@ -1,5 +1,6 @@
 package org.scalawiki.wlx.stat
 
+import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
 
 trait Reporter {
@@ -22,6 +23,10 @@ trait Reporter {
     val categoryText = s"\n[[Category:$category]]"
 
     header + table.asWiki + categoryText
+  }
+
+  def updateWiki(bot: MwBot) = {
+    bot.page(page).edit(asText, Some("updating"))
   }
 
 }

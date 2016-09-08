@@ -1,8 +1,5 @@
 package org.scalawiki.wlx.stat
 
-import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths}
-
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.dto.markup.Table
@@ -11,22 +8,7 @@ import org.scalawiki.wlx.{ImageDB, MonumentDB}
 class AuthorsStat {
 
   def authorsStat(imageDb: ImageDB, bot: MwBot) {
-    val contest = imageDb.contest
-    val contestPage = contest.name
-
-    val numberOfMonuments = new AuthorMonuments(imageDb).asText
-
-    Files.write(Paths.get("authorsMonuments.txt"), numberOfMonuments.getBytes(StandardCharsets.UTF_8))
-    bot.page(s"Commons:$contestPage/Number of objects pictured by uploader")
-      .edit(numberOfMonuments, Some("updating"))
-
-    if (contest.rating) {
-      val rating = new AuthorMonuments(imageDb, rating = true).asText
-      Files.write(Paths.get("authorsRating.txt"), rating.getBytes(StandardCharsets.UTF_8))
-      bot.page(s"Commons:$contestPage/Rating based on number and originality of objects pictured by uploader")
-        .edit(rating, Some("updating"))
-
-    }
+    new AuthorMonuments(imageDb, rating = imageDb.contest.rating).updateWiki(bot)
   }
 
   def authorsContributed(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: Option[MonumentDB]) = {
