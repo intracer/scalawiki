@@ -2,7 +2,7 @@ package org.scalawiki.wlx.stat.generic
 
 import org.scalawiki.wlx.MonumentDB
 import org.scalawiki.wlx.dto.{Contest, Monument}
-import org.scalawiki.wlx.dto.lists.WlmUa
+import org.scalawiki.wlx.dto.lists.ListConfig.WlmUa
 import org.scalawiki.wlx.stat.Stats
 import org.specs2.mutable.Specification
 

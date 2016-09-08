@@ -2,7 +2,7 @@ package org.scalawiki.wlx.stat
 
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
-import org.scalawiki.wlx.dto.lists.WlmUa
+import org.scalawiki.wlx.dto.lists.ListConfig.WlmUa
 import org.scalawiki.wlx.dto.{Contest, Monument}
 import org.specs2.mutable.Specification
 

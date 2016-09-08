@@ -17,7 +17,7 @@ object Events {
 
   import scala.collection.JavaConverters._
 
-  def confToEvent(c: Config) =
+  def fromConfig(c: Config) =
     new ArticlesEvent(
       c.getString("name"),
       c.as[DateTime]("start"),
@@ -28,8 +28,8 @@ object Events {
 
   def events() = {
     val conf = ConfigFactory.load("articles-events.conf")
-    val contests = conf.getConfigList("contests").asScala.map(confToEvent)
-    val weeks = conf.getConfigList("weeks").asScala.map(confToEvent)
+    val contests = conf.getConfigList("contests").asScala.map(fromConfig)
+    val weeks = conf.getConfigList("weeks").asScala.map(fromConfig)
     (contests, weeks)
   }
 

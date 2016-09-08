@@ -2,7 +2,7 @@ package org.scalawiki.wlx
 
 import org.scalawiki.dto.{Image, User}
 import org.scalawiki.wlx.dto._
-import org.scalawiki.wlx.dto.lists.WlmUa
+import org.scalawiki.wlx.dto.lists.ListConfig
 import org.specs2.mutable.Specification
 
 class ImageDbSpec extends Specification {
@@ -15,7 +15,7 @@ class ImageDbSpec extends Specification {
           page = "",
           id = regionId + "-001-" + f"$i%04d",
           name = "Monument in " + Ukraine.regionName(regionId),
-          listConfig = Some(WlmUa)
+          listConfig = Some(ListConfig.WlmUa)
         )
       }
   }

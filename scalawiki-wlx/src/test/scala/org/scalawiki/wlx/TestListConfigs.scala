@@ -4,10 +4,6 @@ import org.scalawiki.wlx.dto.lists.ListConfig
 
 import scala.collection.immutable.ListMap
 
-object TestListConfigs {
-
-}
-
 object IdNameConfig extends ListConfig {
   override val namesMap = ListMap(
     "ID" -> "_ID",

@@ -12,7 +12,7 @@ import org.scalawiki.dto.Site
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wikitext.TableParser
 import org.scalawiki.wlx.dto.Monument
-import org.scalawiki.wlx.dto.lists.WlmUa
+import org.scalawiki.wlx.dto.lists.ListConfig.WlmUa
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

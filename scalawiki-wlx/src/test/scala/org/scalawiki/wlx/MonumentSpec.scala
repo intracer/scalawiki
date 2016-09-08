@@ -1,7 +1,7 @@
 package org.scalawiki.wlx
 
 import org.scalawiki.wlx.dto.Monument
-import org.scalawiki.wlx.dto.lists.{WleUa, WlmUa}
+import org.scalawiki.wlx.dto.lists.ListConfig.{WleUa, WlmUa}
 import org.specs2.mutable.Specification
 
 class MonumentSpec extends Specification {

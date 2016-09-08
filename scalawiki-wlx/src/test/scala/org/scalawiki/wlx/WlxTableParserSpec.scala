@@ -2,7 +2,7 @@ package org.scalawiki.wlx
 
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.util.TestUtils._
-import org.scalawiki.wlx.dto.lists.WleTh
+import org.scalawiki.wlx.dto.lists.ListConfig.WleTh
 import org.specs2.mutable.Specification
 
 class WlxTableParserSpec extends Specification {

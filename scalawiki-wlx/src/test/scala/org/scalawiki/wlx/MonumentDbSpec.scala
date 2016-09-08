@@ -1,6 +1,6 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.wlx.dto.lists.WleUa
+import org.scalawiki.wlx.dto.lists.ListConfig.WleUa
 import org.scalawiki.wlx.dto.{Contest, Country, Monument}
 import org.specs2.mutable.Specification
 
