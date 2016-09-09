@@ -83,6 +83,10 @@ class ImageDB(val contest: Contest, val images: Seq[Image],
     new ImageDB(contest, subSetImages, Some(subSetMonumentDb))
   }
 
+  def subSet(f: Image => Boolean): ImageDB = {
+    new ImageDB(contest, images.filter(f), monumentDb)
+  }
+
 }
 
 class Grouping[T, F](name: String, val f: F => T, data: Seq[F]) {

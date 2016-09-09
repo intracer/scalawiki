@@ -78,6 +78,7 @@ class Statistics(contest: Contest,
     new SpecialNominations(contest, imageDb).specialNominations()
 
     new AuthorsStat().authorsStat(imageDb, bot)
+
     lessThan2MpGallery(contest, imageDb)
 
     imageDb.monumentDb.foreach {
@@ -132,8 +133,6 @@ class Statistics(contest: Contest,
     val regionalStat = toc + idsStat + authorsContributed + category
 
     bot.page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, Some("updating"))
-
-    new AuthorMonuments(currentYear).updateWiki(bot)
 
     monumentDb.map (_ => new MostPopularMonuments(stat).updateWiki(bot))
   }

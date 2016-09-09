@@ -1,15 +1,19 @@
 package org.scalawiki.wlx.stat
 
+import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.ImageDB
 
-class AuthorMonuments(val imageDb: ImageDB, rating: Boolean = false, gallery: Boolean = false) extends Reporter {
+class AuthorMonuments(imageDb: ImageDB,
+                      rating: Boolean = false,
+                      gallery: Boolean = false,
+                      commons: Option[MwBot] = None) extends Reporter {
 
   override def stat: ContestStat = ???
 
   override def contest = imageDb.contest
 
-  override def name: String = "Total number of objects pictured by uploader"
+  override def name: String = "Number of objects pictured by uploader"
 
   val country = contest.country
 
@@ -25,21 +29,34 @@ class AuthorMonuments(val imageDb: ImageDB, rating: Boolean = false, gallery: Bo
               regionRating: String => Int,
               rating: Boolean = false,
               user: Option[String] = None): Seq[String] = {
-    (if (gallery && user.isDefined) {
-      val galleryPage = s"Commons:${contest.name}/${user.get}"
-      Seq(s"[[$galleryPage|${ids.size}]]")
+
+    val objects = if (gallery && user.isDefined && ids.nonEmpty) {
+
+      val noTemplateUser = user.get.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
+
+      val galleryPage = "Commons:" + contest.name + "/" + noTemplateUser
+
+      val galleryText = new Output().galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == user))
+
+      commons.foreach(_.page(galleryPage).edit(galleryText))
+
+      "[[" + galleryPage + "|" + ids.size + "]]"
+
     } else {
-      Seq(ids.size.toString)
-    }) ++
-      ((if (rating) {
-        Seq(
-          (ids intersect oldIds).size,
-          (ids -- oldIds).size,
-          ratingFunc(ids, oldIds)
-        )
-      } else Seq.empty[String]) ++
-        Seq(images) ++
-        country.regionIds.toSeq.map(regionRating)).map(_.toString)
+      ids.size
+    }
+
+    val ratingColumns = if (rating) {
+      Seq(
+        (ids intersect oldIds).size, // existing
+        (ids -- oldIds).size, // new
+        ratingFunc(ids, oldIds) // rating
+      )
+    } else Seq.empty[String]
+
+    val byRegion = country.regionIds.toSeq.map(regionRating)
+
+    ((objects +: ratingColumns :+ images) ++ byRegion).map(_.toString)
   }
 
   override def table: Table = {
@@ -49,7 +66,7 @@ class AuthorMonuments(val imageDb: ImageDB, rating: Boolean = false, gallery: Bo
       Seq("Photos uploaded") ++
       country.regionNames
 
-    val totalData = Seq("Total") ++
+    val totalData = "Total" +:
       rowData(imageDb.ids, imageDb.images.size, regId => imageDb.idsByRegion(regId).size, rating)
 
     val authors = imageDb.authors.toSeq.sortBy(user => -imageDb._byAuthorAndId.by(user).size)
@@ -58,14 +75,14 @@ class AuthorMonuments(val imageDb: ImageDB, rating: Boolean = false, gallery: Bo
       val userLink = s"[[User:$noTemplateUser|$noTemplateUser]]"
 
       def userRating(regId: String) = {
-        val monumnentsInRegion = imageDb._byAuthorAndRegion.by(user, regId).flatMap(_.monumentId).toSet
-        ratingFunc(monumnentsInRegion, oldIds)
+        val monumentsInRegion = imageDb._byAuthorAndRegion.by(user, regId).flatMap(_.monumentId).toSet
+        ratingFunc(monumentsInRegion, oldIds)
       }
-      Seq(userLink) ++
+      userLink +:
         rowData(imageDb._byAuthorAndId.by(user).keys, imageDb._byAuthor.by(user).size, userRating, rating, Some(user))
     }
 
-    new Table(columns, Seq(totalData) ++ authorsData, "Number of objects pictured by uploader")
+    new Table(columns, totalData +: authorsData, name)
   }
 
 }

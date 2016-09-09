@@ -43,7 +43,7 @@ class Output {
           id =>
             val images = imageDb.byId(id).map(_.title).sorted
             s"=== $id ===\n" +
-              s"${monumentDb.byId(id).get.name}\n" +
+              s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n" +
               Image.gallery(images)
         }.mkString("\n")
     }.mkString("\n")
