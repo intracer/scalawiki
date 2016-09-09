@@ -45,7 +45,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
 
   override def before = {
     dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
-    mwDb = new MwDatabase(dc.db)
+    mwDb = new MwDatabase(dc)
   }
 
   override def after = {

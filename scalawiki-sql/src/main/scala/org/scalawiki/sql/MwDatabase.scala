@@ -1,17 +1,22 @@
 package org.scalawiki.sql
 
+import java.net.URI
+
 import org.scalawiki.sql.dao._
-import slick.driver.H2Driver.api._
-import slick.driver.{H2Driver, JdbcProfile}
+import slick.backend.DatabaseConfig
+import slick.driver.JdbcProfile
 import slick.jdbc.meta.MTable
-import slick.lifted.TableQuery
 import spray.util.pimpFuture
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class MwDatabase(val db: Database,
-                 val dbName: Option[String] = None,
-                 val driver: JdbcProfile = H2Driver) {
+class MwDatabase(val dc: DatabaseConfig[JdbcProfile], val dbName: Option[String] = None) {
+
+  val db = dc.db
+
+  val driver = dc.driver
+
+  import driver.api._
 
   def prefixed(tableName: String) = dbName.fold("")(_ + "_") + tableName
 
@@ -87,7 +92,7 @@ class MwDatabase(val db: Database,
 object MwDatabase {
 
   def create(host: String) = {
-    val db = Database.forURL("jdbc:h2:~/scalawiki", driver = "org.h2.Driver")
+    val db = DatabaseConfig.forURI[JdbcProfile](new URI("jdbc:h2:~/scalawiki"))
     val database = new MwDatabase(db, Some(MwDatabase.dbName(host)))
     database.createTables()
     database
@@ -95,8 +100,8 @@ object MwDatabase {
 
   def dbName(host: String): String = {
     host.split("\\.").toList match {
-      case "commons" :: "wikimedia" :: xs => "commonswiki"
-      case x :: "wikipedia" :: xs => x + "wiki"
+      case "commons" :: "wikimedia" :: xs => "commonswiki_p"
+      case x :: "wikipedia" :: xs => x + "wiki_p"
       case x1 :: x2 :: xs => x1 + x2
     }
   }
