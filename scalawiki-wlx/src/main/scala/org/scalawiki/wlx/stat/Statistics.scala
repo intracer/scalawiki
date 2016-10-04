@@ -16,7 +16,7 @@ case class ContestStat(contest: Contest,
                        currentYearImageDb: ImageDB,
                        totalImageDb: Option[ImageDB],
                        dbsByYear: Seq[ImageDB] = Seq.empty,
-                       monumentDbOld: Option[MonumentDB]  = None
+                       monumentDbOld: Option[MonumentDB] = None
                       )
 
 class Statistics(contest: Contest,
@@ -32,7 +32,7 @@ class Statistics(contest: Contest,
     (year until currentYear).map(year => contest.copy(year = year))
   }
 
-  def gatherData(total: Boolean = false, byYear: Boolean = false): Future[ContestStat] = {
+  def gatherData(total: Boolean = true, byYear: Boolean = true): Future[ContestStat] = {
 
     val (monumentDb, monumentDbOld) = (Some(MonumentDB.getMonumentDb(contest, monumentQuery)), None)
 
@@ -55,7 +55,7 @@ class Statistics(contest: Contest,
   }
 
   def init(): Unit = {
-    gatherData().map {
+    gatherData(total = true, byYear = true).map {
       data =>
         currentYear(data.contest, data.currentYearImageDb, data)
 
@@ -177,7 +177,7 @@ object Statistics {
   def main(args: Array[String]) {
 
     val contest: Contest = Contest.WLEUkraine(2016)
-    val stat = new Statistics(contest, monumentQuery = MonumentQuery.create(contest))
+    val stat = new Statistics(contest, startYear = Some(2013), monumentQuery = MonumentQuery.create(contest))
 
     stat.init()
   }

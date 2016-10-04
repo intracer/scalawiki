@@ -21,6 +21,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
   val name = "Monuments pictured by region"
 
   var images: Option[String] = None
+  val charts = new Charts()
 
   override def asText: String = {
 
@@ -35,7 +36,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
   def monumentsPicturedTable(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: MonumentDB): Table = {
     val contest = monumentDb.contest
     val categoryName = contest.category
-    val filenamePrefix = categoryName.replace("_", "")
+    val filenamePrefix = contest.name.replace("_", "")
 
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
     val yearSeq = imageDbsByYear.keys.toSeq.sorted
@@ -115,7 +116,6 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
     new Table(columns, rows ++ Seq(totalData), "Objects pictured")
   }
 
-  val charts = new Charts()
 
   def regionalStatImages(
                           filenamePrefix: String,
@@ -124,7 +124,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
                           dataset: DefaultCategoryDataset,
                           ids: Seq[Set[String]],
                           idsSize: Seq[Int],
-                          uploadImages: Boolean = false): String = {
+                          uploadImages: Boolean = true): String = {
     val images =
       s"\n[[File:${filenamePrefix}PicturedByYearTotal.png|$categoryName, monuments pictured by year overall|left]]" +
         s"\n[[File:${filenamePrefix}PicturedByYearPie.png|$categoryName, monuments pictured by year pie chart|left]]" +
