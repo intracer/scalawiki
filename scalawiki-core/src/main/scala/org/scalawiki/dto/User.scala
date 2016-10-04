@@ -9,7 +9,9 @@ case class User(
                  registration: Option[DateTime] = None,
                  blocked: Option[Boolean] = None,
                  emailable: Option[Boolean] = None,
-                 sulAccounts: Seq[SulAccount] = Seq.empty)
+                 missing: Boolean = false,
+                 sulAccounts: Seq[SulAccount] = Seq.empty
+                 )
   extends Contributor {
 
   override def name = login

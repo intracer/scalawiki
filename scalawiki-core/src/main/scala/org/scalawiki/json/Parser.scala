@@ -100,7 +100,8 @@ class Parser(val action: Action) {
 
     val blocked = if (props.contains("blockinfo")) Some(userJson.keys.contains("blockid")) else None
     val emailable = if (props.contains("emailable")) Some(userJson.keys.contains("emailable")) else None
-    val user = mappedJson.validate(Parser.userReads).get.copy(blocked = blocked, emailable = emailable)
+    val jsResult = mappedJson.validate(Parser.userReads)
+    val user = jsResult.get.copy(blocked = blocked, emailable = emailable)
     new Page(id = None, title = user.name.get, ns = Namespace.USER, revisions = Seq(Revision(user = Some(user))))
   }
 
@@ -207,12 +208,19 @@ object Parser {
     (__ \ "userid").readNullable[Long] ~
       (__ \ "name").readNullable[String] ~
       (__ \ "editcount").readNullable[Long] ~
-      (__ \ "registration").readNullable[DateTime](jodaDateTimeReads)
+      (__ \ "registration").readNullable[DateTime](jodaDateTimeReads) ~
+      (__ \ "blockid").readNullable[Long].map(_.map(_ => true)) ~
+      (__ \ "emailable").readNullable[String].map(_.map(_ => true)) ~
+      (__ \ "missing").readNullable[String].map(_.isDefined)
     ) (User.apply(
     _: Option[Long],
     _: Option[String],
     _: Option[Long],
-    _: Option[DateTime])
+    _: Option[DateTime],
+    _: Option[Boolean],
+    _: Option[Boolean],
+    _: Boolean
+  )
   )
 
   def revisionsReads(pageId: Long): Reads[Seq[Revision]] = {
