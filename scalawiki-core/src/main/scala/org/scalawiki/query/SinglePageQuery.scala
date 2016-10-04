@@ -36,7 +36,7 @@ trait SinglePageQuery {
   def upload(filename: String,
              text: Option[String] = None,
              comment: Option[String] = None,
-             ignoreWarnings: Boolean = false): Future[String]
+             ignoreWarnings: Boolean = true): Future[String]
 
   def withContext(context: Map[String, String]): SinglePageQuery
 }
