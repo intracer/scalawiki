@@ -94,8 +94,11 @@ lazy val `scalawiki-dumps` =
 lazy val `scalawiki-wlx` =
   (project in file("scalawiki-wlx"))
     .settings(commonSettings: _*)
-    .settings(libraryDependencies ++= Seq("com.github.wookietreiber" %% "scala-chart" % "0.5.0"))
-    .dependsOn(`scalawiki-core` % "compile->compile;test->test")
+    .settings(libraryDependencies ++= Seq(
+      "com.github.wookietreiber" %% "scala-chart" % "0.5.0",
+      "mysql" % "mysql-connector-java" % "5.1.39",
+      "com.jcraft" % "jsch" % "0.1.54"))
+    .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-sql`)
 
 lazy val `scalawiki-sql` =
   (project in file("scalawiki-sql"))
