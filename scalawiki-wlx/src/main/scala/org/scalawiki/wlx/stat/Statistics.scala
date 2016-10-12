@@ -32,14 +32,14 @@ class Statistics(contest: Contest,
     (year until currentYear).map(year => contest.copy(year = year))
   }
 
-  def gatherData(total: Boolean = true, byYear: Boolean = true): Future[ContestStat] = {
+  def gatherData(total: Boolean = false, byYear: Boolean = false): Future[ContestStat] = {
 
     val (monumentDb, monumentDbOld) = (Some(MonumentDB.getMonumentDb(contest, monumentQuery)), None)
 
     val imageDbFuture = ImageDB.create(contest, imageQuery, monumentDb, monumentDbOld)
 
     val totalFuture = if (total)
-      new ImageQueryApi().imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest).map {
+      imageQuery.imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest).map {
         images =>
           Some(new ImageDB(contest, images, monumentDb))
       } else Future.successful(None)
