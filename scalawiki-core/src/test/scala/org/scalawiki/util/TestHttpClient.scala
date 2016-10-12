@@ -19,7 +19,7 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
   override def getResponse(url: Uri): Future[HttpResponse] = getResponse(url, url.query.toMap)
 
   def getResponse(url: Uri, params: Map[String, String]): Future[HttpResponse] = {
-    require(commands.nonEmpty, "Unexpected query: " + url.toString())
+    require(commands.nonEmpty, "Unexpected query: " + url.toString() + " with params:\n" + params)
 
     val command = commands.dequeue()
 

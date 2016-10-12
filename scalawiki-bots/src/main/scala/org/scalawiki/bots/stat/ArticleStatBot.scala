@@ -56,7 +56,7 @@ class ArticleStatBot() extends WithBot {
     }
   }
 
-  def stat(event: ArticlesEvent): Future[Long] = {
+  def stat(event: ArticlesEvent): Future[EventStat] = {
 
     val from = Some(event.start)
     val to = Some(event.end)
@@ -85,17 +85,29 @@ class ArticleStatBot() extends WithBot {
             case _ => None
           }.flatten.toSeq.sortBy(-_.addedOrRewritten)
 
-          val (created, improved) = revStats.partition(_.history.createdAfter(from))
+          val stat = new EventStat(event, revStats)
 
-          val allStat = new ArticleStat(revisionFilter, revStats, "All")
-          val createdStat = new ArticleStat(revisionFilter, created, "created")
-          val improvedStat = new ArticleStat(revisionFilter, improved, "improved")
+          println(Seq(stat.allStat, stat.createdStat, stat.improvedStat).mkString("\n"))
 
-          println(Seq(allStat, createdStat, improvedStat).mkString("\n"))
-          allStat.added.sum
+          stat
         }
     }
   }
+}
+
+case class EventStat(event: ArticlesEvent, revStats: Seq[RevisionStat]) {
+
+  val from = Some(event.start)
+  val to = Some(event.end)
+
+  val revisionFilter = new RevisionFilterDateAndUser(from, to)
+
+  val (created, improved) = revStats.partition(_.history.createdAfter(from))
+
+  val allStat = new ArticleStat(revisionFilter, revStats, "All")
+  val createdStat = new ArticleStat(revisionFilter, created, "created")
+  val improvedStat = new ArticleStat(revisionFilter, improved, "improved")
+
 }
 
 object ArticleStatBot {
@@ -105,8 +117,10 @@ object ArticleStatBot {
 
     val (contests, weeks) = Events.events()
 
-    Future.sequence(weeks.map(bot.stat)).map(eventSummary)
-    Future.sequence(contests.map(bot.stat)).map(eventSummary)
+    weeks.find(_.newTemplate == "Cherkasy-week-new").map(bot.stat)
+
+//    Future.sequence(weeks.map(bot.stat)).map(eventSummary)
+//    Future.sequence(contests.map(bot.stat)).map(eventSummary)
   }
 
   def eventSummary(stats: Seq[Long]): Unit = {

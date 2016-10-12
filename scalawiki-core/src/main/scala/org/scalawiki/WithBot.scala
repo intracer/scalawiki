@@ -4,9 +4,7 @@ trait WithBot {
 
   def host: String
 
-  lazy val bot: MwBot = createBot()
-
-  private def createBot() = {
+  def bot: MwBot = {
     MwBot.fromHost(host)
   }
 
