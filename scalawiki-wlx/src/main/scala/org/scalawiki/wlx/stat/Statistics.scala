@@ -37,7 +37,9 @@ class Statistics(contest: Contest,
 
     val (monumentDb, monumentDbOld) = (
       Some(MonumentDB.getMonumentDb(contest, monumentQuery)),
-      Some(MonumentDB.getMonumentDb(contest, monumentQuery, date = Some(new DateTime(2016, 8, 31, 23, 59))))
+      Option(contest.rating).filter(_ == true).map { _ =>
+        MonumentDB.getMonumentDb(contest, monumentQuery, date = Some(new DateTime(2016, 8, 31, 23, 59)))
+      }
       )
 
     val imageDbFuture = ImageDB.create(contest, imageQuery, monumentDb)
@@ -108,7 +110,7 @@ class Statistics(contest: Contest,
       mDb =>
         wrongIds(imageDb, mDb)
 
-        //fillLists(mDb, imageDb)
+      //fillLists(mDb, imageDb)
     }
   }
 
@@ -199,7 +201,7 @@ class Statistics(contest: Contest,
 object Statistics {
   def main(args: Array[String]) {
 
-    val contest: Contest = Contest.WLMUkraine(2016).copy(rating = true)
+    val contest: Contest = Contest.WLMUkraine(2016).copy(rating = false)
     val stat = new Statistics(contest, startYear = Some(2012), monumentQuery = MonumentQuery.create(contest))
 
     stat.init()
