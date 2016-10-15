@@ -12,8 +12,13 @@ class AuthorsStat(val uploadImages: Boolean = false) {
 
   val charts = new Charts()
 
-  def authorsStat(imageDb: ImageDB, bot: MwBot) {
-    new AuthorMonuments(imageDb, rating = imageDb.contest.rating, gallery = true, commons = Some(bot)).updateWiki(bot)
+  def authorsStat(imageDb: ImageDB, bot: MwBot, oldMonumentDb: Option[MonumentDB] = None) {
+    new AuthorMonuments(imageDb,
+      rating = imageDb.contest.rating,
+      gallery = true,
+      commons = Some(bot),
+      oldMonumentDb = oldMonumentDb
+    ).updateWiki(bot)
   }
 
   def authorsContributed(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: Option[MonumentDB]) = {

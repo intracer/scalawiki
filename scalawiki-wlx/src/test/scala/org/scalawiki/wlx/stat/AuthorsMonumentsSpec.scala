@@ -18,7 +18,7 @@ class AuthorsMonumentsSpec extends Specification {
                 gallery: Boolean = false): Table = {
     val mdb = Some(new MonumentDB(contest, monuments))
 
-    val db = new ImageDB(contest, images, mdb, mdb)
+    val db = new ImageDB(contest, images, mdb)
 
     new AuthorMonuments(db, gallery = gallery).table
   }
@@ -28,7 +28,6 @@ class AuthorsMonumentsSpec extends Specification {
 
   def monuments(n: Int, regionId: String, namePrefix: String, startId: Int = 1): Seq[Monument] =
     (startId until startId + n).map(i => monument(s"$regionId-xxx-000$i", namePrefix + i))
-
 
   "authorsMonumentsTable" should {
     "be empty without regions" in {
@@ -47,7 +46,7 @@ class AuthorsMonumentsSpec extends Specification {
 
       val mdb = Some(new MonumentDB(contest, Seq.empty[Monument]))
 
-      val db = new ImageDB(noRegions, Seq.empty[Image], mdb, None)
+      val db = new ImageDB(noRegions, Seq.empty[Image], mdb)
 
       val table = new AuthorMonuments(db).table
 
@@ -191,7 +190,7 @@ class AuthorsMonumentsSpec extends Specification {
           monuments(7, "07", "Volyn")
       )
 
-      val db = new ImageDB(contest, images2, Some(mDb), Some(mDb))
+      val db = new ImageDB(contest, images2, Some(mDb))
 
       val table = new AuthorMonuments(db).table
       val data = table.data
@@ -228,9 +227,9 @@ class AuthorsMonumentsSpec extends Specification {
           monuments(7, "07", "Volyn")
       )
 
-      val db = new ImageDB(contest, images2, Some(mDb), Some(mDb))
+      val db = new ImageDB(contest, images2, Some(mDb))
 
-      val table = new AuthorMonuments(db, rating = true).table
+      val table = new AuthorMonuments(db, rating = true, oldMonumentDb = Some(mDb)).table
       val data = table.data
 
       data.size === 6
@@ -251,8 +250,6 @@ class AuthorsMonumentsSpec extends Specification {
     }
 
     "rate with all new images" in {
-      val output = new AuthorsStat
-
       val images2 = Seq(
         Image("File:Img11y2f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimeaOld")),
         Image("File:Img12y2f1.jpg", monumentId = Some("01-xxx-0002"), author = Some("FromCrimeaNew")),
@@ -267,9 +264,9 @@ class AuthorsMonumentsSpec extends Specification {
           monuments(7, "07", "Volyn")
       )
 
-      val db = new ImageDB(contest, images2, Some(mDb), Some(new MonumentDB(contest, Seq.empty)))
+      val db = new ImageDB(contest, images2, Some(mDb))
 
-      val table = new AuthorMonuments(db, rating = true).table
+      val table = new AuthorMonuments(db, rating = true, oldMonumentDb = Some(new MonumentDB(contest, Seq.empty))).table
       val data = table.data
 
       data.size === 6
@@ -313,9 +310,9 @@ class AuthorsMonumentsSpec extends Specification {
       val oldIds = images1.flatMap(_.monumentId).toSet
       val oldMdb = new MonumentDB(contest, mDb.monuments.filter(m => oldIds.contains(m.id)))
 
-      val db = new ImageDB(contest, images2, Some(mDb), Some(oldMdb))
+      val db = new ImageDB(contest, images2, Some(mDb))
 
-      val table = new AuthorMonuments(db, rating = true).table
+      val table = new AuthorMonuments(db, rating = true, oldMonumentDb = Some(oldMdb)).table
       val data = table.data
 
       data.size === 6

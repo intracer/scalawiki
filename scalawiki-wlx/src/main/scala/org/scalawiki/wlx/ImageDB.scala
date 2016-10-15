@@ -7,9 +7,9 @@ import org.scalawiki.wlx.query.ImageQuery
 import scala.concurrent.Future
 
 
-class ImageDB(val contest: Contest, val images: Seq[Image],
-                     val monumentDb: Option[MonumentDB],
-                     val oldMonumentDb: Option[MonumentDB] = None) {
+class ImageDB(val contest: Contest,
+              val images: Seq[Image],
+              val monumentDb: Option[MonumentDB]) {
 
   def this(contest: Contest, images: Seq[Image]) = this(contest, images, None)
 
@@ -142,9 +142,9 @@ object ImageDB {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def create(contest: Contest, imageQuery: ImageQuery, monumentDb: Option[MonumentDB], oldMonumentDb: Option[MonumentDB] = None): Future[ImageDB] = {
+  def create(contest: Contest, imageQuery: ImageQuery, monumentDb: Option[MonumentDB]): Future[ImageDB] = {
     imageQuery.imagesFromCategoryAsync(contest.category, contest).map {
-      images => new ImageDB(contest, images, monumentDb, oldMonumentDb)
+      images => new ImageDB(contest, images, monumentDb)
     }
   }
 }

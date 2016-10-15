@@ -118,7 +118,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
         Info(),
         Revisions(
           RvProp(Content, Ids, Size, User, UserId, Timestamp),
-          RvLimit("1"),
+          RvLimit("max"),
           RvStart(date)
         )
       )
@@ -151,7 +151,7 @@ class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
 
 object MonumentQuery {
 
-  def create(contest: Contest, caching: Boolean = true, pickling: Boolean = false): MonumentQuery = {
+  def create(contest: Contest, caching: Boolean = false, pickling: Boolean = false): MonumentQuery = {
     val api = new MonumentQueryApi(contest)
 
     if (caching)

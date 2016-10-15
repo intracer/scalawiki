@@ -1,5 +1,6 @@
 package org.scalawiki.wlx.stat
 
+import org.joda.time.DateTime
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.Contest
@@ -34,9 +35,12 @@ class Statistics(contest: Contest,
 
   def gatherData(total: Boolean = false, byYear: Boolean = false): Future[ContestStat] = {
 
-    val (monumentDb, monumentDbOld) = (Some(MonumentDB.getMonumentDb(contest, monumentQuery)), None)
+    val (monumentDb, monumentDbOld) = (
+      Some(MonumentDB.getMonumentDb(contest, monumentQuery)),
+      Some(MonumentDB.getMonumentDb(contest, monumentQuery, date = Some(new DateTime(2016, 8, 31, 23, 59))))
+      )
 
-    val imageDbFuture = ImageDB.create(contest, imageQuery, monumentDb, monumentDbOld)
+    val imageDbFuture = ImageDB.create(contest, imageQuery, monumentDb)
 
     val totalFuture = if (total)
       imageQuery.imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest).map {
@@ -50,16 +54,35 @@ class Statistics(contest: Contest,
 
     for (imageDB <- imageDbFuture;
          totalImages <- totalFuture;
-         byYear <- byYearFuture)
-      yield ContestStat(contest, startYear.getOrElse(contest.year), monumentDb, imageDB, totalImages, byYear, monumentDbOld)
+         byYear <- byYearFuture) yield {
+
+      val mDbOld: Option[MonumentDB] = getOldImagesMonumentDb(monumentDb, monumentDbOld, totalImages, imageDB)
+
+      ContestStat(contest, startYear.getOrElse(contest.year), monumentDb, imageDB, totalImages, byYear, mDbOld)
+    }
+  }
+
+  def getOldImagesMonumentDb(monumentDb: Option[MonumentDB], monumentDbOld: Option[MonumentDB],
+                             totalImages: Option[ImageDB], imageDB: ImageDB): Option[MonumentDB] = {
+    monumentDbOld.flatMap {
+      db =>
+
+        for (mDb <- monumentDb;
+             mdbOld <- monumentDbOld;
+             total <- totalImages.orElse(Some(new ImageDB(contest, Seq.empty)))) yield {
+          val oldIds = mdbOld.monuments.filter(_.photo.isDefined).map(_.id).toSet ++
+            (total.images.flatMap(_.monumentId).toSet -- imageDB.images.flatMap(_.monumentId).toSet)
+
+          new MonumentDB(contest, mDb.monuments.filter(m => oldIds.contains(m.id)))
+        }
+    }
   }
 
   def init(): Unit = {
     gatherData(total = true, byYear = true).map {
       data =>
-        currentYear(data.contest, data.currentYearImageDb, data)
-
         for (totalImageDb <- data.totalImageDb) {
+          currentYear(data.contest, data.currentYearImageDb, data)
           regionalStat(data.contest, data.dbsByYear, data.currentYearImageDb, totalImageDb, data)
         }
     }
@@ -77,7 +100,7 @@ class Statistics(contest: Contest,
 
     new SpecialNominations(contest, imageDb).specialNominations()
 
-    new AuthorsStat().authorsStat(imageDb, bot)
+    new AuthorsStat().authorsStat(imageDb, bot, stat.monumentDbOld)
 
     lessThan2MpGallery(contest, imageDb)
 
@@ -85,7 +108,7 @@ class Statistics(contest: Contest,
       mDb =>
         wrongIds(imageDb, mDb)
 
-        fillLists(mDb, imageDb)
+        //fillLists(mDb, imageDb)
     }
   }
 
@@ -134,7 +157,7 @@ class Statistics(contest: Contest,
 
     bot.page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, Some("updating"))
 
-    monumentDb.map (_ => new MostPopularMonuments(stat).updateWiki(bot))
+    monumentDb.map(_ => new MostPopularMonuments(stat).updateWiki(bot))
   }
 
   def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
@@ -176,8 +199,8 @@ class Statistics(contest: Contest,
 object Statistics {
   def main(args: Array[String]) {
 
-    val contest: Contest = Contest.WLEUkraine(2016)
-    val stat = new Statistics(contest, startYear = Some(2013), monumentQuery = MonumentQuery.create(contest))
+    val contest: Contest = Contest.WLMUkraine(2016).copy(rating = true)
+    val stat = new Statistics(contest, startYear = Some(2012), monumentQuery = MonumentQuery.create(contest))
 
     stat.init()
   }

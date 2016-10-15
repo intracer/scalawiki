@@ -2,12 +2,13 @@ package org.scalawiki.wlx.stat
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
-import org.scalawiki.wlx.ImageDB
+import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 class AuthorMonuments(imageDb: ImageDB,
                       rating: Boolean = false,
                       gallery: Boolean = false,
-                      commons: Option[MwBot] = None) extends Reporter {
+                      commons: Option[MwBot] = None,
+                      oldMonumentDb: Option[MonumentDB] = None) extends Reporter {
 
   override def stat: ContestStat = ???
 
@@ -17,11 +18,11 @@ class AuthorMonuments(imageDb: ImageDB,
 
   val country = contest.country
 
-  val oldIds = imageDb.oldMonumentDb.map(_.monuments.map(_.id).toSet).getOrElse(Set.empty)
+  val oldIds = oldMonumentDb.map(_.monuments.map(_.id).toSet).getOrElse(Set.empty)
 
   def ratingFunc(allIds: Set[String], oldIds: Set[String]): Int =
     if (rating)
-      allIds.size + (allIds -- oldIds).size
+      allIds.size + (allIds -- oldIds).size * 2
     else
       allIds.size
 
