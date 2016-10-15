@@ -23,6 +23,13 @@ class AuthorsMonumentsSpec extends Specification {
     new AuthorMonuments(db, gallery = gallery).table
   }
 
+  def monument(id: String, name: String) =
+    new Monument(id = id, name = name, listConfig = Some(WlmUa))
+
+  def monuments(n: Int, regionId: String, namePrefix: String, startId: Int = 1): Seq[Monument] =
+    (startId until startId + n).map(i => monument(s"$regionId-xxx-000$i", namePrefix + i))
+
+
   "authorsMonumentsTable" should {
     "be empty without regions" in {
       val noRegions = contest.copy(country = Country.Azerbaijan)
@@ -169,23 +176,7 @@ class AuthorsMonumentsSpec extends Specification {
       )
     }
 
-    def monument(id: String, name: String) =
-      new Monument(id = id, name = name, listConfig = Some(WlmUa))
-
-    def monuments(n: Int, regionId: String, namePrefix: String, startId: Int = 1): Seq[Monument] =
-      (startId until startId + n).map(i => monument(s"$regionId-xxx-000$i", namePrefix + i))
-
     "with regions in" in {
-      val output = new AuthorsStat
-
-//      val images1 = Seq(
-//        Image("File:Img11y1f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimea")),
-//        Image("File:Img11y1f2.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimea")),
-//        Image("File:Img51y1f1.jpg", monumentId = Some("05-xxx-0001"), author = Some("FromPodillya1")),
-//        Image("File:Img51y1f2.jpg", monumentId = Some("05-xxx-0001"), author = Some("FromPodillya2")),
-//        Image("File:Img71y1f1.jpg", monumentId = Some("07-xxx-0001"), author = Some("FromVolyn"))
-//      )
-
       val images2 = Seq(
         Image("File:Img11y2f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimeaOld")),
         Image("File:Img12y2f1.jpg", monumentId = Some("01-xxx-0002"), author = Some("FromCrimeaNew")),
@@ -214,23 +205,134 @@ class AuthorsMonumentsSpec extends Specification {
 
       data.slice(1, 6) ===
         Seq(
-          Seq("[[User:FromCrimeaNew|FromCrimeaNew]]", "1", "1" , "1", "0", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromCrimeaNew|FromCrimeaNew]]", "1", "1", "1", "0", "0") ++ Seq.fill(24)("0"),
           Seq("[[User:FromCrimeaOld|FromCrimeaOld]]", "1", "1", "1", "0", "0") ++ Seq.fill(24)("0"),
           Seq("[[User:FromPodillyaNew1|FromPodillyaNew1]]", "1", "1", "0", "1", "0") ++ Seq.fill(24)("0"),
           Seq("[[User:FromPodillyaNew2|FromPodillyaNew2]]", "1", "1", "0", "1", "0") ++ Seq.fill(24)("0"),
           Seq("[[User:FromVolynNew|FromVolynNew]]", "1", "1", "0", "0", "1") ++ Seq.fill(24)("0")
         )
-
-//      Seq(
-//        Seq("[[User:FromCrimeaNew|FromCrimeaNew]]", "1", "1" , "1", "0", "0") ++ Seq.fill(25)("0"),
-//        Seq("[[User:FromVolynNew|FromVolynNew]]", "1", "1", "1", "0", "0") ++ Seq.fill(25)("0"),
-//        Seq("[[User:FromPodillyaNew1|FromPodillyaNew1]]", "1", "1", "1", "0", "0") ++ Seq.fill(25)("0"),
-//        Seq("[[User:FromPodillyaNew2|FromPodillyaNew2]]", "1", "1", "1", "0", "0") ++ Seq.fill(25)("0"),
-//        Seq("[[User:FromCrimeaOld|FromCrimeaOld]]", "1", "1", "1", "0", "0") ++ Seq.fill(25)("0")
-//      )
-
     }
 
+    "rate no new images" in {
+      val images2 = Seq(
+        Image("File:Img11y2f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimeaOld")),
+        Image("File:Img12y2f1.jpg", monumentId = Some("01-xxx-0002"), author = Some("FromCrimeaNew")),
+        Image("File:Img52y2f1.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillyaNew1")),
+        Image("File:Img52y2f2.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillyaNew2")),
+        Image("File:Img72y2f1.jpg", monumentId = Some("07-xxx-0002"), author = Some("FromVolynNew"))
+      )
 
+      val mDb = new MonumentDB(contest,
+        monuments(2, "01", "Crimea") ++
+          monuments(5, "05", "Podillya") ++
+          monuments(7, "07", "Volyn")
+      )
+
+      val db = new ImageDB(contest, images2, Some(mDb), Some(mDb))
+
+      val table = new AuthorMonuments(db, rating = true).table
+      val data = table.data
+
+      data.size === 6
+
+      table.headers.slice(0, 9) === Seq("User", "Objects pictured", "Existing", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
+
+      data.head === Seq("Total", "4", "4", "0", "4",  "5", "2", "1", "1") ++ Seq.fill(24)("0")
+
+
+      data.slice(1, 6) ===
+        Seq(
+          Seq("[[User:FromCrimeaNew|FromCrimeaNew]]", "1", "1", "0", "1", "1", "1", "0", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromCrimeaOld|FromCrimeaOld]]", "1", "1", "0", "1", "1", "1", "0", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromPodillyaNew1|FromPodillyaNew1]]", "1", "1", "0", "1", "1", "0", "1", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromPodillyaNew2|FromPodillyaNew2]]", "1", "1", "0", "1", "1", "0", "1", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromVolynNew|FromVolynNew]]", "1", "1", "0", "1", "1", "0", "0", "1") ++ Seq.fill(24)("0")
+        )
+    }
+
+    "rate with all new images" in {
+      val output = new AuthorsStat
+
+      val images2 = Seq(
+        Image("File:Img11y2f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimeaOld")),
+        Image("File:Img12y2f1.jpg", monumentId = Some("01-xxx-0002"), author = Some("FromCrimeaNew")),
+        Image("File:Img52y2f1.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillyaNew1")),
+        Image("File:Img52y2f2.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillyaNew2")),
+        Image("File:Img72y2f1.jpg", monumentId = Some("07-xxx-0002"), author = Some("FromVolynNew"))
+      )
+
+      val mDb = new MonumentDB(contest,
+        monuments(2, "01", "Crimea") ++
+          monuments(5, "05", "Podillya") ++
+          monuments(7, "07", "Volyn")
+      )
+
+      val db = new ImageDB(contest, images2, Some(mDb), Some(new MonumentDB(contest, Seq.empty)))
+
+      val table = new AuthorMonuments(db, rating = true).table
+      val data = table.data
+
+      data.size === 6
+
+      table.headers.slice(0, 9) === Seq("User", "Objects pictured", "Existing", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
+
+      data.head === Seq("Total", "4", "0", "4", "8",  "5", "2", "1", "1") ++ Seq.fill(24)("0")
+
+
+      data.slice(1, 6) ===
+        Seq(
+          Seq("[[User:FromCrimeaNew|FromCrimeaNew]]", "1", "0", "1", "2", "1", "2", "0", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromCrimeaOld|FromCrimeaOld]]", "1", "0", "1", "2", "1", "2", "0", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromPodillyaNew1|FromPodillyaNew1]]", "1", "0", "1", "2", "1", "0", "2", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromPodillyaNew2|FromPodillyaNew2]]", "1", "0", "1", "2", "1", "0", "2", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromVolynNew|FromVolynNew]]", "1", "0", "1", "2", "1", "0", "0", "2") ++ Seq.fill(24)("0")
+        )
+    }
+
+    "order by rate in" in {
+      val images1 = Seq(
+        Image("File:Img11y1f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimea")),
+        Image("File:Img51y1f1.jpg", monumentId = Some("05-xxx-0001"), author = Some("FromPodillya")),
+        Image("File:Img71y1f1.jpg", monumentId = Some("07-xxx-0001"), author = Some("FromVolyn"))
+      )
+
+      val images2 = Seq(
+        Image("File:Img11y2f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimeaOld")),
+        Image("File:Img12y2f1.jpg", monumentId = Some("01-xxx-0002"), author = Some("FromCrimeaNew")),
+        Image("File:Img52y2f1.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillyaNew1")),
+        Image("File:Img52y2f2.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillyaNew2")),
+        Image("File:Img72y2f1.jpg", monumentId = Some("07-xxx-0002"), author = Some("FromVolynNew"))
+      )
+
+      val mDb = new MonumentDB(contest,
+        monuments(2, "01", "Crimea") ++
+          monuments(5, "05", "Podillya") ++
+          monuments(7, "07", "Volyn")
+      )
+
+      val oldIds = images1.flatMap(_.monumentId).toSet
+      val oldMdb = new MonumentDB(contest, mDb.monuments.filter(m => oldIds.contains(m.id)))
+
+      val db = new ImageDB(contest, images2, Some(mDb), Some(oldMdb))
+
+      val table = new AuthorMonuments(db, rating = true).table
+      val data = table.data
+
+      data.size === 6
+
+      table.headers.slice(0, 9) === Seq("User", "Objects pictured",  "Existing", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
+
+      data.head === Seq("Total", "4", "1", "3", "7",  "5", "2", "1", "1") ++ Seq.fill(24)("0")
+
+
+      data.slice(1, 9) ===
+        Seq(
+          Seq("[[User:FromCrimeaNew|FromCrimeaNew]]", "1", "0", "1", "2", "1", "2", "0", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromPodillyaNew1|FromPodillyaNew1]]", "1", "0", "1", "2", "1", "0", "2", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromPodillyaNew2|FromPodillyaNew2]]", "1", "0", "1", "2", "1", "0", "2", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromVolynNew|FromVolynNew]]", "1", "0", "1", "2", "1", "0", "0", "2") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromCrimeaOld|FromCrimeaOld]]", "1", "1", "0", "1", "1", "1", "0", "0") ++ Seq.fill(24)("0")
+        )
+    }
   }
 }

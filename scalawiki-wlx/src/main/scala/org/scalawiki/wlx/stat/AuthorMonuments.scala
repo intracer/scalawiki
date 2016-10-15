@@ -17,7 +17,7 @@ class AuthorMonuments(imageDb: ImageDB,
 
   val country = contest.country
 
-  val oldIds = imageDb.oldMonumentDb.fold(Set.empty[String])(_.withImages.map(_.id).toSet)
+  val oldIds = imageDb.oldMonumentDb.map(_.monuments.map(_.id).toSet).getOrElse(Set.empty)
 
   def ratingFunc(allIds: Set[String], oldIds: Set[String]): Int =
     if (rating)
@@ -69,7 +69,7 @@ class AuthorMonuments(imageDb: ImageDB,
     val totalData = "Total" +:
       rowData(imageDb.ids, imageDb.images.size, regId => imageDb.idsByRegion(regId).size, rating)
 
-    val authors = imageDb.authors.toSeq.sortBy(user => (-imageDb._byAuthorAndId.by(user).size, user))
+    val authors = imageDb.authors.toSeq.sortBy(user => (-ratingFunc(imageDb._byAuthorAndId.by(user).keys, oldIds), user))
     val authorsData = authors.map { user =>
       val noTemplateUser = user.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
       val userLink = s"[[User:$noTemplateUser|$noTemplateUser]]"
