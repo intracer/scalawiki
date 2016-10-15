@@ -69,7 +69,7 @@ class AuthorMonuments(imageDb: ImageDB,
     val totalData = "Total" +:
       rowData(imageDb.ids, imageDb.images.size, regId => imageDb.idsByRegion(regId).size, rating)
 
-    val authors = imageDb.authors.toSeq.sortBy(user => -imageDb._byAuthorAndId.by(user).size)
+    val authors = imageDb.authors.toSeq.sortBy(user => (-imageDb._byAuthorAndId.by(user).size, user))
     val authorsData = authors.map { user =>
       val noTemplateUser = user.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
       val userLink = s"[[User:$noTemplateUser|$noTemplateUser]]"
