@@ -29,3 +29,7 @@ trait HttpClient {
   def getBody(response: HttpResponse): String
 
 }
+
+object HttpClient {
+  val JSON_UTF8 = ContentType(MediaTypes.`application/json`, Some(HttpCharsets.`UTF-8`))
+}

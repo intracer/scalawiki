@@ -1,10 +1,17 @@
 package org.scalawiki
 
-import org.scalawiki.util.{Command, MockBotSpec}
+import org.scalawiki.dto.MwException
+import org.scalawiki.util.{Command, MockBotSpec, TestUtils}
+import org.specs2.concurrent.ExecutionEnv
+import org.specs2.matcher.ThrownExpectations
 import org.specs2.mutable.Specification
-import spray.util.pimpFuture
+import spray.http.{ContentType, HttpCharsets, MediaTypes}
 
-class LoginSpec extends Specification with MockBotSpec {
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
+
+  type EE = ExecutionEnv
 
   val needToken =
     """{ "login": {
@@ -36,31 +43,48 @@ class LoginSpec extends Specification with MockBotSpec {
   val loginAction = Map("action" -> "login", "format" -> "json", "lgname" -> user, "lgpassword" -> password)
 
   "login" should {
-    "get token and login" in {
+    "get token and login" in { implicit ee: EE =>
       val bot = getBot(
         new Command(loginAction, needToken),
         new Command(loginAction ++ Map("lgtoken" -> "token-value+\\"), loginSuccess)
       )
 
-      bot.login(user, password).await === "Success"
+      bot.login(user, password).map(_ === "Success").await
     }
   }
 
-  "return wrong password" in {
+  "return wrong password" in { implicit ee: EE =>
     val bot = getBot(
       new Command(loginAction, needToken),
       new Command(loginAction ++ Map("lgtoken" -> "token-value+\\"), wrongPass)
     )
 
-    bot.login(user, password).await === "WrongPass"
+    bot.login(user, password).map(_ === "WrongPass").await
   }
 
-  "throttler" in {
+  "throttler" in { implicit ee: EE =>
     val bot = getBot(
       new Command(loginAction, needToken),
       new Command(loginAction ++ Map("lgtoken" -> "token-value+\\"), throttled)
     )
 
-    bot.login(user, password).await === "Throttled"
+    bot.login(user, password).map(_ === "Throttled").await
+  }
+
+  "err503" in { implicit ee: EE =>
+
+    val err = TestUtils.resourceAsString("/org/scalawiki/Wikimedia Error.html")
+
+    val bot = getBot(
+      new Command(loginAction, err, contentType = ContentType(MediaTypes.`text/html`, HttpCharsets.`UTF-8`))
+    )
+
+    val f = bot.login(user, password)
+
+    f.failed.map {
+      case e: MwException =>
+        e.info must contain("Error: 503, Service Unavailable")
+    }.await
+
   }
 }

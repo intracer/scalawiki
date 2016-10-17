@@ -4,8 +4,9 @@ import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import akka.io.IO
 import akka.pattern.ask
+import org.jsoup.Jsoup
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.{LoginResponse, Page, Site}
+import org.scalawiki.dto.{LoginResponse, MwException, Page, Site}
 import org.scalawiki.http.{HttpClient, HttpClientSpray}
 import org.scalawiki.json.MwReads._
 import org.scalawiki.query.{DslQuery, PageQuery, SinglePageQuery}
@@ -114,13 +115,22 @@ class MwBotImpl(val site: Site,
     val loginParams = Map(
       "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json"
     ) ++ token.map("lgtoken" -> _)
+
     http.post(apiUrl, loginParams).map { resp =>
       val body = http.getBody(resp)
-      val jsResult = Json.parse(body).validate(loginResponseReads)
-      if (jsResult.isError) {
-        throw new RuntimeException("Parsing failed: " + jsResult)
-      } else {
-        jsResult.get
+
+      resp.entity.toOption.map(_.contentType) match {
+        case Some(HttpClient.JSON_UTF8) =>
+          val jsResult = Json.parse(body).validate(loginResponseReads)
+          if (jsResult.isError) {
+            throw new RuntimeException("Parsing failed: " + jsResult)
+          } else {
+            jsResult.get
+          }
+        case x =>
+          val html = Jsoup.parse(body)
+          val details = html.select("code").first().text()
+          throw new MwException(resp.status.toString(), details)
       }
     }
   }

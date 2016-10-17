@@ -6,7 +6,7 @@ val specsV = "3.7.2"
 
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
-  version := "0.5-M2",
+  version := "0.5-M3",
   scalaVersion := "2.11.8",
 
   libraryDependencies ++= Seq(
@@ -64,7 +64,8 @@ lazy val `scalawiki-core` =
         "com.github.nscala-time" %% "nscala-time" % "2.10.0",
         "ch.qos.logback" % "logback-classic" % "1.1.3",
         "org.sweble.wikitext" % "swc-engine" % "2.0.0" exclude("org.jsoup", "jsoup"),
-        "commons-codec" % "commons-codec" % "1.10"
+        "commons-codec" % "commons-codec" % "1.10",
+        "org.jsoup" % "jsoup" % "1.8.3"
       )
     }).dependsOn(`spray-cookies`)
 
@@ -74,7 +75,6 @@ lazy val `scalawiki-bots` =
     .settings(libraryDependencies ++= Seq(
       "com.github.pathikrit" %% "better-files-akka" % "2.15.0",
       "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
-      "org.jsoup" % "jsoup" % "1.8.3",
       "org.apache.poi" % "poi-scratchpad" % "3.13",
       "org.apache.poi" % "poi-ooxml" % "3.13",
       "fr.opensagres.xdocreport" % "org.apache.poi.xwpf.converter.xhtml" % "1.0.5"
