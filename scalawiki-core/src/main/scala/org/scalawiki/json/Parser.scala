@@ -1,13 +1,10 @@
 package org.scalawiki.json
 
-import org.joda.time.DateTime
-import org.scalawiki.dto._
-import org.scalawiki.dto.cmd.{EnumArg, Action}
 import org.scalawiki.dto.cmd.query.list.ListArg
 import org.scalawiki.dto.cmd.query.meta.MetaArg
 import org.scalawiki.dto.cmd.query.prop.PropArg
-import org.scalawiki.dto.Image
-import play.api.data.validation.ValidationError
+import org.scalawiki.dto.cmd.{Action, EnumArg}
+import org.scalawiki.dto.{Image, _}
 import play.api.libs.json._
 
 import scala.util.Try
@@ -18,42 +15,44 @@ class Parser(val action: Action) {
 
   var continue = Map.empty[String, String]
 
-  def parse(str: String): Try[Seq[Page]] = {
+  def parse(str: String): Try[Seq[Page]] =
     Try {
       val json = Json.parse(str)
-
       val jsonObj = json.asInstanceOf[JsObject]
+
       if (jsonObj.value.contains("error")) {
         throw mwException(jsonObj)
-      } else {
-        val queryArg = lists.headOption.orElse[EnumArg[_]](meta.headOption)
-        val queryChild = queryArg.fold("pages")(arg => arg.name)
+      }
 
-        continue = getContinue(json)
+      val queryArg = lists.headOption.orElse[EnumArg[_]](meta.headOption)
+      val queryChild = queryArg.fold("pages")(arg => arg.name)
 
-        if (jsonObj.value.contains("query")) {
-
-          val pagesJson = (json \ "query" \ queryChild).get
-
-          val jsons = (queryChild match {
-            case "pages" => pagesJson.asInstanceOf[JsObject].values
-            case "allusers" | "usercontribs" => pagesJson.asInstanceOf[JsArray].value
-            case "globaluserinfo" => Seq(pagesJson)
-            case _ => pagesJson.asInstanceOf[JsArray].value
-          }).map(_.asInstanceOf[JsObject])
-
-          jsons.map { j =>
-            queryChild match {
-              case "pages" => parsePage(j)
-              case "allusers" | "users" => parseUser(j, queryChild)
-              case "usercontribs" => parseUserContrib(j)
-              case "globaluserinfo" => parseGlobalUserInfo(j)
-              case _ => parsePage(j)
-            }
-          }.toSeq
-        } else Seq.empty
+      continue = getContinue(json)
+      jsonObj.value match {
+        case value if value.contains("query") => parseQueryAction(json, queryChild)
+        case _ => Seq.empty
       }
     }
+
+  def parseQueryAction(json: JsValue, queryChild: String): Seq[Page] = {
+    val pagesJson = (json \ "query" \ queryChild).get
+
+    val jsons = (queryChild match {
+      case "pages" => pagesJson.asInstanceOf[JsObject].values
+      case "allusers" | "usercontribs" => pagesJson.asInstanceOf[JsArray].value
+      case "globaluserinfo" => Seq(pagesJson)
+      case _ => pagesJson.asInstanceOf[JsArray].value
+    }).map(_.asInstanceOf[JsObject])
+
+    jsons.map { j =>
+      queryChild match {
+        case "pages" => parsePage(j)
+        case "allusers" | "users" => parseUser(j, queryChild)
+        case "usercontribs" => parseUserContrib(j)
+        case "globaluserinfo" => parseGlobalUserInfo(j)
+        case _ => parsePage(j)
+      }
+    }.toSeq
   }
 
   def mwException(jsonObj: JsObject): MwException = {
@@ -66,6 +65,7 @@ class Parser(val action: Action) {
     val revisions = page.id.fold(Seq.empty[Revision]) { pageId =>
       pageJson.validate(Parser.revisionsReads(pageId)).getOrElse(Seq.empty)
     }
+
     val images = getImages(pageJson, page)
     val langLinks = getLangLinks(pageJson)
     val links = getLinks(pageJson)
@@ -77,12 +77,11 @@ class Parser(val action: Action) {
   def getImages(pageJson: JsObject, page: Page): Seq[Image] = {
     pageJson.validate {
       if (pageJson.value.contains("imageinfo")) {
-        Parser.imageInfoReads(page.id.get, page.title)
+        Parser.imageInfoReads(page.id, Some(page.title))
       } else {
         //      if (pageJson.value.contains("images")) {
         Parser.imageReads()
       }
-
     }.getOrElse(Seq.empty)
   }
 
@@ -136,7 +135,7 @@ class Parser(val action: Action) {
   }
 
   def getCategoryInfo(pageJson: JsObject): Option[CategoryInfo] =
-    pageJson.validate(Parser.categoryInfoReadsInPage).getOrElse(None)
+    pageJson.validate(Parser.categorieInfoReads()).getOrElse(None)
 
   def parseGlobalUserInfo(json: JsObject) = {
     if (!json.value.contains("missing")) {
@@ -171,164 +170,31 @@ class Parser(val action: Action) {
 
 object Parser {
 
-  import play.api.libs.functional.syntax._
+  private val pageReads: Reads[Page] = PageRead()
 
-  val TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-  val df = org.joda.time.format.DateTimeFormat.forPattern(TIMESTAMP_PATTERN).withZoneUTC()
+  private val userReads: Reads[User] = UserRead()
 
-  val jodaDateTimeReads = jodaDateReads(TIMESTAMP_PATTERN)
-
-  def parseDate(input: String): DateTime = DateTime.parse(input, df)
-
-  def parseDateOpt(input: String): Option[DateTime] =
-    scala.util.control.Exception.allCatch[DateTime] opt parseDate(input)
-
-  def jodaDateReads(pattern: String, corrector: String => String = identity): Reads[DateTime] =
-    new Reads[DateTime] {
-      def reads(json: JsValue): JsResult[DateTime] = json match {
-        case JsNumber(d) => JsSuccess(new DateTime(d.toLong))
-        case JsString(s) => parseDateOpt(corrector(s)) match {
-          case Some(d) => JsSuccess(d)
-          case None => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.jodadate.format", pattern))))
-        }
-        case _ => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.date"))))
-      }
-    }
-
-  val pageReads: Reads[Page] = (
-    (__ \ "pageid").readNullable[Long] ~
-      (__ \ "ns").read[Int] ~
-      (__ \ "title").read[String] ~
-      (__ \ "missing").readNullable[String] ~
-      (__ \ "subjectid").readNullable[Long] ~
-      (__ \ "talkid").readNullable[Long]
-    ) (Page.full _)
-
-  val userReads: Reads[User] = (
-    (__ \ "userid").readNullable[Long] ~
-      (__ \ "name").readNullable[String] ~
-      (__ \ "editcount").readNullable[Long] ~
-      (__ \ "registration").readNullable[DateTime](jodaDateTimeReads) ~
-      (__ \ "blockid").readNullable[Long].map(_.map(_ => true)) ~
-      (__ \ "emailable").readNullable[String].map(_.map(_ => true)) ~
-      (__ \ "missing").readNullable[String].map(_.isDefined)
-    ) (User.apply(
-    _: Option[Long],
-    _: Option[String],
-    _: Option[Long],
-    _: Option[DateTime],
-    _: Option[Boolean],
-    _: Option[Boolean],
-    _: Boolean
-  )
-  )
-
-  def revisionsReads(pageId: Long): Reads[Seq[Revision]] = {
-    implicit val revisionReads: Reads[Revision] = (
-      (__ \ "revid").readNullable[Long] ~
-        Reads.pure[Option[Long]](Some(pageId)) ~
-        (__ \ "parentid").readNullable[Long] ~
-        (
-          (__ \ "userid").readNullable[Long] ~
-            (__ \ "user").readNullable[String]
-          ) (Contributor.apply _) ~
-        (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) ~
-        (__ \ "comment").readNullable[String] ~
-        (__ \ "*").readNullable[String] ~
-        (__ \ "size").readNullable[Long] ~
-        (__ \ "sha1").readNullable[String] //~
-      //Reads.pure[Option[Long]](None) // textId
-      ) (Revision.apply(_: Option[Long],
-      _: Option[Long],
-      _: Option[Long],
-      _: Option[Contributor],
-      _: Option[DateTime],
-      _: Option[String],
-      _: Option[String],
-      _: Option[Long],
-      _: Option[String]))
-
+  private def revisionsReads(pageId: Long): Reads[Seq[Revision]] = {
+    implicit val revisionReads: Reads[Revision] = RevisionRead(Some(pageId))
     (__ \ "revisions").read[Seq[Revision]]
   }
 
-  def imageInfoReads(pageId: Long, title: String): Reads[Seq[Image]] = {
-    implicit val imageReads: Reads[Image] = (
-      Reads.pure[String](title) ~
-        (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) ~
-        (__ \ "user").readNullable[String] ~
-        (__ \ "size").readNullable[Long] ~
-        (__ \ "width").readNullable[Int] ~
-        (__ \ "height").readNullable[Int] ~
-        (__ \ "url").readNullable[String] ~
-        (__ \ "descriptionurl").readNullable[String] ~
-        Reads.pure[Option[Long]](Some(pageId))
-      //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
-      //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
-      ) (Image.basic _)
-
+  private def imageInfoReads(pageId: Option[Long], title: Option[String]): Reads[Seq[Image]] = {
+    implicit val imageReads: Reads[Image] = ImageRead(title = title, pageId = pageId)
     (__ \ "imageinfo").read[Seq[Image]]
   }
 
-  implicit val categoryInfoReads: Reads[CategoryInfo] = (
-    (__ \ "size").read[Long] ~
-      (__ \ "pages").read[Long] ~
-      (__ \ "files").read[Long] ~
-      (__ \ "subcats").read[Long]
-    ) (CategoryInfo.apply _)
-
-  val categoryInfoReadsInPage = (__ \ "categoryinfo").readNullable[CategoryInfo]
-
-  def imageReads(): Reads[Seq[Image]] = {
-    implicit val imageReads: Reads[Image] = (
-      (__ \ "title").read[String] ~
-        (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) ~
-        (__ \ "user").readNullable[String] ~
-        (__ \ "size").readNullable[Long] ~
-        (__ \ "width").readNullable[Int] ~
-        (__ \ "height").readNullable[Int] ~
-        (__ \ "url").readNullable[String] ~
-        (__ \ "descriptionurl").readNullable[String] ~
-        Reads.pure[Option[Long]](None)
-      //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] ~
-      //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
-      ) (Image.basic _)
-
+  private def imageReads(): Reads[Seq[Image]] = {
+    implicit val imageReads: Reads[Image] = ImageRead(None, None)
     (__ \ "images").read[Seq[Image]]
   }
 
-  val userContribReads: Reads[UserContrib] = (
-    (__ \ "userid").read[Long] ~
-      (__ \ "user").read[String] ~
-      (__ \ "pageid").read[Long] ~
-      (__ \ "revid").read[Long] ~
-      (__ \ "parentid").read[Long] ~
-      (__ \ "ns").read[Int] ~
-      (__ \ "title").read[String] ~
-      (__ \ "timestamp").read[DateTime](jodaDateTimeReads) ~
-      //      (__ \ "new").read[String] ~
-      //      (__ \ "minor").read[Boolea] ~
-      (__ \ "comment").readNullable[String] ~ // can be hidden
-      (__ \ "size").readNullable[Long]
-    ) (UserContrib.apply _)
-
-  def globalUserInfoReads: Reads[GlobalUserInfo] = {
-
-    implicit val sulAccountReads: Reads[SulAccount] = (
-      (__ \ "wiki").read[String] ~
-        (__ \ "url").read[String] ~
-        (__ \ "timestamp").read[DateTime](jodaDateTimeReads) ~
-        (__ \ "method").read[String] ~
-        (__ \ "editcount").read[Long] ~
-        (__ \ "registration").read[DateTime](jodaDateTimeReads)
-      ) (SulAccount.apply _)
-
-    (
-      (__ \ "home").read[String] ~
-        (__ \ "id").read[Long] ~
-        (__ \ "registration").read[DateTime](jodaDateTimeReads) ~
-        (__ \ "name").read[String] ~
-        (__ \ "merged").read[Seq[SulAccount]] ~
-        (__ \ "editcount").read[Long]
-      ) (GlobalUserInfo.apply _)
+  private def categorieInfoReads(): Reads[Option[CategoryInfo]] = {
+    implicit val categoryInfoReads: Reads[CategoryInfo] = CategoryInfoRead()
+    (__ \ "categoryinfo").readNullable[CategoryInfo]
   }
+
+  private def globalUserInfoReads: Reads[GlobalUserInfo] = GlobalUserInfoRead()
+
+  private def userContribReads: Reads[UserContrib] = UserContributorRead()
 }
