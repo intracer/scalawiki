@@ -30,16 +30,15 @@ trait QueryLibrary {
     Action(Query(ListParam(UserContribs(ucParams: _*))))
   }
 
-  def contribs(user: String, range: TimeRange) = {
-    val ucParams = Seq(
-      UcUser(Seq(user)),
-      UcDir("newer"),
-      UcLimit("max")
-    ) ++ range.start.map(UcStart) ++ range.end.map(UcEnd)
-
-    Action(Query(ListParam(UserContribs(ucParams: _*))))
+  def userCreatedPages(user: String, range: TimeRange)(implicit bot: MwBot): Future[(String, Set[String])] = {
+    bot.run(userContribs(user, range, dir = "newer")).map {
+      pages =>
+        user -> pages
+          .filter(p => p.isArticle && p.history.hasPageCreation)
+          .map(_.title)
+          .toSet
+    }
   }
-
 
   def userProps(users: Seq[String]) = Action(Query(
     ListParam(Users(

@@ -48,7 +48,7 @@ class MessageBot(val conf: Config) extends ActionLibrary with QueryLibrary {
     */
   val talkPageMessage = conf.as[Message]("talk-page")
 
-  lazy val bot = MwBot.fromHost(host)
+  implicit lazy val bot = MwBot.fromHost(host)
 
   def run() = {
     for (users <- fetchUsers(userListPage))
@@ -64,8 +64,9 @@ class MessageBot(val conf: Config) extends ActionLibrary with QueryLibrary {
 
   def processUsers(users: Seq[User], conf: Config) = {
 
-    val pages = users.map(u => createdPages(u.name.get, range).map(Seq(_)))
-    for (createdPagesByUser <- Future.reduce(pages)(_ ++ _).map(_.toMap)) {
+    val pages = users.map(u => userCreatedPages(u.name.get, range))
+    val folded = Future.fold(pages)(Seq.empty[(String, Set[String])])(_ :+ _).map(_.toMap)
+    for (createdPagesByUser <- folded) {
 
       val withContribution = users.filter(u => createdPagesByUser(u.name.get).nonEmpty)
       val (withEmail, withoutEmail) = withContribution.partition(_.emailable.getOrElse(false))
@@ -98,16 +99,6 @@ class MessageBot(val conf: Config) extends ActionLibrary with QueryLibrary {
     toMail.foreach { username =>
       val result = email(username, mail.subject, mail.body.format(username))
       println(s" $username: $result")
-    }
-  }
-
-  def createdPages(user: String, range: TimeRange): Future[(String, Set[String])] = {
-    bot.run(userContribs(user, range, dir = "newer")).map {
-      pages =>
-        user -> pages
-          .filter(p => p.isArticle && p.history.hasPageCreation)
-          .map(_.title)
-          .toSet
     }
   }
 

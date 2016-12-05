@@ -1,10 +1,6 @@
 package org.scalawiki.bots.stat
 
 import org.joda.time.DateTime
-import org.scalawiki.dto.Contributor
-import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.cmd.query.Query
-import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.query.QueryLibrary
 import org.scalawiki.time.TimeRange
 import org.scalawiki.{MwBot, WithBot}
@@ -26,10 +22,8 @@ object UserContribList extends WithBot with QueryLibrary {
         }
 
         val contribsFuture = Future.traverse(users) { user =>
-          bot.run(userContribs(
-            user.name.get,
-            TimeRange(Some(new DateTime(2015, 4, 15, 0, 0)), None),
-            "300")
+          bot.run(userContribs(user.name.get,
+            TimeRange(Some(new DateTime(2015, 4, 15, 0, 0)), None), "300")
           )
         }
 
