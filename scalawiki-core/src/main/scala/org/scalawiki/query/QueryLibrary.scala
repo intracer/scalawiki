@@ -5,6 +5,7 @@ import org.scalawiki.dto.{Contributor, Page}
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.{Query, TitlesParam}
 import org.scalawiki.dto.cmd.query.list.{UserContribs, _}
+import org.scalawiki.dto.cmd.query.meta.{EditCount, GuiUser, _}
 import org.scalawiki.dto.cmd.query.prop.{Links, PlLimit, PlNamespace, Prop}
 import org.scalawiki.time.TimeRange
 
@@ -46,6 +47,14 @@ trait QueryLibrary {
       UsProp(UsEmailable, UsGender)
     ))
   ))
+
+  def globalUserInfo(username: String) = Action(Query(MetaParam(
+    GlobalUserInfo(
+      GuiProp(
+        Merged, Unattached, EditCount
+      ),
+      GuiUser(username)
+    ))))
 
   def whatLinksHere(title: String, ns: Int) = Action(Query(
     Prop(Links(PlNamespace(Seq(ns)), PlLimit("max"))),
