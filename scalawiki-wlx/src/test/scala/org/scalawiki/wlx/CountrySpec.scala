@@ -17,4 +17,10 @@ class CountrySpec extends Specification {
     }
   }
 
+  "with custom countries" should {
+    "contain Ukraine" in {
+      Country.byCode("ua") === Country.Ukraine
+    }
+  }
+
 }

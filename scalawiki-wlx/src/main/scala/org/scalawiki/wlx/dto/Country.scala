@@ -74,6 +74,8 @@ object Country {
     ).map { case (code, name) => Region(code, name) }.toSeq
   )
 
+  val customCountries = Seq(Ukraine)
+
   def langMap: Map[String, Seq[String]] = {
     Locale.getAvailableLocales
       .groupBy(_.getCountry)
@@ -112,4 +114,9 @@ object Country {
 
     Seq(Ukraine) ++ fromJava
   }
+
+  lazy val countryMap: Map[String, Country] =
+    fromJavaLocales.groupBy(_.code).mapValues(_.head) ++ customCountries.groupBy(_.code).mapValues(_.head)
+
+  def byCode(code: String) = countryMap(code)
 }
