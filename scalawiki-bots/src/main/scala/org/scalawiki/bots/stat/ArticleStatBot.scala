@@ -2,32 +2,21 @@ package org.scalawiki.bots.stat
 
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
 import org.scalawiki.dto.cmd.query.prop._
-import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
+import org.scalawiki.dto.cmd.query.{PageIdsParam, Query}
 import org.scalawiki.dto.filter.RevisionFilterDateAndUser
+import org.scalawiki.query.QueryLibrary
 import org.scalawiki.{MwBot, WithBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ArticleStatBot() extends WithBot {
+class ArticleStatBot() extends WithBot with QueryLibrary {
 
   val host = MwBot.ukWiki
 
-  def pagesWithTemplate(template: String): Future[Seq[Long]] = {
-    val action = Action(Query(
-      Prop(
-        Info(InProp(SubjectId)),
-        Revisions()
-      ),
-      Generator(EmbeddedIn(
-        EiTitle("Template:" + template),
-        EiLimit("500")
-      ))
-    ))
-
-    bot.run(action).map {
+  def articlesWithTemplate(template: String): Future[Seq[Long]] = {
+    bot.run(pagesWithTemplate(template)).map {
       pages =>
         pages.map(p => p.subjectId.getOrElse(p.id.get))
     }
@@ -63,8 +52,8 @@ class ArticleStatBot() extends WithBot {
 
     val revisionFilter = new RevisionFilterDateAndUser(from, to)
 
-    val newPagesIdsF = pagesWithTemplate(event.newTemplate)
-    val improvedPagesIdsF = pagesWithTemplate(event.improvedTemplate)
+    val newPagesIdsF = articlesWithTemplate(event.newTemplate)
+    val improvedPagesIdsF = articlesWithTemplate(event.improvedTemplate)
 
     Future.sequence(Seq(newPagesIdsF, improvedPagesIdsF)).flatMap {
       ids =>

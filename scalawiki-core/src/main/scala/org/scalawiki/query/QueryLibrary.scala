@@ -3,10 +3,10 @@ package org.scalawiki.query
 import org.scalawiki.MwBot
 import org.scalawiki.dto.{Contributor, Page}
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.cmd.query.{Query, TitlesParam}
+import org.scalawiki.dto.cmd.query.{Generator, Query, TitlesParam}
 import org.scalawiki.dto.cmd.query.list.{UserContribs, _}
 import org.scalawiki.dto.cmd.query.meta.{EditCount, GuiUser, _}
-import org.scalawiki.dto.cmd.query.prop.{Links, PlLimit, PlNamespace, Prop}
+import org.scalawiki.dto.cmd.query.prop.{InProp, Revisions, SubjectId, _}
 import org.scalawiki.time.TimeRange
 
 import scala.concurrent.Future
@@ -60,6 +60,19 @@ trait QueryLibrary {
     Prop(Links(PlNamespace(Seq(ns)), PlLimit("max"))),
     TitlesParam(Seq(title))
   ))
+
+  def pagesWithTemplate(template: String): Action = {
+    Action(Query(
+      Prop(
+        Info(InProp(SubjectId)),
+        Revisions()
+      ),
+      Generator(EmbeddedIn(
+        EiTitle("Template:" + template),
+        EiLimit("500")
+      ))
+    ))
+  }
 
   def pagesToUsers(pages: Seq[Page]) = pages.flatMap(_.lastRevisionUser)
 
