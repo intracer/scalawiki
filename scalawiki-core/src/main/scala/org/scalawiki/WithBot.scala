@@ -4,7 +4,7 @@ trait WithBot {
 
   def host: String
 
-  def bot: MwBot = {
+  implicit def bot: MwBot = {
     MwBot.fromHost(host)
   }
 
