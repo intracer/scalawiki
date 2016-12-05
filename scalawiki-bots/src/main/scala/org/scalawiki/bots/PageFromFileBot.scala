@@ -1,11 +1,8 @@
 package org.scalawiki.bots
 
 import java.util.regex.Pattern.quote
-
 import org.scalawiki.dto.Page
-
 import scala.collection.TraversableOnce
-
 
 case class PageFromFileFormat(start: String = "{{-start-}}",
                               end: String = "{{-end-}}",

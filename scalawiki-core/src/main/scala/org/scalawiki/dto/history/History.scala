@@ -6,6 +6,8 @@ import org.scalawiki.dto.filter.RevisionFilter
 
 class History(val revisions: Seq[Revision]) {
 
+  def hasPageCreation = revisions.headOption.exists(_.isNewPage)
+
   def users(revisionFilter: RevisionFilter): Set[String] = {
     val filtered = revisionFilter.apply(revisions)
     filtered.flatMap(_.user.flatMap(_.name)).toSet
@@ -18,7 +20,7 @@ class History(val revisions: Seq[Revision]) {
       newest <- filtered.headOption;
       d1 <- delta(oldest);
       d2 <- delta(oldest, newest))
-    yield d1 + d2
+      yield d1 + d2
     sum
   }
 

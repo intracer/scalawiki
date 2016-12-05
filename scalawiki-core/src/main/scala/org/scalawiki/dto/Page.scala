@@ -19,6 +19,8 @@ case class Page(
                ) /*extends HasId[Page]*/ {
   val history = new History(revisions)
 
+  def titleWithoutNs = title.split("\\:").last
+
   def withText(text: String) = copy(revisions = Page.revisionsFromText(Some(text)))
 
   def text: Option[String] = revisions.headOption.flatMap(_.content)
@@ -38,6 +40,7 @@ case class Page(
   )
 
   def withoutContent = copy(revisions = revisions.map(_.withoutContent))
+
 }
 
 object Page {
