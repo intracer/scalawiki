@@ -1,11 +1,9 @@
 package org.scalawiki.wlx.query
 
-import org.scalawiki.dto.{Image, Namespace}
-import org.scalawiki.dto.cmd.Action
+import org.scalawiki.dto.cmd.query.Generator
 import org.scalawiki.dto.cmd.query.list._
-import org.scalawiki.dto.cmd.query.prop.iiprop.{IiProp, Timestamp}
-import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
-import org.scalawiki.dto.cmd.query.{Generator, Query}
+import org.scalawiki.dto.{Image, Namespace}
+import org.scalawiki.query.QueryLibrary
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.{MwBot, WithBot}
 
@@ -20,7 +18,7 @@ trait ImageQuery {
 
 }
 
-class ImageQueryApi extends ImageQuery with WithBot {
+class ImageQueryApi extends ImageQuery with WithBot with QueryLibrary {
 
   val host = MwBot.commons
 
@@ -31,19 +29,8 @@ class ImageQueryApi extends ImageQuery with WithBot {
   }
 
   def imagesByGenerator(contest: Contest, generator: Generator): Future[Seq[Image]] = {
-    import org.scalawiki.dto.cmd.query.prop._
-    val action = Action(Query(
-      Prop(
-        Info(),
-        Revisions(RvProp(rvprop.Ids, rvprop.Content, rvprop.Timestamp, rvprop.User, rvprop.UserId)),
-        ImageInfo(
-          IiProp(Timestamp, iiprop.User, iiprop.Size, iiprop.Url)
-        )
-      ),
-      generator
-    ))
 
-    bot.run(action).map {
+    bot.run(imagesByGenerator(generator)).map {
       pages => pages.map {
         page =>
 
@@ -58,15 +45,9 @@ class ImageQueryApi extends ImageQuery with WithBot {
     }
   }
 
-  override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]] = {
-    val generator = Generator(EmbeddedIn(
-      EiTitle("Template:" + template),
-      EiNamespace(Seq(Namespace.FILE)),
-      EiLimit("500"))
-    )
+  override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]] =
+    imagesByGenerator(contest, generatorWithTemplate(template, Set(Namespace.FILE)))
 
-    imagesByGenerator(contest, generator)
-  }
 }
 
 class ImageQueryCached(underlying: ImageQuery) extends ImageQuery {
