@@ -15,13 +15,6 @@ class ArticleStatBot() extends WithBot with QueryLibrary {
 
   val host = MwBot.ukWiki
 
-  def articlesWithTemplate(template: String): Future[Seq[Long]] = {
-    bot.run(pagesWithTemplate(template)).map {
-      pages =>
-        pages.map(p => p.subjectId.getOrElse(p.id.get))
-    }
-  }
-
   def pagesRevisions(ids: Seq[Long]): Future[TraversableOnce[Option[Page]]] = {
     Future.traverse(ids)(pageRevisions)
   }

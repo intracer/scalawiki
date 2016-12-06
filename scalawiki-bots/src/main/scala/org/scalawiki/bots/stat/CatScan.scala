@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
 import org.scalawiki.MwBot
-import org.scalawiki.dto.Namespace
+import org.scalawiki.dto.{Namespace, Page}
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.cmd.query.prop._
@@ -124,7 +124,7 @@ object CatScan {
     Future.reduce(sum)((s1, s2) => s1 ++ s2)
   }
 
-  def catsWithLinks(title: String, namespaces: Set[Int], bot: MwBot) = {
+  def catsWithLinks(title: String, namespaces: Set[Int], bot: MwBot): Future[Seq[Page]] = {
     val action = Action(Query(
       Prop(
         LangLinks(LlLimit("max"))

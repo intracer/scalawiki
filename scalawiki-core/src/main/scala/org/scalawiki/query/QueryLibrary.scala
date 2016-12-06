@@ -74,6 +74,13 @@ trait QueryLibrary {
     ))
   }
 
+  def articlesWithTemplate(template: String)(implicit bot: MwBot): Future[Seq[Long]] = {
+    bot.run(pagesWithTemplate(template)).map {
+      pages =>
+        pages.map(p => p.subjectId.getOrElse(p.id.get))
+    }
+  }
+
   def pagesToUsers(pages: Seq[Page]) = pages.flatMap(_.lastRevisionUser)
 
   def getUsers(action: Action)(implicit bot: MwBot): Future[Seq[Contributor]] =
