@@ -12,7 +12,7 @@ case class PageGenConfig(cat: Seq[String] = Seq.empty, //,
                          //                         fileLinks: String,
                          //                         search: String,
                          //                         logEvents: String,
-                                                  namespaces: Seq[String]
+                                                  namespaces: Seq[String] = Seq.empty
                          //                         interwiki: String,
                          //                         limit: Int,
                          //                         links: String,
