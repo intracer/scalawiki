@@ -1,5 +1,7 @@
 package org.scalawiki.bots
 
+import com.concurrentthought.cla.Opt
+
 
 case class PageGenConfig(cat: Seq[String] = Seq.empty, //,
                          //                         catR: String,
@@ -48,5 +50,19 @@ case class PageGenConfig(cat: Seq[String] = Seq.empty, //,
                         )
 
 object PageGenerators {
+
+  val category = Opt.seqString(delimsRE = "[,|]")(
+    name = "category",
+    flags = Seq("-cat"),
+    help = "Work on all pages which are in a specific category."
+  )
+
+  val namespace = Opt.seqString(delimsRE = "[,|]")(
+    name = "namespace",
+    flags = Seq("-ns", "-namespace", "-namespaces"),
+    help = "Work on all pages in given namespaces."
+  )
+
+  val opts = Seq(category, namespace)
 
 }

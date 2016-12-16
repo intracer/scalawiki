@@ -1,9 +1,31 @@
 package org.scalawiki.bots
 
-import TextLib._
+import com.concurrentthought.cla.Args.MissingRequiredArgument
+import org.scalawiki.bots.TextLib._
 import org.specs2.mutable.Specification
 
 class ReplaceSpec extends Specification {
+
+  "parse params" should {
+    def parse(args: Seq[String]) = Replace.argsDefs.parse(args)
+
+    "empty should fail" in {
+      val opt = Replace.argsDefs.opts.find(_.name == "replacements").get
+      parse(Seq.empty).failures === Seq(
+        "replacements" -> MissingRequiredArgument(opt)
+      )
+    }
+
+    "replacements" in {
+      parse(Seq("old", "new")).remaining === Seq("old", "new")
+      parse(Seq("old1", "new1", "old2", "new2")).remaining === Seq("old1", "new1", "old2", "new2")
+    }
+
+    "regex" in {
+      parse(Seq("-regex")).values("regex") === true
+      parse(Seq()).values("regex") === false
+    }
+  }
 
   "replaceExcept" should {
     "no replace" in {
