@@ -36,12 +36,70 @@ case class Exceptions(titles: Seq[String],
       !requireTitlesR.exists(_.unapplySeq(title).isDefined)
 
   def isTextExcepted(text: String): Boolean =
-    titlesR.exists(_.findFirstIn(text).isDefined)
+    textContainsR.exists(_.findFirstIn(text).isDefined)
 
+}
+
+case class ReplaceConfig(regex: Boolean = false,
+                         replacements: Seq[String] = Seq.empty,
+                         pages: PageGenConfig = PageGenConfig())
+
+object Replace {
+
+  val parser = new scopt.OptionParser[ReplaceConfig]("scalawiki") {
+    head("scalawiki", "0.5")
+
+    opt[Seq[String]]('c', "cat")
+      .action((cat, c) => c.copy(pages = c.pages.copy(cat = c.pages.cat ++ cat)))
+      .text("Work on all pages which are in a specific category.")
+      .unbounded()
+
+    Seq(
+      opt[Seq[String]]("ns"),
+      opt[Seq[String]]("namespace"),
+      opt[Seq[String]]("namespaces")
+    ).map(_.action((ns, c) => c.copy(pages = c.pages.copy(namespaces = c.pages.namespaces ++ ns)))
+      .text("Work on all pages in given namespaces .")
+      .unbounded()
+    )
+
+    opt[Boolean]('r', "regex")
+      .action((r, c) => c.copy(regex = r))
+      .text("Make replacements using regular expressions.")
+
+    arg[String]("replacements")
+      .unbounded().optional().action((r, c) =>
+      c.copy(replacements = c.replacements :+ r))
+      .text("Replacement pairs.")
+
+  }
+
+
+  def main(args: Array[String]) {
+
+    val conf = parser.parse(args, ReplaceConfig())
+
+    conf.foreach { c =>
+      if (c.replacements.length % 2 != 0) {
+        println("Incomplete replacement pair.")
+        return
+      }
+    }
+  }
 }
 
 object TextLib {
 
+  /**
+    *
+    * @param text text to process
+    * @param old regex pattern string to replace
+    * @param replacement replacement
+    * @param exceptions text that matches these regex exceptions should not have replacements
+    * @param ignoreCase match both lower- and uppercase characters for replacement
+    * @param marker add this marker after the last replace or the end of text
+    * @return text with replacements
+    */
   def replaceExcept(text: String,
                     old: String,
                     replacement: String,
