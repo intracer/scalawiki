@@ -74,6 +74,7 @@ lazy val `scalawiki-bots` =
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
       "com.github.pathikrit" %% "better-files-akka" % "2.15.0",
+      "com.github.scopt" %% "scopt" % "3.5.0",
       "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
       "org.apache.poi" % "poi-scratchpad" % "3.13",
       "org.apache.poi" % "poi-ooxml" % "3.13",
