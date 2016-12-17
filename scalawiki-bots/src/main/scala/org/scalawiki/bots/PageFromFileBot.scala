@@ -14,7 +14,7 @@ object PageFromFileBot {
   def pages(content: CharSequence,
             fmt: PageFromFileFormat = PageFromFileFormat(),
             noTitle: Boolean = false): TraversableOnce[Page] = {
-    val pageRegex = ("(?s)" + quote(fmt.start) + "\n(.*?)\n" + quote(fmt.end)).r
+    val pageRegex = ("(?s)" + quote(fmt.start) + "\r?\n(.*?)\r?\n" + quote(fmt.end)).r
     val titleRegex = (quote(fmt.titleStart) + "(.*?)" + quote(fmt.titleEnd)).r
 
     pageRegex.findAllMatchIn(content).flatMap { m =>

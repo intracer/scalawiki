@@ -26,7 +26,7 @@ class PageFromFileBotSpec extends Specification {
       |{{-start-}}
       |'''AnotherPageName'''
       |Another text
-      |{{-end-}}""".stripMargin
+      |{{-end-}}""".stripMargin.replaceAll("\r?\n", "\n")
 
   "pages" should {
 
@@ -47,7 +47,7 @@ class PageFromFileBotSpec extends Specification {
           |xxxx
           |'''AnotherPageName'''
           |Another text
-          |yyyy""".stripMargin
+          |yyyy""".stripMargin.replaceAll("\r?\n", "\n")
 
       val pages = PageFromFileBot.pages(docExampleOwnDelimiter, PageFromFileFormat(start = "xxxx", end = "yyyy")).toBuffer
       pages.size === 2
