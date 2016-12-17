@@ -113,8 +113,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
       page,
       Text(text),
       Token(token.fold(bot.token)(identity))
-    )
-    )
+    ))
 
     val params = action.pairs.toMap ++
       Map("action" -> "edit",

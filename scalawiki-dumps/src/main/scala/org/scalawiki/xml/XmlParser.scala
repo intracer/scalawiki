@@ -197,7 +197,7 @@ object XmlParser {
     new XmlParser(xmlReader.asInstanceOf[XMLStreamReader2 with LocationInfo], pageFilter)
 
   def parseFile(filename: String,
-  pageFilter: Page => Boolean = PageFilter.all) =
+                pageFilter: Page => Boolean = PageFilter.all) =
     newXmlParser(xmlInputFactory.createXMLStreamReader(new File(filename)), pageFilter)
 
 

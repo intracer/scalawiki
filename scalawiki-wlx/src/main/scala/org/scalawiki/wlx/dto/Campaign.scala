@@ -1,14 +1,11 @@
 package org.scalawiki.wlx.dto
 
-case class Campaign(
-                     enabled: Boolean,
-                     title: String,
-                     headerLabel: String,
-                     thanksLabel: String,
-                     defaultCategories: Seq[String],
-                     fields: Seq[CampaignField]) {
-
-}
+case class Campaign(enabled: Boolean,
+                    title: String,
+                    headerLabel: String,
+                    thanksLabel: String,
+                    defaultCategories: Seq[String],
+                    fields: Seq[CampaignField])
 
 case class CampaignField(wikitext: String, label: String)
 
@@ -32,7 +29,7 @@ object Campaign {
       (__ \ "display" \ "headerLabel").read[String] and
       (__ \ "display" \ "thanksLabel").read[String] and
       (__ \ "defaults" \ "categories").read[Seq[String]] and
-      (__ \ "fields" ).read[Seq[CampaignField]]
+      (__ \ "fields").read[Seq[CampaignField]]
     ) (Campaign.apply _)
 
 }
