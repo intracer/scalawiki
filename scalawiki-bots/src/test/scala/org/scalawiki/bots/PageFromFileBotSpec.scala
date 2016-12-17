@@ -37,6 +37,13 @@ class PageFromFileBotSpec extends Specification {
       pages.flatMap(_.text) === texts
     }
 
+    "support windows newlines" in {
+      val pages = PageFromFileBot.pages(docExample.replaceAll("\n", "\r\n")).toBuffer
+      pages.size === 2
+      pages.map(_.title) === titles
+      pages.flatMap(_.text) === texts.map(_.replaceAll("\n", "\r\n"))
+    }
+
     "support start and end parameters" in {
       val docExampleOwnDelimiter =
         """xxxx
