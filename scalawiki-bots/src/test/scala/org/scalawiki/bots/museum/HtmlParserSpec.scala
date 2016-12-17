@@ -5,6 +5,8 @@ import org.scalawiki.dto.markup.LineUtil._
 import org.specs2.mutable.Specification
 import org.scalawiki.util.TestUtils._
 
+import scala.compat.Platform
+
 class HtmlParserSpec extends Specification {
 
   "HtmlParser" should {
@@ -35,10 +37,10 @@ class HtmlParserSpec extends Specification {
           """<p>line1
             |line2</p>
             |<p>line3</p>
-          """.stripMargin).trim  must haveSameLinesAs(
+          """.stripMargin).split("\r?\n").map(_.trim) ===
           """line1 line2
-            |line3""".stripMargin
-        )
+            |line3""".stripMargin.split("\r?\n").map(_.trim)
+
       }
     }
   }
