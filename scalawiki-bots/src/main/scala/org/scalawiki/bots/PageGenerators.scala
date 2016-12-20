@@ -1,6 +1,6 @@
 package org.scalawiki.bots
 
-import com.concurrentthought.cla.Opt
+import com.concurrentthought.cla.{Args, Opt}
 
 
 case class PageGenConfig(cat: Seq[String] = Seq.empty, //,
@@ -64,5 +64,13 @@ object PageGenerators {
   )
 
   val opts = Seq(category, namespace)
+
+  def argsToConfig(args: Args): PageGenConfig = {
+    def nameToSeq(name: String) = args.values(name).asInstanceOf[Seq[String]]
+    new PageGenConfig(
+      cat = nameToSeq("category"),
+      namespaces = nameToSeq("namespace")
+    )
+  }
 
 }

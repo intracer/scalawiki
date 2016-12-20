@@ -1,18 +1,18 @@
 package org.scalawiki.query
 
 import org.scalawiki.MwBot
-import org.scalawiki.dto.{Contributor, Namespace, Page}
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.cmd.query.{Generator, Query, TitlesParam}
 import org.scalawiki.dto.cmd.query.list.{UserContribs, _}
 import org.scalawiki.dto.cmd.query.meta.{EditCount, GuiUser, _}
 import org.scalawiki.dto.cmd.query.prop.iiprop.{IiProp, Timestamp}
 import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
 import org.scalawiki.dto.cmd.query.prop.{InProp, Revisions, SubjectId, _}
+import org.scalawiki.dto.cmd.query.{Generator, Query, TitlesParam}
+import org.scalawiki.dto.{Contributor, Page}
 import org.scalawiki.time.TimeRange
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 trait QueryLibrary {
 
@@ -77,7 +77,8 @@ trait QueryLibrary {
     TitlesParam(Seq(title))
   ))
 
-  def generatorWithTemplate(template: String, ns: Set[Int] = Set.empty) = {
+
+  def generatorWithTemplate(template: String, ns: Set[Int] = Set.empty): Generator = {
     val params = Seq(
       EiTitle("Template:" + template),
       EiLimit("500")
@@ -86,13 +87,22 @@ trait QueryLibrary {
     Generator(EmbeddedIn(params: _*))
   }
 
-  def pagesWithTemplate(template: String): Action = {
+  def categoryMembersGenerator(category: String, ns: Set[Int] = Set.empty) =
+    Generator(CategoryMembers(
+      (Seq(CmTitle("Category:" + category))
+        ++ (if (ns.nonEmpty) Seq(CmNamespace(ns.toSeq)) else Seq.empty)): _*
+    ))
+
+  def pagesWithTemplate(template: String): Action =
+    pagesByGenerator(generatorWithTemplate(template))
+
+  def pagesByGenerator(generator: Generator): Action = {
     Action(Query(
       Prop(
         Info(InProp(SubjectId)),
         Revisions()
       ),
-      generatorWithTemplate(template)))
+      generator))
   }
 
   def articlesWithTemplate(template: String)(implicit bot: MwBot): Future[Seq[Long]] = {

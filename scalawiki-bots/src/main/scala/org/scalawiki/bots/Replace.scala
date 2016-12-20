@@ -63,9 +63,19 @@ object Replace {
     ) ++ PageGenerators.opts
   )
 
-  def main(args: Array[String]) {
+  def parse(args: Array[String]): ReplaceConfig = {
+    val parsed = argsDefs.parse(args)
+    new ReplaceConfig(
+      regex = parsed.values("regex").asInstanceOf[Boolean],
+      replacements = parsed.values("replacements").asInstanceOf[Seq[String]]
+        .map(_.sliding(2, 2).toSeq)
+        .map(s => s.head -> s.last).toMap,
+      pages = PageGenerators.argsToConfig(parsed)
+    )
+  }
 
-    val parsedArgs: Args = argsDefs.parse(args)
+  def main(args: Array[String]) {
+    val cfg = parse(args)
   }
 }
 
