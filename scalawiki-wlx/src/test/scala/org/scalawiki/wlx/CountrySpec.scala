@@ -19,7 +19,9 @@ class CountrySpec extends Specification {
 
   "with custom countries" should {
     "contain Ukraine" in {
-      Country.byCode("ua") === Country.Ukraine
+      val country: Country = Country.byCode("ua")
+      country === Country.Ukraine
+      country.regions.size === 27
     }
   }
 

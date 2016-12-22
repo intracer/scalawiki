@@ -4,12 +4,12 @@ import org.joda.time.DateTime
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.Contest
-import org.scalawiki.wlx.query.{ImageQuery, ImageQueryApi, MonumentQuery}
+import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
 import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
+import scala.util.Try
 
 case class ContestStat(contest: Contest,
                        startYear: Int,
@@ -195,15 +195,43 @@ class Statistics(contest: Contest,
 
     perRegion.mkString("\n")
   }
-
 }
 
+case class StatConfig(campaign: String, years: Seq[Int])
+
 object Statistics {
+
+  import com.concurrentthought.cla.{Args, Opt}
+
+  val argsDefs = Args(
+    "Statistics [options]",
+    Seq(
+      Opt.seq[Int]("[,]")(
+        name = "year",
+        flags = Seq("-y", "-year"),
+        help = "contest year."
+      ) { s: String => Try(s.toInt) },
+      Opt.string(
+        name = "campaign",
+        flags = Seq("-campaign"),
+        help = "upload campaign, like wlm-ua"
+      )
+    )
+  )
+
+  def parse(args: Array[String]): StatConfig = {
+    val parsed = argsDefs.parse(args)
+    new StatConfig(
+      campaign = parsed.values("campaign").asInstanceOf[String],
+      years = parsed.values("year").asInstanceOf[Seq[Int]]
+    )
+  }
+
   def main(args: Array[String]) {
+    val cfg = parse(args)
 
-    val contest: Contest = Contest.WLMUkraine(2016).copy(rating = false)
-    val stat = new Statistics(contest, startYear = Some(2012), monumentQuery = MonumentQuery.create(contest))
-
+    val contest = Contest.byCampaign(cfg.campaign).get.copy(year = cfg.years.last)
+    val stat = new Statistics(contest, startYear = Some(cfg.years.head), monumentQuery = MonumentQuery.create(contest))
     stat.init()
   }
 }

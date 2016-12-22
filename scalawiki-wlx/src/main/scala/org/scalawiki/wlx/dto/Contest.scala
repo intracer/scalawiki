@@ -54,9 +54,11 @@ case class Contest(
   */
 object Contest {
 
-  def load(name: String): Option[Contest] = {
+  def load(name: String): Option[Contest] =
     fromConfig(ConfigFactory.load(name))
-  }
+
+  def byCampaign(campaign: String): Option[Contest] =
+    load(campaign.replace("-", "_") + ".conf")
 
   def fromConfig(config: Config): Option[Contest] = {
     val (typeStr, countryStr, year) = (
