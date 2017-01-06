@@ -5,10 +5,18 @@ import org.specs2.mutable.Specification
 
 class ContestSpec extends Specification {
 
+  "contest type" should {
+    "contain wlm/e" in {
+      ContestType.byCode("wlm") === Some(ContestType.WLM)
+      ContestType.byCode("wle") === Some(ContestType.WLE)
+      ContestType.byCode("wlx") === None
+    }
+  }
+
   "by campaign" should {
     "from config file" in {
       val c = Contest.byCampaign("wlm-ua").get
-      c.country.code === "ua"
+      c.country.code === "UA"
       c.country.name === "Ukraine"
       c.country === Country.Ukraine
       c.contestType === ContestType.WLM
@@ -43,7 +51,7 @@ class ContestSpec extends Specification {
 
   "by codes" in {
     val c = Contest.byCampaign("wlm-bg").get
-    c.country.code === "bg"
+    c.country.code === "BG"
     c.country.name === "Bulgaria"
     c.contestType === ContestType.WLM
   }

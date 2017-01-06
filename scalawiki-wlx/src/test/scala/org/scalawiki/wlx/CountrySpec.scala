@@ -6,23 +6,26 @@ import org.specs2.mutable.Specification
 class CountrySpec extends Specification {
 
   "form Java locale" should {
-    val countries = Country.fromJavaLocales
 
-    "contain Ukraine" in {
-      countries.find(_.code == "UA") === Some(new Country("UA", "Ukraine", Seq("uk")))
+    "contain Bulgaria" in {
+      Country.byCode("BG") === Some(new Country("BG", "Bulgaria", Seq("bg")))
+      Country.byCode("bg") === Some(new Country("BG", "Bulgaria", Seq("bg")))
     }
 
     "contain Switzerland" in {
-      countries.find(_.code == "CH") === Some(new Country("CH", "Switzerland", Seq("fr", "de", "it")))
+      Country.byCode("CH") === Some(new Country("CH", "Switzerland", Seq("fr", "de", "it")))
+      Country.byCode("ch") === Some(new Country("CH", "Switzerland", Seq("fr", "de", "it")))
     }
   }
 
   "with custom countries" should {
     "contain Ukraine" in {
-      val country: Country = Country.byCode("ua")
-      country === Country.Ukraine
-      country.regions.size === 27
+      Country.byCode("UA") === Some(Country.Ukraine)
+      Country.byCode("ua") === Some(Country.Ukraine)
+    }
+
+    "not contain dnr" in {
+      Country.byCode("dnr") === None
     }
   }
-
 }

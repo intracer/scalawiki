@@ -40,9 +40,9 @@ case class Country(
 
 object Country {
 
-  val Azerbaijan = new Country("az", "Azerbaijan", Seq("az"))
+  val Azerbaijan = new Country("AZ", "Azerbaijan", Seq("az"))
 
-  val Ukraine = new Country("ua", "Ukraine", Seq("uk"),
+  val Ukraine = new Country("UA", "Ukraine", Seq("uk"),
     Map(
       "80" -> "Київ",
       "07" -> "Волинська область",
@@ -116,7 +116,7 @@ object Country {
   }
 
   lazy val countryMap: Map[String, Country] =
-    fromJavaLocales.groupBy(_.code).mapValues(_.head) ++ customCountries.groupBy(_.code).mapValues(_.head)
+    (fromJavaLocales ++ customCountries).groupBy(_.code.toLowerCase).mapValues(_.head)
 
-  def byCode(code: String) = countryMap(code)
+  def byCode(code: String): Option[Country] = countryMap.get(code.toLowerCase)
 }

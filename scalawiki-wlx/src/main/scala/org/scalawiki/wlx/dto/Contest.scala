@@ -1,7 +1,9 @@
 package org.scalawiki.wlx.dto
 
-import com.typesafe.config.{Config, ConfigFactory}
-import org.scalawiki.wlx.dto.lists.ListConfig
+import com.typesafe.config.{Config, ConfigFactory, ConfigParseOptions, ConfigResolveOptions}
+import org.joda.time.DateTime
+
+import scala.util.Try
 
 /**
   * Represents Wiki Loves X contest
@@ -56,11 +58,28 @@ case class Contest(
   */
 object Contest {
 
-  def load(name: String): Option[Contest] =
-    fromConfig(ConfigFactory.load(name))
+  val opts = ConfigParseOptions.defaults.setAllowMissing(false)
 
-  def byCampaign(campaign: String): Option[Contest] =
+  def load(name: String): Option[Contest] = {
+    Try {
+      ConfigFactory.load(name, opts, ConfigResolveOptions.defaults)
+    }.map(fromConfig)
+      .getOrElse {
+        val Campaign = "(\\w+)_(\\w+).conf".r
+        name match {
+          case Campaign(typeCode, countryCode) =>
+            for (contestType <- ContestType.byCode(typeCode);
+                 country <- Country.byCode(countryCode)
+            ) yield
+              Contest(contestType, country, DateTime.now.year().get())
+          case _ => None
+        }
+      }
+  }
+
+  def byCampaign(campaign: String): Option[Contest] = {
     load(campaign.replace("-", "_") + ".conf")
+  }
 
   def fromConfig(config: Config): Option[Contest] = {
     val (typeStr, countryStr, year) = (
