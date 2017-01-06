@@ -40,4 +40,11 @@ class ContestSpec extends Specification {
       )
     }
   }
+
+  "by codes" in {
+    val c = Contest.byCampaign("wlm-bg").get
+    c.country.code === "bg"
+    c.country.name === "Bulgaria"
+    c.contestType === ContestType.WLM
+  }
 }

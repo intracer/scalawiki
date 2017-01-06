@@ -1,5 +1,6 @@
 package org.scalawiki.wlx.stat
 
+import org.joda.time.DateTime
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
@@ -26,10 +27,34 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     imageQuery.imagesFromCategoryAsync(contest.category, contest) returns Future.successful(images)
     monumentQuery.byMonumentTemplate(date = None) returns monuments
 
-    new Statistics(contest, None, monumentQuery, imageQuery, bot)
+    val cfg = StatConfig(campaign = contest.campaign)
+
+    new Statistics(contest, None, monumentQuery, imageQuery, bot, cfg)
   }
 
   "statistics" should {
+
+    "parse campaign" in {
+      val year = DateTime.now.year().get()
+      val cfg = Statistics.parse(Seq("-campaign", "wlm-ua"))
+      cfg === StatConfig("wlm-ua", Seq(year), Nil)
+    }
+
+    "parse campaign with years" in {
+      val cfg = Statistics.parse(Seq("-campaign", "wle-ua", "-year", "2015,2016"))
+      cfg === StatConfig("wle-ua", Seq(2015, 2016), Nil)
+    }
+
+    "years sorted" in {
+      val cfg = Statistics.parse(Seq("-campaign", "wle-ua", "-year", "2016,2014,2015,2012"))
+      cfg === StatConfig("wle-ua", Seq(2012, 2014, 2015, 2016), Nil)
+    }
+
+    "parse campaign with regigons" in {
+      val cfg = Statistics.parse(Seq("-campaign", "wle-ua", "-year", "2012",  "-region", "01,02"))
+      cfg === StatConfig("wle-ua", Seq(2012), Seq("01", "02"))
+    }
+
     "give empty stat" in {
       val monuments = Seq.empty[Monument]
       val images = Seq.empty[Image]

@@ -11,21 +11,48 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Try
 
+/**
+  * Holds fetched contest data
+  *
+  * @param contest            contest: contest type (WLM/WLE), country, year, etc.
+  * @param startYear          the first year contest was held, or the first year that we are interested in
+  * @param monumentDb         cultural/natural monuments database for the contest
+  * @param currentYearImageDb image database for current year's contest
+  * @param totalImageDb       image database that holds images of all monuments from the contest, regardless of when they where uploaded
+  * @param dbsByYear          image databases split by contest year
+  * @param monumentDbOld      monument database at current year's contest start. Used to rate users who submitted newly pictured monuments.
+  */
 case class ContestStat(contest: Contest,
                        startYear: Int,
                        monumentDb: Option[MonumentDB],
                        currentYearImageDb: ImageDB,
                        totalImageDb: Option[ImageDB],
                        dbsByYear: Seq[ImageDB] = Seq.empty,
-                       monumentDbOld: Option[MonumentDB] = None
-                      )
+                       monumentDbOld: Option[MonumentDB] = None)
 
+/**
+  * Coordinates fetching contest statistics and creating reports/galleries etc. Needs refactoring.
+  *
+  * @param contest       contest: contest type (WLM/WLE), country, year, etc.
+  * @param startYear     the first year contest was held, or the first year that we are interested in
+  * @param monumentQuery monuments fetcher
+  * @param imageQuery    images fetcher
+  * @param bot           scalawiki bot instance
+  */
 class Statistics(contest: Contest,
-                 startYear: Option[Int] = None,
+                 startYear: Option[Int],
                  monumentQuery: MonumentQuery,
-                 imageQuery: ImageQuery = ImageQuery.create(),
-                 bot: MwBot = MwBot.fromHost(MwBot.commons)
-                ) {
+                 imageQuery: ImageQuery,
+                 bot: MwBot,
+                 cfg: StatConfig) {
+
+  def this(contest: Contest,
+           startYear: Option[Int] = None,
+           monumentQuery: MonumentQuery,
+           imageQuery: ImageQuery = ImageQuery.create(),
+           bot: MwBot = MwBot.fromHost(MwBot.commons),
+           cfg: Option[StatConfig] = None) =
+    this(contest, startYear, monumentQuery, imageQuery, bot, cfg.getOrElse(StatConfig(contest.campaign)))
 
   val currentYear = contest.year
 
@@ -33,6 +60,13 @@ class Statistics(contest: Contest,
     (year until currentYear).map(year => contest.copy(year = year))
   }
 
+  /**
+    * Fetches contest data
+    *
+    * @param total  whether to fetch image database that holds images of all monuments from the contest, regardless of when they where uploaded
+    * @param byYear whether to fetch image databases split by contest year
+    * @return asynchronously returned contest data
+    */
   def gatherData(total: Boolean = false, byYear: Boolean = false): Future[ContestStat] = {
 
     val (monumentDb, monumentDbOld) = (
@@ -40,7 +74,7 @@ class Statistics(contest: Contest,
       Option(contest.rating).filter(_ == true).map { _ =>
         MonumentDB.getMonumentDb(contest, monumentQuery, date = Some(new DateTime(2016, 8, 31, 23, 59)))
       }
-      )
+    )
 
     val imageDbFuture = ImageDB.create(contest, imageQuery, monumentDb)
 
@@ -98,6 +132,14 @@ class Statistics(contest: Contest,
     users.map(name => s"{{#target:User talk:$name}}")
   }
 
+
+  /**
+    * Outputs current year reports.
+    *
+    * @param contest
+    * @param imageDb
+    * @param stat
+    */
   def currentYear(contest: Contest, imageDb: ImageDB, stat: ContestStat) = {
 
     new SpecialNominations(contest, imageDb).specialNominations()
@@ -195,9 +237,146 @@ class Statistics(contest: Contest,
 
     perRegion.mkString("\n")
   }
+
+  def byCity(imageDb: ImageDB) = {
+
+    val ukWiki = bot //MwBot.fromHost(MwBot.ukWiki)
+    //    val cities = Seq("Бар (місто)", "Бершадь", "Гайсин", "Гнівань", "Жмеринка", "Іллінці",
+    //      "Калинівка", "Козятин", "Ладижин", "Липовець", "Могилів-Подільський", "Немирів",
+    //      "Погребище", "Тульчин", "Хмільник", "Шаргород", "Ямпіль")
+
+    val cities = Seq(
+      "Березань",
+      "Богуслав",
+      "Боярка",
+      "Буча",
+      "Васильків",
+      "Вишгород",
+      "Вишневе",
+      "Ірпінь",
+      "Кагарлик",
+      "Миронівка",
+      "Обухів",
+      "Переяслав-Хмельницький",
+      "Прип'ять",
+      "Ржищів",
+      "Сквира",
+      "Славутич",
+      "Тараща",
+      "Тетіїв",
+      "Узин",
+      "Українка",
+      "Чорнобиль",
+      "Яготин")
+
+    val monumentDb = imageDb.monumentDb.get
+
+    val all = monumentDb.monuments.filter { m =>
+      val city = m.city.getOrElse("").replaceAll("\\[", " ").replaceAll("\\]", " ")
+      m.photo.isDefined && cities.map(_ + " ").exists(city.contains) && !city.contains("район")
+    }
+
+    def cityShort(city: String) = cities.find(city.contains).getOrElse("").split(" ")(0)
+
+    def page(city: String) = "User:Ilya/Київська область/" + city
+
+    all.groupBy(m => cityShort(m.city.getOrElse(""))).foreach {
+      case (city, monuments) =>
+
+        val galleries = monuments.map {
+          m =>
+            val images = imageDb.byId(m.id)
+            val gallery = Image.gallery(images.map(_.title))
+
+            s"""== ${m.name.replaceAll("\\[\\[", "[[:uk:")} ==
+               |'''Рік:''' ${m.year.getOrElse("")}, '''Адреса:''' ${m.place.getOrElse("")}, '''Тип:''' ${m.typ.getOrElse("")},
+               |'''Охоронний номер:''' ${m.stateId.getOrElse("")}\n""".stripMargin +
+              gallery
+        }
+        ukWiki.page(page(city)).edit(galleries.mkString("\n"))
+    }
+
+    val list = cities.map(city => s"#[[${page(city)}|$city]]").mkString("\n")
+    ukWiki.page("User:Ilya/Київська область").edit(list)
+  }
+
+  def articleStatistics(monumentDb: MonumentDB, imageDb: ImageDB) = {
+    val byRegionAndId = imageDb._byAuthorAndId
+    for ((regId, byId) <- byRegionAndId.grouped) {
+      val monuments = monumentDb.byRegion(regId).filter { m =>
+        m.types.exists(t => t == "комплекс" || t.contains("нац")) &&
+          m.photo.nonEmpty &&
+          m.article.isEmpty
+      }
+      val toWrite = monuments.filter { m =>
+        val id = m.id
+        val images = byId.by(id)
+        val authors = images.flatMap(_.author).toSet
+        authors.size > 1 && images.size > 2
+      }
+      val gallery = toWrite.map {
+        m =>
+          m.photo.get + "| [[" + m.name + "]]" + m.city.fold("")(", " + _)
+      }.mkString("<gallery>", "\n", "</gallery>")
+
+      val region = toWrite.head.page.split("/")(1)
+
+      val page = "Вікіпедія:Пам'ятки національного значення із фото і без статей/" + region
+
+      MwBot.fromHost(MwBot.ukWiki).page(page).edit(gallery)
+    }
+  }
+
+  def byRegionDnabb(imageDb: ImageDB): Unit = {
+
+    val monumentDb = imageDb.monumentDb.get
+
+    val all = monumentDb.monuments.filter(m =>
+      m.photo.isDefined &&
+        Set("59", "35", "71").contains(m.regionId)
+    )
+    val byRegion = all.groupBy(_.regionId)
+
+    monumentDb.contest.country.regions.sortBy(_.name).foreach {
+      region =>
+        val regionHeader = s"== ${region.name} ==\n"
+
+        val monumentSlices = byRegion.getOrElse(region.code, Seq.empty).sliding(100, 100).zipWithIndex
+
+        for ((monuments, index) <- monumentSlices) {
+
+          val images = monuments.map(_.photo.get)
+          val descriptions = monuments.map(m => s"[[${m.name}]], ${m.city.getOrElse("")}")
+
+          val gallery = Image.gallery(images, descriptions)
+
+          val text = regionHeader + gallery
+
+          val galleries = monuments.map {
+            m =>
+              val images = imageDb.byId(m.id)
+              val gallery = Image.gallery(images.map(_.title))
+
+              s"""== ${m.name.replaceAll("\\[\\[", "[[:uk:")} ==
+                 |'''Рік:''' ${m.year.getOrElse("")}, '''Адреса:''' ${m.place.getOrElse("")}, '''Тип:''' ${m.typ.getOrElse("")},
+                 |'''Охоронний номер:''' ${m.stateId.getOrElse("")}\n""".stripMargin + gallery
+          }
+
+          val contestTitle =
+            imageDb.contest.contestType.name
+          bot.page(s"$contestTitle - ${region.name} - ${index + 1}").edit(galleries.mkString("\n"))
+        }
+    }
+  }
+
 }
 
-case class StatConfig(campaign: String, years: Seq[Int])
+case class StatConfig(campaign: String,
+                      years: Seq[Int] = Nil,
+                      regions: Seq[String] = Nil,
+                      exceptRegions: Seq[String] = Nil,
+                      cities: Seq[String] = Nil,
+                      exceptCities: Seq[String] = Nil)
 
 object Statistics {
 
@@ -215,23 +394,56 @@ object Statistics {
         name = "campaign",
         flags = Seq("-campaign"),
         help = "upload campaign, like wlm-ua"
+      ),
+      Opt.seqString("[,]")(
+        name = "region",
+        flags = Seq("-region"),
+        help = "region code"
+      ),
+      Opt.seqString("[,]")(
+        name = "except regions",
+        flags = Seq("-exceptregion"),
+        help = "except region codes"
+      ),
+      Opt.seqString("[,]")(
+        name = "cities",
+        flags = Seq("-city"),
+        help = "cities"
+      ),
+      Opt.seqString("[,]")(
+        name = "except cities",
+        flags = Seq("-exceptcity"),
+        help = "except cities"
       )
     )
   )
 
-  def parse(args: Array[String]): StatConfig = {
+  def parse(args: Seq[String]): StatConfig = {
     val parsed = argsDefs.parse(args)
-    new StatConfig(
+
+    StatConfig(
       campaign = parsed.values("campaign").asInstanceOf[String],
-      years = parsed.values("year").asInstanceOf[Seq[Int]]
+      years = parsed.values.getOrElse("year", Seq(DateTime.now.year().get())).asInstanceOf[Seq[Int]].sorted,
+      regions = parsed.values.getOrElse("region", Nil).asInstanceOf[Seq[String]],
+      exceptRegions = parsed.values.getOrElse("exceptregion", Nil).asInstanceOf[Seq[String]],
+      cities = parsed.values.getOrElse("city", Nil).asInstanceOf[Seq[String]],
+      exceptCities = parsed.values.getOrElse("exceptcity", Nil).asInstanceOf[Seq[String]]
     )
   }
 
   def main(args: Array[String]) {
     val cfg = parse(args)
 
-    val contest = Contest.byCampaign(cfg.campaign).get.copy(year = cfg.years.last)
-    val stat = new Statistics(contest, startYear = Some(cfg.years.head), monumentQuery = MonumentQuery.create(contest))
+    val contest = Contest.byCampaign(cfg.campaign).get
+      .copy(year = cfg.years.last)
+
+    val stat = new Statistics(
+      contest,
+      startYear = Some(cfg.years.head),
+      monumentQuery = MonumentQuery.create(contest),
+      cfg = Some(cfg)
+    )
+
     stat.init()
   }
 }

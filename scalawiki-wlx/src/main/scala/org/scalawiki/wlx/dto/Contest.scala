@@ -24,6 +24,8 @@ case class Contest(
                     specialNominations: Seq[SpecialNomination] = Seq.empty,
                     rating: Boolean = false) {
 
+  def campaign = contestType.code + "-" + country.code
+
   def name = s"${contestType.name} $year in ${country.name}"
 
   /**
