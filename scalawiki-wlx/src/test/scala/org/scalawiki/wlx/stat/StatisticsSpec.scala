@@ -75,7 +75,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     val monuments = Seq(new Monument(id = "123", name = "123 monument"))
 
     val stat = mockedStat(monuments, images)
-    val data = stat.gatherData(total = false, byYear = false).await
+    val data = stat.gatherData(total = false).await
 
     data.contest === contest
     data.monumentDb.map(_.monuments) === Some(monuments)
