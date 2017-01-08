@@ -55,7 +55,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
       cfg === StatConfig("wle-ua", Seq(2012), Seq("01", "02"))
     }
 
-    "give empty stat" in {
+    "give current year stat" in {
       val monuments = Seq.empty[Monument]
       val images = Seq.empty[Image]
 
@@ -65,7 +65,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
       data.contest === contest
       data.monumentDb.map(_.monuments) === Some(monuments)
       data.currentYearImageDb.images === images
-      data.dbsByYear === Seq.empty
+      data.dbsByYear === Seq(data.currentYearImageDb)
       data.totalImageDb.isEmpty === true
     }
   }
@@ -80,7 +80,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     data.contest === contest
     data.monumentDb.map(_.monuments) === Some(monuments)
     data.currentYearImageDb.images === images
-    data.dbsByYear === Seq.empty
+    data.dbsByYear === Seq(data.currentYearImageDb)
     data.totalImageDb.isEmpty === true
   }
 
