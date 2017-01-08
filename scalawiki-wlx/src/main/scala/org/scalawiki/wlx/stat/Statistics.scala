@@ -56,18 +56,15 @@ class Statistics(contest: Contest,
 
   val currentYear = contest.year
 
-  val previousContests = startYear.fold(Seq.empty[Contest]) { year =>
-    (year until currentYear).map(year => contest.copy(year = year))
-  }
+  val contests = (startYear.getOrElse(currentYear) to currentYear).map(y => contest.copy(year = y))
 
   /**
     * Fetches contest data
     *
-    * @param total  whether to fetch image database that holds images of all monuments from the contest, regardless of when they where uploaded
-    * @param byYear whether to fetch image databases split by contest year
+    * @param total whether to fetch image database that holds images of all monuments from the contest, regardless of when they where uploaded
     * @return asynchronously returned contest data
     */
-  def gatherData(total: Boolean = false, byYear: Boolean = false): Future[ContestStat] = {
+  def gatherData(total: Boolean = false): Future[ContestStat] = {
 
     val (monumentDb, monumentDbOld) = (
       Some(MonumentDB.getMonumentDb(contest, monumentQuery)),
@@ -76,27 +73,24 @@ class Statistics(contest: Contest,
       }
     )
 
-    val imageDbFuture = ImageDB.create(contest, imageQuery, monumentDb)
+    for (byYear <- Future.sequence(contests.map(contestImages(monumentDb)));
+         totalImages <- if (total) imagesByTemplate(monumentDb) else Future.successful(None)
+    ) yield {
+      val currentYearImages = byYear.find(_.contest.year == currentYear).get
 
-    val totalFuture = if (total)
-      imageQuery.imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest).map {
-        images =>
-          Some(new ImageDB(contest, images, monumentDb))
-      } else Future.successful(None)
+      val mDbOld: Option[MonumentDB] = getOldImagesMonumentDb(monumentDb, monumentDbOld, totalImages, currentYearImages)
 
-    val byYearFuture = if (byYear)
-      Future.sequence(previousContests.map(contest => ImageDB.create(contest, imageQuery, monumentDb)) ++ Seq(imageDbFuture))
-    else Future.successful(Seq.empty)
-
-    for (imageDB <- imageDbFuture;
-         totalImages <- totalFuture;
-         byYear <- byYearFuture) yield {
-
-      val mDbOld: Option[MonumentDB] = getOldImagesMonumentDb(monumentDb, monumentDbOld, totalImages, imageDB)
-
-      ContestStat(contest, startYear.getOrElse(contest.year), monumentDb, imageDB, totalImages, byYear, mDbOld)
+      ContestStat(contest, startYear.getOrElse(contest.year), monumentDb, currentYearImages, totalImages, byYear, mDbOld)
     }
   }
+
+  private def contestImages(monumentDb: Some[MonumentDB])(contest: Contest) =
+    ImageDB.create(contest, imageQuery, monumentDb)
+
+  private def imagesByTemplate(monumentDb: Some[MonumentDB]) =
+    imageQuery.imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest).map {
+      images => Some(new ImageDB(contest, images, monumentDb))
+    }
 
   def getOldImagesMonumentDb(monumentDb: Option[MonumentDB], monumentDbOld: Option[MonumentDB],
                              totalImages: Option[ImageDB], imageDB: ImageDB): Option[MonumentDB] = {
@@ -115,7 +109,7 @@ class Statistics(contest: Contest,
   }
 
   def init(): Unit = {
-    gatherData(total = true, byYear = true).map {
+    gatherData(total = true).map {
       data =>
         for (totalImageDb <- data.totalImageDb) {
           currentYear(data.contest, data.currentYearImageDb, data)

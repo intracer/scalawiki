@@ -53,9 +53,6 @@ case class Contest(
   }
 }
 
-/**
-  * Contest definitions. Need to move them to config files
-  */
 object Contest {
 
   val opts = ConfigParseOptions.defaults.setAllowMissing(false)
