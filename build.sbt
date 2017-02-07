@@ -6,7 +6,7 @@ val specsV = "3.7.2"
 
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
-  version := "0.5-M4",
+  version := "0.5-M5",
   scalaVersion := "2.11.8",
 
   libraryDependencies ++= Seq(
@@ -50,7 +50,7 @@ lazy val `scalawiki-core` =
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= {
       Seq(
-        "io.spray" %% "spray-client" % sprayV,
+        "io.spray" %% "spray-util" % sprayV,
         "io.spray" %% "spray-caching" % sprayV,
         "com.typesafe.play" %% "play-json" % "2.5.12",
         "com.typesafe.akka" %% "akka-actor" % akkaV,

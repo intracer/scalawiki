@@ -1,14 +1,9 @@
 package org.scalawiki
 
-import org.mockito.Matchers
-import org.scalawiki.http.HttpClient
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
-import spray.http.{ContentTypes, HttpEntity, HttpResponse, StatusCodes}
 import spray.util.pimpFuture
-
-import scala.concurrent.Future
 
 class MwBotSpec extends Specification with MockBotSpec with Mockito {
 
