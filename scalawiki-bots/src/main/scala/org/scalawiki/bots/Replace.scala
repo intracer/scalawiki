@@ -65,7 +65,7 @@ object Replace {
 
   def parse(args: Array[String]): ReplaceConfig = {
     val parsed = argsDefs.parse(args)
-    new ReplaceConfig(
+    ReplaceConfig(
       regex = parsed.values("regex").asInstanceOf[Boolean],
       replacements = parsed.values("replacements").asInstanceOf[Seq[String]]
         .map(_.sliding(2, 2).toSeq)

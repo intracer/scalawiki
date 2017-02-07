@@ -40,7 +40,7 @@ object HtmlOutput {
     galleries.map(g => "<html>" + head + "<body>\n" + nav + g + "\n</body></html>")
   }
 
-  def makeEntryGallery(entry: Entry) = {
+  def makeEntryGallery(entry: Entry): String = {
     Gallery.asHtml(
       entry.images.map { entry => new Image(
         entry.filePath,

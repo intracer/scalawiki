@@ -16,7 +16,7 @@ import scala.concurrent.Future
 
 trait QueryLibrary {
 
-  def imagesByGenerator(generator: Generator, withUrl: Boolean = false) = {
+  def imagesByGenerator(generator: Generator, withUrl: Boolean = false): Action = {
     import org.scalawiki.dto.cmd.query.prop._
 
     val iiProps = Seq(Timestamp, iiprop.User, iiprop.Size) ++ (if (withUrl) Seq(iiprop.Url) else Seq.empty)
@@ -38,7 +38,7 @@ trait QueryLibrary {
         AuWithEditsOnly(true), AuLimit("max"), AuExcludeGroup(Seq("bot")))
     )))
 
-  def userContribs(username: String, range: TimeRange, limit: String = "max", dir: String = "older") = {
+  def userContribs(username: String, range: TimeRange, limit: String = "max", dir: String = "older"): Action = {
     val ucParams = Seq(
       UcUser(Seq(username)),
       UcLimit(limit),
@@ -67,9 +67,7 @@ trait QueryLibrary {
 
   def globalUserInfo(username: String) = Action(Query(MetaParam(
     GlobalUserInfo(
-      GuiProp(
-        Merged, Unattached, EditCount
-      ),
+      GuiProp(Merged, Unattached, EditCount),
       GuiUser(username)
     ))))
 
@@ -77,7 +75,6 @@ trait QueryLibrary {
     Prop(Links(PlNamespace(Seq(ns)), PlLimit("max"))),
     TitlesParam(Seq(title))
   ))
-
 
   def generatorWithTemplate(template: String, ns: Set[Int] = Set.empty): Generator = {
     val params = Seq(
@@ -113,7 +110,7 @@ trait QueryLibrary {
     }
   }
 
-  def pagesToUsers(pages: Seq[Page]) = pages.flatMap(_.lastRevisionUser)
+  def pagesToUsers(pages: Seq[Page]): Seq[Contributor] = pages.flatMap(_.lastRevisionUser)
 
   def getUsers(action: Action)(implicit bot: MwBot): Future[Seq[Contributor]] =
     bot.run(action).map(pagesToUsers)

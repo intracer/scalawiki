@@ -75,7 +75,9 @@ object Image {
 
   def getAuthorFromPage(content: String): String = {
     val template = TemplateParser.parseOne(content, Some("Information"))
-    val authorValue = template.flatMap(t => t.getParamOpt("author").orElse(t.getParamOpt("Author"))).getOrElse("")
+    val authorValue = template.flatMap { t =>
+      t.getParamOpt("author").orElse(t.getParamOpt("Author"))
+    }.getOrElse("")
 
     parseUser(authorValue)
   }
