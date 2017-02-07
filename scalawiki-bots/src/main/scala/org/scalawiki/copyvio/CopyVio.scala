@@ -1,12 +1,11 @@
 package org.scalawiki.copyvio
 
-import akka.actor.ActorSystem
 import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
 import org.scalawiki.dto.cmd.query.prop._
-import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
+import org.scalawiki.dto.cmd.query.{PageIdsParam, Query}
 import org.scalawiki.http.{HttpClient, HttpClientAkka}
+import org.scalawiki.query.QueryLibrary
 import org.scalawiki.{MwBot, WithBot}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Json, Reads, _}
@@ -51,27 +50,9 @@ class CopyVio(val http: HttpClient) {
 }
 
 
-object CopyVio extends WithBot {
+object CopyVio extends WithBot with QueryLibrary {
 
   val host = MwBot.ukWiki
-
-  def pagesWithTemplate(template: String): Future[Seq[Long]] = {
-    val action = Action(Query(
-      Prop(
-        Info(InProp(SubjectId)),
-        Revisions()
-      ),
-      Generator(EmbeddedIn(
-        EiTitle("Template:" + template),
-        EiLimit("500")
-      ))
-    ))
-
-    bot.run(action).map {
-      pages =>
-        pages.map(p => p.subjectId.getOrElse(p.id.get))
-    }
-  }
 
   def pagesByIds(ids: Seq[Long]): Future[Seq[Page]] = {
     import org.scalawiki.dto.cmd.query.prop.rvprop._
@@ -91,10 +72,9 @@ object CopyVio extends WithBot {
   }
 
   def main(args: Array[String]) {
-    val system = ActorSystem()
-    val copyVio = new CopyVio(new HttpClientAkka(system))
+    val copyVio = new CopyVio(new HttpClientAkka())
 
-    val revIdsFuture = pagesWithTemplate("Вікіпедія любить пам'ятки")
+    val revIdsFuture = articlesWithTemplate("Вікіпедія любить пам'ятки")
     recover(revIdsFuture)
 
     val pagesF: Future[Seq[Page]] = revIdsFuture.flatMap[Seq[Page]] {
@@ -136,8 +116,5 @@ object CopyVio extends WithBot {
         println("Error : " + t)
         throw t
     }
-
   }
-
-
 }

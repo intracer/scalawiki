@@ -15,6 +15,5 @@ install:
 build_script:
   - sbt clean compile test
 cache:
-  - C:\sbt\
   - C:\Users\appveyor\.m2
   - C:\Users\appveyor\.ivy2

@@ -14,4 +14,13 @@ class SiteSpec extends Specification {
     }
   }
 
+  "pageUrl" should {
+    "commons page url" in {
+      Site.commons.pageUrl("File:Image.jpg") === "https://commons.wikimedia.org/wiki/File:Image.jpg"
+    }
+
+    "localhost page url" in {
+      Site.localhost.pageUrl("File:Image.jpg") === "http://localhost/mediawiki/index.php/File:Image.jpg"
+    }
+  }
 }

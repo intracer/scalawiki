@@ -4,7 +4,15 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document.OutputSettings
 import org.jsoup.safety.Whitelist
 
+import scala.compat.Platform
+
 object HtmlParser {
+
+  /**
+    * Replaces special whitespace characters (short/nonbreaking space) with regular space
+    * @param s
+    * @return
+    */
 
   def replaceWs(s: String): String =
     s.replace('\u00a0', ' ')
@@ -19,14 +27,19 @@ object HtmlParser {
       .toList
   }
 
+  /**
+    * Tries to get page text from html code.
+    * @param html
+    * @return
+    */
   def htmlText(html: String): String = {
     val tags2Nl = Jsoup.clean(html, "",
-      Whitelist.none().addTags("br", "p"),
+      Whitelist.none().addTags("p"),
       new OutputSettings().prettyPrint(true)
     )
     Jsoup.clean(tags2Nl, "",
       Whitelist.none(),
       new OutputSettings().prettyPrint(false)
-    )
+    ).split(Platform.EOL).map(_.trim).mkString(Platform.EOL)
   }
 }

@@ -26,7 +26,7 @@ class PageFromFileBotSpec extends Specification {
       |{{-start-}}
       |'''AnotherPageName'''
       |Another text
-      |{{-end-}}""".stripMargin
+      |{{-end-}}""".stripMargin.replaceAll("\r?\n", "\n")
 
   "pages" should {
 
@@ -35,6 +35,13 @@ class PageFromFileBotSpec extends Specification {
       pages.size === 2
       pages.map(_.title) === titles
       pages.flatMap(_.text) === texts
+    }
+
+    "support windows newlines" in {
+      val pages = PageFromFileBot.pages(docExample.replaceAll("\n", "\r\n")).toBuffer
+      pages.size === 2
+      pages.map(_.title) === titles
+      pages.flatMap(_.text) === texts.map(_.replaceAll("\n", "\r\n"))
     }
 
     "support start and end parameters" in {
@@ -47,7 +54,7 @@ class PageFromFileBotSpec extends Specification {
           |xxxx
           |'''AnotherPageName'''
           |Another text
-          |yyyy""".stripMargin
+          |yyyy""".stripMargin.replaceAll("\r?\n", "\n")
 
       val pages = PageFromFileBot.pages(docExampleOwnDelimiter, PageFromFileFormat(start = "xxxx", end = "yyyy")).toBuffer
       pages.size === 2

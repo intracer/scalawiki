@@ -1,6 +1,6 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.wlx.dto.lists.WleUa
+import org.scalawiki.wlx.dto.lists.ListConfig.WleUa
 import org.scalawiki.wlx.dto.{Contest, Country, Monument}
 import org.specs2.mutable.Specification
 
@@ -14,15 +14,15 @@ class MonumentDbSpec extends Specification {
         Monument(
           page = "",
           id = regionId + "-001-" + f"$i%04d",
-          name = "Monument in " +  Ukraine.regionById(regionId).name,
-          listConfig = WleUa
+          name = "Monument in " +  Ukraine.regionName(regionId),
+          listConfig = Some(WleUa)
         )
       }
   }
 
    "monument db" should {
      "contain monuments ids" in {
-       val contest = Contest.WLMUkraine(2014, "09-15", "10-15")
+       val contest = Contest.WLMUkraine(2014)
 
        val db = new MonumentDB(contest, monuments.toSeq)
 
@@ -31,7 +31,7 @@ class MonumentDbSpec extends Specification {
      }
 
     "group monuments by regions" in {
-      val contest = Contest.WLMUkraine(2014, "09-15", "10-15")
+      val contest = Contest.WLMUkraine(2014)
 
       val db = new MonumentDB(contest, monuments.toSeq)
 

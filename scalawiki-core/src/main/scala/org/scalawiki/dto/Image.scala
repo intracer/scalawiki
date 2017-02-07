@@ -27,7 +27,7 @@ case class Image(title: String,
 
   def download(filename: String) {
     import scala.concurrent.ExecutionContext.Implicits.global
-    for (bytes <- MwBot.get(MwBot.commons).getByteArray(url.get))
+    for (bytes <- MwBot.fromSite(Site.commons).getByteArray(url.get))
       Files.write(Paths.get(filename), bytes)
   }
 
@@ -75,7 +75,9 @@ object Image {
 
   def getAuthorFromPage(content: String): String = {
     val template = TemplateParser.parseOne(content, Some("Information"))
-    val authorValue = template.flatMap(t => t.getParamOpt("author").orElse(t.getParamOpt("Author"))).getOrElse("")
+    val authorValue = template.flatMap { t =>
+      t.getParamOpt("author").orElse(t.getParamOpt("Author"))
+    }.getOrElse("")
 
     parseUser(authorValue)
   }

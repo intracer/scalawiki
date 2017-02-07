@@ -56,7 +56,7 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
       subType = byName(subType),
       resolution = byName(resolution),
       otherParams = otherParams,
-      listConfig = config)
+      listConfig = Some(config))
   }
 
   def removeComments(s: String): String = {

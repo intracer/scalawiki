@@ -13,11 +13,11 @@ class GallerySpec extends Specification {
 
   "Gallery" should {
     "by monument id" in {
-      val monument1 = Monument(id = "01-111-1111", name = "name1", photo = Some("Img1.jpg"), listConfig = listConfig)
-      val monument2 = Monument(id = "05-111-1111", name = "name2", listConfig = listConfig)
-      val monument3 = Monument(id = "05-111-1112", name = "name3", listConfig = listConfig)
+      val monument1 = Monument(id = "01-111-1111", name = "[[name1]]", photo = Some("Img1.jpg"), listConfig = Some(listConfig))
+      val monument2 = Monument(id = "05-111-1111", name = "[[article2|name2]]", listConfig = Some(listConfig))
+      val monument3 = Monument(id = "05-111-1112", name = "name3", listConfig = Some(listConfig))
       val monuments = Seq(monument1, monument2, monument3)
-      val text = "header\n" + monuments.map(_.asWiki).mkString + "\nfooter"
+      val text = "header\n" + monuments.map(_.asWiki()).mkString + "\nfooter"
 
       val images = Seq(
         Image("File:Img1.jpg", size = Some(10 ^ 6), width = Some(2048), height = Some(1024), monumentId = Some("01-111-1111")),
@@ -30,13 +30,13 @@ class GallerySpec extends Specification {
       val expected =
         """== [[:uk:Вікіпедія:Вікі любить Землю/Автономна Республіка Крим|Автономна Республіка Крим]] ==
           |=== 01-111-1111 ===
-          |name1
+          |[[:uk:name1]]
           |<gallery>
           |File:Img1.jpg
           |</gallery>
           |== [[:uk:Вікіпедія:Вікі любить Землю/Вінницька область|Вінницька область]] ==
           |=== 05-111-1111 ===
-          |name2
+          |[[:uk:article2|name2]]
           |<gallery>
           |File:Img2.jpg
           |File:Img2sm.jpg
@@ -46,8 +46,6 @@ class GallerySpec extends Specification {
       // compare this way to work across different line endings
       actual.lines.toBuffer === expected.lines.toBuffer
     }
-
-
   }
 
 }

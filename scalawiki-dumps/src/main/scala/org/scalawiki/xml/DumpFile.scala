@@ -1,6 +1,6 @@
 package org.scalawiki.xml
 
-import java.nio.file.{Files, Path}
+import java.nio.file.{Files, Path, Paths}
 
 import scala.collection.JavaConverters._
 
@@ -18,7 +18,7 @@ class DumpFileInfo(val path: Path) {
   val hyphensParts = withoutExtension split "-"
   val database: Option[String] = if (hyphensParts(0) == "pagecounts")
     None
-   else
+  else
     Some(hyphensParts(0))
 
   val dumpType = if (hyphensParts(0) == "pagecounts")
@@ -76,8 +76,21 @@ class PageViewCountDump(info: DumpFileInfo) extends DumpFile(info)
 
 
 object DumpFile {
-  def get(path: Path) = {
+
+  def get(path: Path): Option[DumpFile] = {
     val info = new DumpFileInfo(path)
     info.dumpFile
+  }
+
+  def process(filename: String): Unit = {
+    val path = Paths.get(filename)
+    val dump = get(path)
+
+    println(dump)
+  }
+
+  def main(args: Array[String]) {
+    val filename = args(0)
+    process(filename)
   }
 }

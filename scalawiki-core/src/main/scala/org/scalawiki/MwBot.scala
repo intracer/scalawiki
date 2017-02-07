@@ -4,9 +4,11 @@ import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import akka.io.IO
 import akka.pattern.ask
-import org.scalawiki.dto.{LoginResponse, Page, Site}
+import org.jsoup.Jsoup
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.http.{HttpClient, HttpClientAkka}
+import org.scalawiki.dto.{LoginResponse, MwException, Page, Site}
+import org.scalawiki.http.{HttpClient, HttpClientSpray}
 import org.scalawiki.json.MwReads._
 import org.scalawiki.query.{DslQuery, PageQuery, SinglePageQuery}
 import play.api.libs.json._
@@ -35,7 +37,7 @@ trait MwBot {
 
   def login(user: String, password: String): Future[String]
 
-  def run(action: Action): Future[Seq[Page]]
+  def run(action: Action, context: Map[String, String] = Map.empty): Future[Seq[Page]]
 
   def get(params: Map[String, String]): Future[String]
 
@@ -66,9 +68,33 @@ trait MwBot {
   def log: LoggingAdapter
 }
 
-class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) extends MwBot {
+case class MediaWikiVersion(version: String) extends Ordered[MediaWikiVersion] {
+  override def compare(that: MediaWikiVersion): Int =
+    version.compareTo(that.version)
+}
 
-  def this(host: String, http: HttpClient, system: ActorSystem) = this(Site.host(host), http, system)
+object MediaWikiVersion {
+
+  val UNKNOWN = MediaWikiVersion("(UNKNOWN)")
+
+  val MW_1_24 = MediaWikiVersion("1.24")
+
+  def fromGenerator(generator: String) = {
+    "MediaWiki (\\d+\\.\\d+)".r
+      .findFirstMatchIn(generator)
+      .map(_.group(1))
+      .fold(UNKNOWN)(MediaWikiVersion.apply)
+  }
+}
+
+class MwBotImpl(val site: Site,
+                val http: HttpClient = new HttpClientSpray(MwBot.system),
+                val system: ActorSystem = MwBot.system
+               ) extends MwBot {
+
+  def this(host: String) = this(Site.host(host))
+
+  def this(host: String, http: HttpClient) = this(Site.host(host), http)
 
   implicit val sys = system
 
@@ -104,30 +130,64 @@ class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) e
     val loginParams = Map(
       "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json"
     ) ++ token.map("lgtoken" -> _)
-    http.post(apiUrl, loginParams).flatMap (http.getBody) map { body =>
-      val jsResult = Json.parse(body).validate(loginResponseReads)
-      if (jsResult.isError) {
-        throw new RuntimeException("Parsing failed: " + jsResult)
-      } else {
-        jsResult.get
+
+    http.post(apiUrl, loginParams).map { resp =>
+      val body = http.getBody(resp)
+
+      resp.entity.toOption.map(_.contentType) match {
+        case Some(HttpClient.JSON_UTF8) =>
+          val jsResult = Json.parse(body).validate(loginResponseReads)
+          if (jsResult.isError) {
+            throw new RuntimeException("Parsing failed: " + jsResult)
+          } else {
+            jsResult.get
+          }
+        case x =>
+          val html = Jsoup.parse(body)
+          val details = html.select("code").first().text()
+          throw new MwException(resp.status.toString(), details)
       }
     }
   }
 
-  override lazy val token = await(getToken)
+  override lazy val token: String = await(getToken)
 
-  def getToken = get(tokenReads, "action" -> "query", "meta" -> "tokens")
+  lazy val mediaWikiVersion: MediaWikiVersion = await(getMediaWikiVersion)
+
+  def getMediaWikiVersion: Future[MediaWikiVersion] =
+    get(siteInfoReads, "action" -> "query", "meta" -> "siteinfo") map MediaWikiVersion.fromGenerator
+
+  def getToken: Future[String] = {
+    val isMW_1_24 = mediaWikiVersion >= MediaWikiVersion.MW_1_24
+
+    if (isMW_1_24) {
+      get(tokenReads, "action" -> "query", "meta" -> "tokens")
+    } else {
+      get(editTokenReads, "action" -> "query", "prop" -> "info", "intoken" -> "edit", "titles" -> "foo")
+    }
+  }
 
   def getTokens = get(tokensReads, "action" -> "tokens")
 
-  override def run(action: Action): Future[Seq[Page]] = {
-    new DslQuery(action, this).run()
+  override def run(action: Action, context: Map[String, String] = Map.empty): Future[Seq[Page]] = {
+    new DslQuery(action, this, context).run()
   }
 
   def get[T](reads: Reads[T], params: (String, String)*): Future[T] =
     http.get(getUri(params: _*)) map {
       body =>
-        Json.parse(body).validate(reads).get
+        parseJson(reads, body).get
+    }
+
+  def parseJson[T](reads: Reads[T], body: String): JsResult[T] =
+    Json.parse(body).validate(reads)
+
+  def parseResponse[T](reads: Reads[T], response: Future[HttpResponse]): Future[T] =
+    response map http.getBody map {
+      body =>
+        parseJson(reads, body).getOrElse {
+          throw parseJson(errorReads, body).get
+        }
     }
 
   override def getByteArray(url: String): Future[Array[Byte]] =
@@ -139,42 +199,13 @@ class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) e
     post(reads, params.toMap)
 
   override def post[T](reads: Reads[T], params: Map[String, String]): Future[T] =
-    http.post(apiUrl, params) flatMap http.getBody map {
-      body =>
-        val result = Json.parse(body).validate(reads).get
-        println(result)
-        result
-    }
+    parseResponse(reads, http.post(apiUrl, params))
 
   override def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T] =
-    http.postMultiPart(apiUrl, params) flatMap http.getBody map {
-      body =>
-        val json = Json.parse(body)
-        val response = json.validate(reads)
-        //        response.fold[T](err => {
-        //          json.validate(errorReads)
-        //        },
-        //          success => success
-        //        )
-        val result = response.get
-        println(result)
-        result
-    }
+    parseResponse(reads, http.postMultiPart(apiUrl, params))
 
   override def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String): Future[T] =
-    http.postFile(apiUrl, params, fileParam, filename) flatMap http.getBody map {
-      body =>
-        val json = Json.parse(body)
-        val response = json.validate(reads)
-        //        response.fold[T](err => {
-        //          json.validate(errorReads)
-        //        },
-        //          success => success
-        //        )
-        val result = response.get
-        println(result)
-        result
-    }
+    parseResponse(reads, http.postFile(apiUrl, params, fileParam, filename))
 
   def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)
 
@@ -205,6 +236,7 @@ class MwBotImpl(val site: Site, val http: HttpClient, val system: ActorSystem) e
   override def post(params: Map[String, String]): Future[String] = {
     val uri: Uri = Uri(apiUrl)
     log.info(s"$host POST url: $uri, params: $params")
+    http.postUri(uri, params ++ Map("format" -> "json")) map http.getBody
     http.post(uri, params ++ Map("format" -> "json")) flatMap http.getBody
   }
 
@@ -221,29 +253,45 @@ object MwBot {
   import scala.concurrent.ExecutionContext.Implicits.global
   import scala.concurrent._
 
-  val commons = "commons.wikimedia.org"
-  val ukWiki = "uk.wikipedia.org"
-  val useSpray = true
+  val system = ActorSystem()
 
-  def create(host: String, withDb: Boolean = false): MwBot = {
-    val system = ActorSystem()
-    val http = new HttpClientAkka(system)
+  def create(site: Site,
+             loginInfo: Option[LoginInfo],
+             http: HttpClient = new HttpClientAkka(MwBot.system)
+            ): MwBot = {
+    val bot = new MwBotImpl(site, http)
 
-    val bot = new MwBotImpl(host, http, system)
-
-    bot.await(bot.login(LoginInfo.login, LoginInfo.password))
+    loginInfo.foreach {
+      info =>
+        bot.await(bot.login(info.login, info.password))
+    }
     bot
   }
 
   val cache: Cache[MwBot] = LruCache()
 
-  def get(host: String): MwBot = {
-    Await.result(cache(host) {
+  def fromHost(host: String,
+               loginInfo: Option[LoginInfo] = LoginInfo.fromEnv(),
+               http: HttpClient = new HttpClientSpray(MwBot.system)
+         ): MwBot = {
+    fromSite(Site.host(host), loginInfo, http)
+  }
+
+  def fromSite(site: Site,
+               loginInfo: Option[LoginInfo] = LoginInfo.fromEnv(),
+               http: HttpClient = new HttpClientSpray(MwBot.system)
+         ): MwBot = {
+    Await.result(cache(site.domain) {
       Future {
-        create(host)
+        create(site, loginInfo, http)
       }
     }, 1.minute)
   }
+
+  val commons: String = Site.commons.domain
+
+  val ukWiki: String = Site.ukWiki.domain
+
 }
 
 

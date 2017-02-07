@@ -1,0 +1,215 @@
+== Participating countries 2016 == <!--T:6-->
+
+<!--T:36-->
+If you want to take part in the contest as a photographer, please, go to the page of your country in the list below.<br />
+If your country is not in the list and you would like to organise local contest, [[#Help and FAQ|go down the page]].
+
+</translate>
+{| class="wikitable sortable" style="width: 100%; text-align: center; margin-top: -.3em"
+! <translate><!--T:28-->
+Country</translate>
+! <translate><!--T:29-->
+Commons landing page</translate>
+! <translate><!--T:30-->
+Contest period</translate>
+! <translate><!--T:31-->
+Page for questions</translate>
+! <translate><!--T:32-->
+Notes</translate>
+! <translate><!--T:33-->
+Lists of protected areas/objects</translate>
+! <translate><!--T:34-->
+Campaign</translate>
+! <translate><!--T:35-->
+Uploads</translate>
+|-
+| [[{{Country-flags|dz}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Algeria|WLE Algeria]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|05|31}} (UTC+1)
+| [[Commons talk:Wiki Loves Earth 2016 in Algeria|{{TNT|WLE 2016 tables|contacts}}]]
+| [http://wikimedia-dz.org/index.php/WLE2016 WLE 2016 in wikimedia-dz.org]
+| [[Commons:Wiki_Loves_Earth_2015_in_Algeria/Lists|{{TNT|WLE 2016 tables|list}}]]
+| [[Campaign:wle-dz|wle-dz]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Algeria|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Algeria|files}}]]'''
+|-
+| [[{{Country-flags|au}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Australia|WLE Australia]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|05|31}}
+| [[Commons talk:Wiki Loves Earth 2016 in Australia|{{TNT|WLE 2016 tables|contacts}}]]
+|
+| [[:en:List of Ramsar sites in Australia|List of Ramsar sites]] <br />[[:en:Protected areas of Australia|Protected areas]]
+| [[Campaign:wle-au|wle-au]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Australia‎‎|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Australia}}]]'''
+|-
+| [[{{Country-flags|at}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Austria|WLE Austria]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|05|31}} (UTC+2)
+| [[Commons talk:Wiki Loves Earth 2016 in Austria|{{TNT|WLE 2016 tables|contacts}}]]
+| [http://wikilovesearth.at wikilovesearth.at]
+| [[:de:Wikipedia:Wiki_Loves_Earth_2014/Österreich|Teilnehmende Objekte]]
+| National parks: [[:Campaign:wle-at-nap|wle-at-nap]],<br>Nature reserves: [[:Campaign:wle-at-nsg|wle-at-nsg]], <br>Geschützter Landschaftsteil: [[:Campaign:wle-at-glt|wle-at-glt]], <br>Geschützte Höhle: [[:Campaign:wle-at-hoe|wle-at-hoe]],<br> Nature parks: [[:Campaign:wle-at-np|wle-at-np]], <br>  Natural monuments: [[:Campaign:wle-at-nd|wle-at-nd]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Austria‎|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Austria|files‎}}]]'''
+|-
+| [[{{Country-flags|az}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Azerbaijan|WLE Azerbaijan]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|05|31}} (UTC+4)
+| [[Commons talk:Wiki Loves Earth 2016 in Azerbaijan|{{TNT|WLE 2016 tables|contacts}}]]
+|
+| [[Commons:Wiki_Loves_Earth_2016_in_Azerbaijan#Where are the natural sites?|{{TNT|WLE 2016 tables|list}}]]
+| [[Campaign:wle-az|wle-az]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Azerbaijan|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Azerbaijan|files}}]]'''
+|-
+| [[{{Country-flags|br}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Brazil|WLE Brazil]]'''
+| {{date|2016|05|07}} &ndash; {{date|2016|06|30}} (UTC-3)
+| [[Commons talk:Wiki Loves Earth 2016 in Brazil|{{TNT|WLE 2016 tables|contacts}}]],<br/>rodrigopadula{{@}}wikimedia.org.br
+| [https://pt.wikipedia.org/wiki/Wikip%C3%A9dia:Wiki_Loves_Earth_2016/Brasil Wiki Loves Earth Brasil 2016]
+| [[Commons:Wiki Loves Earth 2016 in Brazil#Brazilian protected areas|{{TNT|WLE 2016 tables|list}}]]
+| [[Campaign:wle-br|wle-br]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Brazil|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Brazil|files}}]]'''
+|-
+| [[{{Country-flags|bg}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Bulgaria|WLE Bulgaria]]'''
+| {{date|2016|06|01}} &ndash; {{date|2016|06|30}} (UTC+2)
+| [[Commons talk:Wiki Loves Earth 2016 in Bulgaria|{{TNT|WLE 2016 tables|contacts}}]],<br/>wle2016{{at}}wikimedia.bg
+|
+| [[Commons:Wiki_Loves_Earth_2016_in_Bulgaria/Lists|{{TNT|WLE 2016 tables|list}}]]
+| [[Campaign:wle-bg|wle-bg]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Bulgaria|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Bulgaria|files}}]]'''
+|-
+| [[{{Country-flags|fr}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in France|WLE France]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|05|31}} (UTC+2)
+| [[Commons talk:Wiki Loves Earth 2016 in France|{{TNT|WLE 2016 tables|contacts}}]]
+| [http://www.wikilovesearth.fr wikilovesearth.fr]
+| [[Commons:Wiki Loves Earth 2016 in France/List|{{TNT|WLE 2016 tables|list}}]]
+| [[Campaign:wle-fr|wle-fr]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in France|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in France|files}}]]'''
+|-
+| [[{{Country-flags|de}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Germany|WLE Germany]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|05|31}} (UTC+2)
+| [[:de:Wikipedia Diskussion:Wiki Loves Earth 2016/Deutschland|{{TNT|WLE 2016 tables|contacts}}]]
+| [http://www.wikilovesearth.de wikilovesearth.de]
+| [[:de:Wikipedia:Wiki Loves Earth 2016/Deutschland/Objekte|{{TNT|WLE 2016 tables|list-areas-and-objects}}]]
+| per federal state: wle-de[[:Campaign:wle-de-bb|-bb]], [[:Campaign:wle-de-be|-be]], [[:Campaign:wle-de-bw|-bw]], [[:Campaign:wle-de-by|-by]], [[:Campaign:wle-de-hb|-hb]], [[:Campaign:wle-de-he|-he]], [[:Campaign:wle-de-hh|-hh]], [[:Campaign:wle-de-mv|-mv]], [[:Campaign:wle-de-ni|-ni]], [[:Campaign:wle-de-nw|-nw]], [[:Campaign:wle-de-rp|-rp]], [[:Campaign:wle-de-sh|-sh]], [[:Campaign:wle-de-sl|-sl]], [[:Campaign:wle-de-sn|-sn]], [[:Campaign:wle-de-st|-st]], [[:Campaign:wle-de-th|-th]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Germany‎|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Germany‎|files}}]]'''
+|-
+| [[{{Country-flags|gr}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Greece|WLE Greece]]'''
+| {{date|2016|05|15}} &ndash; {{date|2016|06|15}} (UTC+3)
+| [[Commons talk:Wiki Loves Earth 2016 in Greece|{{TNT|WLE 2016 tables|contacts}}]]
+| [http://wle.wikimedia.gr wle.wikimedia.gr]
+| [[Commons:Wiki Loves Earth 2016 in Greece/Sites|{{TNT|WLE 2016 tables|list}}]]
+| [[Campaign:wle-gr|wle-gr]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Greece|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Greece|files}}]]'''
+|-
+| [[{{Country-flags|iq}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Iraq|WLE Iraq]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|06|30}} (UTC+3)
+| [[Commons talk:Wiki Loves Earth 2016 in Iraq|{{TNT|WLE 2016 tables|contacts}}]]
+|
+|
+| [[:Campaign:wle-iq|wle-iq]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Iraq|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Iraq|files}}]]'''
+|-
+| [[{{Country-flags|md}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Moldova|WLE Moldova]]'''
+| {{date|2016|05|15}} &ndash; {{date|2016|06|15}} (UTC+3)
+| [[Commons talk:Wiki Loves Earth 2016 in Moldova|{{TNT|WLE 2016 tables|contacts}}]]
+|
+| [[:w:ro:Wikipedia:Wiki Loves Earth/Moldova|{{TNT|WLE 2016 tables|list-all}}]]<br/>([[:w:uk:Вікіпедія:Вікі любить Землю/Молдова|also in Ukrainian language]])
+| [[:Campaign:wle-md|wle-md]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Moldova|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Moldova|files}}]]'''
+|-
+| [[{{Country-flags|ma}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Morocco|WLE Morocco]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|05|31}} (UTC+1)
+| [[Commons talk:Wiki Loves Earth 2016 in Morocco|{{TNT|WLE 2016 tables|contacts}}]]
+|
+| [[Commons:Wiki Loves Earth 2016 in Morocco/Lists|{{TNT|WLE 2016 tables|list}}]]
+| [[:Campaign:wle-ma|wle-ma]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Morocco|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Morocco|files}}]]'''
+|-
+| [[{{Country-flags|np}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Nepal|WLE Nepal]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|05|31}} (UTC+5:45)
+|
+|
+| [[:en:Wikipedia:List of Natural Monuments in Nepal|{{TNT|WLE 2016 tables|list-all}}]]
+| [[:Campaign:wle-np|wle-np]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Nepal|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Nepal|files}}]]'''
+|-
+| [[{{Country-flags|pk}}|20px|border]]
+| '''[[:wikipedia:Wikipedia:Wikipedia Loves Northern Pakistan|WLE Pakistan]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|05|31}} (UTC+5)
+| pakistan@wikilovesearth.org
+|
+| [[:en:Protected areas of Pakistan|{{TNT|WLE 2016 tables|list-all}}]]
+| [[:Campaign:wle-pk|wle-pk]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Pakistan‎|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Pakistan‎|files}}]]'''
+|-
+| [[{{Country-flags|ru}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Russia|WLE Russia]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|05|31}} (UTC+3)
+| wlx-russia@googlegroups.com
+| {{nobr|[[wmru:Вики любит Землю 2016|Вики любит Землю 2016]]}}
+| [[voy:ru:Природные памятники России|{{TNT|WLE 2016 tables|list}}]]
+| [[Campaign:wle-ru|wle-ru]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Russia|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Russia|files}}]]'''
+|-
+| [[{{Country-flags|rs}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Serbia|WLE Serbia]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|05|31}} (UTC+2)
+| wle@vikimedija.org
+| {{nobr|[http://wle.wikimedia.rs Вики Воли Земљу 2016]}}
+| [[:sr:Списак заштићених природних добара у Србији|{{TNT|WLE 2016 tables|list}}]]
+| [[Campaign:wle-rs|wle-rs]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Serbia|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Serbia|files}}]]'''
+|-
+| [[{{Country-flags|es}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Spain|WLE Spain]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|05|31}} (UTC+2)
+| [[Commons talk:Wiki Loves Earth 2016 in Spain|{{TNT|WLE 2016 tables|contacts}}]]
+| [http://www.wikilovesearth.es wikilovesearth.es] or [http://wikilov.es/earth wikilov.es/earth]
+| [[Commons:Wiki Loves Earth 2016 in Spain#Protected natural areas|{{TNT|WLE 2016 tables|list}}]]
+| [[Campaign:wle-es|wle-es]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Spain‎‎|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Spain‎‎|files}}]]'''
+|-
+| [[{{Country-flags|ch}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Switzerland|WLE Switzerland]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|06|07}} (UTC+2)
+| [[Commons talk:Wiki Loves Earth 2016 in Switzerland|{{TNT|WLE 2016 tables|contacts}}]]
+|
+| [[Commons:Wiki4List|{{TNT|WLE 2016 tables|list}}]]
+| [[Campaign:wle-ch|wle-ch]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Switzerland‎‎|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Switzerland|files}}]]'''
+|-
+| [[{{Country-flags|th}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Thailand|WLE Thailand]]'''
+| {{date|2016|06|01}} &ndash; {{date|2016|06|30}} (UTC+7)
+| [[Commons talk:Wiki Loves Earth 2016 in Thailand|{{TNT|WLE 2016 tables|contacts}}]]
+| [[Commons:Wiki_Loves_Earth_2016_in_Thailand|Commons:Wiki Loves Earth 2016 in Thailand]]
+| [https://en.wikipedia.org/wiki/List_of_national_parks_of_Thailand List of national parks in Thailand]
+| [[Campaign:wle-th|wle-th]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Thailand|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Thailand|files}}]]'''
+|-
+| [[{{Country-flags|tn}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Tunisia|WLE Tunisia]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|06|07}} (UTC+1)
+| [[Commons talk:Wiki Loves Earth 2016 in Tunisia|{{TNT|WLE 2016 tables|contacts}}]]
+|
+| [[Commons:Wiki Loves Earth 2016 in Tunisia#Zones photographiables pour le concours|{{TNT|WLE 2016 tables|list}}]]
+| [[Campaign:wle-tn|wle-tn]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Tunisia‎‎|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Tunisia|files}}]]'''
+|-
+| [[{{Country-flags|ua}}|20px|border]]
+| '''[[Commons:Wiki Loves Earth 2016 in Ukraine|WLE Ukraine]]'''
+| {{date|2016|05|01}} &ndash; {{date|2016|05|31}} (UTC+3)
+| [[Commons talk:Wiki Loves Earth 2016 in Ukraine|{{TNT|WLE 2016 tables|contacts}}]], <br/>wle@wikimedia.in.ua
+| [http://wikilovesearth.org.ua wikilovesearth.org.ua]
+| [[Commons:Wiki Loves Earth 2016 in Ukraine/Lists|{{TNT|WLE 2016 tables|list}}]] ([[:uk:Вікіпедія:Вікі любить Землю/Списки|Списки]])
+| [[Campaign:wle-ua|wle-ua]]
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Ukraine|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Ukraine|files}}]]'''
+|}
+<translate>

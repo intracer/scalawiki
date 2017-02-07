@@ -1,11 +1,8 @@
 package org.scalawiki.bots
 
 import java.util.regex.Pattern.quote
-
 import org.scalawiki.dto.Page
-
 import scala.collection.TraversableOnce
-
 
 case class PageFromFileFormat(start: String = "{{-start-}}",
                               end: String = "{{-end-}}",
@@ -17,7 +14,7 @@ object PageFromFileBot {
   def pages(content: CharSequence,
             fmt: PageFromFileFormat = PageFromFileFormat(),
             noTitle: Boolean = false): TraversableOnce[Page] = {
-    val pageRegex = ("(?s)" + quote(fmt.start) + "\n(.*?)\n" + quote(fmt.end)).r
+    val pageRegex = ("(?s)" + quote(fmt.start) + "\r?\n(.*?)\r?\n" + quote(fmt.end)).r
     val titleRegex = (quote(fmt.titleStart) + "(.*?)" + quote(fmt.titleEnd)).r
 
     pageRegex.findAllMatchIn(content).flatMap { m =>
@@ -34,7 +31,9 @@ object PageFromFileBot {
     }
   }
 
-  def join(pages: Seq[Page], fmt: PageFromFileFormat = PageFromFileFormat(), includeTitle: Boolean = true) = {
+  def join(pages: Seq[Page],
+           fmt: PageFromFileFormat = PageFromFileFormat(),
+           includeTitle: Boolean = true): String = {
     pages.map { page =>
       val title = if (includeTitle)
         fmt.titleStart + page.title + fmt.titleEnd

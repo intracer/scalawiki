@@ -29,8 +29,7 @@ case class IgnoreWarnings(override val arg: Boolean = true) extends BooleanParam
 case class File(override val arg: Array[Byte]) extends ByteArrayParameter("file",
   "File contents") with UploadParam[Array[Byte]]
 
-case class Url(override val arg: String) extends StringParameter("url",
-  "Url to fetch the file from") with UploadParam[String]
+case class Url(override val arg: String) extends StringParameter("url",  "Url to fetch the file from") with UploadParam[String]
 
 case class FileKey(override val arg: String) extends StringParameter("filekey",
   "/Key returned by a previous upload that failed due to warnings, or (with httpstatus) The upload_session_key of an asynchronous upload. " +

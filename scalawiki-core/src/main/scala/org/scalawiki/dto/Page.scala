@@ -19,6 +19,8 @@ case class Page(
                ) /*extends HasId[Page]*/ {
   val history = new History(revisions)
 
+  def titleWithoutNs = title.split("\\:").last
+
   def withText(text: String) = copy(revisions = Page.revisionsFromText(Some(text)))
 
   def text: Option[String] = revisions.headOption.flatMap(_.content)
@@ -38,18 +40,19 @@ case class Page(
   )
 
   def withoutContent = copy(revisions = revisions.map(_.withoutContent))
+
 }
 
 object Page {
 
   def full(
-            id: Long,
+            id: Option[Long],
             ns: Int,
             title: String,
             missing: Option[String],
             subjectId: Option[Long],
             talkId: Option[Long]) = {
-    new Page(Some(id), ns, title,
+    new Page(id, ns, title,
       missing = missing.fold(false)(_ => true),
       subjectId = subjectId,
       talkId = talkId)

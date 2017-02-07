@@ -1,6 +1,9 @@
 package org.scalawiki.query
 
 import org.scalawiki.dto.Page
+import org.scalawiki.dto.cmd.Action
+import org.scalawiki.dto.cmd.query.prop.{CategoryInfo, Prop}
+import org.scalawiki.dto.cmd.query.{Query, TitlesParam}
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
@@ -8,7 +11,7 @@ import spray.util.pimpFuture
 class ListCategoryMembersSpec extends Specification with MockBotSpec {
 
   "get category members with continue" should {
-    "return category members in" in {
+    "return category members" in {
       val queryType = "categorymembers"
 
       val response1 =
@@ -36,4 +39,74 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
       result(1) === Page(4571809, 2, "User:Formator")
     }
   }
+
+  "get category number" should {
+    "return category number for 3 entries and missing entry" in {
+      val queryType = "categorymembers"
+
+      val response1 =
+        """{
+          |    "batchcomplete": "",
+          |    "query": {
+          |        "pages": {
+          |            "-1": {
+          |                "ns": 0,
+          |                "title": "NoSuchTitle",
+          |                "missing": ""
+          |            },
+          |            "736": {
+          |                "pageid": 736,
+          |                "ns": 0,
+          |                "title": "Albert Einstein"
+          |            },
+          |            "50177636": {
+          |                "pageid": 50177636,
+          |                "ns": 14,
+          |                "title": "Category:Foo",
+          |                "categoryinfo": {
+          |                    "size": 5,
+          |                    "pages": 3,
+          |                    "files": 2,
+          |                    "subcats": 0
+          |                }
+          |            },
+          |            "3108204": {
+          |                "pageid": 3108204,
+          |                "ns": 14,
+          |                "title": "Category:Infobox templates",
+          |                "categoryinfo": {
+          |                    "size": 29,
+          |                    "pages": 15,
+          |                    "files": 0,
+          |                    "subcats": 14
+          |                }
+          |            }
+          |        }
+          |    }
+          |}""".stripMargin
+
+
+      val commands = Seq(
+        new Command(Map("action" -> "query", "prop" -> "categoryinfo",
+          "titles" -> "Albert Einstein|Category:Foo|Category:Infobox_templates|NoSuchTitle", "continue" -> ""), response1)
+      )
+
+      val bot = getBot(commands: _*)
+
+      val query = Action(Query(TitlesParam(Seq("Albert Einstein", "Category:Foo", "Category:Infobox_templates", "NoSuchTitle")),
+        Prop(CategoryInfo)))
+
+      val result = bot.run(query).await
+      result must have size 4
+      result(0) === new Page(None, 0, "NoSuchTitle", missing = true)
+      result(1) === Page(736, 0, "Albert Einstein")
+      result(2) === Page(50177636, 14, "Category:Foo").copy(
+        categoryInfo = Some(org.scalawiki.dto.CategoryInfo(5, 3, 2, 0))
+      )
+      result(3) === Page(3108204, 14, "Category:Infobox templates").copy(
+        categoryInfo = Some(org.scalawiki.dto.CategoryInfo(29, 15, 0, 14))
+      )
+    }
+  }
+
 }

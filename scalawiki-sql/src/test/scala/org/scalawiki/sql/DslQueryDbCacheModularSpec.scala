@@ -45,7 +45,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
 
   override def before = {
     dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
-    mwDb = new MwDatabase(dc.db)
+    mwDb = new MwDatabase(dc)
   }
 
   override def after = {
@@ -231,7 +231,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
           Info(),
           Revisions(RvProp(RvPropArgs.byNames(Seq("ids", "content", "user", "userid")): _*))
         ),
-        Generator(ListArgs.toDsl("categorymembers", Some("Category:SomeCategory"), None, Set.empty, Some("max")))
+        Generator(ListArgs.toDsl("categorymembers", Some("Category:SomeCategory"), None, Set.empty, Some("max")).get)
       )
 
       val cache = new DslQueryDbCache(new DslQuery(Action(query), bot), database)
@@ -279,7 +279,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
           Info(),
           Revisions(RvProp(RvPropArgs.byNames(Seq("ids", "content", "user", "userid")): _*))
         ),
-        Generator(ListArgs.toDsl("categorymembers", Some("Category:SomeCategory"), None, Set.empty, Some("max")))
+        Generator(ListArgs.toDsl("categorymembers", Some("Category:SomeCategory"), None, Set.empty, Some("max")).get)
       )
 
       val cache = new DslQueryDbCache(new DslQuery(Action(query), bot), database)
@@ -333,7 +333,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
           Info(),
           Revisions(RvProp(RvPropArgs.byNames(Seq("ids", "content", "user", "userid")): _*))
         ),
-        Generator(ListArgs.toDsl("categorymembers", Some("Category:SomeCategory"), None, Set.empty, Some("max")))
+        Generator(ListArgs.toDsl("categorymembers", Some("Category:SomeCategory"), None, Set.empty, Some("max")).get)
       )
 
       val cache = new DslQueryDbCache(new DslQuery(Action(query), bot), database)

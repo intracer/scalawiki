@@ -10,12 +10,12 @@ class ImageTemplateSpec extends Specification {
       |{{Art Photo
       | |artist             =
       | |title              = {{uk|Archaeological Museum interior}}
-      | |description        = {{uk|Archaeological Museum interior description}}
+      | |description        = Archaeological Museum interior description
       | |date               =
       | |medium             =
       | |dimensions         =
       | |institution        = {{Institution:NIEZ Museum}}
-      | |location           = [[:uk:Archaeological Museum|]]
+      | |location           =
       | |references         =
       | |object history     =
       | |exhibition history =
@@ -34,19 +34,27 @@ class ImageTemplateSpec extends Specification {
       |}}
       |
       |== {{int:license-header}} ==
-      |{{OTRS Pending}}""".stripMargin
+      |{{OTRS Pending}}
+      |[[Category:National Historic-Ethnographic Reserve "Pereyaslav"]]""".stripMargin
 
-  "image" should {
-    "have art template" in {
+  "template" should {
+    "should resolve config params from Map" in {
       val params = Map(
-        "location" -> "Archaeological Museum",
         "title" -> "Archaeological Museum interior",
-        "description" -> "Archaeological Museum interior description"
-
+        "description" -> "Archaeological Museum interior description",
+      "location" -> "Archaeological Museum"
       )
       val resolved = ImageTemplate.resolve(params)
       resolved.isResolved === true
       resolved.getString("template") === expected
+    }
+
+    "should makeInfoPage" in {
+      ImageTemplate.makeInfoPage(
+        title = "Archaeological Museum interior",
+        description =  "Archaeological Museum interior description",
+        location = "Archaeological Museum"
+      ) === expected
     }
   }
 

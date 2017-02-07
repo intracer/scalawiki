@@ -29,8 +29,8 @@ case class Monument(page: String = "",
                     contest: Option[Long] = None,
                     source: Option[String] = None,
                     otherParams: Map[String, String] = Map.empty,
-                    listConfig: ListConfig
-                     ) {
+                    listConfig: Option[ListConfig] = None
+                   ) {
 
   def toUrls = Monument.wikiLinkToUrl(name + " * " + place, "uk.wikipedia.org")
 
@@ -47,14 +47,11 @@ case class Monument(page: String = "",
     else str.split(",").map(_.trim).toSet
   }
 
-  def asWiki = {
+  def asWiki(templateName: Option[String] = None, pad: Boolean = true) = {
 
-    val longest = listConfig.namesMap.values.map(_.length).max
-
-    val names = listConfig.namesMap.mapValues(_.padTo(longest, ' '))
-
-    val paramValues = Map("name" -> Option(name),
+    val paramValues = ListMap(
       "ID" -> Option(id),
+      "name" -> Option(name),
       "stateId" -> stateId,
       "year" -> year,
       "description" -> description,
@@ -71,11 +68,19 @@ case class Monument(page: String = "",
       "gallery" -> gallery,
       "resolution" -> resolution)
 
+    val names = listConfig.fold(paramValues.filter(_._2.nonEmpty).keys)(_.namesMap.values)
+    val namesMap = listConfig.map(_.namesMap).getOrElse(names.map(name => name -> name).toMap)
+    val longest = names.map(_.length).max
+
+    val namesMapPadded = if (pad) namesMap.mapValues(_.padTo(longest, ' ')) else namesMap
+
     val params =
-      names.toSeq.map { case (englName, mappedName) => mappedName -> paramValues(englName).getOrElse("") } ++
+      namesMapPadded.toSeq.map {
+        case (englName, mappedName) => mappedName -> paramValues(englName).getOrElse("")
+      } ++
         otherParams.toSeq
 
-    val template = new Template(listConfig.templateName, ListMap(params: _*))
+    val template = new Template(templateName.orElse(listConfig.map(_.templateName)).get, ListMap(params: _*))
 
     template.text + "\n"
   }
@@ -120,7 +125,7 @@ object Monument {
   }
 
   def monumentsFromText(text: String, page: String, template: String, listConfig: ListConfig): Iterable[Monument] =
-    init(text, page, listConfig)//.toSet
+    init(text, page, listConfig) //.toSet
 
   def getRegionId(monumentId: String): String = monumentId.split("\\-").headOption.getOrElse("")
 

@@ -11,15 +11,15 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
 
   sequential
 
-
   var mwDb: MwDatabase = _
+
   var dc: DatabaseConfig[JdbcProfile] = _
 
   def createSchema() = mwDb.createTables()
 
   override def before = {
     dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
-    mwDb = new MwDatabase(dc.db)
+    mwDb = new MwDatabase(dc)
   }
 
   override def after = {
@@ -35,14 +35,14 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
 
   "ddls" should {
     "create schema" in {
-      new MwDatabase(dc.db, Some("ukwiki")).dropTables() // hack
+      new MwDatabase(dc, Some("ukwiki")).dropTables() // hack
       createSchema()
 
       getTableNames === tableNames
     }
 
     "create database with one custom prefix" in {
-      val mwDbCustom = new MwDatabase(dc.db, Some("ukwiki"))
+      val mwDbCustom = new MwDatabase(dc, Some("ukwiki"))
 
       mwDb.dropTables()
       mwDbCustom.createTables()
@@ -58,7 +58,7 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
     "create database with several custom prefix" in {
 
       val prefixes = Seq("ukwiki", "commons", "enwiki")
-      val dbs = prefixes.map(name => new MwDatabase(dc.db, Some(name)))
+      val dbs = prefixes.map(name => new MwDatabase(dc, Some(name)))
 
       mwDb.dropTables()
 
@@ -81,8 +81,8 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
 
     "MediaWiki" should {
       "get db name by host" in {
-        MwDatabase.dbName("uk.wikipedia.org") === "ukwiki"
-        MwDatabase.dbName("commons.wikimedia.org") === "commonswiki"
+        MwDatabase.dbName("uk.wikipedia.org") === "ukwiki_p"
+        MwDatabase.dbName("commons.wikimedia.org") === "commonswiki_p"
         MwDatabase.dbName("nl.wikimedia.org") === "nlwikimedia"
         MwDatabase.dbName("ru.wiktionary.org") === "ruwiktionary"
       }

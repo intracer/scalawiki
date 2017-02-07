@@ -90,7 +90,7 @@ class Pages(tag: Tag, tableName: String, val dbPrefix: Option[String]) extends T
 
   //  def revision = foreignKey("revisionFK", pageLatest, MediaWiki.revisions)(_.id)
 
-  def * = (id, namespace, title, pageLatest) <>(fromDb, toDb)
+  def * = (id, namespace, title, pageLatest) <> (fromDb, toDb)
 
   def fromDb(t: (Option[Long], Int, String, Long)) = {
     val pageId = t._1
@@ -106,7 +106,6 @@ class Pages(tag: Tag, tableName: String, val dbPrefix: Option[String]) extends T
       revisions = revisions
     )
   }
-
 
   def toDb(p: Page) = Some((
     p.id,

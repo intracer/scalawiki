@@ -11,13 +11,13 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
   val withArticles = allMonuments.filter(m => m.name.contains("[[")).groupBy(m => Monument.getRegionId(m.id))
 
   val _byId: Map[String, Seq[Monument]] = monuments.groupBy(_.id)
-  val _byRegion : Map[String, Seq[Monument]] = monuments.groupBy(m => Monument.getRegionId(m.id))
+  val _byRegion: Map[String, Seq[Monument]] = monuments.groupBy(m => Monument.getRegionId(m.id))
 
   val _byType: Map[String, Seq[Monument]] = {
     monuments.flatMap(m => m.types.map(t => (t, m))).groupBy(_._1).mapValues(seq => seq.map(_._2))
   }
 
-  val _byTypeAndRegion : Map[String, Map[String,Seq[Monument]]] = _byType.mapValues(_.groupBy(m => Monument.getRegionId(m.id)))
+  val _byTypeAndRegion: Map[String, Map[String, Seq[Monument]]] = _byType.mapValues(_.groupBy(m => Monument.getRegionId(m.id)))
 
   def ids: Set[String] = _byId.keySet
 
@@ -25,35 +25,41 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
   def byRegion(regId: String) = _byRegion.getOrElse(regId, Seq.empty[Monument])
 
-  def isIdCorrect(id:String) = {
+  def regionIds = _byRegion.keySet.toSeq.filter(contest.country.regionIds.contains).sorted
+
+  def isIdCorrect(id: String) = {
     val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
     id.matches(idRegex) && contest.country.regionIds.contains(Monument.getRegionId(id))
   }
+
+  def withImages = monuments.filter(_.photo.isDefined)
 
 }
 
 
 object MonumentDB {
 
-  def getMonumentDbRange(contest: Contest): (Option[MonumentDB], Option[MonumentDB]) = {
-    if (contest.uploadConfigs.nonEmpty) {
-      val date = new DateTime(contest.year, 9, 1, 0, 0, 0)
-      (Some(getMonumentDb(contest)),
-        Some(getMonumentDb(contest, Some(date))))
-    } else {
-      (None, None)
-    }
-  }
-
-  def getMonumentDb(contest: Contest, date: Option[DateTime] = None): MonumentDB = {
-    val monumentQuery = MonumentQuery.create(contest)
-    var allMonuments = monumentQuery.byMonumentTemplate(contest.uploadConfigs.head.listTemplate, date)
+  def getMonumentDb(contest: Contest, monumentQuery: MonumentQuery, date: Option[DateTime] = None): MonumentDB = {
+    var allMonuments = monumentQuery.byMonumentTemplate(date = date)
 
     if (contest.country.code == "ru") {
       allMonuments = allMonuments.filter(_.page.contains("Природные памятники России"))
     }
 
     new MonumentDB(contest, allMonuments)
+  }
+
+  def getMonumentDb(contest: Contest, date: Option[DateTime]): MonumentDB =
+    getMonumentDb(contest, MonumentQuery.create(contest), date)
+
+  def getMonumentDbRange(contest: Contest): (Option[MonumentDB], Option[MonumentDB]) = {
+    if (contest.uploadConfigs.nonEmpty) {
+      val date = new DateTime(contest.year, 9, 1, 0, 0, 0)
+      (Some(getMonumentDb(contest, None)),
+        Some(getMonumentDb(contest, Some(date))))
+    } else {
+      (None, None)
+    }
   }
 
 }

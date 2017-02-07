@@ -3,10 +3,10 @@ package org.scalawiki.wlx.query
 import org.joda.time.DateTime
 import org.scalawiki.WithBot
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.cmd.query.list.{EiLimit, EiTitle, EmbeddedIn}
 import org.scalawiki.dto.cmd.query.prop._
-import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
+import org.scalawiki.dto.cmd.query.{PageIdsParam, Query}
 import org.scalawiki.dto.{Namespace, Page}
+import org.scalawiki.query.QueryLibrary
 import org.scalawiki.wlx.dto.lists.OtherTemplateListConfig
 import org.scalawiki.wlx.dto.{Contest, Monument}
 
@@ -30,20 +30,13 @@ trait MonumentQuery {
     Await.result(byPageAsync(page, template, pageIsTemplate), 15.minutes): Seq[Monument]
 }
 
-class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot {
+class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot with QueryLibrary {
 
-  val host = getHost
+  val host = getHost.get
 
   val listConfig = contest.uploadConfigs.head.listConfig
 
-  def getHost = {
-    val langCode = contest.country.languageCode
-
-    if (langCode.contains("."))
-      langCode
-    else
-      langCode + ".wikipedia.org"
-  }
+  def getHost = contest.listsHost
 
   override def byMonumentTemplateAsync(template: String, date: Option[DateTime] = None): Future[Seq[Monument]] = {
 
@@ -88,7 +81,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
   }
 
   def monumentsByDate(page: String, template: String, date: DateTime): Future[Seq[Monument]] = {
-    pagesWithTemplate(page).flatMap {
+    articlesWithTemplate(page).flatMap {
       ids =>
         Future.traverse(ids)(id => pageRevisions(id, date)).map {
           pages =>
@@ -96,25 +89,6 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
         }
     }
   }
-
-  def pagesWithTemplate(template: String): Future[Seq[Long]] = {
-    val action = Action(Query(
-      Prop(
-        Info(InProp(SubjectId)),
-        Revisions()
-      ),
-      Generator(EmbeddedIn(
-        EiTitle(template),
-        EiLimit("500")
-      ))
-    ))
-
-    bot.run(action).map {
-      pages =>
-        pages.map(p => p.subjectId.getOrElse(p.id.get))
-    }
-  }
-
 
   def pageRevisions(id: Long, date: DateTime): Future[Option[Page]] = {
     import org.scalawiki.dto.cmd.query.prop.rvprop._
@@ -125,7 +99,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
         Info(),
         Revisions(
           RvProp(Content, Ids, Size, User, UserId, Timestamp),
-          RvLimit("1"),
+          RvLimit("max"),
           RvStart(date)
         )
       )
@@ -158,7 +132,7 @@ class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
 
 object MonumentQuery {
 
-  def create(contest: Contest, caching: Boolean = true, pickling: Boolean = false): MonumentQuery = {
+  def create(contest: Contest, caching: Boolean = false, pickling: Boolean = false): MonumentQuery = {
     val api = new MonumentQueryApi(contest)
 
     if (caching)

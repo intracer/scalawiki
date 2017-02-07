@@ -3,52 +3,31 @@ package org.scalawiki.bots
 import org.joda.time.DateTime
 import org.scalawiki.MwBot
 import org.scalawiki.dto.{SulAccount, User}
-import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.cmd.query.Query
-import org.scalawiki.dto.cmd.query.list._
-import org.scalawiki.dto.cmd.query.meta._
+import org.scalawiki.query.QueryLibrary
 import org.scalawiki.time.TimeRange
-import scala.concurrent.ExecutionContext.Implicits.global
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class GlobalContrib {
+class GlobalContrib extends QueryLibrary {
 
-  val bot = MwBot.get(MwBot.commons)
-
-  def guiAction(username: String) = Action(Query(MetaParam(
-    GlobalUserInfo(
-      GuiProp(
-        Merged, Unattached, EditCount
-      ),
-      GuiUser(username)
-    ))))
-
-  def contribs(user: String, range: TimeRange) = {
-    val ucParams = Seq(
-      UcUser(Seq(user)),
-      UcDir("newer"),
-      UcLimit("500")
-    ) ++ range.start.map(UcStart) ++ range.end.map(UcEnd)
-
-    Action(Query(ListParam(UserContribs(ucParams: _*))))
-  }
+  val bot = MwBot.fromHost(MwBot.commons)
 
   def editsBefore(user: User, acc: SulAccount, start: DateTime): Future[Long] = {
     val host = acc.url.replace("https://", "")
-    val siteBot = MwBot.get(host)
+    val siteBot = MwBot.fromHost(host)
 
-    val action = contribs(user.name.get, TimeRange(None, Some(start)))
-    siteBot.run(action).map{ edits =>
+    val action = userContribs(user.name.get, TimeRange(None, Some(start)), limit = "500", dir = "newer")
+    siteBot.run(action).map { edits =>
       println(s"$host - ${edits.size}")
       edits.size.toLong
     }
   }
 
   def checkContribs(username: String, start: DateTime): Future[Long] = {
-    bot.run(guiAction(username)).flatMap {
+    bot.run(globalUserInfo(username)).flatMap {
       pages =>
-        pages.flatMap(_.lastRevisionUser.map(_.asInstanceOf[User])).headOption.fold(Future(0L)) {
+        pagesToUsers(pages).collect { case u: User => u }.headOption.fold(Future(0L)) {
           user =>
             val activeAccounts = user.sulAccounts.filter(_.editCount > 0)
 

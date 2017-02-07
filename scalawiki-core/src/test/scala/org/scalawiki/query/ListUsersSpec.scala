@@ -11,7 +11,7 @@ import spray.util.pimpFuture
 class ListUsersSpec extends Specification with MockBotSpec {
 
   "get users" should {
-    "return users without continue" in {
+    "return no users" in {
       val queryType = "users"
 
       val response1 =
@@ -37,6 +37,93 @@ class ListUsersSpec extends Specification with MockBotSpec {
 
       val result = bot.run(action).await
       result must have size 0
+    }
+
+    "only missing user" in {
+      val queryType = "users"
+
+      val response1 =
+        """{ "query": {
+          |        "users": [
+          |             {
+          |                "name": "MissingUser",
+          |                "missing": ""
+          |            }
+          |         ]
+          |    }
+          |}""".stripMargin
+
+      val expectedParams = Map(
+        "action" -> "query", "list" -> queryType,
+        "ususers" -> "MissingUser",
+        "continue" -> "")
+
+      val commands = Seq(new Command(expectedParams, response1))
+
+      val bot = getBot(commands: _*)
+
+      val action =
+        Action(
+          Query(
+            ListParam(
+              Users(UsUsers(Seq("MissingUser")))
+            )
+          )
+        )
+
+      val result = bot.run(action).await
+      result must have size 1
+
+      val users = result.flatMap(_.lastRevisionUser)
+      users === Seq(
+        new User(None, Some("MissingUser"), missing = true)
+      )
+    }
+
+
+    "with missing user" in {
+      val queryType = "users"
+
+      val response1 =
+        """{ "query": {
+          |        "users": [
+          |             {
+          |                "name": "MissingUser",
+          |                "missing": ""
+          |            },
+          |            {
+          |                "userid": 53928,
+          |                "name": "ExistingUser"
+          |            }
+          |         ]
+          |    }
+          |}""".stripMargin
+
+      val expectedParams = Map("action" -> "query", "list" -> queryType,
+        "ususers" -> "MissingUser|ExistingUser",
+        "continue" -> "")
+
+      val commands = Seq(new Command(expectedParams, response1))
+
+      val bot = getBot(commands: _*)
+
+      val action =
+        Action(
+          Query(
+            ListParam(
+              Users(UsUsers(Seq("MissingUser", "ExistingUser")))
+            )
+          )
+        )
+
+      val result = bot.run(action).await
+      result must have size 2
+
+      val users = result.flatMap(_.lastRevisionUser)
+      users === Seq(
+        new User(None, Some("MissingUser"), missing = true),
+        new User(Some(53928), Some("ExistingUser"))
+      )
     }
 
     "return users with editcount and emailable" in {

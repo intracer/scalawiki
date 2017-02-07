@@ -26,7 +26,7 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
   override def getResponse(url: Uri): Future[HttpResponse] = getResponse(url, url.query().toMap)
 
   def getResponse(url: Uri, params: Map[String, String]): Future[HttpResponse] = {
-    require(commands.nonEmpty, "Unexpected query: " + url.toString())
+    require(commands.nonEmpty, "Unexpected query: " + url.toString() + " with params:\n" + params)
 
     val command = commands.dequeue()
 
@@ -41,10 +41,7 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
       .fold(HttpResponse(StatusCodes.NotFound))(
         text => HttpResponse(
           StatusCodes.OK,
-          entity = HttpEntity(
-            ContentTypes.`text/plain(UTF-8)`,
-            text.getBytes(StandardCharsets.UTF_8)
-          )
+          HttpEntity(command.contentType, text.getBytes(StandardCharsets.UTF_8))
         )
       )
 
@@ -53,7 +50,7 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
 
   override def post(url: String, params: Map[String, String]): Future[HttpResponse] = getResponse(url, params)
 
-  override def post(url: Uri, params: Map[String, String]): Future[HttpResponse] = getResponse(url, params)
+  override def postUri(url: Uri, params: Map[String, String]): Future[HttpResponse] = getResponse(url, params)
 
   override def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse] = ???
 

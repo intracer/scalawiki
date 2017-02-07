@@ -1,8 +1,10 @@
 package org.scalawiki.bots
 
 import java.nio.file.{Files, Paths}
+import java.util.regex.Pattern
 
-import better.files.{File => SFile}
+import better.files.File.{Order, PathMatcherSyntax}
+import better.files.{Files, File => SFile}
 import org.scalawiki.AlphaNumOrdering
 
 import scala.io.{Codec, Source}
@@ -13,6 +15,8 @@ import scala.io.{Codec, Source}
 object FileUtils {
 
   val nl = System.lineSeparator
+
+  val byAlphaNumName = Ordering.by[SFile, String](_.name)(AlphaNumOrdering)
 
   /**
     * Read lines from file
@@ -35,6 +39,29 @@ object FileUtils {
   def write(filename: String, lines: Seq[String])(implicit codec: Codec) =
     Files.write(Paths.get(filename), lines.mkString(nl).getBytes(codec.charSet))
 
+  def writeWithBackup(file: SFile, content: String)(implicit codec: Codec) = {
+    if (file.exists) {
+      val backup = backupName(file)
+      if (file.contentAsString != content) {
+        file.moveTo(file.parent / backup)
+      }
+    }
+    file.overwrite(content)
+  }
+
+  def backupName(file: SFile): String = {
+    val pattern = Pattern.quote(file.pathAsString) + "\\.(\\d+)"
+    val maybeLast = file.parent.glob(pattern)(PathMatcherSyntax.regex)
+      .toSeq.sortBy(_.name)(AlphaNumOrdering)
+      .lastOption
+    val number = maybeLast.fold(1) {
+      last =>
+        pattern.r.findFirstMatchIn(last.pathAsString)
+          .fold(1)(_.group(1).toInt + 1)
+    }
+    file.name + "." + number
+  }
+
   /**
     * @param dir directory
     * @return subdirectories, sorted by name
@@ -54,8 +81,8 @@ object FileUtils {
     * @param predicate
     * @return directory members filtered by predicate
     */
-  def list(dir: SFile, predicate: SFile => Boolean): Seq[SFile] =
-    dir.list.filter(predicate).toSeq.sortBy(_.name)(AlphaNumOrdering)
+  def list(dir: SFile, predicate: SFile => Boolean)(implicit order: Order = byAlphaNumName): Seq[SFile] =
+    dir.list.filter(predicate).toSeq.sorted(order)
 
   def isImage(f: SFile): Boolean = hasExt(f, Set(".jpg", ".tif"))
 

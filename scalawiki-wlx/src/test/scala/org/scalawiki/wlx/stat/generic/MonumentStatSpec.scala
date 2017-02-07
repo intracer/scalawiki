@@ -2,7 +2,7 @@ package org.scalawiki.wlx.stat.generic
 
 import org.scalawiki.wlx.MonumentDB
 import org.scalawiki.wlx.dto.{Contest, Monument}
-import org.scalawiki.wlx.dto.lists.WlmUa
+import org.scalawiki.wlx.dto.lists.ListConfig.WlmUa
 import org.scalawiki.wlx.stat.Stats
 import org.specs2.mutable.Specification
 
@@ -11,10 +11,10 @@ class MonumentStatSpec extends Specification {
   val contest = Contest.WLMUkraine(2015)
 
   def monument(id: String, name: String) =
-    new Monument(id = id, name = name, listConfig = WlmUa)
+    new Monument(id = id, name = name, listConfig = Some(WlmUa))
 
   def monuments(n: Int, regionId: String, namePrefix: String, startId: Int = 1): Seq[Monument] =
-    (startId to (startId + n - 1)).map(i => monument(s"$regionId-xxx-000$i", namePrefix + i))
+    (startId until startId + n).map(i => monument(s"$regionId-xxx-000$i", namePrefix + i))
 
   "with articles stat" should {
     "work with no regions, no articles" in {

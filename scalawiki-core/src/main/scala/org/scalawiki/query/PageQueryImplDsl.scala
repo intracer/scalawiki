@@ -3,7 +3,7 @@ package org.scalawiki.query
 import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
-import org.scalawiki.dto.Page
+import org.scalawiki.dto.{Namespace, Page}
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.edit._
 import org.scalawiki.dto.cmd.query._
@@ -14,7 +14,12 @@ import org.scalawiki.json.MwReads._
 
 import scala.concurrent.Future
 
-class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extends PageQuery with SinglePageQuery {
+class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
+                       bot: MwBot,
+                       context: Map[String, String] = Map.empty) extends PageQuery with SinglePageQuery {
+
+  override def withContext(context: Map[String, String]) =
+    new PageQueryImplDsl(query, bot, context)
 
   override def revisions(namespaces: Set[Int], props: Set[String], continueParam: Option[(String, String)]): Future[Seq[Page]] = {
 
@@ -36,7 +41,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       )
     ))
 
-    bot.run(action)
+    bot.run(action, context)
   }
 
   override def revisionsByGenerator(
@@ -56,10 +61,10 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
         Info(),
         Revisions(RvProp(RvPropArgs.byNames(props.toSeq): _*))
       ),
-      Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
+      Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)).get)
     ))
 
-    bot.run(action)
+    bot.run(action, context)
   }
 
   override def imageInfoByGenerator(
@@ -75,16 +80,26 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
     val pageId: Option[Long] = query.left.toOption.map(_.head)
     val title: Option[String] = query.right.toOption.map(_.head)
 
-    val action = Action(Query(
+    val listArg = ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit))
+
+    val generatorArg = listArg.getOrElse(new Images(ImLimit(limit)))
+    val titlesParam = listArg match {
+      case None => title.map(t => TitlesParam(Seq(t)))
+      case _ => None
+    }
+
+    val queryParams = titlesParam.toSeq ++ Seq(
       Prop(
         ImageInfo(
           IiProp(IiPropArgs.byNames(props.toSeq): _*)
         )
       ),
-      Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)))
-    ))
+      Generator(generatorArg)
+    )
 
-    bot.run(action)
+    val action = Action(Query(queryParams:_*))
+
+    bot.run(action, context)
   }
 
   override def edit(text: String, summary: Option[String] = None, section: Option[String] = None, token: Option[String] = None, multi: Boolean = true) = {
@@ -98,8 +113,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       page,
       Text(text),
       Token(token.fold(bot.token)(identity))
-    )
-    )
+    ))
 
     val params = action.pairs.toMap ++
       Map("action" -> "edit",
@@ -116,7 +130,10 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       bot.post(editResponseReads, params)
   }
 
-  override def upload(filename: String) = {
+  override def upload(filename: String,
+                      text: Option[String] = None,
+                      comment: Option[String] = None,
+                      ignoreWarnings: Boolean = false): Future[String] = {
     val page = query.right.toOption.fold(filename)(_.head)
     val token = bot.token
     val fileContents = Files.readAllBytes(Paths.get(filename))
@@ -127,9 +144,11 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       "format" -> "json",
       "comment" -> "update",
       "filesize" -> fileContents.size.toString,
-      "ignorewarnings" -> "true",
       "assert" -> "user",
-      "assert" -> "bot")
+      "assert" -> "bot") ++
+      text.map("text" -> _) ++
+      comment.map("comment" -> _) ++
+      (if (ignoreWarnings) Seq("ignorewarnings" -> "true") else Seq.empty)
 
     bot.postFile(uploadResponseReads, params, "file", filename)
   }
@@ -150,7 +169,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       )
     ))
 
-    bot.run(action)
+    bot.run(action, context)
   }
 
   override def categoryMembers(namespaces: Set[Int], continueParam: Option[(String, String)]): Future[Seq[Page]] = {
@@ -159,16 +178,20 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]], bot: MwBot) extend
       titles => CmTitle(titles.head)
     )
 
+    val cmTypes = namespaces.filter(_ == Namespace.CATEGORY).map(_ => CmTypeSubCat) ++
+      namespaces.filter(_ == Namespace.FILE).map(_ => CmTypeFile)
+
+    val cmParams = Seq(pages,
+      CmLimit("max"),
+      CmNamespace(namespaces.toSeq)
+    ) ++ (if (cmTypes.nonEmpty) Seq(CmType(cmTypes.toSeq: _*)) else Seq.empty)
+
     val action = Action(Query(
       ListParam(
-        CategoryMembers(
-          pages,
-          CmLimit("max"),
-          CmNamespace(namespaces.toSeq)
-        )
+        CategoryMembers(cmParams: _*)
       )
     ))
 
-    bot.run(action)
+    bot.run(action, context)
   }
 }

@@ -4,11 +4,10 @@ import org.scalawiki.dto.User
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
 import org.scalawiki.dto.cmd.query.meta._
+import org.scalawiki.util.TestUtils._
 import org.scalawiki.util.{Command, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
-
-import scala.io.Source
 
 class MetaGlobalUserInfoSpec extends Specification with MockBotSpec {
 
@@ -41,9 +40,7 @@ class MetaGlobalUserInfoSpec extends Specification with MockBotSpec {
     }
 
     "return properties" in {
-      val is = getClass.getResourceAsStream("/org/scalawiki/query/globaluserinfo.json")
-      is !== null
-      val response = Source.fromInputStream(is).mkString
+      val response = resourceAsString("/org/scalawiki/query/globaluserinfo.json")
 
       val bot = getBot(commands(response): _*)
 

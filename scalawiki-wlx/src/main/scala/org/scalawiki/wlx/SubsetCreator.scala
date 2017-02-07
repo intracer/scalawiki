@@ -12,11 +12,11 @@ object SubsetCreator {
 
 
   def main(args: Array[String]) {
-    val ukWiki = MwBot.get("uk.wikipedia.org")
+    val ukWiki = MwBot.fromHost("uk.wikipedia.org")
 
     val specialNomination = "національного значення"
 
-    val contest = Contest.WLMUkraine(2014, "", "")
+    val contest = Contest.WLMUkraine(2014)
     val query = MonumentQuery.create(contest)
     query.byMonumentTemplateAsync(contest.listTemplate.get).map {
       monuments =>
@@ -50,7 +50,7 @@ object SubsetCreator {
 
     for (regionId <- regionIds) {
 
-      val regionTitle = contest.country.regionById.get(regionId).fold("-")(_.name)
+      val regionTitle = contest.country.regionName(regionId)
       val regionLink = "Вікіпедія:Вікі любить пам'ятки/" + regionTitle
 
       buf.append(s"\n== $regionTitle ==\n")
@@ -66,7 +66,7 @@ object SubsetCreator {
         buf.append(s"|-\n|colspan=9 bgcolor=lightyellow|\n=== [[$page|$title]] ===\n|-\n")
         byPage(page).foreach {
           monument =>
-            val text = monument.asWiki.split("\\|\\}")(0)
+            val text = monument.asWiki().split("\\|\\}")(0)
             buf.append(s"{{WLM-рядок$text")
         }
       }
@@ -84,7 +84,7 @@ object SubsetCreator {
   def regionPerPage(ukWiki: MwBot, specialNomination: String, contest: Contest, byRegion: Map[String, Seq[Monument]], regionIds: SortedSet[String]) {
     for (regionId <- regionIds) {
 
-      val regionTitle = contest.country.regionById.get(regionId).fold("-")(_.name)
+      val regionTitle = contest.country.regionName(regionId)
       val regionLink = "Вікіпедія:Вікі любить пам'ятки/" + regionTitle
 
       val regionMonuments = byRegion(regionId)
@@ -101,7 +101,7 @@ object SubsetCreator {
         buf.append(s"|-\n|colspan=9 bgcolor=lightyellow|\n=== [[$page|$title]] ===\n|-\n")
         byPage(page).foreach {
           monument =>
-            val text = monument.asWiki.split("\\|\\}")(0)
+            val text = monument.asWiki().split("\\|\\}")(0)
             buf.append(s"{{WLM-рядок$text")
         }
       }

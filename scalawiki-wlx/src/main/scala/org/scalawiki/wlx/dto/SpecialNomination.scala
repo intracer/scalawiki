@@ -1,5 +1,9 @@
 package org.scalawiki.wlx.dto
 
+import com.typesafe.config.{Config, ConfigFactory}
+
+import scala.util.Try
+
 /**
   * Describes monument lists for contest special nominations
   *
@@ -7,35 +11,31 @@ package org.scalawiki.wlx.dto
   * @param listTemplate name of template that monument lists consist of
   * @param pages        pages that contain lists of monuments, ot templates that contains links to these pages
   */
-class SpecialNomination(val name: String, val listTemplate: String, val pages: Seq[String])
+case class SpecialNomination(name: String, listTemplate: String, pages: Seq[String])
 
 object SpecialNomination {
-  val music = new SpecialNomination("Музичні пам'ятки в Україні", "WLM-рядок",
-    Seq("Template:WLM-music-navbar"))
 
-  val wooden = new SpecialNomination("Пам'ятки дерев'яної архітектури України", "WLM-рядок",
-    Seq("Template:WLM Дерев'яна архітектура"))
+  import scala.collection.JavaConverters._
 
-  val fortification = new SpecialNomination("Замки і фортеці України", "WLM-рядок",
-    Seq("Template:WLM замки і фортеці"))
+  def load(name: String): Seq[SpecialNomination] = {
+    fromConfig(ConfigFactory.load(name))
+  }
 
-  val tatars = new SpecialNomination("Кримськотатарські пам'ятки в Україні", "WLM-рядок",
-    Seq("Вікіпедія:Вікі любить пам'ятки/Кримськотатарські пам'ятки в Україні"))
+  def fromConfig(config: Config): Seq[SpecialNomination] = {
 
-  val nationalLiberation = new SpecialNomination("Пам'ятки національно-визвольної боротьби", "WLM-рядок",
-    Seq("Вікіпедія:Вікі любить пам'ятки/Пам'ятки національно-визвольної боротьби"))
+    Try {
+      config.getConfigList("nominations")
+    }.toOption.map(_.asScala.map {
+      c =>
+        val (name, listTemplate, pages) = (
+          c.getString("name"),
+          c.getString("listTemplate"),
+          c.getStringList("pages"))
 
-  val greek = new SpecialNomination("Грецькі пам'ятки в Україні", "WLM-рядок",
-    Seq("Вікіпедія:Вікі любить пам'ятки/Грецькі пам'ятки в Україні"))
+        new SpecialNomination(name, listTemplate, pages.asScala)
+    }).getOrElse(Seq.empty)
 
-  val armenian = new SpecialNomination("Вірменські пам'ятки в Україні", "WLM-рядок",
-    Seq("Вікіпедія:Вікі любить пам'ятки/Вірменські пам'ятки в Україні"))
+  }
 
-  val libraries = new SpecialNomination("Бібліотеки", "WLM-рядок",
-    Seq("Вікіпедія:Вікі любить пам'ятки/Бібліотеки"))
-
-  val worldWarOne = new SpecialNomination("Українські пам'ятки Першої світової війни", "WLM-рядок",
-    Seq("Вікіпедія:Вікі любить пам'ятки/Українські пам'ятки Першої світової війни"))
-
-  val nominations = Seq(music, nationalLiberation, greek, armenian, worldWarOne, wooden, fortification, tatars, libraries)
+  lazy val nominations = load("wlm_ua.conf")
 }
