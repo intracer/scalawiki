@@ -41,7 +41,7 @@ class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matc
       .fold(HttpResponse(StatusCodes.NotFound))(
         text => HttpResponse(
           StatusCodes.OK,
-          HttpEntity(command.contentType, text.getBytes(StandardCharsets.UTF_8))
+          entity = HttpEntity(command.contentType, text.getBytes(StandardCharsets.UTF_8))
         )
       )
 

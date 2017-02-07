@@ -31,5 +31,5 @@ trait HttpClient {
 }
 
 object HttpClient {
-  val JSON_UTF8 = ContentType(MediaTypes.`application/json`, Some(HttpCharsets.`UTF-8`))
+  val JSON_UTF8 = ContentType(MediaTypes.`application/json`)
 }

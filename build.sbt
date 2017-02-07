@@ -1,6 +1,6 @@
 import sbt.Keys._
 
-val akkaV = "2.4.14"
+val akkaV = "2.4.16"
 val sprayV = "1.3.3"
 val specsV = "3.7.2"
 
@@ -24,14 +24,9 @@ lazy val commonSettings = Seq(
   ),
   scalacOptions ++= Seq("-Ybackend:GenBCode"),
 
-  /**
-    * For now the only reason to require Java 8 is
-    * "com.typesafe.play" %% "play-json" % "2.4.3" dependency.
-    * It is possible to implement crossbuild ([[https://github.com/intracer/scalawiki/issues/36 gh issue]])
-    * for Java 7 with play-json 2.3
-    */
   initialize := {
-    val _ = initialize.value // run the previous initialization
+    val _ = initialize.value
+    // run the previous initialization
     val required = VersionNumber("1.8")
     val curr = VersionNumber(sys.props("java.specification.version"))
     assert(CompatibleJavaVersion(curr, required), s"Java $required or above required")
@@ -59,7 +54,7 @@ lazy val `scalawiki-core` =
         "io.spray" %% "spray-caching" % sprayV,
         "com.typesafe.play" %% "play-json" % "2.5.12",
         "com.typesafe.akka" %% "akka-actor" % akkaV,
-        "com.typesafe.akka" %% "akka-http-experimental" % akkaV,
+        "com.typesafe.akka" %% "akka-http" % "10.0.3",
         "com.typesafe" % "config" % "1.3.0",
         "com.iheart" %% "ficus" % "1.2.3",
         "com.github.nscala-time" %% "nscala-time" % "2.10.0",
@@ -116,7 +111,7 @@ lazy val `spray-cookies` =
   (project in file("spray-cookies"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-http-experimental" % akkaV,
+      "com.typesafe.akka" %% "akka-http" % "10.0.3",
       "com.typesafe.akka" %% "akka-actor" % akkaV,
       "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"
     ))

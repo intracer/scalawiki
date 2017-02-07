@@ -13,17 +13,18 @@ import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import net.spraycookies.{CookieHandling, CookieJar}
 import net.spraycookies.tldlist.DefaultEffectiveTldList
+import org.scalawiki.MwBot
 
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 import scala.concurrent.duration._
 
-class HttpClientAkka(val system: ActorSystem) extends HttpClient {
+class HttpClientAkka(val system: ActorSystem = MwBot.system) extends HttpClient {
 
   implicit val sys = system
   implicit val materializer = ActorMaterializer()
 
-  val userAgent = "ScalaWiki/0.4"
+  val userAgent = "ScalaWiki/0.5"
 
   import system.dispatcher
 
@@ -38,14 +39,12 @@ class HttpClientAkka(val system: ActorSystem) extends HttpClient {
 
   def submit: HttpRequest => Future[HttpResponse] = {
     implicit val timeout: Timeout = 5.minutes
-    (
-      addHeaders(
-        `Accept-Encoding`(HttpEncodings.gzip),
-        `User-Agent`(userAgent)) ~>
-        cookied(
-          sendReceive
-            ~> decode
-        )
+    addHeaders(
+      `Accept-Encoding`(HttpEncodings.gzip),
+      `User-Agent`(userAgent)) ~>
+      cookied(
+        sendReceive
+          ~> decode
       )
   }
 
@@ -61,7 +60,7 @@ class HttpClientAkka(val system: ActorSystem) extends HttpClient {
     submit(Post(url, FormData(params)))
   }
 
-  override def post(url: Uri, params: Map[String, String]): Future[HttpResponse] = {
+  override def postUri(url: Uri, params: Map[String, String]): Future[HttpResponse] = {
     submit(Post(url, FormData(params)))
   }
 

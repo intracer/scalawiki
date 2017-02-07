@@ -1,7 +1,7 @@
 package org.scalawiki.util
 
+import akka.http.scaladsl.model.ContentType
 import org.scalawiki.http.HttpClient
-import spray.http.ContentType
 
 class Command(
                queryParam: Map[String, String],
