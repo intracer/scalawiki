@@ -327,7 +327,7 @@ class Statistics(contest: Contest,
 
     val all = monumentDb.monuments.filter(m =>
       m.photo.isDefined &&
-        Set("59", "35", "71").contains(m.regionId)
+        Set("53").contains(m.regionId)
     )
     val byRegion = all.groupBy(_.regionId)
 
@@ -387,7 +387,8 @@ object Statistics {
       Opt.string(
         name = "campaign",
         flags = Seq("-campaign"),
-        help = "upload campaign, like wlm-ua"
+        help = "upload campaign, like wlm-ua",
+        requiredFlag = true
       ),
       Opt.seqString("[,]")(
         name = "region",
@@ -414,6 +415,9 @@ object Statistics {
 
   def parse(args: Seq[String]): StatConfig = {
     val parsed = argsDefs.parse(args)
+
+    if (parsed.handleErrors()) sys.exit(1)
+    if (parsed.handleHelp()) sys.exit(0)
 
     StatConfig(
       campaign = parsed.values("campaign").asInstanceOf[String],
