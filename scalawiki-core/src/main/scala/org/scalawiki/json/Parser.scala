@@ -87,7 +87,9 @@ class Parser(val action: Action) {
 
   // hacky wrapping into page // TODO refactor return types
   def parseUser(userJson: JsObject, queryChild: String): Page = {
-    val hasEmptyRegistration = userJson.value.get("registration").collect({ case jsStr: JsString => jsStr.value.isEmpty }).getOrElse(false)
+    val hasEmptyRegistration = userJson.value.get("registration")
+      .collect({ case jsStr: JsString => jsStr.value.isEmpty })
+      .getOrElse(false)
     val mappedJson = if (hasEmptyRegistration) userJson - "registration" else userJson
 
     // TODO move out of loop or get from request?
