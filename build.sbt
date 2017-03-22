@@ -74,9 +74,11 @@ lazy val `scalawiki-bots` =
       "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
       "org.apache.poi" % "poi-scratchpad" % "3.13",
       "org.apache.poi" % "poi-ooxml" % "3.13",
-      "fr.opensagres.xdocreport" % "org.apache.poi.xwpf.converter.xhtml" % "1.0.5"
+      "fr.opensagres.xdocreport" % "org.apache.poi.xwpf.converter.xhtml" % "1.0.5",
+      "com.typesafe.play" % "twirl-api_2.11" % "1.3.0"
     ))
     .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
+    .enablePlugins(SbtTwirl)
 
 lazy val `scalawiki-dumps` =
   (project in file("scalawiki-dumps"))

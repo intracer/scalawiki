@@ -76,6 +76,15 @@ trait QueryLibrary {
     TitlesParam(Seq(title))
   ))
 
+  def pageLinksGenerator(title: String, nsSeq: Seq[Int] = Seq.empty) =
+    Action(Query(
+      TitlesParam(Seq(title)),
+      Generator(
+        Links(PlNamespace(nsSeq), PlLimit("max"))
+      ),
+      Prop(Revisions(RvProp(rvprop.Ids, rvprop.Content)))
+    ))
+
   def generatorWithTemplate(template: String, ns: Set[Int] = Set.empty): Generator = {
     val params = Seq(
       EiTitle("Template:" + template),
