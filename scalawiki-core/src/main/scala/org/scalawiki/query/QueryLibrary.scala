@@ -71,7 +71,7 @@ trait QueryLibrary {
       GuiUser(username)
     ))))
 
-  def whatLinksHere(title: String, ns: Int) = Action(Query(
+  def pageLinks(title: String, ns: Int) = Action(Query(
     Prop(Links(PlNamespace(Seq(ns)), PlLimit("max"))),
     TitlesParam(Seq(title))
   ))
