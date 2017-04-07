@@ -58,8 +58,8 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
   }
 
   def mergePages(pages: Seq[Page], newPages: Seq[Page]): Seq[Page] = {
-    val byId = pages.filter(_.id.isDefined).groupBy(_.id.get)
-    val newById = newPages.filter(_.id.isDefined).groupBy(_.id.get)
+    val byId = Page.groupById(pages)
+    val newById = Page.groupById(newPages)
 
     val intersection = byId.keySet.intersect(newById.keySet)
 

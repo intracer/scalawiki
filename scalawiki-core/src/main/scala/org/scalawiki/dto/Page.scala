@@ -81,6 +81,8 @@ object Page {
   }
 
   def revisionsFromText(text: Option[String]) = text.fold(Seq.empty[Revision])(content => Revision.many(content))
+
+  def groupById(pages: Seq[Page]): Map[Long, Seq[Page]] = pages.filter(_.id.isDefined).groupBy(_.id.get)
 }
 
 
