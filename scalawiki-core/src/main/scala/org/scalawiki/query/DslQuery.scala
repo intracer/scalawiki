@@ -64,8 +64,8 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
     val intersection = byId.keySet.intersect(newById.keySet)
 
     pages.map { p =>
-      if (p.id.isEmpty || !intersection.contains(p.id.get)) p else p.appendLists(newById(p.id.get).head)
-    } ++ newPages.filterNot(p => p.id.isDefined && intersection.contains(p.id.get))
+      p.id.flatMap(id => newById(id).headOption.map(p.appendLists)).getOrElse(p)
+    } ++ newPages.filterNot(p => p.id.exists(intersection.contains))
   }
 
   def onProgress(pages: Long, done: Boolean = false) = {
