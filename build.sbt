@@ -1,6 +1,6 @@
 import sbt.Keys._
 
-val akkaV = "2.4.16"
+val akkaV = "2.4.17"
 val sprayV = "1.3.3"
 val specsV = "3.7.2"
 
@@ -54,7 +54,7 @@ lazy val `scalawiki-core` =
         "io.spray" %% "spray-caching" % sprayV,
         "com.typesafe.play" %% "play-json" % "2.5.12",
         "com.typesafe.akka" %% "akka-actor" % akkaV,
-        "com.typesafe.akka" %% "akka-http" % "10.0.3",
+        "com.typesafe.akka" %% "akka-http" % "10.0.5",
         "com.typesafe" % "config" % "1.3.0",
         "com.iheart" %% "ficus" % "1.2.3",
         "com.github.nscala-time" %% "nscala-time" % "2.10.0",
