@@ -1,6 +1,8 @@
 package org.scalawiki.wlx.dto
 
-class ContestType(val code: String, val name: String)
+class ContestType(val code: String, val name: String) {
+  def imagesCategory: String = "Category:Images from " + name
+}
 
 object ContestType {
   val WLM = new ContestType("wlm", "Wiki Loves Monuments")

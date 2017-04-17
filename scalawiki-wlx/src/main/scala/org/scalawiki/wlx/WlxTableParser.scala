@@ -8,10 +8,6 @@ import org.scalawiki.wlx.dto.lists.ListConfig
   * Parses list of monuments in wiki table format
   *
   * @param config
-  *//**
-  * Parses list of monuments in wiki table format
-  *
-  * @param config
   */
 class WlxTableParser(val config: ListConfig) {
 

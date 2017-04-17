@@ -17,6 +17,8 @@ object CountryParser {
 
   val contestLinkRegex = "\\[\\[Commons\\:([a-zA-Z ]+) (\\d+) in ([a-zA-Z\\& ]+)\\|".r
 
+  def isContestCategory(s: String) = contestRegex.pattern.matcher(s).matches()
+
   def parseTable(wiki: String) = {
     val table = TableParser.parse(wiki)
 
