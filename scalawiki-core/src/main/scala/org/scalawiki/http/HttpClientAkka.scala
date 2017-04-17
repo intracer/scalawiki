@@ -1,23 +1,22 @@
 package org.scalawiki.http
 
-import java.io.File
+import java.nio.file.Paths
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model.Multipart.FormData.BodyPart
-import akka.http.scaladsl.model.{Uri, _}
 import akka.http.scaladsl.model.headers.{HttpEncodings, `Accept-Encoding`, `User-Agent`}
+import akka.http.scaladsl.model.{Uri, _}
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import net.spraycookies.{CookieHandling, CookieJar}
 import net.spraycookies.tldlist.DefaultEffectiveTldList
+import net.spraycookies.{CookieHandling, CookieJar}
 import org.scalawiki.MwBot
 
 import scala.concurrent.Future
-import scala.concurrent.duration.Duration
-import scala.concurrent.duration._
+import scala.concurrent.duration.{Duration, _}
 
 class HttpClientAkka(val system: ActorSystem = MwBot.system) extends HttpClient {
 
@@ -75,15 +74,13 @@ class HttpClientAkka(val system: ActorSystem = MwBot.system) extends HttpClient 
     submit(Post(url, Multipart.FormData(bodyParts: _*)))
   }
 
-
   override def postFile(url: String, params: Map[String, String], fileParam: String, filename: String): Future[HttpResponse] = {
 
     val bodyParts = params.map { case (key, value) =>
       BodyPart(key, HttpEntity(value))
-    } ++ Seq(BodyPart.fromFile(fileParam, MediaTypes.`image/jpeg`, new File(filename)))
+    } ++ Seq(BodyPart.fromPath(fileParam, MediaTypes.`image/jpeg`, Paths.get(filename)))
     submit(Post(Uri(url), Multipart.FormData(bodyParts.toList: _*)))
   }
-
 
   def getBody(response: HttpResponse): Future[String] =
     response.entity.toStrict(5 minutes).map(_.data.utf8String)
