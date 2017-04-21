@@ -7,7 +7,7 @@ val specsV = "3.7.2"
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
   version := "0.5-M5",
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.11.11",
 
   libraryDependencies ++= Seq(
     "org.specs2" %% "specs2-core" % specsV % "test",
@@ -117,7 +117,3 @@ lazy val `spray-cookies` =
       "com.typesafe.akka" %% "akka-actor" % akkaV,
       "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"
     ))
-
-
-
-    
