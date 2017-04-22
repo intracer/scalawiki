@@ -4,7 +4,7 @@ import org.scalawiki.dto.{Namespace, Page}
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
 import org.scalawiki.dto.cmd.query.list._
-import org.scalawiki.wlx.dto.ContestType
+import org.scalawiki.wlx.dto.{Contest, ContestType}
 import org.scalawiki.{MwBot, WithBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -27,6 +27,12 @@ object CampaignList extends WithBot {
 
   def titles(pages: Seq[Seq[Page]]) = pages.flatten.map(_.title)
 
+  def getYears(contestType: ContestType): Future[Seq[Contest]] = {
+    bot.run(categoryMembers(contestType.imagesCategory)).map { cats =>
+      cats.flatMap(cat => CountryParser.fromCategoryName(cat.title))
+    }
+  }
+
   def main(args: Array[String]): Unit = {
     val types = ContestType.all
     val contestCats = types.map(_.imagesCategory)
@@ -38,5 +44,4 @@ object CampaignList extends WithBot {
       }
     }
   }
-
 }
