@@ -167,6 +167,24 @@ class CampaignListSpec extends Specification {
       result.map(_.year) === (2010 to 2017)
       result.map(_.contestType).distinct === Seq(ContestType.WLM)
     }
-  }
 
+    "return WLE years" in {
+
+      val response = resourceAsString("/org/scalawiki/wlx/WLE_years.json")
+
+      val commands = Seq(
+        new Command(Map("action" -> "query", "list" -> "categorymembers",
+          "cmtitle" -> "Category:Images from Wiki Loves Earth",
+          "cmnamespace" -> Namespace.CATEGORY.toString,
+          "continue" -> ""), response)
+      )
+
+      val result = CampaignList.getYears(ContestType.WLE).await
+      val byYear = result.sortBy(_.year)
+
+      byYear must have size 5
+      byYear.map(_.year) === (2013 to 2017)
+      byYear.map(_.contestType).distinct === Seq(ContestType.WLE)
+    }
+  }
 }
