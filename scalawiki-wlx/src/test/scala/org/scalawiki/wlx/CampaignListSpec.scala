@@ -161,7 +161,7 @@ class CampaignListSpec extends Specification {
           "continue" -> ""), response)
       )
 
-      val result = CampaignList.getYears(ContestType.WLM).await
+      val result = CampaignList.getContests(ContestType.WLM).await
 
       result must have size 8
       result.map(_.year) === (2010 to 2017)
@@ -179,7 +179,7 @@ class CampaignListSpec extends Specification {
           "continue" -> ""), response)
       )
 
-      val result = CampaignList.getYears(ContestType.WLE).await
+      val result = CampaignList.getContests(ContestType.WLE).await
       val byYear = result.sortBy(_.year)
 
       byYear must have size 5

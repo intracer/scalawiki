@@ -4,7 +4,7 @@ import org.scalawiki.dto.{Namespace, Page}
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
 import org.scalawiki.dto.cmd.query.list._
-import org.scalawiki.wlx.dto.{Contest, ContestType}
+import org.scalawiki.wlx.dto.{Contest, ContestType, HasImagesCategory}
 import org.scalawiki.{MwBot, WithBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -22,8 +22,8 @@ object CampaignList extends WithBot {
 
   def titles(pages: Seq[Seq[Page]]): Seq[String] = pages.flatten.map(_.title)
 
-  def getYears(contestType: ContestType): Future[Seq[Contest]] =
-    contestsFromCategory(contestType.imagesCategory)
+  def getContests(hasImages: HasImagesCategory): Future[Seq[Contest]] =
+    contestsFromCategory(hasImages.imagesCategory)
 
   def contestsFromCategory(parent: String): Future[Seq[Contest]] = {
     for (cats <- bot.run(categoryMembers(parent))) yield
@@ -32,11 +32,8 @@ object CampaignList extends WithBot {
       ) yield contest
   }
 
-  def categoriesMembers(categories: Seq[String]): Future[Seq[Seq[Page]]] = {
-    val queries = categories.map(categoryMembers)
-    Future.sequence(queries.map(bot.run(_)))
-  }
-
+  def categoriesMembers(categories: Seq[String]): Future[Seq[Seq[Page]]] =
+    Future.sequence(categories.map(cat => bot.run(categoryMembers(cat))))
 
   def main(args: Array[String]): Unit = {
     val types = ContestType.all

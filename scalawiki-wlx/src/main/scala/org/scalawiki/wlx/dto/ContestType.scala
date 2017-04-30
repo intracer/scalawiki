@@ -1,7 +1,11 @@
 package org.scalawiki.wlx.dto
 
-class ContestType(val code: String, val name: String) {
-  def imagesCategory: String = "Category:Images from " + name
+trait HasImagesCategory {
+  def imagesCategory: String
+}
+
+class ContestType(val code: String, val name: String) extends HasImagesCategory {
+  override def imagesCategory: String = "Category:Images from " + name
 }
 
 object ContestType {
