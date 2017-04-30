@@ -39,7 +39,7 @@ Uploads</translate>
 |
 | [[:en:List of Ramsar sites in Australia|List of Ramsar sites]] <br />[[:en:Protected areas of Australia|Protected areas]]
 | [[Campaign:wle-au|wle-au]]
-| '''[[:Category:Images from Wiki Loves Earth 2016 in Australia‎‎|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Australia}}]]'''
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Australia|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Australia}}]]'''
 |-
 | [[{{Country-flags|at}}|20px|border]]
 | '''[[Commons:Wiki Loves Earth 2016 in Austria|WLE Austria]]'''
@@ -48,7 +48,7 @@ Uploads</translate>
 | [http://wikilovesearth.at wikilovesearth.at]
 | [[:de:Wikipedia:Wiki_Loves_Earth_2014/Österreich|Teilnehmende Objekte]]
 | National parks: [[:Campaign:wle-at-nap|wle-at-nap]],<br>Nature reserves: [[:Campaign:wle-at-nsg|wle-at-nsg]], <br>Geschützter Landschaftsteil: [[:Campaign:wle-at-glt|wle-at-glt]], <br>Geschützte Höhle: [[:Campaign:wle-at-hoe|wle-at-hoe]],<br> Nature parks: [[:Campaign:wle-at-np|wle-at-np]], <br>  Natural monuments: [[:Campaign:wle-at-nd|wle-at-nd]]
-| '''[[:Category:Images from Wiki Loves Earth 2016 in Austria‎|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Austria|files‎}}]]'''
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Austria|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Austria|files‎}}]]'''
 |-
 | [[{{Country-flags|az}}|20px|border]]
 | '''[[Commons:Wiki Loves Earth 2016 in Azerbaijan|WLE Azerbaijan]]'''
@@ -93,7 +93,7 @@ Uploads</translate>
 | [http://www.wikilovesearth.de wikilovesearth.de]
 | [[:de:Wikipedia:Wiki Loves Earth 2016/Deutschland/Objekte|{{TNT|WLE 2016 tables|list-areas-and-objects}}]]
 | per federal state: wle-de[[:Campaign:wle-de-bb|-bb]], [[:Campaign:wle-de-be|-be]], [[:Campaign:wle-de-bw|-bw]], [[:Campaign:wle-de-by|-by]], [[:Campaign:wle-de-hb|-hb]], [[:Campaign:wle-de-he|-he]], [[:Campaign:wle-de-hh|-hh]], [[:Campaign:wle-de-mv|-mv]], [[:Campaign:wle-de-ni|-ni]], [[:Campaign:wle-de-nw|-nw]], [[:Campaign:wle-de-rp|-rp]], [[:Campaign:wle-de-sh|-sh]], [[:Campaign:wle-de-sl|-sl]], [[:Campaign:wle-de-sn|-sn]], [[:Campaign:wle-de-st|-st]], [[:Campaign:wle-de-th|-th]]
-| '''[[:Category:Images from Wiki Loves Earth 2016 in Germany‎|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Germany‎|files}}]]'''
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Germany|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Germany‎|files}}]]'''
 |-
 | [[{{Country-flags|gr}}|20px|border]]
 | '''[[Commons:Wiki Loves Earth 2016 in Greece|WLE Greece]]'''
@@ -147,7 +147,7 @@ Uploads</translate>
 |
 | [[:en:Protected areas of Pakistan|{{TNT|WLE 2016 tables|list-all}}]]
 | [[:Campaign:wle-pk|wle-pk]]
-| '''[[:Category:Images from Wiki Loves Earth 2016 in Pakistan‎|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Pakistan‎|files}}]]'''
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Pakistan|{{PAGESINCAT:Images from Wiki Loves Earth 2016 in Pakistan|files}}]]'''
 |-
 | [[{{Country-flags|ru}}|20px|border]]
 | '''[[Commons:Wiki Loves Earth 2016 in Russia|WLE Russia]]'''
@@ -174,7 +174,7 @@ Uploads</translate>
 | [http://www.wikilovesearth.es wikilovesearth.es] or [http://wikilov.es/earth wikilov.es/earth]
 | [[Commons:Wiki Loves Earth 2016 in Spain#Protected natural areas|{{TNT|WLE 2016 tables|list}}]]
 | [[Campaign:wle-es|wle-es]]
-| '''[[:Category:Images from Wiki Loves Earth 2016 in Spain‎‎|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Spain‎‎|files}}]]'''
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Spain|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Spain‎‎|files}}]]'''
 |-
 | [[{{Country-flags|ch}}|20px|border]]
 | '''[[Commons:Wiki Loves Earth 2016 in Switzerland|WLE Switzerland]]'''
@@ -183,7 +183,7 @@ Uploads</translate>
 |
 | [[Commons:Wiki4List|{{TNT|WLE 2016 tables|list}}]]
 | [[Campaign:wle-ch|wle-ch]]
-| '''[[:Category:Images from Wiki Loves Earth 2016 in Switzerland‎‎|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Switzerland|files}}]]'''
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Switzerland|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Switzerland|files}}]]'''
 |-
 | [[{{Country-flags|th}}|20px|border]]
 | '''[[Commons:Wiki Loves Earth 2016 in Thailand|WLE Thailand]]'''
@@ -201,7 +201,7 @@ Uploads</translate>
 |
 | [[Commons:Wiki Loves Earth 2016 in Tunisia#Zones photographiables pour le concours|{{TNT|WLE 2016 tables|list}}]]
 | [[Campaign:wle-tn|wle-tn]]
-| '''[[:Category:Images from Wiki Loves Earth 2016 in Tunisia‎‎|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Tunisia|files}}]]'''
+| '''[[:Category:Images from Wiki Loves Earth 2016 in Tunisia|{{PAGESINCATEGORY:Images from Wiki Loves Earth 2016 in Tunisia|files}}]]'''
 |-
 | [[{{Country-flags|ua}}|20px|border]]
 | '''[[Commons:Wiki Loves Earth 2016 in Ukraine|WLE Ukraine]]'''
