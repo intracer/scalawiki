@@ -1,13 +1,51 @@
 package org.scalawiki.wlx
 
+import org.scalawiki.{HasBot, MwBot}
 import org.scalawiki.dto.Namespace
-import org.scalawiki.util.HttpStub
+import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.scalawiki.util.TestUtils.resourceAsString
 import org.scalawiki.wlx.dto.ContestType
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
-class CampaignListSpec extends Specification {
+class CampaignListSpec extends Specification with MockBotSpec {
+
+  def campaignList(testBot: MwBot) = new CampaignList() with HasBot {
+    val bot = testBot
+  }
+
+  def categoryQueryBot(name: String, responseFile: String) = {
+    val response = resourceAsString(responseFile)
+    val cmd = new HttpStub(Map("action" -> "query", "list" -> "categorymembers",
+      "cmtitle" -> name,
+      "cmnamespace" -> Namespace.CATEGORY.toString,
+      "continue" -> "", "cmlimit" -> "max"),
+      response)
+    getBot(cmd)
+  }
+
+  "CampaignList" should {
+    "return WLM years" in {
+      val bot = categoryQueryBot("Category:Images from Wiki Loves Monuments", "/org/scalawiki/wlx/WLM_years.json")
+
+      val result = campaignList(bot).getContests(ContestType.WLM).await
+
+      result must have size 8
+      result.map(_.year) === (2010 to 2017)
+      result.map(_.contestType).distinct === Seq(ContestType.WLM)
+    }
+
+    "return WLE years" in {
+      val bot = categoryQueryBot("Category:Images from Wiki Loves Earth", "/org/scalawiki/wlx/WLE_years.json")
+
+      val result = campaignList(bot).getContests(ContestType.WLE).await
+      val byYear = result.sortBy(_.year)
+
+      byYear must have size 5
+      byYear.map(_.year) === (2013 to 2017)
+      byYear.map(_.contestType).distinct === Seq(ContestType.WLE)
+    }
+  }
 
   val wlmCats = Map(
     "Category:Images from Wiki Loves Monuments 2010" ->
@@ -148,43 +186,4 @@ class CampaignListSpec extends Specification {
     "Category:Images from Wiki Loves Monuments" -> wlmCats,
     "Category:Images from Wiki Loves Earth" -> wleCats
   )
-
-  "CampaignList" should {
-    "return WLM years" in {
-
-      val response = resourceAsString("/org/scalawiki/wlx/WLM_years.json")
-
-      val commands = Seq(
-        new HttpStub(Map("action" -> "query", "list" -> "categorymembers",
-          "cmtitle" -> "Category:Images from Wiki Loves Monuments",
-          "cmnamespace" -> Namespace.CATEGORY.toString,
-          "continue" -> ""), response)
-      )
-
-      val result = CampaignList.getContests(ContestType.WLM).await
-
-      result must have size 8
-      result.map(_.year) === (2010 to 2017)
-      result.map(_.contestType).distinct === Seq(ContestType.WLM)
-    }
-
-    "return WLE years" in {
-
-      val response = resourceAsString("/org/scalawiki/wlx/WLE_years.json")
-
-      val commands = Seq(
-        new HttpStub(Map("action" -> "query", "list" -> "categorymembers",
-          "cmtitle" -> "Category:Images from Wiki Loves Earth",
-          "cmnamespace" -> Namespace.CATEGORY.toString,
-          "continue" -> ""), response)
-      )
-
-      val result = CampaignList.getContests(ContestType.WLE).await
-      val byYear = result.sortBy(_.year)
-
-      byYear must have size 5
-      byYear.map(_.year) === (2013 to 2017)
-      byYear.map(_.contestType).distinct === Seq(ContestType.WLE)
-    }
-  }
 }
