@@ -94,7 +94,7 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
 
     result.map(_.year).distinct === Seq(2011)
     result.map(_.contestType).distinct === Seq(ContestType.WLM)
-    result.map(_.country.name) === Seq("Andorra", "Hungary", "the Netherlands")
+    result.map(_.country.name) === Seq("Andorra", "Hungary", "Hungary - international", "the Netherlands")
   }
 
   "return WLM 2012" in {
@@ -124,46 +124,43 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
     result.map(_.country.name) === Seq("the Czech Republic", "the Philippines", "South Africa", "Ukraine", "the United States", "an unknown country")
   }
 
-  val wleCats = Map(
-    "Category:Images from Wiki Loves Earth 2014" ->
-      Seq(
-        "Category:Featured pictures from Wiki Loves Earth 2014",
-        "Category:Valued images from Wiki Loves Earth 2014",
-        "Category:Quality images from Wiki Loves Earth 2014",
-        "Category:Images from Wiki Loves Earth 2014 in Algeria",
-        "Category:Images from Wiki Loves Earth 2014 in Andorra & Catalan areas",
-        "Category:Images from Wiki Loves Earth 2014 in Armenia & Nagorno-Karabakh",
-        "Category:Images from Wiki Loves Earth 2014 in the Netherlands"
-      ),
+  "return WLE 2014" in {
+    val title = "Category:Images from Wiki Loves Earth 2014"
+    val categories = Seq(
+      "Category:Featured pictures from Wiki Loves Earth 2014",
+      "Category:Valued images from Wiki Loves Earth 2014",
+      "Category:Quality images from Wiki Loves Earth 2014",
+      "Category:Images from Wiki Loves Earth 2014 in Algeria",
+      "Category:Images from Wiki Loves Earth 2014 in Andorra & Catalan areas",
+      "Category:Images from Wiki Loves Earth 2014 in Armenia & Nagorno-Karabakh",
+      "Category:Images from Wiki Loves Earth 2014 in the Netherlands"
+    )
 
-    "Category:Images from Wiki Loves Earth 2015" ->
-      Seq(
-        "Category:Featured pictures from Wiki Loves Earth 2015",
-        "Category:Quality images from Wiki Loves Earth 2015",
-        "Category:Valued images from Wiki Loves Earth 2015",
-        "Category:Images from Wiki Loves Earth 2015 in an unknown country",
-        "Category:Images from Wiki Loves Earth 2015 in Algeria",
-        "Category:Images from Wiki Loves Earth 2015 in Andorra & Catalan areas",
-        "Category:Images from Wiki Loves Earth 2015 in South Tyrol"
-      ),
+    val bot = mockedBot(title, categories)
 
-    "Category:Images from Wiki Loves Earth 2016" ->
-      Seq(
-        "Category:Featured pictures from Wiki Loves Earth 2016",
-        "Category:Quality images from Wiki Loves Earth 2016",
-        "Category:Valued images from Wiki Loves Earth 2016",
-        "Category:Images from Wiki Loves Earth 2016 in Albania",
-        "Category:Images from Wiki Loves Earth Biosphere Reserves 2016"
-      ),
+    val result = campaignList(bot).getContests(title).await
 
-    "Category:Images from Wiki Loves Earth 2017" ->
-      Seq(
-        "Category:Images from Wiki Loves Earth 2017 in Australia",
-        "Category:Images from Wiki Loves Earth 2017 in South Korea"
-      )
-  )
+    result.map(_.year).distinct === Seq(2014)
+    result.map(_.contestType).distinct === Seq(ContestType.WLE)
+    result.map(_.country.name) === Seq("Algeria", "Andorra & Catalan areas", "Armenia & Nagorno-Karabakh", "the Netherlands")
+  }
 
-  val contests = Map(
-    "Category:Images from Wiki Loves Earth" -> wleCats
-  )
+  "return WLE 2016" in {
+    val title = "Category:Images from Wiki Loves Earth 2016"
+    val categories = Seq(
+      "Category:Featured pictures from Wiki Loves Earth 2016",
+      "Category:Quality images from Wiki Loves Earth 2016",
+      "Category:Valued images from Wiki Loves Earth 2016",
+      "Category:Images from Wiki Loves Earth 2016 in Albania",
+      "Category:Images from Wiki Loves Earth Biosphere Reserves 2016"
+    )
+
+    val bot = mockedBot(title, categories)
+
+    val result = campaignList(bot).getContests(title).await
+
+    result.map(_.year).distinct === Seq(2016)
+    result.map(_.contestType).distinct === Seq(ContestType.WLE)
+    result.map(_.country.name) === Seq("Albania"/*, "Biosphere Reserves 2016"*/)
+  }
 }

@@ -18,7 +18,7 @@ object CountryParser {
   val contestCategory = "Category\\:Images from ([a-zA-Z ]+) (\\d+)"
 
   val contestRegex = (contestCategory + "$").r
-  val contestWithCountryRegex = (contestCategory + " in ([a-zA-Z ]+)$").r
+  val contestWithCountryRegex = (contestCategory + " in ([a-zA-Z\\&\\- ]+)$").r
 
   val contestLinkRegex = "\\[\\[Commons\\:([a-zA-Z ]+) (\\d+) in ([a-zA-Z\\& ]+)\\|".r
 
@@ -75,30 +75,30 @@ object CountryParser {
 class RegexCampaignParser(r: Regex, typeIndex: Int = 1, yearIndex: Int = 2, countryIndex: Int = 3) {
 
   def findWithBackup(cell: String): Option[Contest] = {
-    r.findFirstMatchIn(cell).map(matchToContestWithCountry)
+    r.findFirstMatchIn(cell).flatMap(matchToContestWithCountry)
       .orElse {
-        contestRegex.findFirstMatchIn(cell).map(categoryToContest)
+        contestRegex.findFirstMatchIn(cell).flatMap(categoryToContest)
       }
   }
 
   def findAll(wikiText: String): Seq[Contest] = {
-    r.findAllMatchIn(wikiText).map(matchToContestWithCountry).toSeq.distinct
+    r.findAllMatchIn(wikiText).flatMap(matchToContestWithCountry).toSeq.distinct
   }
 
-  def matchToContestWithCountry(m: Match): Contest = {
-    val contest = categoryToContest(m)
+  def matchToContestWithCountry(m: Match): Option[Contest] = {
+    for (contest <- categoryToContest(m)) yield {
 
-    val countryStr = m.group(countryIndex)
-    val country = countries.find(_.name == countryStr).getOrElse(new Country("", countryStr))
-
-    contest.copy(country = country)
+      val countryStr = m.group(countryIndex)
+      val country = countries.find(_.name == countryStr).getOrElse(new Country("", countryStr))
+      contest.copy(country = country)
+    }
   }
 
-  def categoryToContest(m: Match): Contest = {
+  def categoryToContest(m: Match): Option[Contest] = {
     val typeStr = m.group(typeIndex)
     val year = m.group(yearIndex).toInt
 
-    val _type = ContestType.byName(typeStr)
-    new Contest(_type.get, NoAdmDivision(), year, uploadConfigs = Seq.empty)
+    for (typ <- ContestType.byName(typeStr))
+      yield new Contest(typ, NoAdmDivision(), year, uploadConfigs = Seq.empty)
   }
 }
