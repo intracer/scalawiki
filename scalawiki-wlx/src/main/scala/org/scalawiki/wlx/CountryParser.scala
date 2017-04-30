@@ -17,8 +17,8 @@ object CountryParser {
 
   val contestCategory = "Category\\:Images from ([a-zA-Z ]+) (\\d+)"
 
-  val contestRegex = contestCategory.r
-  val contestWithCountryRegex = (contestCategory + " in ([a-zA-Z ]+)").r
+  val contestRegex = (contestCategory + "$").r
+  val contestWithCountryRegex = (contestCategory + " in ([a-zA-Z ]+)$").r
 
   val contestLinkRegex = "\\[\\[Commons\\:([a-zA-Z ]+) (\\d+) in ([a-zA-Z\\& ]+)\\|".r
 

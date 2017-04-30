@@ -1,27 +1,52 @@
 package org.scalawiki.wlx
 
 import org.scalawiki.{HasBot, MwBot}
-import org.scalawiki.dto.Namespace
+import org.scalawiki.dto.{Namespace, Page}
+import org.scalawiki.dto.cmd.Action
+import org.scalawiki.dto.cmd.query.Query
+import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.scalawiki.util.TestUtils.resourceAsString
-import org.scalawiki.wlx.dto.ContestType
+import org.scalawiki.wlx.dto.{ContestType, HasImagesCategory}
+import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
-class CampaignListSpec extends Specification with MockBotSpec {
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class CampaignListSpec extends Specification with MockBotSpec with Mockito {
+
+  implicit def titleToHasImages(title: String): HasImagesCategory = new HasImagesCategory {
+    override def imagesCategory = title
+  }
 
   def campaignList(testBot: MwBot) = new CampaignList() with HasBot {
     val bot = testBot
   }
 
-  def categoryQueryBot(name: String, responseFile: String) = {
+  def categoryQueryBot(title: String, responseFile: String) = {
     val response = resourceAsString(responseFile)
     val cmd = new HttpStub(Map("action" -> "query", "list" -> "categorymembers",
-      "cmtitle" -> name,
+      "cmtitle" -> title,
       "cmnamespace" -> Namespace.CATEGORY.toString,
       "continue" -> "", "cmlimit" -> "max"),
       response)
     getBot(cmd)
+  }
+
+  def mockedBot(title: String, categories: Seq[String]) = {
+    val bot = mock[MwBot]
+
+    val action = Action(Query(ListParam(CategoryMembers(
+      CmTitle(title), CmNamespace(Seq(Namespace.CATEGORY)), CmLimit("max"))
+    )))
+
+    bot.run(action) returns Future {
+      categories.map(cat => Page(title = cat))
+    }
+
+    bot
   }
 
   "CampaignList" should {
@@ -47,101 +72,57 @@ class CampaignListSpec extends Specification with MockBotSpec {
     }
   }
 
-  val wlmCats = Map(
-    "Category:Images from Wiki Loves Monuments 2010" ->
-      Seq(
-        "Category:Featured pictures from Wiki Loves Monuments 2010",
-        "Category:Valued images from Wiki Loves Monuments 2010",
-        "Category:Quality images from Wiki Loves Monuments 2010"
-      ),
+  "return WLM 2011" in {
+    val title = "Category:Images from Wiki Loves Monuments 2011"
+    val categories = Seq(
+      "Category:Images from Wiki Loves Monuments 2011 in Andorra",
+      "Category:Images from Wiki Loves Monuments 2011 in Hungary",
+      "Category:Images from Wiki Loves Monuments 2011 in Hungary - international",
+      "Category:Images from Wiki Loves Monuments 2011 in the Netherlands",
+      "Category:Images from Wiki Loves Monuments 2011 with something wrong",
+      "Category:Featured pictures from Wiki Loves Monuments 2011",
+      "Category:Valued images from Wiki Loves Monuments 2011",
+      "Category:Art nouveau images from Wiki Loves Monuments 2011",
+      "Category:Categories containing possible art nouveau images for Wiki Loves Monuments 2011",
+      "Category:Videos from Wiki Loves Monuments 2011",
+      "Category:Quality images from Wiki Loves Monuments 2011"
+    )
 
-    "Category:Images from Wiki Loves Monuments 2011" ->
-      Seq(
-        "Category:Images from Wiki Loves Monuments 2011 in Andorra",
-        "Category:Images from Wiki Loves Monuments 2011 in Hungary",
-        "Category:Images from Wiki Loves Monuments 2011 in Hungary - international",
-        "Category:Images from Wiki Loves Monuments 2011 in the Netherlands",
-        "Category:Images from Wiki Loves Monuments 2011 with something wrong",
-        "Category:Featured pictures from Wiki Loves Monuments 2011",
-        "Category:Valued images from Wiki Loves Monuments 2011",
-        "Category:Art nouveau images from Wiki Loves Monuments 2011",
-        "Category:Categories containing possible art nouveau images for Wiki Loves Monuments 2011",
-        "Category:Videos from Wiki Loves Monuments 2011",
-        "Category:Quality images from Wiki Loves Monuments 2011"
-      ),
+    val bot = mockedBot(title, categories)
 
-    "Category:Images from Wiki Loves Monuments 2012" ->
-      Seq(
-        "Category:Images from Wiki Loves Monuments 2012 in Andorra",
-        "Category:Images from Wiki Loves Monuments 2012 in the Czech Republic",
-        "Category:Images from Wiki Loves Monuments 2012 in the Netherlands",
-        "Category:Images from Wiki Loves Monuments 2012 in the Philippines",
-        "Category:Images from Wiki Loves Monuments 2012 in South Africa",
-        "Category:Images from Wiki Loves Monuments 2012 in Ukraine",
-        "Category:Images from Wiki Loves Monuments 2012 in the United States",
-        "Category:Images from Wiki Loves Monuments 2012 in an unknown country",
-        "Category:Images from Wiki Loves Monuments 2012 with a problem",
-        "Category:Featured pictures from Wiki Loves Monuments 2012",
-        "Category:Valued images from Wiki Loves Monuments 2012",
-        "Category:GLAM images from Wiki Loves Monuments 2012",
-        "Category:Nominated pictures for Wiki Loves Monuments International 2012",
-        "Category:Quality images from Wiki Loves Monuments 2012",
-        "Category:Images from Wiki Loves Monuments 2012 used in valued image sets"
-      ),
+    val result = campaignList(bot).getContests(title).await
 
-    "Category:Images from Wiki Loves Monuments 2013" ->
-      Seq(
-        "Category:Images from Wiki Loves Monuments 2013 in Algeria",
-        "Category:Images from Wiki Loves Monuments 2013 in Antarctica",
-        "Category:Images from Wiki Loves Monuments 2013 in the Czech Republic",
-        "Category:Images from Wiki Loves Monuments 2013 in El Salvador",
-        "Category:Images from Wiki Loves Monuments 2013 in Hong Kong",
-        "Category:Images from Wiki Loves Monuments 2013 in the Netherlands",
-        "Category:Images from Wiki Loves Monuments 2013 in the Philippines",
-        "Category:Images from Wiki Loves Monuments 2013 in South Africa",
-        "Category:Images from Wiki Loves Monuments 2013 in the United Kingdom",
-        "Category:Images from Wiki Loves Monuments 2013 in the United States",
-        "Category:Images from Wiki Loves Monuments 2013 in an unknown country",
-        "Category:Images from Wiki Loves Monuments 2013 with a problem",
-        "Category:Featured pictures from Wiki Loves Monuments 2013",
-        "Category:Valued images from Wiki Loves Monuments 2013",
-        "Category:GLAM images from Wiki Loves Monuments 2013",
-        "Category:Nominated pictures for Wiki Loves Monuments International 2013",
-        "Category:Quality images from Wiki Loves Monuments 2013",
-        "Category:WWI related images from Wiki Loves Monuments 2013"
-      ),
+    result.map(_.year).distinct === Seq(2011)
+    result.map(_.contestType).distinct === Seq(ContestType.WLM)
+    result.map(_.country.name) === Seq("Andorra", "Hungary", "the Netherlands")
+  }
 
-    "Category:Images from Wiki Loves Monuments 2014" ->
-      Seq(
-        "Category:Images from Wiki Loves Monuments 2014 in Albania",
-        "Category:Images from Wiki Loves Monuments 2014 in the Czech Republic",
-        "Category:Images from Wiki Loves Monuments 2014 in Hong Kong",
-        "Category:Images from Wiki Loves Monuments 2014 in Kosovo",
-        "Category:Images from Wiki Loves Monuments 2014 in Palestine",
-        "Category:Images from Wiki Loves Monuments 2014 in South Africa",
-        "Category:Images from Wiki Loves Monuments 2014 in the United Kingdom",
-        "Category:Images from Wiki Loves Monuments 2014 in the United States",
-        "Category:Images from Wiki Loves Monuments 2014 in an unknown country",
-        "Category:Images from Wiki Loves Monuments 2014 with a problem",
-        "Category:Featured pictures from Wiki Loves Monuments 2014",
-        "Category:Valued images from Wiki Loves Monuments 2014",
-        "Category:Quality images from Wiki Loves Monuments 2014"
-      ),
+  "return WLM 2012" in {
+    val title = "Category:Images from Wiki Loves Monuments 2012"
+    val categories = Seq(
+      "Category:Images from Wiki Loves Monuments 2012 in the Czech Republic",
+      "Category:Images from Wiki Loves Monuments 2012 in the Philippines",
+      "Category:Images from Wiki Loves Monuments 2012 in South Africa",
+      "Category:Images from Wiki Loves Monuments 2012 in Ukraine",
+      "Category:Images from Wiki Loves Monuments 2012 in the United States",
+      "Category:Images from Wiki Loves Monuments 2012 in an unknown country",
+      "Category:Images from Wiki Loves Monuments 2012 with a problem",
+      "Category:Featured pictures from Wiki Loves Monuments 2012",
+      "Category:Valued images from Wiki Loves Monuments 2012",
+      "Category:GLAM images from Wiki Loves Monuments 2012",
+      "Category:Nominated pictures for Wiki Loves Monuments International 2012",
+      "Category:Quality images from Wiki Loves Monuments 2012",
+      "Category:Images from Wiki Loves Monuments 2012 used in valued image sets"
+    )
 
-    "Category:Images from Wiki Loves Monuments 2015" ->
-      Seq(
-        "Category:Images from Wiki Loves Monuments 2015 in Albania",
-        "Category:Images from Wiki Loves Monuments 2015 in Armenia & Nagorno-Karabakh",
-        "Category:Images from Wiki Loves Monuments 2015 in Kosovo",
-        "Category:Images from Wiki Loves Monuments 2015 in Macedonia",
-        "Category:Images from Wiki Loves Monuments 2015 in the Netherlands",
-        "Category:Images from Wiki Loves Monuments 2015 in South Africa",
-        "Category:Featured pictures from Wiki Loves Monuments 2015",
-        "Category:Valued images from Wiki Loves Monuments 2015",
-        "Category:Images from Wiki Loves Monuments 2015 in South Tyrol",
-        "Category:Quality images from Wiki Loves Monuments 2015"
-      )
-  )
+    val bot = mockedBot(title, categories)
+
+    val result = campaignList(bot).getContests(title).await
+
+    result.map(_.year).distinct === Seq(2012)
+    result.map(_.contestType).distinct === Seq(ContestType.WLM)
+    result.map(_.country.name) === Seq("the Czech Republic", "the Philippines", "South Africa", "Ukraine", "the United States", "an unknown country")
+  }
 
   val wleCats = Map(
     "Category:Images from Wiki Loves Earth 2014" ->
@@ -183,7 +164,6 @@ class CampaignListSpec extends Specification with MockBotSpec {
   )
 
   val contests = Map(
-    "Category:Images from Wiki Loves Monuments" -> wlmCats,
     "Category:Images from Wiki Loves Earth" -> wleCats
   )
 }
