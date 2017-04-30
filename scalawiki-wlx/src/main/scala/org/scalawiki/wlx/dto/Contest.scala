@@ -33,7 +33,7 @@ case class Contest(
   /**
     * @return Name of category containing contest images
     */
-  def category: String = s"Category:Images from $name".replaceAll(" ", "_")
+  def imagesCategory: String = s"Category:Images from $name".replaceAll(" ", "_")
 
   /**
     * @return name of template that monument lists consist of

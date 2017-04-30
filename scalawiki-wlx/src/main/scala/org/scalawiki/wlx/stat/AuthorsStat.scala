@@ -31,7 +31,7 @@ class AuthorsStat(val uploadImages: Boolean = false) {
 
   def authorsContributedTable(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: Option[MonumentDB]): Table = {
     val contest = monumentDb.map(_.contest).getOrElse(imageDbs.head.contest)
-    val categoryName = contest.category
+    val categoryName = contest.imagesCategory
 
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
     val yearSeq = imageDbsByYear.keys.toSeq.sorted

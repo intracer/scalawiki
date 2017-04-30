@@ -35,7 +35,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
 
   def monumentsPicturedTable(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: MonumentDB): Table = {
     val contest = monumentDb.contest
-    val categoryName = contest.category
+    val categoryName = contest.imagesCategory
     val filenamePrefix = contest.name.replace("_", "")
 
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)

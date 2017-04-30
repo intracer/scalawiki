@@ -24,7 +24,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     val monumentQuery = mock[MonumentQuery]
     val imageQuery = mock[ImageQuery]
 
-    imageQuery.imagesFromCategoryAsync(contest.category, contest) returns Future.successful(images)
+    imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest) returns Future.successful(images)
     monumentQuery.byMonumentTemplate(date = None) returns monuments
 
     val cfg = StatConfig(campaign = contest.campaign)
@@ -92,7 +92,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     val monumentQuery = mock[MonumentQuery]
     val imageQuery = mock[ImageQuery]
 
-    imageQuery.imagesFromCategoryAsync(contest.category, contest) returns Future.failed(new RuntimeException("Error 123"))
+    imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest) returns Future.failed(new RuntimeException("Error 123"))
     monumentQuery.byMonumentTemplate(date = None) returns monuments
 
     val stat = new Statistics(contest, None, monumentQuery, imageQuery, bot)
