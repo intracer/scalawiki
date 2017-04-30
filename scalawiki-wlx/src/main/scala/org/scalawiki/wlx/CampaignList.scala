@@ -20,18 +20,23 @@ object CampaignList extends WithBot {
     )))
   }
 
+  def titles(pages: Seq[Seq[Page]]): Seq[String] = pages.flatten.map(_.title)
+
+  def getYears(contestType: ContestType): Future[Seq[Contest]] =
+    contestsFromCategory(contestType.imagesCategory)
+
+  def contestsFromCategory(parent: String): Future[Seq[Contest]] = {
+    for (cats <- bot.run(categoryMembers(parent))) yield
+      for (cat <- cats;
+           contest <- CountryParser.fromCategoryName(cat.title)
+      ) yield contest
+  }
+
   def categoriesMembers(categories: Seq[String]): Future[Seq[Seq[Page]]] = {
     val queries = categories.map(categoryMembers)
     Future.sequence(queries.map(bot.run(_)))
   }
 
-  def titles(pages: Seq[Seq[Page]]) = pages.flatten.map(_.title)
-
-  def getYears(contestType: ContestType): Future[Seq[Contest]] = {
-    bot.run(categoryMembers(contestType.imagesCategory)).map { cats =>
-      cats.flatMap(cat => CountryParser.fromCategoryName(cat.title))
-    }
-  }
 
   def main(args: Array[String]): Unit = {
     val types = ContestType.all
