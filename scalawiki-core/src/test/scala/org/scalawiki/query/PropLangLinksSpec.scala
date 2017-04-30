@@ -5,7 +5,7 @@ import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list.ListArgs
 import org.scalawiki.dto.cmd.query.prop.{LangLinks, LlLimit, Prop}
 import org.scalawiki.dto.cmd.query.{Generator, Query}
-import org.scalawiki.util.{Command, MockBotSpec}
+import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
@@ -82,8 +82,8 @@ class PropLangLinksSpec extends Specification with MockBotSpec {
         "gcmlimit" -> "2", "lllimit" -> "2")
 
       val commands = Seq(
-        new Command(query + ("continue" -> ""), response1),
-        new Command(query ++ Map(
+        new HttpStub(query + ("continue" -> ""), response1),
+        new HttpStub(query ++ Map(
           "continue" -> "||",
           "llcontinue" -> "6863578|cs"
         ), response2)

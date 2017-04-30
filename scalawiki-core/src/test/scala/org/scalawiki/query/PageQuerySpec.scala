@@ -4,7 +4,7 @@ package org.scalawiki.query
 import akka.actor.ActorSystem
 import org.scalawiki.MwBotImpl
 import org.scalawiki.dto.{Page, Revision}
-import org.scalawiki.util.{Command, TestHttpClient}
+import org.scalawiki.util.{HttpStub, TestHttpClient}
 import org.specs2.mutable.Specification
 
 import scala.collection.mutable
@@ -29,7 +29,7 @@ class PageQuerySpec extends Specification {
                           "revisions": [{ "revid": 2, "userid": 2, "user": "u2", "comment": "c2", "*": "$pageText2"}]}
             }}}"""
 
-      val bot = getBot(new Command(
+      val bot = getBot(new HttpStub(
         Map(
           "pageids" -> "569559|4571809",
           "action" -> "query",
@@ -45,7 +45,7 @@ class PageQuerySpec extends Specification {
     }
   }
 
-  def getBot(commands: Command*) = {
+  def getBot(commands: HttpStub*) = {
     val http = new TestHttpClient(host, mutable.Queue(commands: _*))
 
     new MwBotImpl(host, http)

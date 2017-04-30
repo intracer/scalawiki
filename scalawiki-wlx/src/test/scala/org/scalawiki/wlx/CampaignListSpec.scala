@@ -1,7 +1,7 @@
 package org.scalawiki.wlx
 
 import org.scalawiki.dto.Namespace
-import org.scalawiki.util.Command
+import org.scalawiki.util.HttpStub
 import org.scalawiki.util.TestUtils.resourceAsString
 import org.scalawiki.wlx.dto.ContestType
 import org.specs2.mutable.Specification
@@ -155,7 +155,7 @@ class CampaignListSpec extends Specification {
       val response = resourceAsString("/org/scalawiki/wlx/WLM_years.json")
 
       val commands = Seq(
-        new Command(Map("action" -> "query", "list" -> "categorymembers",
+        new HttpStub(Map("action" -> "query", "list" -> "categorymembers",
           "cmtitle" -> "Category:Images from Wiki Loves Monuments",
           "cmnamespace" -> Namespace.CATEGORY.toString,
           "continue" -> ""), response)
@@ -173,7 +173,7 @@ class CampaignListSpec extends Specification {
       val response = resourceAsString("/org/scalawiki/wlx/WLE_years.json")
 
       val commands = Seq(
-        new Command(Map("action" -> "query", "list" -> "categorymembers",
+        new HttpStub(Map("action" -> "query", "list" -> "categorymembers",
           "cmtitle" -> "Category:Images from Wiki Loves Earth",
           "cmnamespace" -> Namespace.CATEGORY.toString,
           "continue" -> ""), response)

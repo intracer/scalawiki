@@ -1,7 +1,7 @@
 package org.scalawiki.query
 
 import org.scalawiki.dto.{Page, Revision, User}
-import org.scalawiki.util.{Command, MockBotSpec}
+import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
@@ -24,11 +24,11 @@ class PropRevisionsSpec extends Specification with MockBotSpec {
           |"revisions": [{"revid": 2, "user": "u2", "comment": "c2", "*": "$pageText2"}]} }}}""".stripMargin
 
       val commands = Seq(
-        new Command(Map("action" -> "query",
+        new HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|comment",
           "continue" -> ""), response1),
-        new Command(Map("action" -> "query",
+        new HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|comment",
           "continue" -> "gcmcontinue||", "gcmcontinue" -> "10|Stub|6674690"), response2)

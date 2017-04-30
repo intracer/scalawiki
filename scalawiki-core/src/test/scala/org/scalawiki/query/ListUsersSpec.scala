@@ -4,7 +4,7 @@ import org.scalawiki.dto.User
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
 import org.scalawiki.dto.cmd.query.list._
-import org.scalawiki.util.{Command, MockBotSpec}
+import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
@@ -21,7 +21,7 @@ class ListUsersSpec extends Specification with MockBotSpec {
           |}""".stripMargin
 
       val commands = Seq(
-        new Command(Map("action" -> "query", "list" -> queryType, "continue" -> ""), response1)
+        new HttpStub(Map("action" -> "query", "list" -> queryType, "continue" -> ""), response1)
       )
 
       val bot = getBot(commands: _*)
@@ -58,7 +58,7 @@ class ListUsersSpec extends Specification with MockBotSpec {
         "ususers" -> "MissingUser",
         "continue" -> "")
 
-      val commands = Seq(new Command(expectedParams, response1))
+      val commands = Seq(new HttpStub(expectedParams, response1))
 
       val bot = getBot(commands: _*)
 
@@ -103,7 +103,7 @@ class ListUsersSpec extends Specification with MockBotSpec {
         "ususers" -> "MissingUser|ExistingUser",
         "continue" -> "")
 
-      val commands = Seq(new Command(expectedParams, response1))
+      val commands = Seq(new HttpStub(expectedParams, response1))
 
       val bot = getBot(commands: _*)
 
@@ -153,7 +153,7 @@ class ListUsersSpec extends Specification with MockBotSpec {
         "continue" -> "")
 
       val commands = Seq(
-        new Command(expectedParams, response1)
+        new HttpStub(expectedParams, response1)
       )
 
       val bot = getBot(commands: _*)
@@ -216,8 +216,8 @@ class ListUsersSpec extends Specification with MockBotSpec {
           |}""".stripMargin
 
       val commands = Seq(
-        new Command(Map("action" -> "query", "ususers" -> "!|! !|! ! !|! ! ! !", "list" -> queryType, "continue" -> ""), response1),
-        new Command(Map("action" -> "query", "ususers" -> "!|! !|! ! !|! ! ! !", "list" -> queryType, "continue" -> "-||"), response2)
+        new HttpStub(Map("action" -> "query", "ususers" -> "!|! !|! ! !|! ! ! !", "list" -> queryType, "continue" -> ""), response1),
+        new HttpStub(Map("action" -> "query", "ususers" -> "!|! !|! ! !|! ! ! !", "list" -> queryType, "continue" -> "-||"), response2)
       )
 
       val bot = getBot(commands: _*)

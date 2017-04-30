@@ -4,7 +4,7 @@ import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.prop.{CategoryInfo, Prop}
 import org.scalawiki.dto.cmd.query.{Query, TitlesParam}
-import org.scalawiki.util.{Command, MockBotSpec}
+import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
@@ -24,9 +24,9 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
           | { "categorymembers": [{"pageid": 4571809, "ns": 2, "title": "User:Formator"}] }}""".stripMargin
 
       val commands = Seq(
-        new Command(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max",
+        new HttpStub(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max",
           "cmtitle" -> "Category:SomeCategory", "cmnamespace" -> "", "continue" -> ""), response1),
-        new Command(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max",
+        new HttpStub(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max",
           "cmtitle" -> "Category:SomeCategory", "cmnamespace" -> "",
           "continue" -> "-||", "cmcontinue" -> "10|Stub|6674690"), response2)
       )
@@ -87,7 +87,7 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
 
 
       val commands = Seq(
-        new Command(Map("action" -> "query", "prop" -> "categoryinfo",
+        new HttpStub(Map("action" -> "query", "prop" -> "categoryinfo",
           "titles" -> "Albert Einstein|Category:Foo|Category:Infobox_templates|NoSuchTitle", "continue" -> ""), response1)
       )
 

@@ -8,7 +8,7 @@ import org.scalawiki.dto.cmd.query.prop.{Info, Prop, Revisions, RvPropArgs}
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query}
 import org.scalawiki.dto.{Page, Revision, User}
 import org.scalawiki.query.{DslQuery, DummyActionArg}
-import org.scalawiki.util.{Command, MockBotSpec}
+import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.{BeforeAfter, Specification}
 import slick.backend.DatabaseConfig
 import slick.driver.JdbcProfile
@@ -34,7 +34,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
 
   val dummyAction = Action(DummyActionArg)
 
-  override def getBot(commands: Command*) = {
+  override def getBot(commands: HttpStub*) = {
     val apiBot = super.getBot(commands:_*)
 
     mwDb.dropTables()
@@ -218,7 +218,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
 
       val commands = Seq(
         // fetch for page2 content for cache
-        new Command(Map("action" -> "query",
+        new HttpStub(Map("action" -> "query",
           "pageids" -> pageIds.drop(5).mkString("|"),
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid", "continue" -> ""),
           pagesJson(pageJsons.drop(5)))
@@ -266,7 +266,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
       }
 
       val commands = Seq(
-        new Command(Map("action" -> "query",
+        new HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid",
           "continue" -> ""), pagesJson(pageJsons))
@@ -315,12 +315,12 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
 
       val commands = Seq(
         // fetch for page2 content for cache
-        new Command(Map("action" -> "query",
+        new HttpStub(Map("action" -> "query",
           "pageids" -> pageIds.slice(5, 55).mkString("|"),
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid", "continue" -> ""),
           pagesJson(pageJsons.slice(5, 55))),
 
-        new Command(Map("action" -> "query",
+        new HttpStub(Map("action" -> "query",
           "pageids" -> pageIds.slice(55, 95).mkString("|"),
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid", "continue" -> ""),
           pagesJson(pageJsons.slice(55, 95)))

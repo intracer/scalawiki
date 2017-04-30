@@ -2,7 +2,7 @@ package org.scalawiki.query
 
 import org.scalawiki.Timestamp
 import org.scalawiki.dto.Page
-import org.scalawiki.util.{MockBotSpec, Command}
+import org.scalawiki.util.{MockBotSpec, HttpStub}
 import org.scalawiki.dto.Image
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
@@ -68,11 +68,11 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
     "query by category members" in {
 
       val commands = Seq(
-        new Command(Map("action" -> "query",
+        new HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "imageinfo", "iiprop" -> "timestamp|user|comment",
           "continue" -> ""), response1("cm")),
-        new Command(Map("action" -> "query",
+        new HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "imageinfo", "iiprop" -> "timestamp|user|comment",
           "continue" -> "gcmcontinue||",
@@ -96,11 +96,11 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
     "query by page images" in {
 
       val commands = Seq(
-        new Command(Map("action" -> "query",
+        new HttpStub(Map("action" -> "query",
           "generator" -> "images", "titles" -> "Commons:SomePage", "gimlimit" -> "max",
           "prop" -> "imageinfo", "iiprop" -> "timestamp|user|comment",
           "continue" -> ""), response1("im")),
-        new Command(Map("action" -> "query",
+        new HttpStub(Map("action" -> "query",
           "generator" -> "images", "titles" -> "Commons:SomePage", "gimlimit" -> "max",
           "prop" -> "imageinfo", "iiprop" -> "timestamp|user|comment",
           "continue" -> "gimcontinue||",

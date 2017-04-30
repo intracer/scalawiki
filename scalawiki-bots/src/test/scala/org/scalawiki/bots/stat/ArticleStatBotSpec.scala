@@ -1,7 +1,7 @@
 package org.scalawiki.bots.stat
 
 import org.joda.time.DateTime
-import org.scalawiki.util.{Command, MockBotSpec}
+import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
@@ -60,7 +60,7 @@ class ArticleStatBotSpec extends Specification with MockBotSpec {
             |{"revid": 1, "user": "u1", "comment": "c1", "*": "$pageText1", "parentid": 0, "timestamp": "2016-06-07T16:45:30Z"}] }
             |}}}""".stripMargin
 
-      val commands = listCommands :+ new Command(revsRequest, revResponse)
+      val commands = listCommands :+ new HttpStub(revsRequest, revResponse)
 
       val asb = new ArticleStatBot() {
         override val bot = getBot(commands: _*)
@@ -97,7 +97,7 @@ class ArticleStatBotSpec extends Specification with MockBotSpec {
       |    }
       |}""".stripMargin
 
-  def getCommands(newResponse: String, improvedResponse: String): Seq[Command] = {
+  def getCommands(newResponse: String, improvedResponse: String): Seq[HttpStub] = {
     val newParams = Map(
       "format" -> "json", "generator" -> "embeddedin", "inprop" -> "subjectid", "geilimit" -> "500",
       "geititle" -> "Template:Martians-week-new", "prop" -> "info|revisions", "action" -> "query", "continue" -> ""
@@ -109,8 +109,8 @@ class ArticleStatBotSpec extends Specification with MockBotSpec {
     )
 
     Seq(
-      new Command(newParams, newResponse),
-      new Command(improvedParams, improvedResponse)
+      new HttpStub(newParams, newResponse),
+      new HttpStub(improvedParams, improvedResponse)
     )
   }
 }

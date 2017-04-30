@@ -4,7 +4,7 @@ package org.scalawiki.query
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.prop.{Links, Prop}
 import org.scalawiki.dto.cmd.query.{Query, TitlesParam}
-import org.scalawiki.util.{Command, MockBotSpec}
+import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
@@ -67,11 +67,11 @@ class PropLinksSpec extends Specification with MockBotSpec {
           |}""".stripMargin
 
       val commands = Seq(
-        new Command(Map("action" -> "query",
+        new HttpStub(Map("action" -> "query",
           "titles" -> title,
           "prop" -> "links",
           "continue" -> ""), response1),
-        new Command(Map("action" -> "query",
+        new HttpStub(Map("action" -> "query",
           "titles" -> title,
           "prop" -> "links",
           "continue" -> "||",

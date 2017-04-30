@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 import scala.concurrent.duration._
 
-class TestHttpClient(val host: String, commandsParam: Seq[Command]) extends Matchers with HttpClient {
+class TestHttpClient(val host: String, commandsParam: Seq[HttpStub]) extends Matchers with HttpClient {
 
   implicit val sys = ActorSystem()
 
