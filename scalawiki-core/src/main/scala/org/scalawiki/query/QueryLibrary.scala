@@ -38,6 +38,14 @@ trait QueryLibrary {
         AuWithEditsOnly(true), AuLimit("max"), AuExcludeGroup(Seq("bot")))
     )))
 
+  val activeUsersQuery =
+    Action(Query(ListParam(
+      AllUsers(
+        AuActiveUsers(true),
+        AuProp(Seq("registration", "editcount", "blockinfo")),
+        AuWithEditsOnly(true), AuLimit("max"), AuExcludeGroup(Seq("bot")))
+    )))
+
   def userContribs(username: String, range: TimeRange, limit: String = "max", dir: String = "older"): Action = {
     val ucParams = Seq(
       UcUser(Seq(username)),
