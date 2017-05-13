@@ -11,7 +11,7 @@ import scala.concurrent.Future
 class DbCachedBot(apiBot: MwBotImpl, database: MwDatabase)
   extends MwBotImpl(apiBot.host, apiBot.http) {
 
-  override def run(action: Action, context: Map[String, String] = Map.empty): Future[Seq[Page]] = {
+  override def run(action: Action, context: Map[String, String] = Map.empty, limit: Option[Long] = None): Future[Seq[Page]] = {
     new DslQueryDbCache(new DslQuery(action, apiBot), database).run()
   }
 }
