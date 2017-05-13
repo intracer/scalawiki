@@ -14,31 +14,32 @@ object UserContribList extends WithBot with QueryLibrary {
 
   def main(args: Array[String]) {
 
-    getUsers(allUsersQuery).map {
+    val minEdits = 300
+    val minRecentEdits = 20
+    val minEditsFrom = new DateTime(2016, 10, 1, 0, 0)
+    val recentEditsFrom = new DateTime(2017, 4, 1, 0, 0)
+
+    getUsers(activeUsersQuery).foreach {
       allUsers =>
 
         val users = allUsers.filter { u =>
-          u.editCount.exists(_ > 300) && u.blocked.forall(_ == false)
+          u.editCount.exists(_ > minEdits) && u.blocked.forall(_ == false)
         }
 
         val contribsFuture = Future.traverse(users) { user =>
-          bot.run(userContribs(user.name.get,
-            TimeRange(Some(new DateTime(2015, 4, 15, 0, 0)), None), "300")
-          )
+          bot.run(userContribs(user.name.get, TimeRange(Some(minEditsFrom), None), minEdits.toString))
         }
 
-        contribsFuture.map {
-          pagesSeq =>
-            val eligible = pagesSeq.filter {
-              pages =>
-                pages.size >= 300 &&
-                  pages(19).revisions.head.timestamp.exists(
-                    _.isAfter(new DateTime(2014, 10, 15, 0, 0))
-                  )
-            }.flatMap(_.head.lastRevisionUser.flatMap(_.name))
+        val eligible = for (pagesSeq <- contribsFuture) yield
+          for (pages <- pagesSeq if
+          pages.size >= minEdits &&
+            pages(minRecentEdits - 1).revisions.headOption.exists(_.timestamp.exists(_.isAfter(recentEditsFrom)));
+               user <- pages.head.lastRevisionUser.flatMap(_.name)
+          ) yield user
 
-            eligible.foreach(println)
-        }
+        eligible.map { u =>
+          u.foreach(println)
+        }.failed.map(println)
     }
   }
 }
