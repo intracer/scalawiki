@@ -1,7 +1,7 @@
 import sbt.Keys._
 
-val akkaV = "2.4.17"
-val sprayV = "1.3.3"
+val akkaV = "2.4.18"
+val sprayV = "1.3.4"
 val specsV = "3.7.2"
 
 lazy val commonSettings = Seq(
@@ -10,10 +10,10 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.11.11",
 
   libraryDependencies ++= Seq(
-    "org.specs2" %% "specs2-core" % specsV % "test",
-    "org.specs2" %% "specs2-matcher-extra" % specsV % "test",
-    "org.specs2" % "specs2-mock_2.11" % specsV % "test",
-    "com.google.jimfs" % "jimfs" % "1.1" % "test"
+    "org.specs2" %% "specs2-core" % specsV % Test,
+    "org.specs2" %% "specs2-matcher-extra" % specsV % Test,
+    "org.specs2" % "specs2-mock_2.11" % specsV % Test,
+    "com.google.jimfs" % "jimfs" % "1.1" % Test
   ),
 
   resolvers := Seq("spray repo" at "http://repo.spray.io",
@@ -38,11 +38,11 @@ lazy val scalawiki =
     .settings(commonSettings)
     .dependsOn(
       `scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `scalawiki-sql`,
-      `spray-cookies`
+      `http-extensions`, `scalawiki-webui`
     )
     .aggregate(
       `scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `scalawiki-sql`,
-      `spray-cookies`
+      `http-extensions`, `scalawiki-webui`
     )
 
 lazy val `scalawiki-core` =
@@ -54,7 +54,7 @@ lazy val `scalawiki-core` =
         "io.spray" %% "spray-caching" % sprayV,
         "com.typesafe.play" %% "play-json" % "2.5.12",
         "com.typesafe.akka" %% "akka-actor" % akkaV,
-        "com.typesafe.akka" %% "akka-http" % "10.0.5",
+        "com.typesafe.akka" %% "akka-http" % "10.0.6",
         "com.typesafe" % "config" % "1.3.0",
         "com.iheart" %% "ficus" % "1.2.3",
         "com.github.nscala-time" %% "nscala-time" % "2.10.0",
@@ -63,7 +63,7 @@ lazy val `scalawiki-core` =
         "commons-codec" % "commons-codec" % "1.10",
         "org.jsoup" % "jsoup" % "1.8.3"
       )
-    }).dependsOn(`spray-cookies`)
+    }).dependsOn(`http-extensions`)
 
 lazy val `scalawiki-bots` =
   (project in file("scalawiki-bots"))
@@ -110,11 +110,18 @@ lazy val `scalawiki-sql` =
     ))
     .dependsOn(`scalawiki-core` % "compile->compile;test->test")
 
-lazy val `spray-cookies` =
-  (project in file("spray-cookies"))
+lazy val `http-extensions` =
+  (project in file("http-extensions"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-http" % "10.0.3",
+      "com.typesafe.akka" %% "akka-http" % "10.0.6",
       "com.typesafe.akka" %% "akka-actor" % akkaV,
-      "org.scalacheck" %% "scalacheck" % "1.11.3" % "test"
+      "com.typesafe.play" %% "twirl-api" % "1.3.0",
+      "org.scalacheck" %% "scalacheck" % "1.11.3" % Test
     ))
+
+lazy val `scalawiki-webui` =
+  (project in file("scalawiki-webui"))
+    .settings(commonSettings: _*)
+    .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
+    .enablePlugins(SbtTwirl)
