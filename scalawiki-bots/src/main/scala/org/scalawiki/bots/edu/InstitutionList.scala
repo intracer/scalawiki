@@ -3,6 +3,7 @@ package org.scalawiki.bots.edu
 import java.net.URLEncoder
 
 import org.jsoup.Jsoup
+import org.scalawiki.http.HttpClient
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -15,7 +16,7 @@ case class Institution(id: Long,
                        numStudents: Int)
 
 object InstitutionList {
-  val http = new HttpClientSpray()
+  val http = HttpClient.get()
 
   val host = "uk.wikipedia.org"
 

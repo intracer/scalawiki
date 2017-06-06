@@ -1,6 +1,7 @@
 package org.scalawiki.bots
 
 import org.jsoup.Jsoup
+import org.scalawiki.http.HttpClient
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -11,7 +12,7 @@ object PartnersBot {
   val ourDomain = "wikilovesearth.org.ua"
   val partnersLinkPage = "http://" + ourDomain + "/partners/"
 
-  val http = new HttpClientSpray()
+  val http = HttpClient.get()
 
   def main(args: Array[String]): Unit = {
     http.get(partnersLinkPage).foreach {
