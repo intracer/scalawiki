@@ -1,7 +1,6 @@
 package org.scalawiki
 
 import akka.actor.ActorSystem
-import org.scalawiki.http.HttpClientAkka
 import org.specs2.mutable.Specification
 
 import scala.concurrent.{Await, Future}

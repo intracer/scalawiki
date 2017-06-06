@@ -1,8 +1,7 @@
 package net.spraycookies
 
-import akka.http.scaladsl.model.{DateTime, Uri}
-import akka.http.scaladsl.model.headers.HttpCookie
 import net.spraycookies.tldlist.EffectiveTldList
+import spray.http.{DateTime, HttpCookie, Uri}
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
@@ -25,7 +24,7 @@ class CookieJar(blacklist: EffectiveTldList) {
         case x: Some[DateTime] ⇒ x
         case None ⇒ src.maxAge.map(age ⇒ DateTime.now + age)
       }
-      StoredCookie(src.name, src.value, expiration, domain, path, src.httpOnly, src.secure)
+      StoredCookie(src.name, src.content, expiration, domain, path, src.httpOnly, src.secure)
     }
   }
 

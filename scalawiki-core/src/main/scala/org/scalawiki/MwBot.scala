@@ -248,7 +248,7 @@ object MwBot {
 
   def create(site: Site,
              loginInfo: Option[LoginInfo],
-             http: HttpClient = new HttpClientSpray(MwBot.system)
+             http: HttpClientSpray = new HttpClientSpray(MwBot.system)
             ): MwBot = {
     val bot = new MwBotImpl(site, http)
 
@@ -263,14 +263,14 @@ object MwBot {
 
   def fromHost(host: String,
                loginInfo: Option[LoginInfo] = LoginInfo.fromEnv(),
-               http: HttpClient = new HttpClientSpray(MwBot.system)
+               http: HttpClientSpray = new HttpClientSpray(MwBot.system)
               ): MwBot = {
     fromSite(Site.host(host), loginInfo, http)
   }
 
   def fromSite(site: Site,
                loginInfo: Option[LoginInfo] = LoginInfo.fromEnv(),
-               http: HttpClient = new HttpClientSpray(MwBot.system)
+               http: HttpClientSpray = new HttpClientSpray(MwBot.system)
               ): MwBot = {
     Await.result(cache(site.domain) {
       Future {

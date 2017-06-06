@@ -1,8 +1,8 @@
 package net.spraycookies
 
-import akka.http.scaladsl.client.RequestBuilding
-import akka.http.scaladsl.model.headers.{Cookie, `Set-Cookie`}
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
+import spray.http.HttpHeaders.{Cookie, `Set-Cookie`}
+import spray.http.{HttpRequest, HttpResponse, Uri}
+import spray.httpx.RequestBuilding
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -27,7 +27,7 @@ object CookieHandling {
         val cookies = cookieJar.cookiesFor(req.uri)
         if (cookies.isEmpty) req
         else {
-          val cookieHeader = Cookie(cookies.map(_.pair()).toList)
+          val cookieHeader = Cookie(cookies.toList)
           RequestBuilding.addHeader(cookieHeader)(req)
         }
       }

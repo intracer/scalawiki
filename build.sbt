@@ -51,11 +51,10 @@ lazy val `scalawiki-core` =
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= {
       Seq(
-        "io.spray" %% "spray-util" % sprayV,
+        "io.spray" %% "spray-client" % sprayV,
         "io.spray" %% "spray-caching" % sprayV,
         "com.typesafe.play" %% "play-json" % "2.5.12",
         "com.typesafe.akka" %% "akka-actor" % akkaV,
-        "com.typesafe.akka" %% "akka-http" % "10.0.6",
         "com.typesafe" % "config" % "1.3.0",
         "com.iheart" %% "ficus" % "1.2.3",
         "com.github.nscala-time" %% "nscala-time" % "2.10.0",
@@ -115,7 +114,8 @@ lazy val `http-extensions` =
   (project in file("http-extensions"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-http" % "10.0.6",
+      "io.spray" %% "spray-client" % sprayV,
+      "io.spray" %% "spray-json" % "1.3.2",
       "com.typesafe.akka" %% "akka-actor" % akkaV,
       "com.typesafe.play" %% "twirl-api" % "1.3.0",
       "org.scalacheck" %% "scalacheck" % "1.11.3" % Test

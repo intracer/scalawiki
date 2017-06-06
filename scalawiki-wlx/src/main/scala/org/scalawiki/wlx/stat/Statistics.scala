@@ -112,8 +112,9 @@ class Statistics(contest: Contest,
     gatherData(total = true).map {
       data =>
         for (totalImageDb <- data.totalImageDb) {
-          currentYear(data.contest, data.currentYearImageDb, data)
-          regionalStat(data.contest, data.dbsByYear, data.currentYearImageDb, totalImageDb, data)
+         // currentYear(data.contest, data.currentYearImageDb, data)
+          //regionalStat(data.contest, data.dbsByYear, data.currentYearImageDb, totalImageDb, data)
+          byRegionDnabb(totalImageDb)
         }
     }.failed.map(println)
   }
