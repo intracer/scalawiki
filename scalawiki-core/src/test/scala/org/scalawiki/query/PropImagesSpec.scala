@@ -4,7 +4,7 @@ import org.scalawiki.dto.{Image, Page}
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.prop.{ImageInfo, Images, Prop}
 import org.scalawiki.dto.cmd.query.{Generator, Query, TitlesParam}
-import org.scalawiki.util.{Command, MockBotSpec}
+import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
@@ -37,7 +37,7 @@ class PropImagesSpec extends Specification with MockBotSpec {
 
 
       val commands = Seq(
-        new Command(Map("action" -> "query", "titles" -> "Albert_Einstein", "prop" -> "images", "format" -> "json", "continue" -> ""), response)
+        new HttpStub(Map("action" -> "query", "titles" -> "Albert_Einstein", "prop" -> "images", "format" -> "json", "continue" -> ""), response)
       )
 
       val bot = getBot(commands: _*)
@@ -93,7 +93,7 @@ class PropImagesSpec extends Specification with MockBotSpec {
 
 
     val commands = Seq(
-      new Command(Map("action" -> "query", "titles" -> "Commons:Wiki_Loves_Earth_2015/Winners",
+      new HttpStub(Map("action" -> "query", "titles" -> "Commons:Wiki_Loves_Earth_2015/Winners",
         "prop" -> "imageinfo", "generator" -> "images", "format" -> "json", "continue" -> ""), response)
     )
 

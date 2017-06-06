@@ -5,7 +5,7 @@ import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
 import org.scalawiki.dto.cmd.query.meta._
 import org.scalawiki.util.TestUtils._
-import org.scalawiki.util.{Command, MockBotSpec}
+import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
@@ -19,7 +19,7 @@ class MetaGlobalUserInfoSpec extends Specification with MockBotSpec {
       GuiUser("Ilya")
     ))))
 
-  def commands(response: String) = Seq(new Command(
+  def commands(response: String) = Seq(new HttpStub(
     Map("action" -> "query", "meta" -> "globaluserinfo",
       "guiuser" -> "Ilya", "guiprop" -> "merged|unattached|editcount", "continue" -> ""),
     response))

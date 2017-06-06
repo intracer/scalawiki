@@ -1,7 +1,7 @@
 package org.scalawiki.query
 
 import org.scalawiki.dto.Page
-import org.scalawiki.util.{Command, MockBotSpec}
+import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
@@ -17,7 +17,7 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
         "action" -> "query", "list" -> queryType, "eilimit" -> "max",
         "eititle" -> "Template:SomeTemplate", "einamespace" -> "", "continue" -> ""
       )
-      val bot = getBot(new Command(query, response))
+      val bot = getBot(new HttpStub(query, response))
 
       val result = bot.page("Template:SomeTemplate").whatTranscludesHere().await
       result must have size 0
@@ -38,7 +38,7 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
         "eititle" -> "Template:SomeTemplate", "einamespace" -> "", "continue" -> ""
       )
 
-      val bot = getBot(new Command(query, response))
+      val bot = getBot(new HttpStub(query, response))
 
       val result = bot.page("Template:SomeTemplate").whatTranscludesHere().await
       result must have size 1
@@ -62,7 +62,7 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
         "einamespace" -> "", "continue" -> ""
       )
 
-      val bot = getBot(new Command(query, response))
+      val bot = getBot(new HttpStub(query, response))
 
       val result = bot.page("Template:SomeTemplate").whatTranscludesHere().await
       result must have size 2
@@ -88,8 +88,8 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
         "eititle" -> "Template:SomeTemplate", "einamespace" -> "")
 
       val commands = Seq(
-        new Command(query + ("continue" -> ""), response1),
-        new Command(query ++ Map("continue" -> "-||", "eicontinue" -> "10|Stub|6674690"), response2)
+        new HttpStub(query + ("continue" -> ""), response1),
+        new HttpStub(query ++ Map("continue" -> "-||", "eicontinue" -> "10|Stub|6674690"), response2)
       )
 
       val bot = getBot(commands: _*)

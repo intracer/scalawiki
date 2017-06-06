@@ -1,11 +1,11 @@
 package org.scalawiki
 
+import akka.http.scaladsl.model.{ContentType, HttpCharsets, MediaTypes}
 import org.scalawiki.dto.MwException
-import org.scalawiki.util.{Command, MockBotSpec, TestUtils}
+import org.scalawiki.util.{HttpStub, MockBotSpec, TestUtils}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.ThrownExpectations
 import org.specs2.mutable.Specification
-import spray.http.{ContentType, HttpCharsets, MediaTypes}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -45,8 +45,8 @@ class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
   "login" should {
     "get token and login" in { implicit ee: EE =>
       val bot = getBot(
-        new Command(loginAction, needToken),
-        new Command(loginAction ++ Map("lgtoken" -> "token-value+\\"), loginSuccess)
+        new HttpStub(loginAction, needToken),
+        new HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), loginSuccess)
       )
 
       bot.login(user, password).map(_ === "Success").await
@@ -55,8 +55,8 @@ class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
 
   "return wrong password" in { implicit ee: EE =>
     val bot = getBot(
-      new Command(loginAction, needToken),
-      new Command(loginAction ++ Map("lgtoken" -> "token-value+\\"), wrongPass)
+      new HttpStub(loginAction, needToken),
+      new HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), wrongPass)
     )
 
     bot.login(user, password).map(_ === "WrongPass").await
@@ -64,8 +64,8 @@ class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
 
   "throttler" in { implicit ee: EE =>
     val bot = getBot(
-      new Command(loginAction, needToken),
-      new Command(loginAction ++ Map("lgtoken" -> "token-value+\\"), throttled)
+      new HttpStub(loginAction, needToken),
+      new HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), throttled)
     )
 
     bot.login(user, password).map(_ === "Throttled").await
@@ -76,7 +76,7 @@ class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
     val err = TestUtils.resourceAsString("/org/scalawiki/Wikimedia Error.html")
 
     val bot = getBot(
-      new Command(loginAction, err, contentType = ContentType(MediaTypes.`text/html`, HttpCharsets.`UTF-8`))
+      new HttpStub(loginAction, err, contentType = ContentType(MediaTypes.`text/html`, HttpCharsets.`UTF-8`))
     )
 
     val f = bot.login(user, password)

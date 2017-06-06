@@ -1,0 +1,36 @@
+@import org.scalawiki.bots.finance.Resolution
+@import play.twirl.api.Html
+@(resolutions: Seq[Resolution])
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+@for(r <- resolutions) {
+    <div style="margin: 5%">
+
+        <p style="text-align: center"><b>РІШЕННЯ № @{r.number}/@{r.year}</b></p>
+        <p style="text-align: center"><b>Правління Громадської організації «Вікімедіа Україна»</b></p>
+
+        <p style="text-align: left"><b>м. Київ</b>
+            <span style="float: right"><b>«@r.day» @r.month @r.year року</b></span>
+        </p>
+
+        <p>
+        @Html(r.htmlText)
+        </p>
+
+        <p style="text-align: left"><b>Голова Правління</b>
+            <span style="float: right"><b>І.В. Корнійко</b></span>
+        </p>
+
+        <p style="text-align: left"><b>Секретар Правління</b>
+            <span style="float: right"><b>П.П. Лакійчук</b></span>
+        </p>
+    </div>
+    <p style="page-break-after: always;"></p>
+}
+</body>
+</html>

@@ -79,10 +79,19 @@ trait QueryLibrary {
       GuiUser(username)
     ))))
 
-  def whatLinksHere(title: String, ns: Int) = Action(Query(
+  def pageLinks(title: String, ns: Int) = Action(Query(
     Prop(Links(PlNamespace(Seq(ns)), PlLimit("max"))),
     TitlesParam(Seq(title))
   ))
+
+  def pageLinksGenerator(title: String, nsSeq: Seq[Int] = Seq.empty) =
+    Action(Query(
+      TitlesParam(Seq(title)),
+      Generator(
+        Links(PlNamespace(nsSeq), PlLimit("max"))
+      ),
+      Prop(Revisions(RvProp(rvprop.Ids, rvprop.Content)))
+    ))
 
   def generatorWithTemplate(template: String, ns: Set[Int] = Set.empty): Generator = {
     val params = Seq(

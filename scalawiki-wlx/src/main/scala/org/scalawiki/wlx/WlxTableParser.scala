@@ -4,6 +4,11 @@ import org.scalawiki.wikitext.TableParser
 import org.scalawiki.wlx.dto.Monument
 import org.scalawiki.wlx.dto.lists.ListConfig
 
+/**
+  * Parses list of monuments in wiki table format
+  *
+  * @param config
+  */
 class WlxTableParser(val config: ListConfig) {
 
   def parse(wiki: String): Iterable[Monument] = {
@@ -54,7 +59,7 @@ class WlxTableParser(val config: ListConfig) {
           photo = byIndex(image),
           gallery = byIndex(gallery),
           otherParams = otherParams,
-          listConfig =  Some(config))
+          listConfig = Some(config))
     }
   }
 }

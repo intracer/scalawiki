@@ -1,0 +1,50 @@
+{
+  "batchcomplete": "",
+  "limits": {
+    "categorymembers": 500
+  },
+  "query": {
+    "categorymembers": [
+      {
+        "pageid": 32067853,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Earth 2014"
+      },
+      {
+        "pageid": 38022619,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Earth 2015"
+      },
+      {
+        "pageid": 47503701,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Earth 2016"
+      },
+      {
+        "pageid": 56548968,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Earth 2017"
+      },
+      {
+        "pageid": 48732277,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Earth by country"
+      },
+      {
+        "pageid": 35058803,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Earth by user"
+      },
+      {
+        "pageid": 32855296,
+        "ns": 14,
+        "title": "Category:Highlighted content from Wiki Loves Earth"
+      },
+      {
+        "pageid": 25531257,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Earth 2013 in Ukraine"
+      }
+    ]
+  }
+}

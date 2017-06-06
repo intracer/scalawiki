@@ -1,6 +1,11 @@
 package org.scalawiki
 
-trait WithBot {
+// TODO better names
+trait HasBot {
+  def bot: MwBot
+}
+
+trait WithBot extends HasBot {
 
   def host: String
 
@@ -9,3 +14,4 @@ trait WithBot {
   }
 
 }
+

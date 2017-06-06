@@ -5,6 +5,11 @@ import org.scalawiki.wikitext.TemplateParser
 import org.scalawiki.wlx.dto.Monument
 import org.scalawiki.wlx.dto.lists.ListConfig
 
+/**
+  * Parses list of monuments in monument info templates format
+  *
+  * @param config
+  */
 class WlxTemplateParser(val config: ListConfig, val page: String) {
 
   def getMappedName(name: String) = config.namesMap.get(name)
@@ -68,7 +73,8 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
         removeComments(s.substring(0, start) + s.substring(end + 3, s.length))
       }
       else s.substring(0, start)
-    } else
+    } else {
       s
+    }
   }
 }

@@ -1,0 +1,75 @@
+{
+  "batchcomplete": "",
+  "limits": {
+    "categorymembers": 500
+  },
+  "query": {
+    "categorymembers": [
+      {
+        "pageid": 27963801,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Monuments by country"
+      },
+      {
+        "pageid": 20985998,
+        "ns": 14,
+        "title": "Category:Uploaded with WLM mobile"
+      },
+      {
+        "pageid": 21148964,
+        "ns": 14,
+        "title": "Category:Highlighted content from Wiki Loves Monuments"
+      },
+      {
+        "pageid": 30042897,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Monuments by user"
+      },
+      {
+        "pageid": 21884815,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Monuments not belonging to cultural heritage monuments"
+      },
+      {
+        "pageid": 13124336,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Monuments 2010"
+      },
+      {
+        "pageid": 13125213,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Monuments 2011"
+      },
+      {
+        "pageid": 20228731,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Monuments 2012"
+      },
+      {
+        "pageid": 26152515,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Monuments 2013"
+      },
+      {
+        "pageid": 30926172,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Monuments 2014"
+      },
+      {
+        "pageid": 42097914,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Monuments 2015"
+      },
+      {
+        "pageid": 48656297,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Monuments 2016"
+      },
+      {
+        "pageid": 55661878,
+        "ns": 14,
+        "title": "Category:Images from Wiki Loves Monuments 2017"
+      }
+    ]
+  }
+}

@@ -13,6 +13,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.io.Source
 
+/**
+  * Converts links to Wikimedia Commons files to short links (with file id) and tries to add image author and license
+  */
 object ShortLinksBot {
   val bot = MwBot.fromHost(MwBot.commons)
 
@@ -27,29 +30,30 @@ object ShortLinksBot {
     bot.run(action).map(_.headOption)
   }
 
-  def getPageLicense(page: Page): String = {
-    val id = page.id.get
-    val text = page.revisions.head.content.get
+  def getPageLicense(page: Page): Option[String] = {
+    for (id <- page.id;
+         text <- page.revisions.headOption.flatMap(_.content)) yield {
 
-    val author = Image.getAuthorFromPage(text)
+      val author = Image.getAuthorFromPage(text)
 
-    val license = text
-      .split("\\s|\\||\\{|\\}")
-      .map(_.toLowerCase)
-      .find { s =>
-        s.startsWith("cc-") ||
-          s.startsWith("gfdl") ||
-          s.startsWith("wikimapia")
-      }
-      .getOrElse("???")
+      val license = text
+        .split("\\s|\\||\\{|\\}")
+        .map(_.toLowerCase)
+        .find { s =>
+          s.startsWith("cc-") ||
+            s.startsWith("gfdl") ||
+            s.startsWith("wikimapia")
+        }
+        .getOrElse("???")
 
-    val readableLicense = license
-      .replace("cc-by-sa-", "CC BY-SA ")
-      .replace("cc-zero", "CC0 1.0")
-      .replace("gfdl-self", "GFDL")
-      .replace("wikimapia", "CC BY-SA 3.0")
+      val readableLicense = license
+        .replace("cc-by-sa-", "CC BY-SA ")
+        .replace("cc-zero", "CC0 1.0")
+        .replace("gfdl-self", "GFDL")
+        .replace("wikimapia", "CC BY-SA 3.0")
 
-    s"https://commons.wikimedia.org/?curid=$id © $author, $readableLicense"
+      s"https://commons.wikimedia.org/?curid=$id © $author, $readableLicense"
+    }
   }
 
   def getLineInfo(line: String): Future[String] = {
@@ -57,7 +61,7 @@ object ShortLinksBot {
     val title = line.substring(s).trim
 
     getPage(title).map { page =>
-      page.map(getPageLicense).getOrElse("Error with " + title)
+      page.flatMap(getPageLicense).getOrElse("Error with " + title)
     }
   }
 
@@ -66,7 +70,7 @@ object ShortLinksBot {
     val start = replaced.indexOf("File:")
     if (start >= 0) {
       val decoded = URLDecoder.decode(replaced.substring(start), "UTF-8")
-      getPage(decoded.trim).map(_.map(getPageLicense).getOrElse(line))
+      getPage(decoded.trim).map(_.flatMap(getPageLicense).getOrElse(line))
     }
     else Future.successful(line)
   }

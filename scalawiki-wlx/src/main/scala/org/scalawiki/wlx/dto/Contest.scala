@@ -24,7 +24,7 @@ case class Contest(
                     endDate: String = "",
                     uploadConfigs: Seq[UploadConfig] = Seq.empty,
                     specialNominations: Seq[SpecialNomination] = Seq.empty,
-                    rating: Boolean = false) {
+                    rating: Boolean = false) extends HasImagesCategory {
 
   def campaign = contestType.code + "-" + country.code
 
@@ -33,7 +33,7 @@ case class Contest(
   /**
     * @return Name of category containing contest images
     */
-  def category: String = s"Category:Images from $name".replaceAll(" ", "_")
+  override def imagesCategory: String = s"Category:Images from $name".replaceAll(" ", "_")
 
   /**
     * @return name of template that monument lists consist of

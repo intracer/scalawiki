@@ -143,7 +143,7 @@ object ImageDB {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def create(contest: Contest, imageQuery: ImageQuery, monumentDb: Option[MonumentDB]): Future[ImageDB] = {
-    imageQuery.imagesFromCategoryAsync(contest.category, contest).map {
+    imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest).map {
       images => new ImageDB(contest, images, monumentDb)
     }
   }

@@ -57,7 +57,7 @@ class MessageBot(val conf: Config) extends ActionLibrary with QueryLibrary {
 
   def fetchUsers(userListPage: String): Future[Seq[User]] = {
     for {
-      userPages <- bot.run(whatLinksHere(userListPage, Namespace.USER))
+      userPages <- bot.run(pageLinks(userListPage, Namespace.USER))
       userInfos <- bot.run(userProps(userPagesToUserNames(userPages)))
     } yield pagesToUsers(userInfos).collect { case u: User => u }
   }

@@ -5,7 +5,7 @@ import org.scalawiki.dto.User
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
 import org.scalawiki.dto.cmd.query.list.{AllUsers, AuProp, ListParam}
-import org.scalawiki.util.{Command, MockBotSpec}
+import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
@@ -30,7 +30,7 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
           }}"""
 
       val commands = Seq(
-        new Command(Map("action" -> "query", "list" -> queryType, "continue" -> ""), response1)
+        new HttpStub(Map("action" -> "query", "list" -> queryType, "continue" -> ""), response1)
       )
 
       val bot = getBot(commands: _*)
@@ -83,7 +83,7 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
         "auprop" -> "registration|editcount|blockinfo",
         "continue" -> "")
 
-      val bot = getBot(Seq(new Command(query, response1)): _*)
+      val bot = getBot(Seq(new HttpStub(query, response1)): _*)
 
       val action =
         Action(
@@ -141,8 +141,8 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
       val query = Map("action" -> "query", "list" -> queryType)
 
       val commands = Seq(
-        new Command(query + ("continue" -> ""), response1),
-        new Command(query ++ Map("aufrom" -> "! ! !", "continue" -> "-||"), response2)
+        new HttpStub(query + ("continue" -> ""), response1),
+        new HttpStub(query ++ Map("aufrom" -> "! ! !", "continue" -> "-||"), response2)
       )
 
       val bot = getBot(commands: _*)

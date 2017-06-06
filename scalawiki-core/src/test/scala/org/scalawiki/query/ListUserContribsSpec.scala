@@ -5,7 +5,7 @@ import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
 import org.scalawiki.dto.cmd.query.list.{ListParam, UcUser, UserContribs}
 import org.scalawiki.dto.{Page, Revision, User}
-import org.scalawiki.util.{Command, MockBotSpec}
+import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
@@ -38,7 +38,7 @@ class ListUserContribsSpec extends Specification with MockBotSpec {
 
       val query = Map("action" -> "query", "list" -> queryType, "ucuser" -> "Catrope", "continue" -> "")
       val commands = Seq(
-        new Command(query, response1)
+        new HttpStub(query, response1)
       )
 
       val bot = getBot(commands: _*)
