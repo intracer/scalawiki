@@ -3,6 +3,7 @@ import sbt.Keys._
 val akkaV = "2.4.18"
 val sprayV = "1.3.4"
 val specsV = "3.7.2"
+val scalajsReactV = ""
 
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
@@ -38,11 +39,11 @@ lazy val scalawiki =
     .settings(commonSettings)
     .dependsOn(
       `scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `scalawiki-sql`,
-      `http-extensions`, `scalawiki-webui`
+      `http-extensions`, `scalawiki-web-ui-server`, `scalawiki-web-ui-client`
     )
     .aggregate(
       `scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `scalawiki-sql`,
-      `http-extensions`, `scalawiki-webui`
+      `http-extensions`, `scalawiki-web-ui-server`, `scalawiki-web-ui-client`
     )
 
 lazy val `scalawiki-core` =
@@ -120,8 +121,38 @@ lazy val `http-extensions` =
       "org.scalacheck" %% "scalacheck" % "1.11.3" % Test
     ))
 
-lazy val `scalawiki-webui` =
-  (project in file("scalawiki-webui"))
+lazy val `scalawiki-web-ui-server` =
+  (project in file("scalawiki-web-ui/server"))
     .settings(commonSettings: _*)
     .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
     .enablePlugins(SbtTwirl)
+
+lazy val `scalawiki-web-ui-client` =
+  (project in file("scalawiki-web-ui/client"))
+    .settings(commonSettings: _*)
+    .settings(scalaJSUseMainModuleInitializer := true)
+    .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
+    .enablePlugins(ScalaJSPlugin)
+
+
+
+/** Dependencies only used by the JS project (note the use of %%% instead of %%) */
+val scalajsDependencies = Def.setting(Seq(
+  "com.github.japgolly.scalajs-react" %%% "core" % versions.scalajsReact,
+  "com.github.japgolly.scalajs-react" %%% "extra" % versions.scalajsReact,
+  "com.github.japgolly.scalacss" %%% "ext-react" % versions.scalaCSS,
+  "me.chrons" %%% "diode" % versions.diode,
+  "me.chrons" %%% "diode-react" % versions.diode,
+  "org.scala-js" %%% "scalajs-dom" % versions.scalaDom,
+  "com.lihaoyi" %%% "utest" % versions.uTest % Test
+))
+
+/** Dependencies for external JS libs that are bundled into a single .js file according to dependency order */
+val jsDependencies = Def.setting(Seq(
+  "org.webjars.bower" % "react" % versions.react / "react-with-addons.js" minified "react-with-addons.min.js" commonJSName "React",
+  "org.webjars.bower" % "react" % versions.react / "react-dom.js" minified "react-dom.min.js" dependsOn "react-with-addons.js" commonJSName "ReactDOM",
+  "org.webjars" % "jquery" % versions.jQuery / "jquery.js" minified "jquery.min.js",
+  "org.webjars" % "bootstrap" % versions.bootstrap / "bootstrap.js" minified "bootstrap.min.js" dependsOn "jquery.js",
+  "org.webjars" % "chartjs" % versions.chartjs / "Chart.js" minified "Chart.min.js",
+  "org.webjars" % "log4javascript" % versions.log4js / "js/log4javascript_uncompressed.js" minified "js/log4javascript.js"
+))

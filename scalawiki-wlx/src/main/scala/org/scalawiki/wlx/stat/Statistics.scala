@@ -64,7 +64,7 @@ class Statistics(contest: Contest,
     * @param total whether to fetch image database that holds images of all monuments from the contest, regardless of when they where uploaded
     * @return asynchronously returned contest data
     */
-  def gatherData(total: Boolean = false): Future[ContestStat] = {
+  def gatherData(total: Boolean): Future[ContestStat] = {
 
     val (monumentDb, monumentDbOld) = (
       Some(MonumentDB.getMonumentDb(contest, monumentQuery)),
@@ -115,7 +115,7 @@ class Statistics(contest: Contest,
           currentYear(data.contest, data.currentYearImageDb, data)
           regionalStat(data.contest, data.dbsByYear, data.currentYearImageDb, totalImageDb, data)
         }
-    }
+    }.failed.map(println)
   }
 
   def articleStatistics(monumentDb: MonumentDB) = {
@@ -136,7 +136,7 @@ class Statistics(contest: Contest,
     */
   def currentYear(contest: Contest, imageDb: ImageDB, stat: ContestStat) = {
 
-    new SpecialNominations(contest, imageDb).specialNominations()
+    //new SpecialNominations(contest, imageDb).specialNominations()
 
     new AuthorsStat().authorsStat(imageDb, bot, stat.monumentDbOld)
 
@@ -185,7 +185,7 @@ class Statistics(contest: Contest,
 
     val authorsStat = new AuthorsStat()
 
-    val idsStat = monumentDb.map(db => new MonumentsPicturedByRegion(stat, uploadImages = true)).getOrElse("")
+    val idsStat = monumentDb.map(db => new MonumentsPicturedByRegion(stat, uploadImages = true).asText).getOrElse("")
 
     val authorsContributed = authorsStat.authorsContributed(imageDbs, Some(totalImageDb), monumentDb)
 
@@ -240,28 +240,23 @@ class Statistics(contest: Contest,
     //      "Погребище", "Тульчин", "Хмільник", "Шаргород", "Ямпіль")
 
     val cities = Seq(
-      "Березань",
-      "Богуслав",
-      "Боярка",
-      "Буча",
-      "Васильків",
-      "Вишгород",
-      "Вишневе",
-      "Ірпінь",
-      "Кагарлик",
-      "Миронівка",
-      "Обухів",
-      "Переяслав-Хмельницький",
-      "Прип'ять",
-      "Ржищів",
-      "Сквира",
-      "Славутич",
-      "Тараща",
-      "Тетіїв",
-      "Узин",
-      "Українка",
-      "Чорнобиль",
-      "Яготин")
+      "Ананьїв",
+      "Арциз",
+      "Балта",
+      "Березівка",
+      "Біляївка",
+      "Болград",
+      "Вилкове",
+      "Кілія",
+      "Кодима",
+      "Подільськ",
+      "Котовськ",
+      "Рені",
+      "Роздільна",
+      "Татарбунари",
+      "Теплодар",
+      "Южне"
+    )
 
     val monumentDb = imageDb.monumentDb.get
 
@@ -272,7 +267,7 @@ class Statistics(contest: Contest,
 
     def cityShort(city: String) = cities.find(city.contains).getOrElse("").split(" ")(0)
 
-    def page(city: String) = "User:Ilya/Київська область/" + city
+    def page(city: String) = "User:Ilya/Одеська область/" + city
 
     all.groupBy(m => cityShort(m.city.getOrElse(""))).foreach {
       case (city, monuments) =>
@@ -291,7 +286,7 @@ class Statistics(contest: Contest,
     }
 
     val list = cities.map(city => s"#[[${page(city)}|$city]]").mkString("\n")
-    ukWiki.page("User:Ilya/Київська область").edit(list)
+    ukWiki.page("User:Ilya/Одеська область").edit(list)
   }
 
   def articleStatistics(monumentDb: MonumentDB, imageDb: ImageDB) = {
@@ -365,72 +360,11 @@ class Statistics(contest: Contest,
 
 }
 
-case class StatConfig(campaign: String,
-                      years: Seq[Int] = Nil,
-                      regions: Seq[String] = Nil,
-                      exceptRegions: Seq[String] = Nil,
-                      cities: Seq[String] = Nil,
-                      exceptCities: Seq[String] = Nil)
 
 object Statistics {
 
-  import com.concurrentthought.cla.{Args, Opt}
-
-  val argsDefs = Args(
-    "Statistics [options]",
-    Seq(
-      Opt.seq[Int]("[,]")(
-        name = "year",
-        flags = Seq("-y", "-year"),
-        help = "contest year."
-      ) { s: String => Try(s.toInt) },
-      Opt.string(
-        name = "campaign",
-        flags = Seq("-campaign"),
-        help = "upload campaign, like wlm-ua",
-        requiredFlag = true
-      ),
-      Opt.seqString("[,]")(
-        name = "region",
-        flags = Seq("-region"),
-        help = "region code"
-      ),
-      Opt.seqString("[,]")(
-        name = "except regions",
-        flags = Seq("-exceptregion"),
-        help = "except region codes"
-      ),
-      Opt.seqString("[,]")(
-        name = "cities",
-        flags = Seq("-city"),
-        help = "cities"
-      ),
-      Opt.seqString("[,]")(
-        name = "except cities",
-        flags = Seq("-exceptcity"),
-        help = "except cities"
-      )
-    )
-  )
-
-  def parse(args: Seq[String]): StatConfig = {
-    val parsed = argsDefs.parse(args)
-
-    if (parsed.handleErrors()) sys.exit(1)
-    if (parsed.handleHelp()) sys.exit(0)
-
-    StatConfig(
-      campaign = parsed.values("campaign").asInstanceOf[String],
-      years = parsed.values.getOrElse("year", Seq(DateTime.now.year().get())).asInstanceOf[Seq[Int]].sorted,
-      regions = parsed.values.getOrElse("region", Nil).asInstanceOf[Seq[String]],
-      exceptRegions = parsed.values.getOrElse("exceptregion", Nil).asInstanceOf[Seq[String]],
-      cities = parsed.values.getOrElse("city", Nil).asInstanceOf[Seq[String]],
-      exceptCities = parsed.values.getOrElse("exceptcity", Nil).asInstanceOf[Seq[String]]
-    )
-  }
-
   def main(args: Array[String]) {
-    val cfg = parse(args)
+    val cfg = StatParams.parse(args)
 
     val contest = Contest.byCampaign(cfg.campaign).get
       .copy(year = cfg.years.last)
