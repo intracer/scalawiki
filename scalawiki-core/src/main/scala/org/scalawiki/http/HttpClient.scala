@@ -1,5 +1,7 @@
 package org.scalawiki.http
 
+import akka.actor.ActorSystem
+import org.scalawiki.MwBot
 import spray.http._
 
 import scala.concurrent.Future
@@ -32,4 +34,6 @@ trait HttpClient {
 
 object HttpClient {
   val JSON_UTF8 = ContentType(MediaTypes.`application/json`, Some(HttpCharsets.`UTF-8`))
+
+  def get(system: ActorSystem = MwBot.system): HttpClient = new HttpClientSpray(system)
 }

@@ -1,7 +1,7 @@
 package org.scalawiki.bots.vote
 
 import org.jsoup.Jsoup
-import org.scalawiki.http.HttpClientSpray
+import org.scalawiki.http.{HttpClient, HttpClientSpray}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -9,7 +9,7 @@ import scala.concurrent.Future
 
 object VoteList {
 
-  val http = new HttpClientSpray()
+  val http = HttpClient.get()
 
   val host = "vote.wikimedia.org"
 

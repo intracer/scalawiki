@@ -15,7 +15,7 @@ case class Institution(id: Long,
                        numStudents: Int)
 
 object InstitutionList {
-  val http = new HttpClientAkka()
+  val http = new HttpClientSpray()
 
   val host = "uk.wikipedia.org"
 

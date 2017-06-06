@@ -7,7 +7,7 @@ import akka.pattern.ask
 import org.jsoup.Jsoup
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.{LoginResponse, MwException, Page, Site}
-import org.scalawiki.http.{HttpClient, HttpClientSpray}
+import org.scalawiki.http.HttpClient
 import org.scalawiki.json.MwReads._
 import org.scalawiki.query.{DslQuery, PageQuery, SinglePageQuery}
 import play.api.libs.json._
@@ -75,7 +75,7 @@ object MediaWikiVersion {
 }
 
 class MwBotImpl(val site: Site,
-                val http: HttpClient = new HttpClientSpray(MwBot.system),
+                val http: HttpClient = HttpClient.get(MwBot.system),
                 val system: ActorSystem = MwBot.system
                ) extends MwBot {
 
@@ -248,7 +248,7 @@ object MwBot {
 
   def create(site: Site,
              loginInfo: Option[LoginInfo],
-             http: HttpClientSpray = new HttpClientSpray(MwBot.system)
+             http: HttpClient = HttpClient.get(MwBot.system)
             ): MwBot = {
     val bot = new MwBotImpl(site, http)
 
@@ -263,14 +263,14 @@ object MwBot {
 
   def fromHost(host: String,
                loginInfo: Option[LoginInfo] = LoginInfo.fromEnv(),
-               http: HttpClientSpray = new HttpClientSpray(MwBot.system)
+               http: HttpClient = HttpClient.get(MwBot.system)
               ): MwBot = {
     fromSite(Site.host(host), loginInfo, http)
   }
 
   def fromSite(site: Site,
                loginInfo: Option[LoginInfo] = LoginInfo.fromEnv(),
-               http: HttpClientSpray = new HttpClientSpray(MwBot.system)
+               http: HttpClient = HttpClient.get(MwBot.system)
               ): MwBot = {
     Await.result(cache(site.domain) {
       Future {

@@ -11,7 +11,7 @@ object PartnersBot {
   val ourDomain = "wikilovesearth.org.ua"
   val partnersLinkPage = "http://" + ourDomain + "/partners/"
 
-  val http = new HttpClientAkka()
+  val http = new HttpClientSpray()
 
   def main(args: Array[String]): Unit = {
     http.get(partnersLinkPage).foreach {

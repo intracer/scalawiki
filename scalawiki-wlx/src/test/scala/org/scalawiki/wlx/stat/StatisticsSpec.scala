@@ -60,7 +60,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
       val images = Seq.empty[Image]
 
       val stat = mockedStat(monuments, images)
-      val data = stat.gatherData().await
+      val data = stat.gatherData(false).await
 
       data.contest === contest
       data.monumentDb.map(_.monuments) === Some(monuments)
@@ -97,7 +97,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
 
     val stat = new Statistics(contest, None, monumentQuery, imageQuery, bot)
 
-    stat.gatherData() must throwA[RuntimeException].await
+    stat.gatherData(false) must throwA[RuntimeException].await
   }
 
   def monument(id: String, name: String) =

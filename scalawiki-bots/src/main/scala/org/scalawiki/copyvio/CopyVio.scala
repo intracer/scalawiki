@@ -4,7 +4,7 @@ import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{PageIdsParam, Query}
-import org.scalawiki.http.HttpClientSpray
+import org.scalawiki.http.{HttpClient, HttpClientSpray}
 import org.scalawiki.query.QueryLibrary
 import org.scalawiki.{MwBot, WithBot}
 import play.api.libs.functional.syntax._
@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 
-class CopyVio(val http: HttpClientSpray) {
+class CopyVio(val http: HttpClient) {
 
   def sourcesReads: Reads[Seq[CopyVioSource]] = {
 
@@ -72,7 +72,7 @@ object CopyVio extends WithBot with QueryLibrary {
   }
 
   def main(args: Array[String]) {
-    val copyVio = new CopyVio(new HttpClientAkka())
+    val copyVio = new CopyVio(HttpClient.get())
 
     val revIdsFuture = articlesWithTemplate("Вікіпедія любить пам'ятки")
     recover(revIdsFuture)
