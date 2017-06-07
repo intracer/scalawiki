@@ -28,8 +28,8 @@ class CampaignList {
   def contestsFromCategory(parent: String): Future[Seq[Contest]] = {
     for (cats <- categoryMembers(parent)) yield
       for (cat <- cats;
-           contest <- CountryParser.fromCategoryName(cat.title)
-      ) yield contest
+           contest <- CountryParser.fromCategoryName(cat.title))
+        yield contest
   }
 
   def categoriesMembers(categories: Seq[String]): Future[Seq[Seq[Page]]] =

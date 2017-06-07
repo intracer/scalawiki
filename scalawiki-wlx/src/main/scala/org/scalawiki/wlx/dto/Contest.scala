@@ -28,7 +28,13 @@ case class Contest(
 
   def campaign = contestType.code + "-" + country.code
 
-  def name = s"${contestType.name} $year in ${country.name}"
+  def name = s"${contestType.name} $year" + countryName.fold("")(" in " + _)
+
+  def countryName: Option[String] =
+    if (country != NoAdmDivision())
+      Some(country.name)
+    else
+      None
 
   /**
     * @return Name of category containing contest images
