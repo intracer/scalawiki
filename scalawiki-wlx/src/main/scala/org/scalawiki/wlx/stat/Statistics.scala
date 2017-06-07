@@ -112,9 +112,8 @@ class Statistics(contest: Contest,
     gatherData(total = true).map {
       data =>
         for (totalImageDb <- data.totalImageDb) {
-         // currentYear(data.contest, data.currentYearImageDb, data)
-          //regionalStat(data.contest, data.dbsByYear, data.currentYearImageDb, totalImageDb, data)
-          byRegionDnabb(totalImageDb)
+          currentYear(data.contest, data.currentYearImageDb, data)
+          regionalStat(data.contest, data.dbsByYear, data.currentYearImageDb, totalImageDb, data)
         }
     }.failed.map(println)
   }
@@ -126,7 +125,6 @@ class Statistics(contest: Contest,
   def toMassMessage(users: Iterable[String]) = {
     users.map(name => s"{{#target:User talk:$name}}")
   }
-
 
   /**
     * Outputs current year reports.
@@ -240,35 +238,25 @@ class Statistics(contest: Contest,
     //      "Калинівка", "Козятин", "Ладижин", "Липовець", "Могилів-Подільський", "Немирів",
     //      "Погребище", "Тульчин", "Хмільник", "Шаргород", "Ямпіль")
 
-    val cities = Seq(
-      "Ананьїв",
-      "Арциз",
-      "Балта",
-      "Березівка",
-      "Біляївка",
-      "Болград",
-      "Вилкове",
-      "Кілія",
-      "Кодима",
-      "Подільськ",
-      "Котовськ",
-      "Рені",
-      "Роздільна",
-      "Татарбунари",
-      "Теплодар",
-      "Южне"
+    val cities = Seq("Баштанка",
+      "Вознесенськ",
+      "Нова Одеса",
+      "Новий Буг",
+      "Очаків",
+      "Снігурівка",
+      "Южноукраїнськ"
     )
 
     val monumentDb = imageDb.monumentDb.get
 
     val all = monumentDb.monuments.filter { m =>
       val city = m.city.getOrElse("").replaceAll("\\[", " ").replaceAll("\\]", " ")
-      m.photo.isDefined && cities.map(_ + " ").exists(city.contains) && !city.contains("район")
+      m.photo.isDefined && cities.map(_ + " ").exists(city.contains) && !city.contains("район") && Set("48").contains(m.regionId)
     }
 
     def cityShort(city: String) = cities.find(city.contains).getOrElse("").split(" ")(0)
 
-    def page(city: String) = "User:Ilya/Одеська область/" + city
+    def page(city: String) = "User:Ilya/Миколаївська область/" + city
 
     all.groupBy(m => cityShort(m.city.getOrElse(""))).foreach {
       case (city, monuments) =>
@@ -287,7 +275,7 @@ class Statistics(contest: Contest,
     }
 
     val list = cities.map(city => s"#[[${page(city)}|$city]]").mkString("\n")
-    ukWiki.page("User:Ilya/Одеська область").edit(list)
+    ukWiki.page("User:Ilya/Миколаївська область").edit(list)
   }
 
   def articleStatistics(monumentDb: MonumentDB, imageDb: ImageDB) = {

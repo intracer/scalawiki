@@ -4,6 +4,7 @@ import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.Query
 import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.{Namespace, Page}
+import org.scalawiki.wlx.CampaignList.categoriesMembers
 import org.scalawiki.wlx.dto.{Contest, ContestType, HasImagesCategory}
 import org.scalawiki.{HasBot, MwBot, WithBot}
 
@@ -33,19 +34,23 @@ class CampaignList {
 
   def categoriesMembers(categories: Seq[String]): Future[Seq[Seq[Page]]] =
     Future.sequence(categories.map(categoryMembers))
+
 }
 
 object CampaignList extends CampaignList with WithBot {
 
   override def host = MwBot.commons
 
-  def main(args: Array[String]): Unit = {
-    val types = ContestType.all
-    val contestCats = types.map(_.imagesCategory)
+  def yearsContests(types: Seq[ContestType] = ContestType.all): Future[Seq[Contest]] = {
+    for (yearsCats <- categoriesMembers(types.map(_.imagesCategory)))
+      yield for (contest <- titles(yearsCats).flatMap(CountryParser.fromCategoryName))
+        yield contest
+  }
 
-    for (yearCats <- categoriesMembers(contestCats)) {
-      val imageCats = titles(yearCats).filter(CountryParser.isContestCategory)
-      for (campaignCats <- categoriesMembers(imageCats)) {
+
+  def main(args: Array[String]): Unit = {
+    for (yearContests <- yearsContests()) {
+      for (campaignCats <- categoriesMembers(yearContests.map(_.imagesCategory))) {
         titles(campaignCats).foreach(println)
       }
     }
