@@ -7,7 +7,7 @@ val scalajsReactV = ""
 
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
-  version := "0.5-M5",
+  version := "0.5-SNAPSHOT",
   scalaVersion := "2.11.11",
 
   libraryDependencies ++= Seq(
@@ -75,7 +75,7 @@ lazy val `scalawiki-bots` =
       "org.apache.poi" % "poi-scratchpad" % "3.13",
       "org.apache.poi" % "poi-ooxml" % "3.13",
       "fr.opensagres.xdocreport" % "org.apache.poi.xwpf.converter.xhtml" % "1.0.5",
-      "com.typesafe.play" % "twirl-api_2.11" % "1.3.0",
+      "com.typesafe.play" % "twirl-api_2.11" % "1.1.1",
       "com.github.tototoshi" %% "scala-csv" % "1.3.4"
     ))
     .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
@@ -117,7 +117,7 @@ lazy val `http-extensions` =
       "io.spray" %% "spray-client" % sprayV,
       "io.spray" %% "spray-json" % "1.3.2",
       "com.typesafe.akka" %% "akka-actor" % akkaV,
-      "com.typesafe.play" %% "twirl-api" % "1.3.0",
+      "com.typesafe.play" %% "twirl-api" % "1.1.1",
       "org.scalacheck" %% "scalacheck" % "1.11.3" % Test
     ))
 
