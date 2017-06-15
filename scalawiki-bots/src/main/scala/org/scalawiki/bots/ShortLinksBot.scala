@@ -1,13 +1,13 @@
-package org.scalawiki.wlx
+package org.scalawiki.bots
 
 import java.net.URLDecoder
 
 import org.scalawiki.MwBot
-import org.scalawiki.dto.{Image, Page}
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.prop.rvprop.{Content, RvProp}
 import org.scalawiki.dto.cmd.query.prop.{Prop, Revisions}
 import org.scalawiki.dto.cmd.query.{Query, TitlesParam}
+import org.scalawiki.dto.{Image, Page}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
