@@ -8,9 +8,15 @@ import org.scalawiki.dto.markup.Gallery
 import org.scalawiki.wikitext.TemplateParser
 
 case class ImageMetadata(data: Map[String, String]) {
-  def camera = data.get("Model")
-  def date = data.get("DateTime")
+
+  val pattern = "yyyy:MM:dd HH:mm:ss"
+  val df = org.joda.time.format.DateTimeFormat.forPattern(pattern)
+
+  def camera: Option[String] = data.get("Model")
+
+  def date: Option[DateTime] = data.get("DateTime").map(df.parseDateTime)
 }
+
 case class Image(title: String,
                  url: Option[String] = None,
                  pageUrl: Option[String] = None,

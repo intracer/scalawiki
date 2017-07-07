@@ -191,7 +191,6 @@ case class CategoryInfoReads() extends WikiResponseReads with WikiReads[Category
   override def reads(json: JsValue): JsResult[CategoryInfo] = categoryRead.reads(json)
 }
 
-
 case class UserContributorReads() extends WikiResponseReads with WikiReads[UserContrib] {
 
   import play.api.libs.functional.syntax._
