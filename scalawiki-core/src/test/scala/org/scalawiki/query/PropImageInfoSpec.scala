@@ -2,8 +2,13 @@ package org.scalawiki.query
 
 import org.scalawiki.Timestamp
 import org.scalawiki.dto.Page
-import org.scalawiki.util.{MockBotSpec, HttpStub}
+import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.scalawiki.dto.Image
+import org.scalawiki.dto.cmd.Action
+import org.scalawiki.dto.cmd.query.{PageIdsParam, Query}
+import org.scalawiki.dto.cmd.query.prop.{ImageInfo, Prop}
+import org.scalawiki.dto.cmd.query.prop.iiprop.{IiProp, Metadata}
+import org.scalawiki.util.TestUtils.resourceAsString
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
@@ -11,26 +16,26 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
 
   def response1(generatorPrefix: String = "cm") =
     s"""  {
-      |    "query": {
-      |      "pages": {
-      |      "32885574": {
-      |      "pageid": 32885574,
-      |      "ns": 6,
-      |      "title": "File:Dovbush-rocks 01.JPG",
-      |      "imagerepository": "local",
-      |      "imageinfo": [
-      |    {
-      |      "timestamp": "2014-05-20T20:54:33Z",
-      |      "user": "Taras r",
-      |      "size": 4270655,
-      |      "width": 3648,
-      |      "height": 2736,
-      |      "url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Dovbush-rocks_01.JPG",
-      |      "descriptionurl": "https://commons.wikimedia.org/wiki/File:Dovbush-rocks_01.JPG"
-      |    }]}}},
-      |    "continue": {
-      |    "g${generatorPrefix}continue": "file|44454d45524749373631312e4a50470a44454d45524749373631312e4a5047|32763876",
-      |    "continue": "g${generatorPrefix}continue||"}}
+       |    "query": {
+       |      "pages": {
+       |      "32885574": {
+       |      "pageid": 32885574,
+       |      "ns": 6,
+       |      "title": "File:Dovbush-rocks 01.JPG",
+       |      "imagerepository": "local",
+       |      "imageinfo": [
+       |    {
+       |      "timestamp": "2014-05-20T20:54:33Z",
+       |      "user": "Taras r",
+       |      "size": 4270655,
+       |      "width": 3648,
+       |      "height": 2736,
+       |      "url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Dovbush-rocks_01.JPG",
+       |      "descriptionurl": "https://commons.wikimedia.org/wiki/File:Dovbush-rocks_01.JPG"
+       |    }]}}},
+       |    "continue": {
+       |    "g${generatorPrefix}continue": "file|44454d45524749373631312e4a50470a44454d45524749373631312e4a5047|32763876",
+       |    "continue": "g${generatorPrefix}continue||"}}
     """.stripMargin
 
   val response2 =
@@ -119,6 +124,31 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
 
       result(0) === page1
       result(1) === page2
+    }
+
+    "get metadata" in {
+      val s = resourceAsString("/org/scalawiki/query/imageMetadata.json")
+
+      val commands = Seq(
+        new HttpStub(Map("action" -> "query", "format" -> "json", "prop" -> "imageinfo", "pageids" -> "58655318",
+          "iiprop" -> "metadata", "continue" -> ""), s)
+      )
+
+      val bot = getBot(commands: _*)
+
+      val future = bot.run(Action(Query(PageIdsParam(Seq(58655318)), Prop(ImageInfo(IiProp(Metadata))))))
+      val result = future.await
+
+      result must have size 1
+      val page = result.head
+
+      page.images must have size 1
+      val image = page.images.head
+
+      image.metadata.isDefined === true
+      val metadata = image.metadata.get
+      metadata.camera === Some("Canon EOS 450D")
+      metadata.date === Some("2017:04:22 12:26:44")
     }
   }
 }

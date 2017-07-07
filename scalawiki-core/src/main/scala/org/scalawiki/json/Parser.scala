@@ -137,7 +137,7 @@ class Parser(val action: Action) {
   }
 
   def getCategoryInfo(pageJson: JsObject): Option[CategoryInfo] =
-    pageJson.validate(Parser.categorieInfoReads()).getOrElse(None)
+    pageJson.validate(Parser.categoryInfoReads()).getOrElse(None)
 
   def parseGlobalUserInfo(json: JsObject) = {
     if (!json.value.contains("missing")) {
@@ -172,9 +172,9 @@ class Parser(val action: Action) {
 
 object Parser {
 
-  private val pageReads: Reads[Page] = PageRead()
+  private val pageReads: Reads[Page] = PageReads()
 
-  private val userReads: Reads[User] = UserRead()
+  private val userReads: Reads[User] = UserReads()
 
   private def revisionsReads(pageId: Long): Reads[Seq[Revision]] = {
     implicit val revisionReads: Reads[Revision] = RevisionRead(Some(pageId))
@@ -182,21 +182,21 @@ object Parser {
   }
 
   private def imageInfoReads(pageId: Option[Long], title: Option[String]): Reads[Seq[Image]] = {
-    implicit val imageReads: Reads[Image] = ImageRead(title = title, pageId = pageId)
+    implicit val imageReads: Reads[Image] = ImageReads(title = title, pageId = pageId)
     (__ \ "imageinfo").read[Seq[Image]]
   }
 
   private def imageReads(): Reads[Seq[Image]] = {
-    implicit val imageReads: Reads[Image] = ImageRead(None, None)
+    implicit val imageReads: Reads[Image] = ImageReads(None, None)
     (__ \ "images").read[Seq[Image]]
   }
 
-  private def categorieInfoReads(): Reads[Option[CategoryInfo]] = {
-    implicit val categoryInfoReads: Reads[CategoryInfo] = CategoryInfoRead()
+  private def categoryInfoReads(): Reads[Option[CategoryInfo]] = {
+    implicit val categoryInfoReads: Reads[CategoryInfo] = CategoryInfoReads()
     (__ \ "categoryinfo").readNullable[CategoryInfo]
   }
 
-  private def globalUserInfoReads: Reads[GlobalUserInfo] = GlobalUserInfoRead()
+  private def globalUserInfoReads: Reads[GlobalUserInfo] = GlobalUserInfoReads()
 
-  private def userContribReads: Reads[UserContrib] = UserContributorRead()
+  private def userContribReads: Reads[UserContrib] = UserContributorReads()
 }

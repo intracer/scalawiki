@@ -43,7 +43,7 @@ trait TitleParameter {
   val title: Option[String] = None
 }
 
-case class PageRead() extends WikiResponseReads with WikiReads[Page] {
+case class PageReads() extends WikiResponseReads with WikiReads[Page] {
 
   import play.api.libs.functional.syntax._
 
@@ -59,7 +59,7 @@ case class PageRead() extends WikiResponseReads with WikiReads[Page] {
   override def reads(json: JsValue): JsResult[Page] = pageRead.reads(json)
 }
 
-case class UserRead() extends WikiResponseReads with WikiReads[User] {
+case class UserReads() extends WikiResponseReads with WikiReads[User] {
 
   import play.api.libs.functional.syntax._
 
@@ -117,7 +117,7 @@ case class RevisionRead(override val pageId: Option[Long])
   override def reads(json: JsValue): JsResult[Revision] = revisionRead.reads(json)
 }
 
-case class GlobalUserInfoRead() extends WikiResponseReads with WikiReads[GlobalUserInfo] {
+case class GlobalUserInfoReads() extends WikiResponseReads with WikiReads[GlobalUserInfo] {
 
   import play.api.libs.functional.syntax._
 
@@ -144,12 +144,19 @@ case class GlobalUserInfoRead() extends WikiResponseReads with WikiReads[GlobalU
   override def reads(json: JsValue): JsResult[GlobalUserInfo] = globalInfoReads.reads(json)
 }
 
-case class ImageRead(override val pageId: Option[Long] = None, override val title: Option[String] = None)
+case class ImageReads(override val pageId: Option[Long] = None, override val title: Option[String] = None)
   extends WikiResponseReads
     with WikiReads[Image]
     with PageIdParameter with TitleParameter {
 
   import play.api.libs.functional.syntax._
+
+  def readKv(js: JsObject): (String, String) = {
+    (js \ "name").as[String] -> (js \ "value" match {
+      case JsDefined(JsString(str)) => str
+      case JsDefined(JsNumber(n)) if n.isValidInt => n.toString
+    })
+  }
 
   private val imagesRead: Reads[Image] = (
     (title match {
@@ -163,15 +170,14 @@ case class ImageRead(override val pageId: Option[Long] = None, override val titl
       (__ \ "height").readNullable[Int] ~
       (__ \ "url").readNullable[String] ~
       (__ \ "descriptionurl").readNullable[String] ~
-      Reads.pure[Option[Long]](pageId)
-    //      (__ \ "extmetadata" \ "ImageDescription" \ "value").readNullable[String] and
-    //      (__ \ "extmetadata" \ "Artist" \ "value").readNullable[String]
+      Reads.pure[Option[Long]](pageId) ~
+      (__ \ "metadata").readNullable[Seq[JsObject]].map(_.map(_.map(readKv).toMap))
     ) (Image.basic _)
 
   override def reads(json: JsValue): JsResult[Image] = imagesRead.reads(json)
 }
 
-case class CategoryInfoRead() extends WikiResponseReads with WikiReads[CategoryInfo] {
+case class CategoryInfoReads() extends WikiResponseReads with WikiReads[CategoryInfo] {
 
   import play.api.libs.functional.syntax._
 
@@ -186,7 +192,7 @@ case class CategoryInfoRead() extends WikiResponseReads with WikiReads[CategoryI
 }
 
 
-case class UserContributorRead() extends WikiResponseReads with WikiReads[UserContrib] {
+case class UserContributorReads() extends WikiResponseReads with WikiReads[UserContrib] {
 
   import play.api.libs.functional.syntax._
 

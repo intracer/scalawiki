@@ -7,6 +7,10 @@ import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Gallery
 import org.scalawiki.wikitext.TemplateParser
 
+case class ImageMetadata(data: Map[String, String]) {
+  def camera = data.get("Model")
+  def date = data.get("DateTime")
+}
 case class Image(title: String,
                  url: Option[String] = None,
                  pageUrl: Option[String] = None,
@@ -18,7 +22,8 @@ case class Image(title: String,
                  year: Option[String] = None,
                  date: Option[DateTime] = None,
                  monumentId: Option[String] = None,
-                 pageId: Option[Long] = None
+                 pageId: Option[Long] = None,
+                 metadata: Option[ImageMetadata] = None
                 ) extends Ordered[Image] {
 
   def compare(that: Image) = title.compareTo(that.title)
@@ -106,7 +111,8 @@ object Image {
             height: Option[Int],
             url: Option[String],
             pageUrl: Option[String],
-            pageId: Option[Long])
+            pageId: Option[Long],
+            metadata: Option[Map[String, String]] = None)
   = new Image(
     title = title,
     date = timestamp,
@@ -116,7 +122,8 @@ object Image {
     height = height,
     url = url,
     pageUrl = pageUrl,
-    pageId = pageId)
+    pageId = pageId,
+    metadata = metadata.map(ImageMetadata.apply))
 
   def gallery(images: Seq[String], descriptions: Seq[String] = Seq.empty): String =
     Gallery.asWiki(images, descriptions)

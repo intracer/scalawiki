@@ -11,7 +11,7 @@ import play.api.libs.json._
 class WikiReadsSpec extends Specification {
 
   "Wiki Reads" should {
-    val pageRead: WikiReads[Page] = PageRead()
+    val pageRead: WikiReads[Page] = PageReads()
     val pageJson = """{"pageid": 123, "ns": 4, "title": "PageTitle" }"""
     "transform to Page object" in {
       val pageObject: Page = pageRead.reads(Json.parse(pageJson)).get
@@ -19,7 +19,7 @@ class WikiReadsSpec extends Specification {
       pageObject.id === (Some(123))
     }
 
-    val userRead: WikiReads[User] = UserRead()
+    val userRead: WikiReads[User] = UserReads()
     val userJson = """{"userid": 4, "name":"wikiUser", "editcount":56}"""
     "transform to User object" in {
       val userObject = userRead.reads(Json.parse(userJson)).get
@@ -46,7 +46,7 @@ class WikiReadsSpec extends Specification {
       revisionObject.timestamp === Some(DateTime.parse("2016-11-04T08:20:40Z"))
     }
 
-    val globalUserInfoRead: WikiReads[GlobalUserInfo] = GlobalUserInfoRead()
+    val globalUserInfoRead: WikiReads[GlobalUserInfo] = GlobalUserInfoReads()
     val globalUserInfoJson =
       """{"home":"home",
          "name":"name",
@@ -68,7 +68,7 @@ class WikiReadsSpec extends Specification {
       globalUserInfo.merged(0).registration === DateTime.parse("2016-11-07T19:30:40Z")
     }
 
-    val imageRead: WikiReads[Image] = ImageRead()
+    val imageRead: WikiReads[Image] = ImageReads()
     val imageJson: String = """{"user":"user", "size":50, "width": 60, "height":60,"title":"page title"}"""
     "transform to Image without pageId either title to object" in {
       val image: Image = imageRead.reads(Json.parse(imageJson)).get
@@ -78,7 +78,7 @@ class WikiReadsSpec extends Specification {
       image.height === Some(60)
     }
 
-    val imageReadWithParameters: WikiReads[Image] = ImageRead(Some(1), Some("title"))
+    val imageReadWithParameters: WikiReads[Image] = ImageReads(Some(1), Some("title"))
     "transform to Image with pageId and title to object" in {
       val image: Image = imageReadWithParameters.reads(Json.parse(imageJson)).get
       image.author === None
@@ -87,7 +87,7 @@ class WikiReadsSpec extends Specification {
       image.height === Some(60)
     }
 
-    val categoryInfoRead: WikiReads[CategoryInfo] = CategoryInfoRead()
+    val categoryInfoRead: WikiReads[CategoryInfo] = CategoryInfoReads()
     val categoryInfoJson = """{"size": 45, "pages": 5, "files": 7, "subcats": 3}"""
     "transform to CategoryInfo to object" in {
       val categoryInfo: CategoryInfo = categoryInfoRead.reads(Json.parse(categoryInfoJson)).get
@@ -96,7 +96,7 @@ class WikiReadsSpec extends Specification {
       categoryInfo.subCats === 3
     }
 
-    val userContributorRead: WikiReads[UserContrib] = UserContributorRead()
+    val userContributorRead: WikiReads[UserContrib] = UserContributorReads()
     val userContribJson =
       """{"userid": 1,
          "user" : "wikiuser",
