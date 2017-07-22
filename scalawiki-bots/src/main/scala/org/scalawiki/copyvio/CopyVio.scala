@@ -16,39 +16,26 @@ import scala.util.control.NonFatal
 
 class CopyVio(val http: HttpClient) {
 
-  def sourcesReads: Reads[Seq[CopyVioSource]] = {
+  implicit val sourceReads =
+    ((__ \ "url").read[String] ~
+      (__ \ "confidence").read[Double] ~
+      (__ \ "violation").read[String] ~
+      (__ \ "skipped").read[Boolean]) (CopyVioSource.apply _)
 
-    implicit val sourceReads: Reads[CopyVioSource] =
-      (
-        (__ \ "url").read[String] ~
-          (__ \ "confidence").read[Double] ~
-          (__ \ "violation").read[String] ~
-          (__ \ "skipped").read[Boolean]
-        ) (CopyVioSource.apply _)
+  val sourcesReads = (__ \ "sources").read[Seq[CopyVioSource]]
 
-    (__ \ "sources").read[Seq[CopyVioSource]]
-  }
+  def baseUrl(project: String = "wikipedia", lang: String = "uk") =
+    s"https://tools.wmflabs.org/copyvios/api.json?version=1&action=search&project=$project&lang=$lang"
 
-  val baseUrl = "https://tools.wmflabs.org/copyvios/api.json?version=1&action=search&"
+  def search(title: String, lang: String = "uk", project: String = "wikipedia") =
+    http.get(baseUrl(project, lang) + s"&title=$title") map parseResponse
 
-  def search(title: String, lang: String = "uk", project: String = "wikipedia") = {
-    val url = s"project=$project&lang=$lang&title=$title"
-    val sources = http.get(baseUrl + url) map parseResponse
-    sources
-  }
+  def searchByRevId(revId: Long, lang: String = "uk", project: String = "wikipedia") =
+    http.get(baseUrl(project, lang) + s"&oldid=$revId") map parseResponse
 
-  def searchByRevId(revId: Long, lang: String = "uk", project: String = "wikipedia") = {
+  def parseResponse(body: String) = Json.parse(body).validate(sourcesReads).get
 
-    val url = s"project=$project&lang=$lang&oldid=$revId"
-
-    http.get(baseUrl + url) map parseResponse
-  }
-
-  def parseResponse(body: String): Seq[CopyVioSource] = {
-    Json.parse(body).validate(sourcesReads).get
-  }
 }
-
 
 object CopyVio extends WithBot with QueryLibrary {
 
@@ -57,16 +44,7 @@ object CopyVio extends WithBot with QueryLibrary {
   def pagesByIds(ids: Seq[Long]): Future[Seq[Page]] = {
     import org.scalawiki.dto.cmd.query.prop.rvprop._
 
-    val action = Action(Query(
-      PageIdsParam(ids),
-      Prop(
-        Info(),
-        Revisions(
-          RvProp(Ids)
-          //          ,RvLimit("max")
-        )
-      )
-    ))
+    val action = Action(Query(PageIdsParam(ids), Prop(Info(), Revisions(RvProp(Ids) /*,RvLimit("max")*/))))
 
     bot.run(action)
   }
