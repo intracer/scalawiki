@@ -3,7 +3,7 @@ package org.scalawiki.bots.stat.zachte
 import akka.actor.ActorSystem
 import org.jsoup.Jsoup
 import org.scalawiki.MwBot
-import org.scalawiki.http.{HttpClient, HttpClientSpray}
+import org.scalawiki.http.HttpClient
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global

@@ -1,11 +1,11 @@
 package org.scalawiki
 
+import akka.http.scaladsl.model.{ContentType, HttpCharsets, MediaTypes}
 import org.scalawiki.dto.MwException
 import org.scalawiki.util.{HttpStub, MockBotSpec, TestUtils}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.ThrownExpectations
 import org.specs2.mutable.Specification
-import spray.http.{ContentType, HttpCharsets, MediaTypes}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

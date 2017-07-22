@@ -1,8 +1,8 @@
 package org.scalawiki.http
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.model._
 import org.scalawiki.MwBot
-import spray.http._
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -28,12 +28,12 @@ trait HttpClient {
 
   def postFile(url: String, params: Map[String, String], fileParam: String, filename: String): Future[HttpResponse]
 
-  def getBody(response: HttpResponse): String
+  def getBody(response: HttpResponse): Future[String]
 
 }
 
 object HttpClient {
-  val JSON_UTF8 = ContentType(MediaTypes.`application/json`, Some(HttpCharsets.`UTF-8`))
+  val JSON_UTF8 = ContentType(MediaTypes.`application/json`)
 
-  def get(system: ActorSystem = MwBot.system): HttpClient = new HttpClientSpray(system)
+  def get(system: ActorSystem = MwBot.system): HttpClient = new HttpClientAkka(system)
 }

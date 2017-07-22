@@ -19,7 +19,7 @@ trait QueryLibrary {
   def imagesByGenerator(generator: Generator, withUrl: Boolean = false): Action = {
     import org.scalawiki.dto.cmd.query.prop._
 
-    val iiProps = Seq(Timestamp, iiprop.User, iiprop.Size) ++ (if (withUrl) Seq(iiprop.Url) else Seq.empty)
+    val iiProps = Seq(Timestamp, iiprop.User, iiprop.Size, iiprop.Metadata) ++ (if (withUrl) Seq(iiprop.Url) else Seq.empty)
 
     Action(Query(
       Prop(
