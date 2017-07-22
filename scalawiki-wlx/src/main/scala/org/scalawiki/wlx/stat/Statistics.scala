@@ -68,8 +68,8 @@ class Statistics(contest: Contest,
 
     val (monumentDb, monumentDbOld) = (
       Some(MonumentDB.getMonumentDb(contest, monumentQuery)),
-      Option(contest.rating).filter(_ == true).map { _ =>
-        MonumentDB.getMonumentDb(contest, monumentQuery, date = Some(new DateTime(2016, 8, 31, 23, 59)))
+      Option(contest.newObjectRating).filter(_ == true).map { _ =>
+        MonumentDB.getMonumentDb(contest, monumentQuery, date = Some(new DateTime(2017, 4, 30, 23, 59)))
       }
     )
 
@@ -94,22 +94,18 @@ class Statistics(contest: Contest,
 
   def getOldImagesMonumentDb(monumentDb: Option[MonumentDB], monumentDbOld: Option[MonumentDB],
                              totalImages: Option[ImageDB], imageDB: ImageDB): Option[MonumentDB] = {
-    monumentDbOld.flatMap {
-      db =>
+    for (mDb <- monumentDb;
+         mdbOld <- monumentDbOld;
+         total <- totalImages.orElse(Some(new ImageDB(contest, Seq.empty)))) yield {
+      val oldIds = mdbOld.monuments.filter(_.photo.isDefined).map(_.id).toSet ++
+        total.images.filterNot(ti => imageDB.images.exists(i => i.pageId.exists(ti.pageId.contains))).flatMap(_.monumentId)
 
-        for (mDb <- monumentDb;
-             mdbOld <- monumentDbOld;
-             total <- totalImages.orElse(Some(new ImageDB(contest, Seq.empty)))) yield {
-          val oldIds = mdbOld.monuments.filter(_.photo.isDefined).map(_.id).toSet ++
-            (total.images.flatMap(_.monumentId).toSet -- imageDB.images.flatMap(_.monumentId).toSet)
-
-          new MonumentDB(contest, mDb.monuments.filter(m => oldIds.contains(m.id)))
-        }
+      new MonumentDB(contest, mDb.monuments.filter(m => oldIds.contains(m.id)))
     }
   }
 
-  def init(): Unit = {
-    gatherData(total = true).map {
+  def init(total: Boolean): Unit = {
+    gatherData(total = total).map {
       data =>
         for (totalImageDb <- data.totalImageDb) {
           currentYear(data.contest, data.currentYearImageDb, data)
@@ -356,7 +352,7 @@ object Statistics {
     val cfg = StatParams.parse(args)
 
     val contest = Contest.byCampaign(cfg.campaign).get
-      .copy(year = cfg.years.last)
+      .copy(year = cfg.years.last, newObjectRating = cfg.newObjectRating)
 
     val stat = new Statistics(
       contest,
@@ -365,6 +361,6 @@ object Statistics {
       cfg = Some(cfg)
     )
 
-    stat.init()
+    stat.init(total = false)
   }
 }

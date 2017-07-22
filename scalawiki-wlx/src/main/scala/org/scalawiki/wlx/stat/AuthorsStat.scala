@@ -14,7 +14,7 @@ class AuthorsStat(val uploadImages: Boolean = false) {
 
   def authorsStat(imageDb: ImageDB, bot: MwBot, oldMonumentDb: Option[MonumentDB] = None) {
     new AuthorMonuments(imageDb,
-      rating = imageDb.contest.rating,
+      newObjectRating = imageDb.contest.newObjectRating,
       gallery = false,
       commons = Some(bot),
       oldMonumentDb = oldMonumentDb

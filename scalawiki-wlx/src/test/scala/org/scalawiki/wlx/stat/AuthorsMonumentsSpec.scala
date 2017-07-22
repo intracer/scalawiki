@@ -229,7 +229,7 @@ class AuthorsMonumentsSpec extends Specification {
 
       val db = new ImageDB(contest, images2, Some(mDb))
 
-      val table = new AuthorMonuments(db, rating = true, oldMonumentDb = Some(mDb)).table
+      val table = new AuthorMonuments(db, newObjectRating = Some(3), oldMonumentDb = Some(mDb)).table
       val data = table.data
 
       data.size === 6
@@ -266,7 +266,7 @@ class AuthorsMonumentsSpec extends Specification {
 
       val db = new ImageDB(contest, images2, Some(mDb))
 
-      val table = new AuthorMonuments(db, rating = true, oldMonumentDb = Some(new MonumentDB(contest, Seq.empty))).table
+      val table = new AuthorMonuments(db, newObjectRating = Some(3), oldMonumentDb = Some(new MonumentDB(contest, Seq.empty))).table
       val data = table.data
 
       data.size === 6
@@ -312,7 +312,7 @@ class AuthorsMonumentsSpec extends Specification {
 
       val db = new ImageDB(contest, images2, Some(mDb))
 
-      val table = new AuthorMonuments(db, rating = true, oldMonumentDb = Some(oldMdb)).table
+      val table = new AuthorMonuments(db, newObjectRating = Some(3), oldMonumentDb = Some(oldMdb)).table
       val data = table.data
 
       data.size === 6

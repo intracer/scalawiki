@@ -9,7 +9,8 @@ case class StatConfig(campaign: String,
                       regions: Seq[String] = Nil,
                       exceptRegions: Seq[String] = Nil,
                       cities: Seq[String] = Nil,
-                      exceptCities: Seq[String] = Nil)
+                      exceptCities: Seq[String] = Nil,
+                      newObjectRating: Option[Int] = None)
 
 object StatParams {
 
@@ -24,7 +25,8 @@ object StatParams {
       Opt.seqString("[,]")(name = "region", flags = Seq("-region"), help = "region code"),
       Opt.seqString("[,]")(name = "except regions", flags = Seq("-exceptregion"), help = "except region codes"),
       Opt.seqString("[,]")(name = "cities", flags = Seq("-city"), help = "cities"),
-      Opt.seqString("[,]")(name = "except cities", flags = Seq("-exceptcity"), help = "except cities")
+      Opt.seqString("[,]")(name = "except cities", flags = Seq("-exceptcity"), help = "except cities"),
+      Opt.int(name = "new object rating", flags = Seq("-rating"), help = "new object rating")
     )
   )
 
@@ -43,6 +45,4 @@ object StatParams {
       exceptCities = parsed.values.getOrElse("exceptcity", Nil).asInstanceOf[Seq[String]]
     )
   }
-
-
 }

@@ -33,11 +33,11 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
   }
 
   "statistics" should {
-
+    val thisYear = DateTime.now.year().get()
     "parse campaign" in {
-      val year = DateTime.now.year().get()
+
       val cfg = StatParams.parse(Seq("-campaign", "wlm-ua"))
-      cfg === StatConfig("wlm-ua", Seq(year), Nil)
+      cfg === StatConfig("wlm-ua", Seq(thisYear), Nil)
     }
 
     "parse campaign with years" in {
@@ -50,7 +50,12 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
       cfg === StatConfig("wle-ua", Seq(2012, 2014, 2015, 2016), Nil)
     }
 
-    "parse campaign with regigons" in {
+    "parse new object rating" in {
+      val cfg = StatParams.parse(Seq("-campaign", "wle-ua", "-rating", "3"))
+      cfg === StatConfig("wle-ua", Seq(thisYear), Nil, newObjectRating = Some(3))
+    }
+
+    "parse campaign with regions" in {
       val cfg = StatParams.parse(Seq("-campaign", "wle-ua", "-year", "2012",  "-region", "01,02"))
       cfg === StatConfig("wle-ua", Seq(2012), Seq("01", "02"))
     }

@@ -38,8 +38,8 @@ object ReporterRegistry {
   def monumentDbStat(db: MonumentDB): String =
     new MonumentDbStat().getStat(Seq(db))
 
-  def authorsMonuments(imageDb: ImageDB, rating: Boolean = false): String =
-    new AuthorMonuments(imageDb, rating).asText
+  def authorsMonuments(imageDb: ImageDB, newObjectRating: Option[Int] = None): String =
+    new AuthorMonuments(imageDb, newObjectRating).asText
 
   def authorsImages(imageDb: ImageDB, monumentDb: Option[MonumentDB]): String =
     new AuthorsStat().authorsImages(imageDb._byAuthor.grouped, monumentDb)
