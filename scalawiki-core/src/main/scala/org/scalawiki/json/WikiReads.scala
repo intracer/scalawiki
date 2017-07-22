@@ -155,6 +155,7 @@ case class ImageReads(override val pageId: Option[Long] = None, override val tit
     (js \ "name").as[String] -> (js \ "value" match {
       case JsDefined(JsString(str)) => str
       case JsDefined(JsNumber(n)) if n.isValidInt => n.toString
+      case x => x.toString
     })
   }
 
