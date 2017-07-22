@@ -1,7 +1,7 @@
 package org.scalawiki.bots.vote
 
 import org.jsoup.Jsoup
-import org.scalawiki.http.{HttpClient, HttpClientSpray}
+import org.scalawiki.http.HttpClient
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global

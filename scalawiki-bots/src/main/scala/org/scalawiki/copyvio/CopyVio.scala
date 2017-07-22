@@ -4,7 +4,7 @@ import org.scalawiki.dto.Page
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{PageIdsParam, Query}
-import org.scalawiki.http.{HttpClient, HttpClientSpray}
+import org.scalawiki.http.HttpClient
 import org.scalawiki.query.QueryLibrary
 import org.scalawiki.{MwBot, WithBot}
 import play.api.libs.functional.syntax._

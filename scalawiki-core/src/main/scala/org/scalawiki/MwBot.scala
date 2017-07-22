@@ -2,18 +2,16 @@ package org.scalawiki
 
 import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
-import akka.io.IO
-import akka.pattern.ask
+import akka.http.scaladsl.model.Uri.Query
+import akka.http.scaladsl.model._
+import akka.stream.ActorMaterializer
 import org.jsoup.Jsoup
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.{LoginResponse, MwException, Page, Site}
-import org.scalawiki.http.HttpClient
+import org.scalawiki.http.{HttpClient, HttpClientAkka}
 import org.scalawiki.json.MwReads._
 import org.scalawiki.query.{DslQuery, PageQuery, SinglePageQuery}
 import play.api.libs.json._
-import spray.can.Http
-import spray.http._
-import spray.util._
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -85,6 +83,8 @@ class MwBotImpl(val site: Site,
 
   implicit val sys = system
 
+  implicit val materializer = ActorMaterializer()
+
   import system.dispatcher
 
   def host = site.domain
@@ -116,21 +116,21 @@ class MwBotImpl(val site: Site,
       "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json"
     ) ++ token.map("lgtoken" -> _)
 
-    http.post(apiUrl, loginParams).map { resp =>
-      val body = http.getBody(resp)
+    for (response <- http.post(apiUrl, loginParams);
+         body <- http.getBody(response)) yield {
 
-      resp.entity.toOption.map(_.contentType) match {
-        case Some(HttpClient.JSON_UTF8) =>
+      response.entity.contentType match {
+        case HttpClient.JSON_UTF8 =>
           val jsResult = Json.parse(body).validate(loginResponseReads)
           if (jsResult.isError) {
             throw new RuntimeException("Parsing failed: " + jsResult)
           } else {
             jsResult.get
           }
-        case x =>
+        case _ =>
           val html = Jsoup.parse(body)
           val details = html.select("code").first().text()
-          throw new MwException(resp.status.toString(), details)
+          throw MwException(response.status.toString(), details)
       }
     }
   }
@@ -170,7 +170,7 @@ class MwBotImpl(val site: Site,
     Json.parse(body).validate(reads)
 
   def parseResponse[T](reads: Reads[T], response: Future[HttpResponse]): Future[T] =
-    response map http.getBody map {
+    response flatMap http.getBody map {
       body =>
         parseJson(reads, body).getOrElse {
           throw parseJson(errorReads, body).get
@@ -178,8 +178,8 @@ class MwBotImpl(val site: Site,
     }
 
   override def getByteArray(url: String): Future[Array[Byte]] =
-    http.getResponse(url) map {
-      response => response.entity.data.toByteArray
+    http.getResponse(url) flatMap {
+      response => response.entity.toStrict(5 minutes).map(_.data.toArray)
     }
 
   override def post[T](reads: Reads[T], params: (String, String)*): Future[T] =
@@ -208,10 +208,10 @@ class MwBotImpl(val site: Site,
   }
 
   def getIndexUri(params: (String, String)*) =
-    Uri(indexUrl) withQuery (params ++ Seq("format" -> "json"): _*)
+    Uri(indexUrl) withQuery Query(params ++ Seq("format" -> "json"): _*)
 
   def getUri(params: (String, String)*) =
-    Uri(apiUrl) withQuery (params ++ Seq("format" -> "json"): _*)
+    Uri(apiUrl) withQuery Query(params ++ Seq("format" -> "json"): _*)
 
   override def get(params: Map[String, String]): Future[String] = {
     val uri: Uri = getUri(params)
@@ -223,16 +223,11 @@ class MwBotImpl(val site: Site,
   override def post(params: Map[String, String]): Future[String] = {
     val uri: Uri = Uri(apiUrl)
     log.info(s"$host POST url: $uri, params: $params")
-    http.postUri(uri, params ++ Map("format" -> "json")) map http.getBody
+    http.postUri(uri, params ++ Map("format" -> "json")) flatMap http.getBody
   }
 
   def getUri(params: Map[String, String]) =
-    Uri(apiUrl) withQuery (params ++ Map("format" -> "json"))
-
-  def shutdown(): Unit = {
-    IO(Http).ask(Http.CloseAll)(1.second).await
-    system.shutdown()
-  }
+    Uri(apiUrl) withQuery Query(params ++ Map("format" -> "json"))
 
   override def await[T](future: Future[T]) = Await.result(future, http.timeout)
 }
