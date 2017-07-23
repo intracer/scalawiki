@@ -3,7 +3,8 @@ import sbt.Keys._
 val akkaV = "2.4.18"
 val sprayV = "1.3.4"
 val specsV = "3.7.2"
-val scalajsReactV = ""
+
+fork in Test in ThisBuild := true
 
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
@@ -13,7 +14,7 @@ lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
     "org.specs2" %% "specs2-core" % specsV % Test,
     "org.specs2" %% "specs2-matcher-extra" % specsV % Test,
-    "org.specs2" % "specs2-mock_2.11" % specsV % Test,
+    "org.specs2" %% "specs2-mock" % specsV % Test,
     "com.google.jimfs" % "jimfs" % "1.1" % Test
   ),
 
@@ -39,12 +40,10 @@ lazy val scalawiki =
     .settings(commonSettings)
     .dependsOn(
       `scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `scalawiki-sql`,
-      `http-extensions`, `scalawiki-web-ui-server`, `scalawiki-web-ui-client`
-    )
+      `http-extensions`)
     .aggregate(
       `scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `scalawiki-sql`,
-      `http-extensions`, `scalawiki-web-ui-server`, `scalawiki-web-ui-client`
-    )
+      `http-extensions`)
 
 lazy val `scalawiki-core` =
   (project in file("scalawiki-core"))
@@ -71,12 +70,12 @@ lazy val `scalawiki-bots` =
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
       "com.github.pathikrit" %% "better-files-akka" % "2.15.0",
-      "com.concurrentthought.cla" %% "command-line-arguments" % "0.3.0",
+      "com.concurrentthought.cla" %% "command-line-arguments" % "0.4.0",
       "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
       "org.apache.poi" % "poi-scratchpad" % "3.13",
       "org.apache.poi" % "poi-ooxml" % "3.13",
       "fr.opensagres.xdocreport" % "org.apache.poi.xwpf.converter.xhtml" % "1.0.5",
-      "com.typesafe.play" % "twirl-api_2.11" % "1.1.1",
+      "com.typesafe.play" %% "twirl-api" % "1.1.1",
       "com.github.tototoshi" %% "scala-csv" % "1.3.4"
     ))
     .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
@@ -97,7 +96,7 @@ lazy val `scalawiki-wlx` =
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
       "com.github.wookietreiber" %% "scala-chart" % "0.5.0",
-      "com.concurrentthought.cla" %% "command-line-arguments" % "0.3.0"
+      "com.concurrentthought.cla" %% "command-line-arguments" % "0.4.0"
     ))
     .dependsOn(`scalawiki-core` % "compile->compile;test->test")
 
@@ -120,16 +119,3 @@ lazy val `http-extensions` =
       "com.typesafe.play" %% "twirl-api" % "1.1.1",
       "org.scalacheck" %% "scalacheck" % "1.11.3" % Test
     ))
-
-lazy val `scalawiki-web-ui-server` =
-  (project in file("scalawiki-web-ui/server"))
-    .settings(commonSettings: _*)
-    .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
-    .enablePlugins(SbtTwirl)
-
-lazy val `scalawiki-web-ui-client` =
-  (project in file("scalawiki-web-ui/client"))
-    .settings(commonSettings: _*)
-    .settings(scalaJSUseMainModuleInitializer := true)
-    .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
-    .enablePlugins(ScalaJSPlugin)
