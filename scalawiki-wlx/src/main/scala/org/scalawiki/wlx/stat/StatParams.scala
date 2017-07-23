@@ -25,8 +25,8 @@ object StatParams {
       Opt.seqString("[,]")(name = "region", flags = Seq("-region"), help = "region code"),
       Opt.seqString("[,]")(name = "except regions", flags = Seq("-exceptregion"), help = "except region codes"),
       Opt.seqString("[,]")(name = "cities", flags = Seq("-city"), help = "cities"),
-      Opt.seqString("[,]")(name = "except cities", flags = Seq("-exceptcity"), help = "except cities"),
-      Opt.int(name = "new object rating", flags = Seq("-rating"), help = "new object rating")
+      Opt.seqString("[,]")(name = "exceptcities", flags = Seq("-exceptcity"), help = "except cities"),
+      Opt.int(name = "rating", flags = Seq("-rating"), help = "new object rating")
     )
   )
 
@@ -42,7 +42,8 @@ object StatParams {
       regions = parsed.values.getOrElse("region", Nil).asInstanceOf[Seq[String]],
       exceptRegions = parsed.values.getOrElse("exceptregion", Nil).asInstanceOf[Seq[String]],
       cities = parsed.values.getOrElse("city", Nil).asInstanceOf[Seq[String]],
-      exceptCities = parsed.values.getOrElse("exceptcity", Nil).asInstanceOf[Seq[String]]
+      exceptCities = parsed.values.getOrElse("exceptcities", Nil).asInstanceOf[Seq[String]],
+      newObjectRating = parsed.values.get("rating").asInstanceOf[Option[Int]]
     )
   }
 }
