@@ -8,7 +8,7 @@ fork in Test in ThisBuild := true
 
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
-  version := "0.5-SNAPSHOT",
+  version := "0.5-M6",
   scalaVersion := "2.11.11",
 
   libraryDependencies ++= Seq(
