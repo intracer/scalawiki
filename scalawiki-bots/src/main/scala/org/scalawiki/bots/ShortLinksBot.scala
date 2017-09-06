@@ -17,9 +17,10 @@ import scala.io.Source
   * Converts links to Wikimedia Commons files to short links (with file id) and tries to add image author and license
   */
 object ShortLinksBot {
-  val bot = MwBot.fromHost(MwBot.commons)
+  val commons = MwBot.fromHost(MwBot.commons)
+  val ukWiki = MwBot.fromHost(MwBot.ukWiki)
 
-  def getPage(title: String): Future[Option[Page]] = {
+  def getPage(title: String): Future[Page] = {
     val action = Action(Query(
       TitlesParam(Seq(title)),
       Prop(
@@ -27,7 +28,16 @@ object ShortLinksBot {
       )
     ))
 
-    bot.run(action).map(_.headOption)
+
+    commons.run(action).flatMap { commonsPages =>
+      val commonsPage = commonsPages.head
+      if (commonsPage.missing) {
+        ukWiki.run(action).map(_.head)
+      } else Future.successful(commonsPage)
+    }
+      .recoverWith { case e =>
+        Future.successful(Page(title = "Error! " + e))
+      }
   }
 
   def getPageLicense(page: Page): Option[String] = {
@@ -61,7 +71,7 @@ object ShortLinksBot {
     val title = line.substring(s).trim
 
     getPage(title).map { page =>
-      page.flatMap(getPageLicense).getOrElse("Error with " + title)
+      getPageLicense(page).getOrElse("Error with " + title)
     }
   }
 
@@ -70,7 +80,9 @@ object ShortLinksBot {
     val start = replaced.indexOf("File:")
     if (start >= 0) {
       val decoded = URLDecoder.decode(replaced.substring(start), "UTF-8")
-      getPage(decoded.trim).map(_.flatMap(getPageLicense).getOrElse(line))
+      getPage(decoded.trim).map(page => getPageLicense(page).getOrElse(line)).recoverWith { case e =>
+        Future.successful("Error! " + e)
+      }
     }
     else Future.successful(line)
   }
