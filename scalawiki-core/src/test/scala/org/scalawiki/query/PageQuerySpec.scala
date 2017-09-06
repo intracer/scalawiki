@@ -45,6 +45,37 @@ class PageQuerySpec extends Specification {
     }
   }
 
+  "no page" in {
+
+    val response = """{
+                     |    "batchcomplete": "",
+                     |    "query": {
+                     |        "pages": {
+                     |            "-1": {
+                     |                "ns": 0,
+                     |                "title": "Absent",
+                     |                "missing": ""
+                     |            }
+                     |        }
+                     |    }
+                     |}""".stripMargin
+
+    val bot = getBot(new HttpStub(
+      Map(
+        "titles" -> "Absent",
+        "action" -> "query",
+        "prop" -> "info|revisions",
+        "continue" -> "", "rvlimit" -> "max",
+        "rvprop" -> "ids|content|user|comment"), response))
+
+    val future = bot.pagesByTitle(Set("Absent")).revisions(Set.empty[Int], Set("ids", "content", "user", "comment"))
+    val result = future.await
+    result must have size 1
+    result.head === Page(None, 0, "Absent", missing = true)
+
+
+  }
+
   def getBot(commands: HttpStub*) = {
     val http = new TestHttpClient(host, mutable.Queue(commands: _*))
 
