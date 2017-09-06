@@ -26,7 +26,7 @@ class MonumentsPicturedByRegionSpec extends Specification {
 
     new ContestStat(contest, startYear,
       Some(monumentDb),
-      imagesDbs.last,
+      imagesDbs.lastOption,
       Some(imageDb(images.flatten)),
       imagesDbs.init)
   }

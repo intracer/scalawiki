@@ -25,7 +25,7 @@ import scala.util.Try
 case class ContestStat(contest: Contest,
                        startYear: Int,
                        monumentDb: Option[MonumentDB],
-                       currentYearImageDb: ImageDB,
+                       currentYearImageDb: Option[ImageDB],
                        totalImageDb: Option[ImageDB],
                        dbsByYear: Seq[ImageDB] = Seq.empty,
                        monumentDbOld: Option[MonumentDB] = None)
@@ -76,9 +76,9 @@ class Statistics(contest: Contest,
     for (byYear <- Future.sequence(contests.map(contestImages(monumentDb)));
          totalImages <- if (total) imagesByTemplate(monumentDb) else Future.successful(None)
     ) yield {
-      val currentYearImages = byYear.find(_.contest.year == currentYear).get
+      val currentYearImages = byYear.find(_.contest.year == currentYear)
 
-      val mDbOld: Option[MonumentDB] = getOldImagesMonumentDb(monumentDb, monumentDbOld, totalImages, currentYearImages)
+      val mDbOld: Option[MonumentDB] = currentYearImages.flatMap(getOldImagesMonumentDb(monumentDb, monumentDbOld, totalImages, _))
 
       ContestStat(contest, startYear.getOrElse(contest.year), monumentDb, currentYearImages, totalImages, byYear, mDbOld)
     }
@@ -108,8 +108,8 @@ class Statistics(contest: Contest,
     gatherData(total = total).map {
       data =>
         for (totalImageDb <- data.totalImageDb) {
-          currentYear(data.contest, data.currentYearImageDb, data)
-          regionalStat(data.contest, data.dbsByYear, data.currentYearImageDb, totalImageDb, data)
+          data.currentYearImageDb.foreach(imageDb => currentYear(data.contest, imageDb, data))
+          regionalStat(data.contest, data.dbsByYear, totalImageDb, data)
         }
     }.failed.map(println)
   }
@@ -170,13 +170,12 @@ class Statistics(contest: Contest,
 
   def regionalStat(wlmContest: Contest,
                    imageDbs: Seq[ImageDB],
-                   currentYear: ImageDB,
                    totalImageDb: ImageDB,
                    stat: ContestStat) {
 
-    val contest = currentYear.contest
+    val contest = totalImageDb.contest
     val categoryName = contest.contestType.name + " in " + contest.country.name
-    val monumentDb = currentYear.monumentDb
+    val monumentDb = totalImageDb.monumentDb
 
     val authorsStat = new AuthorsStat()
 

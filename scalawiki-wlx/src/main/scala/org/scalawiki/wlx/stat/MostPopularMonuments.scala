@@ -10,7 +10,7 @@ class MostPopularMonuments(val stat: ContestStat) extends Reporter {
       monumentDb.contest,
       imageDbs.headOption.map(_.contest.year).getOrElse(monumentDb.contest.year),
       Some(monumentDb),
-      imageDbs.lastOption.orElse(totalImageDb).get,
+      imageDbs.lastOption.orElse(totalImageDb),
       totalImageDb,
       imageDbs//.headOption.map(_ => imageDbs.init).getOrElse(Seq.empty)
     ))

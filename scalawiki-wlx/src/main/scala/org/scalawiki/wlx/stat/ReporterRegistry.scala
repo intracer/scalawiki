@@ -9,16 +9,16 @@ class ReporterRegistry(stat: ContestStat) {
     stat.monumentDb.map(RR.monumentDbStat)
 
   def authorsMonuments: String =
-    RR.authorsMonuments(stat.currentYearImageDb)
+    RR.authorsMonuments(stat.currentYearImageDb.get)
 
   def authorsImages: String =
-    RR.authorsImages(stat.currentYearImageDb, stat.monumentDb)
+    RR.authorsImages(stat.currentYearImageDb.get, stat.monumentDb)
 
   def authorsContributed: String =
     RR.authorsContributed(stat.dbsByYear, stat.totalImageDb, stat.monumentDb)
 
   def specialNominations(): String =
-    RR.specialNominations(stat.currentYearImageDb)
+    RR.specialNominations(stat.currentYearImageDb.get)
 
   def mostPopularMonuments: String =
     new MostPopularMonuments(stat).asText
@@ -27,7 +27,7 @@ class ReporterRegistry(stat: ContestStat) {
     new MonumentsPicturedByRegion(stat).asText
 
   def galleryByRegionAndId: Option[String] =
-    RR.galleryByRegionAndId(stat.monumentDb, stat.currentYearImageDb)
+    RR.galleryByRegionAndId(stat.monumentDb, stat.currentYearImageDb.get)
 
   def withArticles: Option[String] =
     RR.withArticles(stat.monumentDb)
