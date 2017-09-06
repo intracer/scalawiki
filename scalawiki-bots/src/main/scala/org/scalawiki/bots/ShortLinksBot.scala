@@ -11,6 +11,7 @@ import org.scalawiki.dto.{Image, Page}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import spray.util.pimpFuture
 import scala.io.Source
 
 /**
@@ -27,7 +28,6 @@ object ShortLinksBot {
         Revisions(RvProp(Content))
       )
     ))
-
 
     commons.run(action).flatMap { commonsPages =>
       val commonsPage = commonsPages.head
@@ -69,7 +69,6 @@ object ShortLinksBot {
   def getLineInfo(line: String): Future[String] = {
     val s = line.indexOf("File:")
     val title = line.substring(s).trim
-
     getPage(title).map { page =>
       getPageLicense(page).getOrElse("Error with " + title)
     }
@@ -88,10 +87,15 @@ object ShortLinksBot {
   }
 
   def main(args: Array[String]) {
-    val lines = Source.fromFile("arch.txt").getLines()
+    val lines = Source.fromFile("arch.txt").getLines().toSeq
 
-    Future.sequence(lines.map(getFileSubstring)).map { updated =>
-      println(updated.mkString("\n"))
+
+    val parallel = false
+    val updatedLines = if (parallel) {
+      Future.sequence(lines.map(getFileSubstring)).await
+    } else {
+      lines.map(line => getFileSubstring(line).await)
     }
+    println(updatedLines.mkString("\n"))
   }
 }
