@@ -70,7 +70,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
       data.contest === contest
       data.monumentDb.map(_.monuments) === Some(monuments)
       data.currentYearImageDb.get.images === images
-      data.dbsByYear === Seq(data.currentYearImageDb)
+      data.dbsByYear === data.currentYearImageDb.toSeq
       data.totalImageDb.isEmpty === true
     }
   }
@@ -85,7 +85,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     data.contest === contest
     data.monumentDb.map(_.monuments) === Some(monuments)
     data.currentYearImageDb.get.images === images
-    data.dbsByYear === Seq(data.currentYearImageDb)
+    data.dbsByYear === data.currentYearImageDb.toSeq
     data.totalImageDb.isEmpty === true
   }
 
