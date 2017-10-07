@@ -1,6 +1,7 @@
 package org.scalawiki
 
 import akka.actor.ActorSystem
+import org.scalawiki.http.HttpClientAkka
 import org.specs2.mutable.Specification
 
 import scala.concurrent.{Await, Future}
@@ -15,13 +16,19 @@ class BaseIntegrationSpec extends Specification {
   val system: ActorSystem = ActorSystem()
   val http = new HttpClientAkka(system)
 
-  def getUkWikiBot = MwBot.get(ukWiki)
+  def getUkWikiBot: MwBot = MwBot.fromHost(ukWiki)
 
-  def getCommonsBot = MwBot.get(commons)
+  def getCommonsBot: MwBot = MwBot.fromHost(commons)
 
-  def login(wiki: MwBot, username: String = LoginInfo.login, passwd: String = LoginInfo.password) =
+  def login(wiki: MwBot, username: String, passwd: String): String =
     await(wiki.login(username, passwd))
 
-  def await[T](future: Future[T]) = Await.result(future, http.timeout)
+  def login(wiki: MwBot): String = {
+    LoginInfo.fromEnv().map { loginInfo =>
+      await(wiki.login(loginInfo.login, loginInfo.password))
+    }.getOrElse("No LoginInfo")
+  }
+
+  def await[T](future: Future[T]): T = Await.result(future, http.timeout)
 
 }
