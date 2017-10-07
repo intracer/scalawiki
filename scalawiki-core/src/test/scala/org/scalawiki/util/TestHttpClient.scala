@@ -52,7 +52,7 @@ class TestHttpClient(val host: String, commandsParam: Seq[HttpStub]) extends Mat
 
   override def postUri(url: Uri, params: Map[String, String]): Future[HttpResponse] = getResponse(url, params)
 
-  override def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse] = ???
+  override def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse] = getResponse(url, params)
 
   override def postFile(url: String, params: Map[String, String], fileParam: String, filename: String): Future[HttpResponse] = ???
 
