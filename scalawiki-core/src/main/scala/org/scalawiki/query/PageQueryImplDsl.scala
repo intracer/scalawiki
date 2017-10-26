@@ -3,14 +3,15 @@ package org.scalawiki.query
 import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
-import org.scalawiki.dto.{Namespace, Page}
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.edit._
 import org.scalawiki.dto.cmd.query._
 import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
+import org.scalawiki.dto.{Namespace, Page}
 import org.scalawiki.json.MwReads._
+import retry.Success
 
 import scala.concurrent.Future
 
@@ -124,10 +125,16 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
 
     bot.log.info(s"${bot.host} edit page: $page, summary: $summary")
 
-    if (multi)
-      bot.postMultiPart(editResponseReads, params)
-    else
-      bot.post(editResponseReads, params)
+    def performEdit(): Future[String] = {
+      if (multi)
+        bot.postMultiPart(editResponseReads, params)
+      else
+        bot.post(editResponseReads, params)
+    }
+
+    import scala.concurrent.ExecutionContext.Implicits.global
+    implicit def stringSuccess: Success[String] = Success(_ == "Success")
+    retry.Backoff()(odelay.Timer.default)(() => performEdit())
   }
 
   override def upload(filename: String,

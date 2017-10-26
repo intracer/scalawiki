@@ -22,7 +22,8 @@ lazy val commonSettings = Seq(
     "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
     "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
     Resolver.jcenterRepo,
-    Resolver.bintrayRepo("rick-beton", "maven")
+    Resolver.bintrayRepo("rick-beton", "maven"),
+    Resolver.bintrayRepo("softprops", "maven")
   ),
   scalacOptions ++= Seq("-Ybackend:GenBCode"),
 
@@ -61,7 +62,8 @@ lazy val `scalawiki-core` =
         "ch.qos.logback" % "logback-classic" % "1.1.3",
         "org.sweble.wikitext" % "swc-engine" % "2.0.0" exclude("org.jsoup", "jsoup"),
         "commons-codec" % "commons-codec" % "1.10",
-        "org.jsoup" % "jsoup" % "1.8.3"
+        "org.jsoup" % "jsoup" % "1.8.3",
+        "me.lessis" %% "retry" % "0.2.0"
       )
     }).dependsOn(`http-extensions`)
 
