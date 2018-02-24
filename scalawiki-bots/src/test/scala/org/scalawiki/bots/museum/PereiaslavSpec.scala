@@ -2,7 +2,7 @@ package org.scalawiki.bots.museum
 
 import java.nio.file.FileSystem
 
-import better.files.Cmds._
+import better.files.Dsl._
 import better.files.{File => SFile}
 import com.google.common.jimfs.{Configuration, Jimfs}
 import com.typesafe.config.{Config, ConfigFactory}

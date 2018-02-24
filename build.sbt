@@ -1,8 +1,10 @@
 import sbt.Keys._
 
-val akkaV = "2.4.18"
+val akkaV = "2.5.7"
+val akkaHttpV = "10.0.11"
 val sprayV = "1.3.4"
 val specsV = "3.7.2"
+val twirlV = "1.3.13"
 
 fork in Test in ThisBuild := true
 
@@ -55,7 +57,7 @@ lazy val `scalawiki-core` =
         "io.spray" %% "spray-caching" % sprayV,
         "com.typesafe.play" %% "play-json" % "2.5.12",
         "com.typesafe.akka" %% "akka-actor" % akkaV,
-        "com.typesafe.akka" %% "akka-http" % "10.0.6",
+        "com.typesafe.akka" %% "akka-http" % akkaHttpV,
         "com.typesafe" % "config" % "1.3.0",
         "com.iheart" %% "ficus" % "1.2.3",
         "com.github.nscala-time" %% "nscala-time" % "2.10.0",
@@ -71,13 +73,13 @@ lazy val `scalawiki-bots` =
   (project in file("scalawiki-bots"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
-      "com.github.pathikrit" %% "better-files-akka" % "2.15.0",
+      "com.github.pathikrit" %% "better-files-akka" % "3.4.0",
       "com.concurrentthought.cla" %% "command-line-arguments" % "0.4.0",
       "org.xwiki.commons" % "xwiki-commons-blame-api" % "6.4.1",
       "org.apache.poi" % "poi-scratchpad" % "3.13",
       "org.apache.poi" % "poi-ooxml" % "3.13",
       "fr.opensagres.xdocreport" % "org.apache.poi.xwpf.converter.xhtml" % "1.0.5",
-      "com.typesafe.play" %% "twirl-api" % "1.1.1",
+      "com.typesafe.play" %% "twirl-api" % twirlV,
       "com.github.tototoshi" %% "scala-csv" % "1.3.4"
     ))
     .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
@@ -116,8 +118,8 @@ lazy val `http-extensions` =
   (project in file("http-extensions"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-http" % "10.0.6",
+      "com.typesafe.akka" %% "akka-http" % akkaHttpV,
       "com.typesafe.akka" %% "akka-actor" % akkaV,
-      "com.typesafe.play" %% "twirl-api" % "1.1.1",
+      "com.typesafe.play" %% "twirl-api" % twirlV,
       "org.scalacheck" %% "scalacheck" % "1.11.3" % Test
     ))

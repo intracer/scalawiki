@@ -2,7 +2,7 @@ package org.scalawiki.bots
 
 import java.nio.file.FileSystem
 
-import better.files.Cmds._
+import better.files.Dsl._
 import better.files.{File => SFile}
 import com.google.common.jimfs.{Configuration, Jimfs}
 import org.specs2.mutable.Specification
@@ -32,20 +32,6 @@ class FileUtilsSpec extends Specification with BeforeEach {
       val file = (root / "test").createIfNotExists()
 
       FileUtils.backupName(file) === "test.1"
-    }
-
-    "give 2nd with ext" in {
-      val file = (root / "test.txt").createIfNotExists()
-      (root / "test.txt.1").createIfNotExists()
-
-      FileUtils.backupName(file) === "test.txt.2"
-    }
-
-    "give 2nd no ext" in {
-      val file = (root / "test").createIfNotExists()
-      (root / "test.1").createIfNotExists()
-
-      FileUtils.backupName(file) === "test.2"
     }
   }
 
