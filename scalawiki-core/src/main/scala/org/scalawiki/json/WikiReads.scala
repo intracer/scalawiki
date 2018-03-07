@@ -2,7 +2,7 @@ package org.scalawiki.json
 
 import org.joda.time.DateTime
 import org.scalawiki.dto._
-import play.api.data.validation.ValidationError
+import play.api.libs.json.JsonValidationError
 import play.api.libs.json.{JsError, JsNumber, JsPath, JsResult, JsString, JsSuccess, JsValue, Reads, _}
 
 /**
@@ -28,9 +28,9 @@ abstract class WikiResponseReads[T]() {
         case JsNumber(d) => JsSuccess(new DateTime(d.toLong))
         case JsString(s) => parseDateOpt(corrector(s)) match {
           case Some(d) => JsSuccess(d)
-          case None => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.jodadate.format", pattern))))
+          case None => JsError(Seq(JsPath() -> Seq(JsonValidationError("error.expected.jodadate.format", pattern))))
         }
-        case _ => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.date"))))
+        case _ => JsError(Seq(JsPath() -> Seq(JsonValidationError("error.expected.date"))))
       }
     }
 }
