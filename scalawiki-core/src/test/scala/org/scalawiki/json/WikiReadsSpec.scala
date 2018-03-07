@@ -1,6 +1,7 @@
 package org.scalawiki.json
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
+
 import org.scalawiki.dto._
 import org.specs2.mutable.Specification
 import play.api.libs.json._
@@ -43,7 +44,7 @@ class WikiReadsSpec extends Specification {
       revisionObject.revId === Some(23)
       revisionObject.parentId === Some(5)
       revisionObject.user.get.name === Some("wikiUser")
-      revisionObject.timestamp === Some(DateTime.parse("2016-11-04T08:20:40Z"))
+      revisionObject.timestamp === Some(ZonedDateTime.parse("2016-11-04T08:20:40Z"))
     }
 
     val globalUserInfoRead: WikiReads[GlobalUserInfo] = GlobalUserInfoReads()
@@ -65,7 +66,7 @@ class WikiReadsSpec extends Specification {
       val globalUserInfo = globalUserInfoRead.reads(Json.parse(globalUserInfoJson)).get
       globalUserInfo.name === "name"
       globalUserInfo.merged(0).method === "post"
-      globalUserInfo.merged(0).registration === DateTime.parse("2016-11-07T19:30:40Z")
+      globalUserInfo.merged(0).registration === ZonedDateTime.parse("2016-11-07T19:30:40Z")
     }
 
     val imageRead: WikiReads[Image] = ImageReads()

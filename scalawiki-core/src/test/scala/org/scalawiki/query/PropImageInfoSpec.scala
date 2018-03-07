@@ -1,6 +1,7 @@
 package org.scalawiki.query
 
-import org.joda.time.DateTime
+import java.time.{ZoneOffset, ZonedDateTime}
+
 import org.scalawiki.Timestamp
 import org.scalawiki.dto.Page
 import org.scalawiki.util.{HttpStub, MockBotSpec}
@@ -149,7 +150,7 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
       image.metadata.isDefined === true
       val metadata = image.metadata.get
       metadata.camera === Some("Canon EOS 450D")
-      metadata.date === Some(new DateTime(2017, 4, 22, 12, 26, 44))
+      metadata.date === Some(ZonedDateTime.of(2017, 4, 22, 12, 26, 44, 0, ZoneOffset.UTC))
     }
   }
 }

@@ -1,6 +1,7 @@
 package org.scalawiki.wlx.stat
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
+
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
@@ -33,7 +34,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
   }
 
   "statistics" should {
-    val thisYear = DateTime.now.year().get()
+    val thisYear = ZonedDateTime.now.getYear
     "parse campaign" in {
 
       val cfg = StatParams.parse(Seq("-campaign", "wlm-ua"))

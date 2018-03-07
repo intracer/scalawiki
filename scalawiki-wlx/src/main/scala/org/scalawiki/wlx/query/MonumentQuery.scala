@@ -1,6 +1,7 @@
 package org.scalawiki.wlx.query
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
+
 import org.scalawiki.WithBot
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.prop._
@@ -19,11 +20,11 @@ trait MonumentQuery {
 
   def contest: Contest
 
-  def byMonumentTemplateAsync(template: String = contest.uploadConfigs.head.listTemplate, date: Option[DateTime] = None): Future[Seq[Monument]]
+  def byMonumentTemplateAsync(template: String = contest.uploadConfigs.head.listTemplate, date: Option[ZonedDateTime] = None): Future[Seq[Monument]]
 
-  def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false, date: Option[DateTime] = None): Future[Seq[Monument]]
+  def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false, date: Option[ZonedDateTime] = None): Future[Seq[Monument]]
 
-  final def byMonumentTemplate(template: String = contest.uploadConfigs.head.listTemplate, date: Option[DateTime] = None) =
+  final def byMonumentTemplate(template: String = contest.uploadConfigs.head.listTemplate, date: Option[ZonedDateTime] = None) =
     Await.result(byMonumentTemplateAsync(template, date), 120.minutes): Seq[Monument]
 
   final def byPage(page: String, template: String, pageIsTemplate: Boolean = false) =
@@ -38,7 +39,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
 
   def getHost = contest.listsHost
 
-  override def byMonumentTemplateAsync(template: String, date: Option[DateTime] = None): Future[Seq[Monument]] = {
+  override def byMonumentTemplateAsync(template: String, date: Option[ZonedDateTime] = None): Future[Seq[Monument]] = {
 
     if (date.isEmpty) {
 
@@ -54,7 +55,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
     }
   }
 
-  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false, date: Option[DateTime] = None): Future[Seq[Monument]] = {
+  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false, date: Option[ZonedDateTime] = None): Future[Seq[Monument]] = {
     val config = new OtherTemplateListConfig(template, listConfig)
     if (!page.startsWith("Template") || pageIsTemplate) {
       bot.page(page).revisions(Set.empty, Set("content", "timestamp", "user", "userid", "comment")).map {
@@ -80,7 +81,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
     }
   }
 
-  def monumentsByDate(page: String, template: String, date: DateTime): Future[Seq[Monument]] = {
+  def monumentsByDate(page: String, template: String, date: ZonedDateTime): Future[Seq[Monument]] = {
     articlesWithTemplate(page).flatMap {
       ids =>
         Future.traverse(ids)(id => pageRevisions(id, date)).map {
@@ -90,7 +91,7 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
     }
   }
 
-  def pageRevisions(id: Long, date: DateTime): Future[Option[Page]] = {
+  def pageRevisions(id: Long, date: ZonedDateTime): Future[Option[Page]] = {
     import org.scalawiki.dto.cmd.query.prop.rvprop._
 
     val action = Action(Query(
@@ -120,11 +121,11 @@ class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
 
   val cache: Cache[Seq[Monument]] = LruCache()
 
-  override def byMonumentTemplateAsync(template: String, date: Option[DateTime] = None): Future[Seq[Monument]] = cache(template) {
+  override def byMonumentTemplateAsync(template: String, date: Option[ZonedDateTime] = None): Future[Seq[Monument]] = cache(template) {
     underlying.byMonumentTemplateAsync(template, date)
   }
 
-  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false, date: Option[DateTime] = None): Future[Seq[Monument]] = cache(page) {
+  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false, date: Option[ZonedDateTime] = None): Future[Seq[Monument]] = cache(page) {
     underlying.byPageAsync(page, template: String, pageIsTemplate, date)
   }
 }

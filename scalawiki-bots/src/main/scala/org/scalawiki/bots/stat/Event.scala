@@ -1,27 +1,27 @@
 package org.scalawiki.bots.stat
 
+import java.time.ZonedDateTime
+
 import com.typesafe.config.{Config, ConfigFactory}
-import org.joda.time.DateTime
 
 case class ArticlesEvent(
                      name: String,
-                     start: DateTime,
-                     end: DateTime,
+                     start: ZonedDateTime,
+                     end: ZonedDateTime,
                      newTemplate: String,
                      improvedTemplate: String)
 
 object Events {
 
   import net.ceedubs.ficus.Ficus._
-  import org.scalawiki.time.imports._
 
   import scala.collection.JavaConverters._
 
   def fromConfig(c: Config) =
     new ArticlesEvent(
       c.getString("name"),
-      c.as[DateTime]("start"),
-      c.as[DateTime]("end"),
+      c.as[ZonedDateTime]("start"),
+      c.as[ZonedDateTime]("end"),
       c.getString("new-template"),
       c.getString("improved-template")
     )

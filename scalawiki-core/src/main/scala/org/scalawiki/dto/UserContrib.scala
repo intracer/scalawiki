@@ -1,6 +1,6 @@
 package org.scalawiki.dto
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
 
 case class UserContrib(userId: Long,
                        user: String,
@@ -9,7 +9,7 @@ case class UserContrib(userId: Long,
                        parentId: Long,
                        ns: Int,
                        title: String,
-                       timestamp: DateTime,
+                       timestamp: ZonedDateTime,
                        //                       isNew: Boolean,
                        //                       isMinor: Boolean,
                        comment: Option[String],

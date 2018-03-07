@@ -1,7 +1,8 @@
 package org.scalawiki.wlx.dto
 
+import java.time.ZonedDateTime
+
 import com.typesafe.config.{Config, ConfigFactory, ConfigParseOptions, ConfigResolveOptions}
-import org.joda.time.DateTime
 
 import scala.util.Try
 
@@ -74,7 +75,7 @@ object Contest {
             for (contestType <- ContestType.byCode(typeCode);
                  country <- Country.byCode(countryCode)
             ) yield
-              Contest(contestType, country, DateTime.now.year().get())
+              Contest(contestType, country, ZonedDateTime.now.getYear)
           case _ => None
         }
       }

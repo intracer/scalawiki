@@ -1,8 +1,8 @@
 package org.scalawiki.dto.cmd.edit
 
-import org.joda.time.DateTime
-import org.scalawiki.dto.cmd._
+import java.time.ZonedDateTime
 
+import org.scalawiki.dto.cmd._
 
 case class Edit(override val params: EditParam[Any]*)
   extends  EnumArgument[ActionArg]("edit", "Edit and create pages.")
@@ -44,13 +44,13 @@ case class NotMinor(override val arg: Boolean = true) extends BooleanParameter("
 case class Bot(override val arg: Boolean = true) extends BooleanParameter("bot",
   "If set, mark the edit as bot; even if you are using a bot account the edits will not be marked unless you set this flag") with EditParam[Boolean]
 
-case class BaseTimestamp(override val arg: DateTime) extends DateTimeParameter("basetimestamp",
+case class BaseTimestamp(override val arg: ZonedDateTime) extends DateTimeParameter("basetimestamp",
     "Timestamp of the base revision (obtained through prop=revisions&rvprop=timestamp). " +
-      "Used to detect edit conflicts; leave unset to ignore conflicts") with EditParam[DateTime]
+      "Used to detect edit conflicts; leave unset to ignore conflicts") with EditParam[ZonedDateTime]
 
-case class StartTimestamp(override val arg: DateTime) extends DateTimeParameter("starttimestamp",
+case class StartTimestamp(override val arg: ZonedDateTime) extends DateTimeParameter("starttimestamp",
   "Timestamp when you started editing the page (e.g., when you fetched the current revision's text to begin editing it or checked the (non-)existence of the page). " +
-    "Used to detect if the page has been deleted since you started editing; leave unset to ignore conflicts") with EditParam[DateTime]
+    "Used to detect if the page has been deleted since you started editing; leave unset to ignore conflicts") with EditParam[ZonedDateTime]
 
 case class Recreate(override val arg: Boolean = true) extends BooleanParameter("recreate",
   "Override any errors about the article having been deleted in the meantime") with EditParam[Boolean]

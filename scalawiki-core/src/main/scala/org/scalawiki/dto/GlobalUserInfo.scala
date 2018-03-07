@@ -1,17 +1,17 @@
 package org.scalawiki.dto
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
 
 case class GlobalUserInfo(home: String,
                           id: Long,
-                          registration: DateTime,
+                          registration: ZonedDateTime,
                           name: String,
                           merged: Seq[SulAccount],
                           editCount: Long)
 
 case class SulAccount(wiki: String,
                       url: String,
-                      timestamp: DateTime,
+                      timestamp: ZonedDateTime,
                       method: String,
                       editCount: Long,
-                      registration: DateTime)
+                      registration: ZonedDateTime)

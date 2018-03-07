@@ -1,6 +1,7 @@
 package org.scalawiki.bots.stat
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
+
 import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
@@ -9,7 +10,7 @@ class ArticleStatBotSpec extends Specification with MockBotSpec {
 
   "stat " should {
     "no stat" in {
-      val event = new ArticlesEvent("Martians", DateTime.now, DateTime.now, "Martians-week-new", "Martians-week-improved")
+      val event = new ArticlesEvent("Martians", ZonedDateTime.now, ZonedDateTime.now, "Martians-week-new", "Martians-week-improved")
 
       val commands = getCommands(emptyResponse, emptyResponse)
 
@@ -31,7 +32,7 @@ class ArticleStatBotSpec extends Specification with MockBotSpec {
     }
 
     "created 1 article" in {
-      val event = new ArticlesEvent("Martians", DateTime.parse("2015-06-07T16:45:30Z"), DateTime.now, "Martians-week-new", "Martians-week-improved")
+      val event = new ArticlesEvent("Martians", ZonedDateTime.parse("2015-06-07T16:45:30Z"), ZonedDateTime.now, "Martians-week-new", "Martians-week-improved")
 
       val createdResponse =
         """{ "query": { "pages": {

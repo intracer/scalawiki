@@ -1,6 +1,7 @@
 package org.scalawiki.dto.cmd.query.prop
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
+
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.query.Module
 
@@ -95,9 +96,9 @@ object IiPropArgs {
 
 case class IiLimit(override val arg: String) extends StringParameter("iilimit", "How many image revisions to return (1 by default)") with IiParam
 
-case class IiStart(override val arg: DateTime) extends DateTimeParameter("iistart", "Timestamp to start listing from") with IiParam
+case class IiStart(override val arg: ZonedDateTime) extends DateTimeParameter("iistart", "Timestamp to start listing from") with IiParam
 
-case class IiEnd(override val arg: DateTime) extends DateTimeParameter("iistart", "Timestamp to stop listing at") with IiParam
+case class IiEnd(override val arg: ZonedDateTime) extends DateTimeParameter("iistart", "Timestamp to stop listing at") with IiParam
 
 case class IiUrlWidth(override val arg: Int) extends IntParameter("iiurlwidth",
   "If iiprop=url is set, a URL to an image scaled to this width will be returned as well in thumburl along with thumbwidth and thumbheight. " +

@@ -1,13 +1,13 @@
 package org.scalawiki.bots
 
+import java.time.{LocalDate, LocalDateTime, ZoneOffset, ZonedDateTime}
+
 import com.typesafe.config.{Config, ConfigFactory}
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
-import org.joda.time.DateTime
 import org.scalawiki.dto.{Namespace, Page, User}
 import org.scalawiki.query.QueryLibrary
 import org.scalawiki.time.TimeRange
-import org.scalawiki.time.imports._
 import org.scalawiki.{ActionLibrary, MwBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -35,7 +35,10 @@ class MessageBot(val conf: Config) extends ActionLibrary with QueryLibrary {
   /**
     * optional start and end of time range that user contributions are queried
     */
-  val (start, end) = (conf.as[Option[DateTime]]("users.start"), conf.as[Option[DateTime]]("users.end"))
+  val (start: Option[ZonedDateTime], end: Option[ZonedDateTime]) = (
+    conf.as[Option[LocalDate]]("users.start").map(_.atStartOfDay(ZoneOffset.UTC)),
+    conf.as[Option[LocalDate]]("users.end").map(_.atStartOfDay(ZoneOffset.UTC))
+  )
   val range = TimeRange(start, end)
 
   /**

@@ -1,6 +1,7 @@
 package org.scalawiki.dto.filter
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
+
 import org.scalawiki.dto.{Revision, User}
 
 trait RevisionFilter {
@@ -13,8 +14,8 @@ trait RevisionFilter {
 }
 
 class RevisionFilterDateAndUser(
-                      val from: Option[DateTime] = None,
-                      val to: Option[DateTime] = None,
+                      val from: Option[ZonedDateTime] = None,
+                      val to: Option[ZonedDateTime] = None,
                       val userName: Option[String] = None,
                       val userId: Option[Long] = None) extends RevisionFilter {
 

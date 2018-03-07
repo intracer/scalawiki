@@ -1,8 +1,8 @@
 package org.scalawiki.xml
 
 import java.io.StringWriter
+import java.time.ZonedDateTime
 
-import org.joda.time.DateTime
 import org.scalawiki.dto.{Page, Revision, User}
 import org.scalawiki.xml.XmlHelper._
 import org.specs2.matcher.XmlMatchers
@@ -18,7 +18,7 @@ class XmlWriterSpec extends Specification with XmlMatchers {
       val (title, ns, pageId) = ("Page title", 0, 123)
 
       val (revId, parentId, timestamp, user, userId, comment, text, minor, sha1) =
-        (345, 456, DateTime.now, "user", 567, "revision comment", "revision text", true, "sha1")
+        (345, 456, ZonedDateTime.now, "user", 567, "revision comment", "revision text", true, "sha1")
 
       val rev = Revision(Some(revId), Some(pageId), Some(parentId), Some(User(userId, user)), Some(timestamp), Some(comment), Some(text), sha1 = Some(sha1)/*, minor = Some(minor)*/)
       val page = Page(Some(pageId), ns, title, Seq(rev))

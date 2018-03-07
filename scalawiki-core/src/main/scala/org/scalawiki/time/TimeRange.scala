@@ -1,5 +1,5 @@
 package org.scalawiki.time
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
 
-case class TimeRange(start: Option[DateTime], end: Option[DateTime])
+case class TimeRange(start: Option[ZonedDateTime], end: Option[ZonedDateTime])

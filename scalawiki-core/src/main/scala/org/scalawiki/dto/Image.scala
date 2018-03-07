@@ -1,8 +1,9 @@
 package org.scalawiki.dto
 
 import java.nio.file.{Files, Paths}
+import java.time.{LocalDateTime, ZoneOffset, ZonedDateTime}
+import java.time.format.DateTimeFormatter
 
-import org.joda.time.DateTime
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Gallery
 import org.scalawiki.wikitext.TemplateParser
@@ -10,11 +11,12 @@ import org.scalawiki.wikitext.TemplateParser
 case class ImageMetadata(data: Map[String, String]) {
 
   val pattern = "yyyy:MM:dd HH:mm:ss"
-  val df = org.joda.time.format.DateTimeFormat.forPattern(pattern)
+  val df = DateTimeFormatter.ofPattern(pattern)
 
   def camera: Option[String] = data.get("Model")
 
-  def date: Option[DateTime] = data.get("DateTime").map(df.parseDateTime)
+  def date: Option[ZonedDateTime] = data.get("DateTime")
+    .map(s => LocalDateTime.parse(s, df).atZone(ZoneOffset.UTC))
 }
 
 case class Image(title: String,
@@ -26,7 +28,7 @@ case class Image(title: String,
                  author: Option[String] = None,
                  uploader: Option[User] = None,
                  year: Option[String] = None,
-                 date: Option[DateTime] = None,
+                 date: Option[ZonedDateTime] = None,
                  monumentId: Option[String] = None,
                  pageId: Option[Long] = None,
                  metadata: Option[ImageMetadata] = None
@@ -110,7 +112,7 @@ object Image {
   }
 
   def basic(title: String,
-            timestamp: Option[DateTime],
+            timestamp: Option[ZonedDateTime],
             uploader: Option[String],
             size: Option[Long],
             width: Option[Int],

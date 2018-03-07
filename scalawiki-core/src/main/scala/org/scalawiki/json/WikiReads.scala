@@ -1,6 +1,8 @@
 package org.scalawiki.json
 
-import org.joda.time.DateTime
+import java.time.{Instant, ZoneOffset, ZonedDateTime}
+import java.time.format.DateTimeFormatter
+
 import org.scalawiki.dto._
 import play.api.libs.json.JsonValidationError
 import play.api.libs.json.{JsError, JsNumber, JsPath, JsResult, JsString, JsSuccess, JsValue, Reads, _}
@@ -13,19 +15,19 @@ trait WikiReads[T] extends Reads[T] {
 
 abstract class WikiResponseReads[T]() {
   val TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-  val df = org.joda.time.format.DateTimeFormat.forPattern(TIMESTAMP_PATTERN).withZoneUTC()
+  val df = DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN).withZone(ZoneOffset.UTC)
 
-  lazy val jodaDateTimeReads = jodaDateReads(TIMESTAMP_PATTERN)
+  lazy val zonedDateTimeReads = zonedDateReads(TIMESTAMP_PATTERN)
 
-  def parseDate(input: String): DateTime = DateTime.parse(input, df)
+  def parseDate(input: String): ZonedDateTime = ZonedDateTime.parse(input, df)
 
-  def parseDateOpt(input: String): Option[DateTime] =
-    scala.util.control.Exception.allCatch[DateTime] opt parseDate(input)
+  def parseDateOpt(input: String): Option[ZonedDateTime] =
+    scala.util.control.Exception.allCatch[ZonedDateTime] opt parseDate(input)
 
-  def jodaDateReads(pattern: String, corrector: String => String = identity): Reads[DateTime] =
-    new Reads[DateTime] {
-      def reads(json: JsValue): JsResult[DateTime] = json match {
-        case JsNumber(d) => JsSuccess(new DateTime(d.toLong))
+  def zonedDateReads(pattern: String, corrector: String => String = identity): Reads[ZonedDateTime] =
+    new Reads[ZonedDateTime] {
+      def reads(json: JsValue): JsResult[ZonedDateTime] = json match {
+        case JsNumber(d) => JsSuccess(ZonedDateTime.ofInstant(Instant.ofEpochSecond(d.toLong), ZoneOffset.UTC))
         case JsString(s) => parseDateOpt(corrector(s)) match {
           case Some(d) => JsSuccess(d)
           case None => JsError(Seq(JsPath() -> Seq(JsonValidationError("error.expected.jodadate.format", pattern))))
@@ -67,7 +69,7 @@ case class UserReads() extends WikiResponseReads with WikiReads[User] {
     (__ \ "userid").readNullable[Long] ~
       (__ \ "name").readNullable[String] ~
       (__ \ "editcount").readNullable[Long] ~
-      (__ \ "registration").readNullable[DateTime](jodaDateTimeReads) ~
+      (__ \ "registration").readNullable[ZonedDateTime](zonedDateTimeReads) ~
       (__ \ "blockid").readNullable[Long].map(_.map(_ => true)) ~
       (__ \ "emailable").readNullable[String].map(_.map(_ => true)) ~
       (__ \ "missing").readNullable[String].map(_.isDefined)
@@ -75,7 +77,7 @@ case class UserReads() extends WikiResponseReads with WikiReads[User] {
     _: Option[Long],
     _: Option[String],
     _: Option[Long],
-    _: Option[DateTime],
+    _: Option[ZonedDateTime],
     _: Option[Boolean],
     _: Option[Boolean],
     _: Boolean
@@ -98,7 +100,7 @@ case class RevisionRead(override val pageId: Option[Long])
         (__ \ "userid").readNullable[Long] ~
           (__ \ "user").readNullable[String]
         ) (Contributor.apply _) ~
-      (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) ~
+      (__ \ "timestamp").readNullable[ZonedDateTime](zonedDateTimeReads) ~
       (__ \ "comment").readNullable[String] ~
       (__ \ "*").readNullable[String] ~
       (__ \ "size").readNullable[Long] ~
@@ -108,7 +110,7 @@ case class RevisionRead(override val pageId: Option[Long])
     _: Option[Long],
     _: Option[Long],
     _: Option[Contributor],
-    _: Option[DateTime],
+    _: Option[ZonedDateTime],
     _: Option[String],
     _: Option[String],
     _: Option[Long],
@@ -124,17 +126,17 @@ case class GlobalUserInfoReads() extends WikiResponseReads with WikiReads[Global
   implicit val sulAccountReads: Reads[SulAccount] = (
     (__ \ "wiki").read[String] ~
       (__ \ "url").read[String] ~
-      (__ \ "timestamp").read[DateTime](jodaDateTimeReads) ~
+      (__ \ "timestamp").read[ZonedDateTime](zonedDateTimeReads) ~
       (__ \ "method").read[String] ~
       (__ \ "editcount").read[Long] ~
-      (__ \ "registration").read[DateTime](jodaDateTimeReads)
+      (__ \ "registration").read[ZonedDateTime](zonedDateTimeReads)
     ) (SulAccount.apply _)
 
   private val globalInfoReads: Reads[GlobalUserInfo] =
     (
       (__ \ "home").read[String] ~
         (__ \ "id").read[Long] ~
-        (__ \ "registration").read[DateTime](jodaDateTimeReads) ~
+        (__ \ "registration").read[ZonedDateTime](zonedDateTimeReads) ~
         (__ \ "name").read[String] ~
         (__ \ "merged").read[Seq[SulAccount]] ~
         (__ \ "editcount").read[Long]
@@ -164,7 +166,7 @@ case class ImageReads(override val pageId: Option[Long] = None, override val tit
       case Some(t) => Reads.pure[String](t)
       case None => (__ \ "title").read[String]
     }) ~
-      (__ \ "timestamp").readNullable[DateTime](jodaDateTimeReads) ~
+      (__ \ "timestamp").readNullable[ZonedDateTime](zonedDateTimeReads) ~
       (__ \ "user").readNullable[String] ~
       (__ \ "size").readNullable[Long] ~
       (__ \ "width").readNullable[Int] ~
@@ -204,7 +206,7 @@ case class UserContributorReads() extends WikiResponseReads with WikiReads[UserC
       (__ \ "parentid").read[Long] ~
       (__ \ "ns").read[Int] ~
       (__ \ "title").read[String] ~
-      (__ \ "timestamp").read[DateTime](jodaDateTimeReads) ~
+      (__ \ "timestamp").read[ZonedDateTime](zonedDateTimeReads) ~
       //      (__ \ "new").read[String] ~
       //      (__ \ "minor").read[Boolea] ~
       (__ \ "comment").readNullable[String] ~ // can be hidden

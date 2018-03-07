@@ -1,12 +1,12 @@
 package org.scalawiki.dto
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
 
 case class User(
                  id: Option[Long],
                  login: Option[String],
                  editCount: Option[Long] = None,
-                 registration: Option[DateTime] = None,
+                 registration: Option[ZonedDateTime] = None,
                  blocked: Option[Boolean] = None,
                  emailable: Option[Boolean] = None,
                  missing: Boolean = false,

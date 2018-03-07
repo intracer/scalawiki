@@ -1,15 +1,17 @@
 package org.scalawiki.dto.history
 
-import com.github.nscala_time.time.Imports._
+import java.time.ZonedDateTime
+
 import org.scalawiki.dto.Revision
 import org.scalawiki.dto.filter.RevisionFilterDateAndUser
 import org.specs2.mutable.Specification
+import jp.ne.opt.chronoscala.Imports._
 
 class RevisionFilterSpec extends Specification {
 
   "revision filter by date"  should {
 
-    val now: DateTime = DateTime.now
+    val now: ZonedDateTime = ZonedDateTime.now
 
     "filter from" in {
       val r1 = Revision(1, 1).withTimeStamp(now - 2.months)

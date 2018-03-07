@@ -1,6 +1,7 @@
 package org.scalawiki.bots
 
-import org.joda.time.DateTime
+import java.time.{ZoneOffset, ZonedDateTime}
+
 import org.scalawiki.MwBot
 import org.scalawiki.dto.{SulAccount, User}
 import org.scalawiki.query.QueryLibrary
@@ -13,7 +14,7 @@ class GlobalContrib extends QueryLibrary {
 
   val bot = MwBot.fromHost(MwBot.commons)
 
-  def editsBefore(user: User, acc: SulAccount, start: DateTime): Future[Long] = {
+  def editsBefore(user: User, acc: SulAccount, start: ZonedDateTime): Future[Long] = {
     val host = acc.url.replace("https://", "")
     val siteBot = MwBot.fromHost(host)
 
@@ -24,7 +25,7 @@ class GlobalContrib extends QueryLibrary {
     }
   }
 
-  def checkContribs(username: String, start: DateTime): Future[Long] = {
+  def checkContribs(username: String, start: ZonedDateTime): Future[Long] = {
     bot.run(globalUserInfo(username)).flatMap {
       pages =>
         pagesToUsers(pages).collect { case u: User => u }.headOption.fold(Future(0L)) {
@@ -43,13 +44,13 @@ class GlobalContrib extends QueryLibrary {
 object GlobalContrib {
   def main(args: Array[String]) {
 
-    new GlobalContrib().checkContribs("Ilya", new DateTime(2016, 1, 1, 0, 0)).map {
+    new GlobalContrib().checkContribs("Ilya", ZonedDateTime.of(2016, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)).map {
       size =>
         println(size)
     }
   }
 
-  def countNewComers(authors: Set[String], date: DateTime): Unit = {
+  def countNewComers(authors: Set[String], date: ZonedDateTime): Unit = {
     val gc = new GlobalContrib()
 
     Future.traverse(authors) { author =>

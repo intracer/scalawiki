@@ -1,7 +1,8 @@
 package org.scalawiki.xml
 
-import com.github.nscala_time.time.Imports._
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
+import jp.ne.opt.chronoscala.Imports._
+
 import org.scalawiki.Timestamp
 import org.scalawiki.dto.filter.PageFilter
 import org.scalawiki.dto.{IpContributor, Revision, User}
@@ -9,8 +10,6 @@ import org.scalawiki.xml.XmlHelper._
 import org.specs2.matcher.MatchResult
 import org.specs2.mutable.Specification
 import org.scalawiki.util.TestUtils._
-
-import scala.io.Source
 
 class XmlParserSpec extends Specification {
 
@@ -45,7 +44,7 @@ class XmlParserSpec extends Specification {
       val (title, ns, pageId) = ("Page title", 0, 123)
 
       val (revId, parentId, timestamp, user, userId, comment, text, sha1) =
-        (345, 456, DateTime.now, "user", 567, "revision comment", "revision text", "sha1")
+        (345, 456, ZonedDateTime.now, "user", 567, "revision comment", "revision text", "sha1")
 
       val revsXml = revisionXml(revId, parentId, timestamp, user, userId, comment, text, sha1)
 
@@ -69,7 +68,7 @@ class XmlParserSpec extends Specification {
       val (title, ns, pageId) = ("Page title", 0, 123)
 
       val (revId, parentId, timestamp, user, userId, comment, text, sha1) =
-        (345, 456, DateTime.now, "user", 567, "revision comment", "revision text", "sha1")
+        (345, 456, ZonedDateTime.now, "user", 567, "revision comment", "revision text", "sha1")
 
       val revsXml = revisionXml(revId, parentId, timestamp, user, userId, comment, text, sha1)
 
@@ -93,9 +92,9 @@ class XmlParserSpec extends Specification {
       val (title1, ns1, pageId1) = ("Page title1", 0, 123)
 
       val (revId1, parentId1, timestamp1, user1, userId1, comment1, text1, sha1) =
-        (1345, 1456, DateTime.now - 1.month, "user", 1567, "revision comment1", "revision text1", "sha1")
+        (1345, 1456, ZonedDateTime.now - 1.month, "user", 1567, "revision comment1", "revision text1", "sha1")
       val (revId2, parentId2, timestamp2, user2, userId2, comment2, text2, sha2) =
-        (2345, 2456, DateTime.now, "user2", 2567, "revision comment2", "revision text2", "sha2")
+        (2345, 2456, ZonedDateTime.now, "user2", 2567, "revision comment2", "revision text2", "sha2")
 
       val revsXml1 = revisionXml(revId1, parentId1, timestamp1, user1, userId1, comment1, text1, sha1)
       val revsXml2 = revisionXml(revId2, parentId2, timestamp2, user2, userId2, comment2, text2, sha2)
@@ -122,9 +121,9 @@ class XmlParserSpec extends Specification {
       val (title2, ns2, pageId2) = ("Page title2", 1, 234)
 
       val (revId1, parentId1, timestamp1, user1, userId1, comment1, text1, sha1) =
-        (1345, 1456, DateTime.now - 1.month, "user", 1567, "revision comment1", "revision text1", "sha1")
+        (1345, 1456, ZonedDateTime.now - 1.month, "user", 1567, "revision comment1", "revision text1", "sha1")
       val (revId2, parentId2, timestamp2, user2, userId2, comment2, text2, sha2) =
-        (2345, 2456, DateTime.now - 2.month, "user2", 2567, "revision comment2", "revision text2", "sha2")
+        (2345, 2456, ZonedDateTime.now - 2.month, "user2", 2567, "revision comment2", "revision text2", "sha2")
 
       val revsXml1 = revisionXml(revId1, parentId1, timestamp1, user1, userId1, comment1, text1, sha1)
       val revsXml2 = revisionXml(revId2, parentId2, timestamp2, user2, userId2, comment2, text2, sha2)
@@ -158,7 +157,7 @@ class XmlParserSpec extends Specification {
     val (title, ns, pageId) = ("Page title", 0, 123)
 
     val (revId, parentId, timestamp, user, userId, comment, text, sha1) =
-      (345, 456, DateTime.now, "user", 567, "revision comment", "<span style=\"display:none\">Main page</span>", "sha1")
+      (345, 456, ZonedDateTime.now, "user", 567, "revision comment", "<span style=\"display:none\">Main page</span>", "sha1")
 
     val revsXml = revisionXml(revId, parentId, timestamp, user, userId, comment, text, sha1)
 
@@ -255,7 +254,7 @@ class XmlParserSpec extends Specification {
     p1r2.user === Some(IpContributor("10.0.0.2"))
   }
 
-  def checkRevision(revId: Long, parentId: Long, timestamp: DateTime, user: String, userId: Long, comment: String, text: String, revision: Revision): MatchResult[Any] = {
+  def checkRevision(revId: Long, parentId: Long, timestamp: ZonedDateTime, user: String, userId: Long, comment: String, text: String, revision: Revision): MatchResult[Any] = {
     (revision.id, revision.parentId, revision.timestamp.map(Timestamp.format), revision.comment, revision.content) ===
       (Some(revId), Some(parentId), Some(Timestamp.format(timestamp)), Some(comment), Some(text))
 

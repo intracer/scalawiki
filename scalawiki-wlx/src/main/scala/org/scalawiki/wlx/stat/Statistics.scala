@@ -1,6 +1,7 @@
 package org.scalawiki.wlx.stat
 
-import org.joda.time.DateTime
+import java.time.{ZoneOffset, ZonedDateTime}
+
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.Contest
@@ -69,7 +70,7 @@ class Statistics(contest: Contest,
     val (monumentDb, monumentDbOld) = (
       Some(MonumentDB.getMonumentDb(contest, monumentQuery)),
       Option(contest.newObjectRating).filter(_ == true).map { _ =>
-        MonumentDB.getMonumentDb(contest, monumentQuery, date = Some(new DateTime(2017, 4, 30, 23, 59)))
+        MonumentDB.getMonumentDb(contest, monumentQuery, date = Some(ZonedDateTime.of(2017, 4, 30, 23, 59, 0, 0, ZoneOffset.UTC)))
       }
     )
 

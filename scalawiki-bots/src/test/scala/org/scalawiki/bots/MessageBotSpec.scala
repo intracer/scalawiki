@@ -1,7 +1,8 @@
 package org.scalawiki.bot
 
+import java.time.{ZoneOffset, ZonedDateTime}
+
 import com.typesafe.config.ConfigFactory
-import org.joda.time.DateTime
 import org.scalawiki.bots.{Message, MessageBot}
 import org.scalawiki.time.TimeRange
 import org.specs2.mutable.Specification
@@ -13,8 +14,8 @@ class MessageBotSpec extends Specification {
          host = "uk.wikipedia.org"
          users = {
            list = "Wikipedia:User signatures"
-           start = "2016-01-29T00:00:00"
-           end = "2016-02-01T00:00:00"
+           start = "2016-01-29"
+           end = "2016-02-01"
          }
          talk-page = {
            subject = "talk page subject"
@@ -35,7 +36,10 @@ class MessageBotSpec extends Specification {
 
       bot.host === "uk.wikipedia.org"
       bot.userListPage === "Wikipedia:User signatures"
-      bot.range === TimeRange(Some(new DateTime(2016, 1, 29, 0, 0)), Some(new DateTime(2016, 2, 1, 0, 0)))
+      bot.range === TimeRange(
+        Some(ZonedDateTime.of(2016, 1, 29, 0, 0, 0, 0, ZoneOffset.UTC)),
+        Some(ZonedDateTime.of(2016, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC))
+      )
 
       bot.talkPageMessage === Message("talk page subject", "talk page body")
       bot.mail === Message("mail subject", "mail body")
@@ -47,7 +51,7 @@ class MessageBotSpec extends Specification {
 
       val bot = new MessageBot(config)
 
-      bot.range === TimeRange(Some(new DateTime(2016, 1, 29, 0, 0)), None)
+      bot.range === TimeRange(Some(ZonedDateTime.of(2016, 1, 29, 0, 0, 0, 0, ZoneOffset.UTC)), None)
     }
 
   }

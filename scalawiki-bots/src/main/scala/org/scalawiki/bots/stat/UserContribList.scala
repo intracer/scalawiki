@@ -1,6 +1,7 @@
 package org.scalawiki.bots.stat
 
-import org.joda.time.DateTime
+import java.time.{ZoneOffset, ZonedDateTime}
+
 import org.scalawiki.bots.vote.VoteList
 import org.scalawiki.query.QueryLibrary
 import org.scalawiki.time.TimeRange
@@ -17,8 +18,8 @@ object UserContribList extends WithBot with QueryLibrary {
 
     val minEdits = 300
     val minRecentEdits = 20
-    val minEditsTo = new DateTime(2017, 4, 15, 0, 0)
-    val recentEditsFrom = new DateTime(2016, 10, 15, 0, 0)
+    val minEditsTo = ZonedDateTime.of(2017, 4, 15, 0, 0, 0, 0, ZoneOffset.UTC)
+    val recentEditsFrom = ZonedDateTime.of(2016, 10, 15, 0, 0, 0, 0, ZoneOffset.UTC)
 
     for (votedUsers <- VoteList.votedUsers;
          allUsers <- getUsers(activeUsersQuery)) {

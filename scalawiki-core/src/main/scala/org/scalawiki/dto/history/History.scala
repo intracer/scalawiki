@@ -1,6 +1,7 @@
 package org.scalawiki.dto.history
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
+
 import org.scalawiki.dto.Revision
 import org.scalawiki.dto.filter.RevisionFilter
 
@@ -37,11 +38,11 @@ class History(val revisions: Seq[Revision]) {
   def delta(from: Revision, to: Revision): Option[Long] =
     for (fromSize <- from.size; toSize <- to.size) yield toSize - fromSize
 
-  def created: Option[DateTime] = revisions.lastOption.filter(_.parentId.forall(_ == 0)).flatMap(_.timestamp)
+  def created: Option[ZonedDateTime] = revisions.lastOption.filter(_.parentId.forall(_ == 0)).flatMap(_.timestamp)
 
-  def updated: Option[DateTime] = revisions.headOption.flatMap(_.timestamp)
+  def updated: Option[ZonedDateTime] = revisions.headOption.flatMap(_.timestamp)
 
-  def createdAfter(from: Option[DateTime]) = created.exists(rev => from.forall(rev.isAfter))
+  def createdAfter(from: Option[ZonedDateTime]) = created.exists(rev => from.forall(rev.isAfter))
 
   def editedIn(revisionFilter: RevisionFilter) =
     revisionFilter.apply(revisions).nonEmpty

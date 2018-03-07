@@ -1,6 +1,7 @@
 package org.scalawiki.dto.cmd.query.prop
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
+
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.query.Module
 import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
@@ -92,8 +93,8 @@ case class RvLimit(override val arg: String) extends StringParameter("rvlimit", 
 case class RvStartId(override val arg: Long) extends LongParameter("rvstartid", "Revision ID to start listing from.") with RvParam
 case class RvEndId(override val arg: Long) extends LongParameter("rvendid", "Revision ID to stop listing at.") with RvParam
 
-case class RvStart(override val arg: DateTime) extends DateTimeParameter("rvstart", "Timestamp to start listing from.") with RvParam
-case class RvEnd(override val arg: DateTime) extends DateTimeParameter("rvend", "Timestamp to end listing at.") with RvParam
+case class RvStart(override val arg: ZonedDateTime) extends DateTimeParameter("rvstart", "Timestamp to start listing from.") with RvParam
+case class RvEnd(override val arg: ZonedDateTime) extends DateTimeParameter("rvend", "Timestamp to end listing at.") with RvParam
 
 case class RvDir(override val args: RvDirArg*) extends EnumParameter[RvDirArg]("rvdir", "Which properties to get for each revision:") with RvParam
 

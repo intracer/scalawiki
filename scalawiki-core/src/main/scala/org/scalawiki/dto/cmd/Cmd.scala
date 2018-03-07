@@ -1,6 +1,7 @@
 package org.scalawiki.dto.cmd
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
+
 import org.scalawiki.Timestamp
 import org.scalawiki.dto.cmd.query.Query
 
@@ -67,7 +68,7 @@ abstract class LongParameter(val name: String, val summary: String) extends Sing
 
 abstract class IdParameter(val name: String, val summary: String) extends SingleParameter[Long]
 
-abstract class DateTimeParameter(val name: String, val summary: String) extends SingleParameter[DateTime] {
+abstract class DateTimeParameter(val name: String, val summary: String) extends SingleParameter[ZonedDateTime] {
 
   override def pairs: Seq[(String, String)] = Seq(name -> Timestamp.format(arg))
 }

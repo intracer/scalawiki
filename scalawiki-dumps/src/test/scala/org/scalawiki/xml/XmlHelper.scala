@@ -1,6 +1,7 @@
 package org.scalawiki.xml
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
+
 import org.scalawiki.Timestamp
 
 import scala.xml.{Node, NodeSeq}
@@ -28,7 +29,7 @@ object XmlHelper {
       {revisions}
     </page>
 
-  def revisionXml(revId: Long, parentId: Long, timestamp: DateTime, user: String, userId: Int, comment: String, text: String, sha1: String): Node =
+  def revisionXml(revId: Long, parentId: Long, timestamp: ZonedDateTime, user: String, userId: Int, comment: String, text: String, sha1: String): Node =
     <revision>
       <id>{revId}</id>
       <parentid>{parentId}</parentid>

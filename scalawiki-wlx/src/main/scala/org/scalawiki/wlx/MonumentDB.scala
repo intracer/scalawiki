@@ -1,6 +1,7 @@
 package org.scalawiki.wlx
 
-import org.joda.time.DateTime
+import java.time.{ZoneOffset, ZonedDateTime}
+
 import org.scalawiki.wlx.dto.{Contest, Monument}
 import org.scalawiki.wlx.query.MonumentQuery
 
@@ -39,7 +40,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
 object MonumentDB {
 
-  def getMonumentDb(contest: Contest, monumentQuery: MonumentQuery, date: Option[DateTime] = None): MonumentDB = {
+  def getMonumentDb(contest: Contest, monumentQuery: MonumentQuery, date: Option[ZonedDateTime] = None): MonumentDB = {
     var allMonuments = monumentQuery.byMonumentTemplate(date = date)
 
     if (contest.country.code == "ru") {
@@ -49,12 +50,12 @@ object MonumentDB {
     new MonumentDB(contest, allMonuments)
   }
 
-  def getMonumentDb(contest: Contest, date: Option[DateTime]): MonumentDB =
+  def getMonumentDb(contest: Contest, date: Option[ZonedDateTime]): MonumentDB =
     getMonumentDb(contest, MonumentQuery.create(contest), date)
 
   def getMonumentDbRange(contest: Contest): (Option[MonumentDB], Option[MonumentDB]) = {
     if (contest.uploadConfigs.nonEmpty) {
-      val date = new DateTime(contest.year, 9, 1, 0, 0, 0)
+      val date = ZonedDateTime.of(contest.year, 9, 1, 0, 0, 0, 0, ZoneOffset.UTC)
       (Some(getMonumentDb(contest, None)),
         Some(getMonumentDb(contest, Some(date))))
     } else {

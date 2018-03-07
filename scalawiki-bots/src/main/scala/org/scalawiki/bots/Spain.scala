@@ -1,6 +1,8 @@
 package org.scalawiki.bots
 
-import org.joda.time.{DateTime, DateTimeZone}
+import java.time.{ZoneId, ZoneOffset, ZonedDateTime}
+import java.util.TimeZone
+
 import org.scalawiki.MwBot
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list.{CategoryMembers, CmLimit, CmNamespace, CmTitle}
@@ -41,8 +43,8 @@ object Spain {
           val last = page.images.last
           last.date.exists {
             timestamp =>
-              val start = new DateTime(2015, 4, 30, 22, 0, DateTimeZone.UTC)
-              val end = new DateTime(2015, 5, 31, 23, 0, DateTimeZone.UTC)
+              val start = ZonedDateTime.of(2015, 4, 30, 22, 0, 0, 0, ZoneOffset.UTC)
+              val end = ZonedDateTime.of(2015, 5, 31, 23, 0, 0, 0, ZoneOffset.UTC)
               timestamp.isAfter(start) && timestamp.isBefore(end)
           }
         }

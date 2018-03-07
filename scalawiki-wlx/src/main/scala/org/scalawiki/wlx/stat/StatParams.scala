@@ -1,6 +1,6 @@
 package org.scalawiki.wlx.stat
 
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
 
 import scala.util.Try
 
@@ -38,7 +38,7 @@ object StatParams {
 
     StatConfig(
       campaign = parsed.values("campaign").asInstanceOf[String],
-      years = parsed.values.getOrElse("year", Seq(DateTime.now.year().get())).asInstanceOf[Seq[Int]].sorted,
+      years = parsed.values.getOrElse("year", Seq(ZonedDateTime.now.getYear)).asInstanceOf[Seq[Int]].sorted,
       regions = parsed.values.getOrElse("region", Nil).asInstanceOf[Seq[String]],
       exceptRegions = parsed.values.getOrElse("exceptregion", Nil).asInstanceOf[Seq[String]],
       cities = parsed.values.getOrElse("city", Nil).asInstanceOf[Seq[String]],

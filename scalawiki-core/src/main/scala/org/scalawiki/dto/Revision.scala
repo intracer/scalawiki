@@ -1,14 +1,15 @@
 package org.scalawiki.dto
 
+import java.time.ZonedDateTime
+
 import org.apache.commons.codec.digest.DigestUtils
-import org.joda.time.DateTime
 
 case class Revision(
                      revId: Option[Long] = None,
                      pageId: Option[Long] = None,
                      parentId: Option[Long] = None,
                      user: Option[Contributor] = None,
-                     timestamp: Option[DateTime] = None,
+                     timestamp: Option[ZonedDateTime] = None,
                      comment: Option[String] = None,
                      content: Option[String] = None,
                      size: Option[Long] = None,
@@ -35,7 +36,7 @@ case class Revision(
 
   def withComment(comment: String) = copy(comment = Some(comment))
 
-  def withTimeStamp(timestamp: DateTime = DateTime.now) = copy(timestamp = Some(timestamp))
+  def withTimeStamp(timestamp: ZonedDateTime = ZonedDateTime.now) = copy(timestamp = Some(timestamp))
 
   def withoutContent = copy(content = None)
 }
