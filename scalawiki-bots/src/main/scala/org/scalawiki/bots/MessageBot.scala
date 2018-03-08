@@ -1,6 +1,6 @@
 package org.scalawiki.bots
 
-import java.time.{LocalDate, LocalDateTime, ZoneOffset, ZonedDateTime}
+import java.time.{LocalDate, ZoneOffset, ZonedDateTime}
 
 import com.typesafe.config.{Config, ConfigFactory}
 import net.ceedubs.ficus.Ficus._

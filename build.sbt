@@ -1,22 +1,23 @@
 import sbt.Keys._
 
-val akkaV = "2.5.11"
-val akkaHttpV = "10.0.11"
-val sprayV = "1.3.4"
-val specsV = "3.7.2"
-val twirlV = "1.3.13"
+val AkkaV = "2.5.11"
+val AkkaHttpV = "10.0.11"
+val PlayJsonV = "2.6.9"
+val SprayV = "1.3.4"
+val SpecsV = "3.7.2"
+val TwirlV = "1.3.13"
 
 fork in Test in ThisBuild := true
 
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
-  version := "0.5-M6",
+  version := "0.5-M7",
   scalaVersion := "2.11.11",
 
   libraryDependencies ++= Seq(
-    "org.specs2" %% "specs2-core" % specsV % Test,
-    "org.specs2" %% "specs2-matcher-extra" % specsV % Test,
-    "org.specs2" %% "specs2-mock" % specsV % Test,
+    "org.specs2" %% "specs2-core" % SpecsV % Test,
+    "org.specs2" %% "specs2-matcher-extra" % SpecsV % Test,
+    "org.specs2" %% "specs2-mock" % SpecsV % Test,
     "com.google.jimfs" % "jimfs" % "1.1" % Test
   ),
 
@@ -53,11 +54,11 @@ lazy val `scalawiki-core` =
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= {
       Seq(
-        "io.spray" %% "spray-util" % sprayV,
-        "io.spray" %% "spray-caching" % sprayV,
-        "com.typesafe.play" %% "play-json" % "2.6.9",
-        "com.typesafe.akka" %% "akka-actor" % akkaV,
-        "com.typesafe.akka" %% "akka-http" % akkaHttpV,
+        "io.spray" %% "spray-util" % SprayV,
+        "io.spray" %% "spray-caching" % SprayV,
+        "com.typesafe.play" %% "play-json" % PlayJsonV,
+        "com.typesafe.akka" %% "akka-actor" % AkkaV,
+        "com.typesafe.akka" %% "akka-http" % AkkaHttpV,
         "com.typesafe" % "config" % "1.3.1",
         "com.iheart" %% "ficus" % "1.4.3",
         "jp.ne.opt" %% "chronoscala" % "0.1.5",
@@ -79,7 +80,7 @@ lazy val `scalawiki-bots` =
       "org.apache.poi" % "poi-scratchpad" % "3.13",
       "org.apache.poi" % "poi-ooxml" % "3.13",
       "fr.opensagres.xdocreport" % "org.apache.poi.xwpf.converter.xhtml" % "1.0.5",
-      "com.typesafe.play" %% "twirl-api" % twirlV,
+      "com.typesafe.play" %% "twirl-api" % TwirlV,
       "com.github.tototoshi" %% "scala-csv" % "1.3.4"
     ))
     .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
@@ -118,8 +119,8 @@ lazy val `http-extensions` =
   (project in file("http-extensions"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-http" % akkaHttpV,
-      "com.typesafe.akka" %% "akka-actor" % akkaV,
-      "com.typesafe.play" %% "twirl-api" % twirlV,
+      "com.typesafe.akka" %% "akka-http" % AkkaHttpV,
+      "com.typesafe.akka" %% "akka-actor" % AkkaV,
+      "com.typesafe.play" %% "twirl-api" % TwirlV,
       "org.scalacheck" %% "scalacheck" % "1.11.3" % Test
     ))
