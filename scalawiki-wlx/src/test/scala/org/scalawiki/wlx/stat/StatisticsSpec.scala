@@ -51,6 +51,11 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
       cfg === StatConfig("wle-ua", Seq(2012, 2014, 2015, 2016), Nil)
     }
 
+    "start year" in {
+      val cfg = StatParams.parse(Seq("-campaign", "wle-ua", "-y", "2017", "-sy", "2012"))
+      cfg === StatConfig("wle-ua", Seq(2017), Nil)
+    }
+
     "parse new object rating" in {
       val cfg = StatParams.parse(Seq("-campaign", "wle-ua", "-rating", "3"))
       cfg === StatConfig("wle-ua", Seq(thisYear), Nil, newObjectRating = Some(3))
@@ -61,12 +66,12 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
       cfg === StatConfig("wle-ua", Seq(2012), Seq("01", "02"))
     }
 
-    "give current year stat" in {
+    "give current year stat empty" in {
       val monuments = Seq.empty[Monument]
       val images = Seq.empty[Image]
 
       val stat = mockedStat(monuments, images)
-      val data = stat.gatherData(false).await
+      val data = stat.gatherData(total = false).await
 
       data.contest === contest
       data.monumentDb.map(_.monuments) === Some(monuments)
