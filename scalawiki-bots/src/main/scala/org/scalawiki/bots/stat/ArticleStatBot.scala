@@ -1,9 +1,6 @@
 package org.scalawiki.bots.stat
 
 import org.scalawiki.dto.Page
-import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.cmd.query.prop._
-import org.scalawiki.dto.cmd.query.{PageIdsParam, Query}
 import org.scalawiki.dto.filter.RevisionFilterDateAndUser
 import org.scalawiki.query.QueryLibrary
 import org.scalawiki.{MwBot, WithBot}
@@ -20,22 +17,7 @@ class ArticleStatBot() extends WithBot with QueryLibrary {
   }
 
   def pageRevisions(id: Long): Future[Option[Page]] = {
-    import org.scalawiki.dto.cmd.query.prop.rvprop._
-
-    val action = Action(Query(
-      PageIdsParam(Seq(id)),
-      Prop(
-        Info(),
-        Revisions(
-          RvProp(Content, Ids, Size, User, UserId, Timestamp),
-          RvLimit("max")
-        )
-      )
-    ))
-
-    bot.run(action).map { pages =>
-      pages.headOption
-    }
+    bot.run(pageRevisionsQuery(id)).map(_.headOption)
   }
 
   def stat(event: ArticlesEvent): Future[EventStat] = {

@@ -5,9 +5,9 @@ import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list.{UserContribs, _}
 import org.scalawiki.dto.cmd.query.meta.{EditCount, GuiUser, _}
 import org.scalawiki.dto.cmd.query.prop.iiprop.{IiProp, Timestamp}
-import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
+import org.scalawiki.dto.cmd.query.prop.rvprop._
 import org.scalawiki.dto.cmd.query.prop.{InProp, Revisions, SubjectId, _}
-import org.scalawiki.dto.cmd.query.{Generator, Query, TitlesParam}
+import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query, TitlesParam}
 import org.scalawiki.dto.{Contributor, Page}
 import org.scalawiki.time.TimeRange
 
@@ -83,6 +83,20 @@ trait QueryLibrary {
     Prop(Links(PlNamespace(Seq(ns)), PlLimit("max"))),
     TitlesParam(Seq(title))
   ))
+
+  def pageRevisionsQuery(id: Long): Action = {
+    import org.scalawiki.dto.cmd.query.prop.rvprop._
+    Action(Query(
+      PageIdsParam(Seq(id)),
+      Prop(
+        Info(),
+        Revisions(
+          RvProp(Content, Ids, Size, User, UserId, rvprop.Timestamp),
+          RvLimit("max")
+        )
+      )
+    ))
+  }
 
   def pageLinksGenerator(title: String, nsSeq: Seq[Int] = Seq.empty) =
     Action(Query(
