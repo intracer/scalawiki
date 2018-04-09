@@ -23,18 +23,19 @@ lazy val commonSettings = Seq(
     "com.github.tomakehurst" % "wiremock" % "2.16.0" % Test
   ),
 
-    dependencyOverrides ++= {
-      Seq(
-        "com.typesafe.akka" %% "akka-actor" % AkkaV,
-        "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
-        "com.google.guava" % "guava" % "20.0",
-        "org.slf4j" % "slf4j-api" % "1.7.25",
-        "commons-codec" % "commons-codec" % "1.10",
-        "org.apache.commons" % "commons-lang3" % "3.6",
-        "com.typesafe" % "config" % "1.3.2",
-        "org.apache.poi" % "poi-ooxml" % "3.13"
-      )
-    },
+  dependencyOverrides ++= {
+    Seq(
+      "com.typesafe.akka" %% "akka-actor" % AkkaV,
+      "org.reactivestreams" % "reactive-streams" % "1.0.2",
+      "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
+      "com.google.guava" % "guava" % "20.0",
+      "org.slf4j" % "slf4j-api" % "1.7.25",
+      "commons-codec" % "commons-codec" % "1.10",
+      "org.apache.commons" % "commons-lang3" % "3.6",
+      "com.typesafe" % "config" % "1.3.2",
+      "org.apache.poi" % "poi-ooxml" % "3.13"
+    )
+  },
 
   resolvers := Seq("spray repo" at "http://repo.spray.io",
     "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
@@ -73,6 +74,7 @@ lazy val `scalawiki-core` =
         "io.spray" %% "spray-caching" % SprayV,
         "com.typesafe.play" %% "play-json" % PlayJsonV,
         "com.typesafe.akka" %% "akka-actor" % AkkaV,
+        "com.typesafe.akka" %% "akka-stream" % AkkaV,
         "com.typesafe.akka" %% "akka-http" % AkkaHttpV,
         "com.typesafe" % "config" % "1.3.2",
         "com.iheart" %% "ficus" % "1.4.3",
@@ -135,6 +137,7 @@ lazy val `http-extensions` =
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-http" % AkkaHttpV,
+      "com.typesafe.akka" %% "akka-stream" % AkkaV,
       "com.typesafe.akka" %% "akka-actor" % AkkaV,
       "com.typesafe.play" %% "twirl-api" % TwirlV,
       "org.scalacheck" %% "scalacheck" % "1.13.5" % Test

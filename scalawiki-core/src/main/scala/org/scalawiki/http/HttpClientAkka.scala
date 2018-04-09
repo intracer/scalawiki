@@ -5,7 +5,7 @@ import java.nio.file.Paths
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.client.RequestBuilding._
-import akka.http.scaladsl.coding.Gzip
+import akka.http.scaladsl.coding.{Deflate, Gzip, NoCoding}
 import akka.http.scaladsl.model.Multipart.FormData.BodyPart
 import akka.http.scaladsl.model.headers.{HttpEncodings, `Accept-Encoding`, `User-Agent`}
 import akka.http.scaladsl.model.{Uri, _}
@@ -27,7 +27,18 @@ class HttpClientAkka(val system: ActorSystem = MwBot.system) extends HttpClient 
 
   import system.dispatcher
 
-  def decode: HttpResponse => HttpResponse = resp => Gzip.decode(resp)
+  def decodeResponse(response: HttpResponse): HttpResponse = {
+    val decoder = response.encoding match {
+      case HttpEncodings.gzip ⇒
+        Gzip
+      case HttpEncodings.deflate ⇒
+        Deflate
+      case HttpEncodings.identity ⇒
+        NoCoding
+    }
+
+    decoder.decodeMessage(response)
+  }
 
   def sendReceive: HttpRequest => Future[HttpResponse] = req => Http().singleRequest(req)
 
@@ -43,7 +54,7 @@ class HttpClientAkka(val system: ActorSystem = MwBot.system) extends HttpClient 
       `User-Agent`(userAgent)) ~>
       cookied(
         sendReceive
-          ~> decode
+          ~> decodeResponse
       )
   }
 
