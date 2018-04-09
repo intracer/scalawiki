@@ -6,11 +6,11 @@ class SiteSpec extends Specification {
 
   "host" should {
     "wikipedia" in {
-      Site.host("en.wikipedia.org") === Site(Some("en"), "wikipedia", "en.wikipedia.org", "https", "/w")
+      Site.host("en.wikipedia.org") === Site(Some("en"), "wikipedia", "en.wikipedia.org", "https", 80, "/w")
     }
 
     "wikimedia" in {
-      Site.host("commons.wikimedia.org") === Site(None, "commons", "commons.wikimedia.org", "https", "/w")
+      Site.host("commons.wikimedia.org") === Site(None, "commons", "commons.wikimedia.org", "https", 80, "/w")
     }
   }
 

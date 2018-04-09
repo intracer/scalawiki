@@ -6,6 +6,7 @@ case class Site(langCode: Option[String],
                 family: String,
                 domain: String,
                 protocol: String = "https",
+                port: Int = 80,
                 scriptPath: String = "/w",
                 script: String = "/w/index.php",
                 articlePath: String = "/wiki") {
@@ -38,7 +39,7 @@ object Site {
   val localhost = {
     val scriptPath = "/mediawiki"
     val script = scriptPath + "/index.php"
-    Site(None, "wikipedia", "localhost", "http", scriptPath, script, articlePath = script)
+    Site(None, "wikipedia", "localhost", "http", 8080, scriptPath, script, articlePath = script)
   }
 
   def project(langCode: String, family: String) =
@@ -46,12 +47,12 @@ object Site {
 
   def wikimedia(code: String) = Site(None, code, s"$code.wikimedia.org")
 
-  def host(host: String): Site = {
+  def host(host: String, port: Int = 80, protocol: String = "https"): Site = {
     val list = host.split("\\.").toList
     list match {
       case code :: "wikimedia" :: "org" :: Nil => wikimedia(code)
       case code :: family :: "org" :: Nil => project(code, family)
-      case _ => Site(None, host, host)
+      case _ => Site(None, host, host, protocol, port)
     }
   }
 }

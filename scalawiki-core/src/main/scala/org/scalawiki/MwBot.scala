@@ -89,7 +89,7 @@ class MwBotImpl(val site: Site,
 
   def host = site.domain
 
-  val baseUrl: String = site.protocol + "://" + host + site.scriptPath
+  val baseUrl: String = site.protocol + "://" + host + ":" + site.port + site.scriptPath
 
   val indexUrl = baseUrl + "/index.php"
 
@@ -129,7 +129,8 @@ class MwBotImpl(val site: Site,
           }
         case _ =>
           val html = Jsoup.parse(body)
-          val details = html.select("code").first().text()
+          val elements = html.select("code")
+          val details = if (!elements.isEmpty) elements.first().text() else body
           throw MwException(response.status.toString(), details)
       }
     }
@@ -256,11 +257,11 @@ object MwBot {
 
   val cache: Cache[MwBot] = LruCache()
 
-  def fromHost(host: String,
+  def fromHost(host: String, port: Int = 80, protocol: String = "https",
                loginInfo: Option[LoginInfo] = LoginInfo.fromEnv(),
                http: HttpClient = HttpClient.get(MwBot.system)
               ): MwBot = {
-    fromSite(Site.host(host), loginInfo, http)
+    fromSite(Site.host(host, port, protocol), loginInfo, http)
   }
 
   def fromSite(site: Site,

@@ -8,6 +8,7 @@ import org.specs2.specification.BeforeAfterAll
 trait StubServer extends BeforeAfterAll {
   val Port = 8080
   val Host = "localhost"
+  val Protocol = "http"
   val wireMockServer = new WireMockServer(wireMockConfig().port(Port))
 
   override def beforeAll = {
@@ -17,5 +18,5 @@ trait StubServer extends BeforeAfterAll {
 
   override def afterAll = wireMockServer.stop()
 
-  def url(path: String) = s"http://$Host:$Port$path"
+  def url(path: String) = s"$Protocol://$Host:$Port$path"
 }
