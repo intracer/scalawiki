@@ -3,7 +3,7 @@ package org.scalawiki.wiremock
 import akka.actor.ActorSystem
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, stubFor, urlEqualTo}
-import org.scalawiki.{LoginInfo, MwBot}
+import org.scalawiki.MwBot
 import org.scalawiki.http.HttpClientAkka
 import org.specs2.mutable.Specification
 
@@ -37,15 +37,20 @@ class BaseWireMockSpec extends Specification with StubServer {
 
   def stubResponse(params: Map[String, String], code: Int, body: String) = {
 
-    val withParams = params.foldLeft(post(urlEqualTo(apiUrl))) { case (builder, (key, value)) =>
-      builder.withQueryParam(key, WireMock.equalTo(value))
-    }
+    val noParams = post(urlEqualTo(apiUrl))
 
+    // TODO add wiremock support for POST params
+//    val withParams = params.foldLeft(noParams) { case (builder, (key, value)) =>
+//      builder.withQueryParam(key, WireMock.equalTo(value))
+//    }
 
-    stubFor(withParams.willReturn(
+    val postParams = noParams.withRequestBody(new BodyParamsMatcher(params))
+
+    stubFor(postParams.willReturn(
       aResponse()
         .withStatus(code)
         .withBody(body)
     ))
   }
+
 }
