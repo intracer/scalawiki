@@ -11,7 +11,7 @@ class UserStat(revisionStats: Seq[RevisionStat]) {
 
   val byUserAddedOrRemoved: Seq[(String, Long)] = byUser.toSeq.map {
     case (user, statSeq) => (user, statSeq.map(_.byUserSize(user)).sum)
-  }.sortBy{
+  }.sortBy {
     case (user, size) => -size
   }
 
@@ -19,12 +19,10 @@ class UserStat(revisionStats: Seq[RevisionStat]) {
     val header = "{| class='wikitable sortable'\n" +
       "|+ users\n" + "! user !! added or rewritten !! articles number !! article list\n"
 
-    header + byUserAddedOrRemoved.map{
+    header + byUserAddedOrRemoved.map {
       case (user, size) =>
         s"| [[User:$user|$user]] || $size || ${byUser(user).size} || ${byUser(user).map(rs => s"[[${rs.page.title}]] ${rs.byUserSize(user)}").mkString("<br>")}"
     }
-      .mkString("\n|-\n", "\n|-\n", "")  + "\n|}"
+      .mkString("\n|-\n", "\n|-\n", "") + "\n|}"
   }
-
-
 }

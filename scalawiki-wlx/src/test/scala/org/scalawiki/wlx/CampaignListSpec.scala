@@ -27,7 +27,7 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
 
   def categoryQueryBot(title: String, responseFile: String) = {
     val response = resourceAsString(responseFile)
-    val cmd = new HttpStub(Map("action" -> "query", "list" -> "categorymembers",
+    val cmd = HttpStub(Map("action" -> "query", "list" -> "categorymembers",
       "cmtitle" -> title,
       "cmnamespace" -> Namespace.CATEGORY.toString,
       "continue" -> "", "cmlimit" -> "max"),

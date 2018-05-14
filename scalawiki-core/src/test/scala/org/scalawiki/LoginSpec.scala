@@ -43,8 +43,8 @@ class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
   "login" should {
     "get token and login" in { implicit ee: EE =>
       val bot = getBot(
-        new HttpStub(loginAction, needToken),
-        new HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), loginSuccess)
+        HttpStub(loginAction, needToken),
+        HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), loginSuccess)
       )
 
       bot.login(user, password).map(_ === "Success").await
@@ -53,8 +53,8 @@ class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
 
   "return wrong password" in { implicit ee: EE =>
     val bot = getBot(
-      new HttpStub(loginAction, needToken),
-      new HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), wrongPass)
+      HttpStub(loginAction, needToken),
+      HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), wrongPass)
     )
 
     bot.login(user, password).map(_ === "WrongPass").await
@@ -62,8 +62,8 @@ class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
 
   "throttler" in { implicit ee: EE =>
     val bot = getBot(
-      new HttpStub(loginAction, needToken),
-      new HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), throttled)
+      HttpStub(loginAction, needToken),
+      HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), throttled)
     )
 
     bot.login(user, password).map(_ === "Throttled").await
@@ -74,7 +74,7 @@ class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
     val err = TestUtils.resourceAsString("/org/scalawiki/Wikimedia Error.html")
 
     val bot = getBot(
-      new HttpStub(loginAction, err, contentType = ContentType(MediaTypes.`text/html`, HttpCharsets.`UTF-8`))
+      HttpStub(loginAction, err, contentType = ContentType(MediaTypes.`text/html`, HttpCharsets.`UTF-8`))
     )
 
     val f = bot.login(user, password)

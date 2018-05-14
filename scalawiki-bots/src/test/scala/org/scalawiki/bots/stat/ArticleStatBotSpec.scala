@@ -61,7 +61,7 @@ class ArticleStatBotSpec extends Specification with MockBotSpec {
             |{"revid": 1, "user": "u1", "comment": "c1", "*": "$pageText1", "parentid": 0, "timestamp": "2016-06-07T16:45:30Z"}] }
             |}}}""".stripMargin
 
-      val commands = listCommands :+ new HttpStub(revsRequest, revResponse)
+      val commands = listCommands :+ HttpStub(revsRequest, revResponse)
 
       val asb = new ArticleStatBot() {
         override val bot = getBot(commands: _*)
@@ -110,8 +110,8 @@ class ArticleStatBotSpec extends Specification with MockBotSpec {
     )
 
     Seq(
-      new HttpStub(newParams, newResponse),
-      new HttpStub(improvedParams, improvedResponse)
+      HttpStub(newParams, newResponse),
+      HttpStub(improvedParams, improvedResponse)
     )
   }
 }
