@@ -49,40 +49,40 @@ class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
 
       bot.login(user, password).map(_ === "Success").await
     }
+
+    "return wrong password" in { implicit ee: EE =>
+      val bot = getBot(
+        HttpStub(loginAction, needToken),
+        HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), wrongPass)
+      )
+
+      bot.login(user, password).map(_ === "WrongPass").await
+    }
+
+    "throttler" in { implicit ee: EE =>
+      val bot = getBot(
+        HttpStub(loginAction, needToken),
+        HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), throttled)
+      )
+
+      bot.login(user, password).map(_ === "Throttled").await
+    }
+
+    "err503" in { implicit ee: EE =>
+
+      val err = TestUtils.resourceAsString("/org/scalawiki/Wikimedia Error.html")
+
+      val bot = getBot(
+        HttpStub(loginAction, err, contentType = ContentType(MediaTypes.`text/html`, HttpCharsets.`UTF-8`))
+      )
+
+      val f = bot.login(user, password)
+
+      f.failed.map {
+        case e: MwException =>
+          e.info must contain("Error: 503, Service Unavailable")
+      }.await
+    }
   }
 
-  "return wrong password" in { implicit ee: EE =>
-    val bot = getBot(
-      HttpStub(loginAction, needToken),
-      HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), wrongPass)
-    )
-
-    bot.login(user, password).map(_ === "WrongPass").await
-  }
-
-  "throttler" in { implicit ee: EE =>
-    val bot = getBot(
-      HttpStub(loginAction, needToken),
-      HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), throttled)
-    )
-
-    bot.login(user, password).map(_ === "Throttled").await
-  }
-
-  "err503" in { implicit ee: EE =>
-
-    val err = TestUtils.resourceAsString("/org/scalawiki/Wikimedia Error.html")
-
-    val bot = getBot(
-      HttpStub(loginAction, err, contentType = ContentType(MediaTypes.`text/html`, HttpCharsets.`UTF-8`))
-    )
-
-    val f = bot.login(user, password)
-
-    f.failed.map {
-      case e: MwException =>
-        e.info must contain("Error: 503, Service Unavailable")
-    }.await
-
-  }
 }
