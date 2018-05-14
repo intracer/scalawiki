@@ -88,7 +88,7 @@ class ArticleStatBotSpec extends Specification with MockBotSpec {
   def checkStat(stat: UserStat, users: Set[String], byUser: Map[String, Seq[RevisionStat]], byUserAddedOrRemoved: Seq[(String, Long)]) = {
     stat.users === users
     stat.byUser === byUser
-    stat.byUserAddedOrRemoved === byUser
+    stat.byUserAddedOrRemoved === byUserAddedOrRemoved
   }
 
   val emptyResponse =

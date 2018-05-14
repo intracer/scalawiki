@@ -2,6 +2,8 @@ package org.scalawiki.wlx.query
 
 import java.time.ZonedDateTime
 
+import akka.http.caching.LfuCache
+import akka.http.caching.scaladsl.Cache
 import org.scalawiki.WithBot
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.prop._
@@ -113,33 +115,9 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
 
 }
 
-class MonumentQueryCached(underlying: MonumentQuery) extends MonumentQuery {
-
-  override def contest = underlying.contest
-
-  import spray.caching.{Cache, LruCache}
-
-  val cache: Cache[Seq[Monument]] = LruCache()
-
-  override def byMonumentTemplateAsync(template: String, date: Option[ZonedDateTime] = None): Future[Seq[Monument]] = cache(template) {
-    underlying.byMonumentTemplateAsync(template, date)
-  }
-
-  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false, date: Option[ZonedDateTime] = None): Future[Seq[Monument]] = cache(page) {
-    underlying.byPageAsync(page, template: String, pageIsTemplate, date)
-  }
-}
-
-
 object MonumentQuery {
 
-  def create(contest: Contest, caching: Boolean = false, pickling: Boolean = false): MonumentQuery = {
-    val api = new MonumentQueryApi(contest)
-
-    if (caching)
-      new MonumentQueryCached(api)
-    else api
-  }
+  def create(contest: Contest): MonumentQuery = new MonumentQueryApi(contest)
 
 }
 

@@ -1,15 +1,15 @@
 package org.scalawiki.bots.stat
 
 class UserStat(revisionStats: Seq[RevisionStat]) {
-  val users = revisionStats.foldLeft(Set.empty[String]) {
+  val users: Set[String] = revisionStats.foldLeft(Set.empty[String]) {
     (users, stats) => users ++ stats.users
   }
 
-  val byUser = users.map { user =>
+  val byUser: Map[String, Seq[RevisionStat]] = users.map { user =>
     (user, revisionStats.filter(_.users.contains(user)).sortBy(-_.byUserSize(user)))
   }.toMap
 
-  val byUserAddedOrRemoved = byUser.toSeq.map {
+  val byUserAddedOrRemoved: Seq[(String, Long)] = byUser.toSeq.map {
     case (user, statSeq) => (user, statSeq.map(_.byUserSize(user)).sum)
   }.sortBy{
     case (user, size) => -size

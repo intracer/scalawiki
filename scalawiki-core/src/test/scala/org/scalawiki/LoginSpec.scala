@@ -7,8 +7,6 @@ import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.ThrownExpectations
 import org.specs2.mutable.Specification
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
 
   type EE = ExecutionEnv
