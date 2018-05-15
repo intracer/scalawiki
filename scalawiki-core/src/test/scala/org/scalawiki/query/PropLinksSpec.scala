@@ -67,11 +67,11 @@ class PropLinksSpec extends Specification with MockBotSpec {
           |}""".stripMargin
 
       val commands = Seq(
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "titles" -> title,
           "prop" -> "links",
           "continue" -> ""), response1),
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "titles" -> title,
           "prop" -> "links",
           "continue" -> "||",

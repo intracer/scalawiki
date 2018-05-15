@@ -148,8 +148,6 @@ class PereiaslavSpec extends Specification with BeforeEach with Mockito {
       text
     }
 
-    MwBot.cache(host) {
-      ukWiki
-    }
+    MwBot.cache(host, () => Future.successful(ukWiki))
   }
 }

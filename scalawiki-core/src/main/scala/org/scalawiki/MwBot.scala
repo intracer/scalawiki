@@ -2,6 +2,7 @@ package org.scalawiki
 
 import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
+import akka.http.caching.LfuCache
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
@@ -234,7 +235,7 @@ class MwBotImpl(val site: Site,
 
 object MwBot {
 
-  import spray.caching.{Cache, LruCache}
+  import akka.http.caching.scaladsl.Cache
 
   import scala.concurrent.ExecutionContext.Implicits.global
   import scala.concurrent._
@@ -254,7 +255,7 @@ object MwBot {
     bot
   }
 
-  val cache: Cache[MwBot] = LruCache()
+  val cache: Cache[String, MwBot] = LfuCache(system)
 
   def fromHost(host: String,
                loginInfo: Option[LoginInfo] = LoginInfo.fromEnv(),
@@ -267,11 +268,11 @@ object MwBot {
                loginInfo: Option[LoginInfo] = LoginInfo.fromEnv(),
                http: HttpClient = HttpClient.get(MwBot.system)
               ): MwBot = {
-    Await.result(cache(site.domain) {
+    Await.result(cache(site.domain, { () =>
       Future {
         create(site, loginInfo, http)
       }
-    }, 1.minute)
+    }), 1.minute)
   }
 
   val commons: String = Site.commons.domain

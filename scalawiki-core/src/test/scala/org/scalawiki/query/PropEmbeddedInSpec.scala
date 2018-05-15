@@ -17,7 +17,7 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
         "action" -> "query", "list" -> queryType, "eilimit" -> "max",
         "eititle" -> "Template:SomeTemplate", "einamespace" -> "", "continue" -> ""
       )
-      val bot = getBot(new HttpStub(query, response))
+      val bot = getBot(HttpStub(query, response))
 
       val result = bot.page("Template:SomeTemplate").whatTranscludesHere().await
       result must have size 0
@@ -38,7 +38,7 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
         "eititle" -> "Template:SomeTemplate", "einamespace" -> "", "continue" -> ""
       )
 
-      val bot = getBot(new HttpStub(query, response))
+      val bot = getBot(HttpStub(query, response))
 
       val result = bot.page("Template:SomeTemplate").whatTranscludesHere().await
       result must have size 1
@@ -62,7 +62,7 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
         "einamespace" -> "", "continue" -> ""
       )
 
-      val bot = getBot(new HttpStub(query, response))
+      val bot = getBot(HttpStub(query, response))
 
       val result = bot.page("Template:SomeTemplate").whatTranscludesHere().await
       result must have size 2
@@ -88,8 +88,8 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
         "eititle" -> "Template:SomeTemplate", "einamespace" -> "")
 
       val commands = Seq(
-        new HttpStub(query + ("continue" -> ""), response1),
-        new HttpStub(query ++ Map("continue" -> "-||", "eicontinue" -> "10|Stub|6674690"), response2)
+        HttpStub(query + ("continue" -> ""), response1),
+        HttpStub(query ++ Map("continue" -> "-||", "eicontinue" -> "10|Stub|6674690"), response2)
       )
 
       val bot = getBot(commands: _*)

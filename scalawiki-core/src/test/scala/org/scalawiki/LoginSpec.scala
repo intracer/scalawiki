@@ -6,12 +6,15 @@ import org.scalawiki.util.{HttpStub, MockBotSpec, TestUtils}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.ThrownExpectations
 import org.specs2.mutable.Specification
-
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
 
   type EE = ExecutionEnv
+
+  val timeout = 5 seconds
+
+  sequential
 
   val needToken =
     """{ "login": {
@@ -45,46 +48,46 @@ class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
   "login" should {
     "get token and login" in { implicit ee: EE =>
       val bot = getBot(
-        new HttpStub(loginAction, needToken),
-        new HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), loginSuccess)
+        HttpStub(loginAction, needToken),
+        HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), loginSuccess)
       )
 
-      bot.login(user, password).map(_ === "Success").await
+      bot.login(user, password).map(_ === "Success").awaitFor(timeout)
+    }
+
+    "return wrong password" in { implicit ee: EE =>
+      val bot = getBot(
+        HttpStub(loginAction, needToken),
+        HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), wrongPass)
+      )
+
+      bot.login(user, password).map(_ === "WrongPass").awaitFor(timeout)
+    }
+
+    "throttler" in { implicit ee: EE =>
+      val bot = getBot(
+        HttpStub(loginAction, needToken),
+        HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), throttled)
+      )
+
+      bot.login(user, password).map(_ === "Throttled").awaitFor(timeout)
+    }
+
+    "err503" in { implicit ee: EE =>
+
+      val err = TestUtils.resourceAsString("/org/scalawiki/Wikimedia Error.html")
+
+      val bot = getBot(
+        HttpStub(loginAction, err, contentType = ContentType(MediaTypes.`text/html`, HttpCharsets.`UTF-8`))
+      )
+
+      val f = bot.login(user, password)
+
+      f.failed.map {
+        case e: MwException =>
+          e.info must contain("Error: 503, Service Unavailable")
+      }.awaitFor(timeout)
     }
   }
 
-  "return wrong password" in { implicit ee: EE =>
-    val bot = getBot(
-      new HttpStub(loginAction, needToken),
-      new HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), wrongPass)
-    )
-
-    bot.login(user, password).map(_ === "WrongPass").await
-  }
-
-  "throttler" in { implicit ee: EE =>
-    val bot = getBot(
-      new HttpStub(loginAction, needToken),
-      new HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), throttled)
-    )
-
-    bot.login(user, password).map(_ === "Throttled").await
-  }
-
-  "err503" in { implicit ee: EE =>
-
-    val err = TestUtils.resourceAsString("/org/scalawiki/Wikimedia Error.html")
-
-    val bot = getBot(
-      new HttpStub(loginAction, err, contentType = ContentType(MediaTypes.`text/html`, HttpCharsets.`UTF-8`))
-    )
-
-    val f = bot.login(user, password)
-
-    f.failed.map {
-      case e: MwException =>
-        e.info must contain("Error: 503, Service Unavailable")
-    }.await
-
-  }
 }

@@ -29,7 +29,7 @@ class PageQuerySpec extends Specification {
                           "revisions": [{ "revid": 2, "userid": 2, "user": "u2", "comment": "c2", "*": "$pageText2"}]}
             }}}"""
 
-      val bot = getBot(new HttpStub(
+      val bot = getBot(HttpStub(
         Map(
           "pageids" -> "569559|4571809",
           "action" -> "query",
@@ -60,7 +60,7 @@ class PageQuerySpec extends Specification {
                      |    }
                      |}""".stripMargin
 
-    val bot = getBot(new HttpStub(
+    val bot = getBot(HttpStub(
       Map(
         "titles" -> "Absent",
         "action" -> "query",
