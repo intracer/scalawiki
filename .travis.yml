@@ -10,12 +10,13 @@ cache:
 language: scala
 
 scala:
-   - 2.11.8
+   - 2.12.6
+   - 2.11.12
 
 jdk:
   - oraclejdk8
 
-script: "sbt clean coverage test"
+script: "sbt clean coverage 'testOnly -- xonly timefactor 5'"
 after_success: 
   - sbt coveralls
   - bash <(curl -s https://codecov.io/bash)

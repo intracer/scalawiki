@@ -82,8 +82,8 @@ class PropLangLinksSpec extends Specification with MockBotSpec {
         "gcmlimit" -> "2", "lllimit" -> "2")
 
       val commands = Seq(
-        new HttpStub(query + ("continue" -> ""), response1),
-        new HttpStub(query ++ Map(
+        HttpStub(query + ("continue" -> ""), response1),
+        HttpStub(query ++ Map(
           "continue" -> "||",
           "llcontinue" -> "6863578|cs"
         ), response2)

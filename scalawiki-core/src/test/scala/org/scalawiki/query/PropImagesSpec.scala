@@ -37,7 +37,7 @@ class PropImagesSpec extends Specification with MockBotSpec {
 
 
       val commands = Seq(
-        new HttpStub(Map("action" -> "query", "titles" -> "Albert_Einstein", "prop" -> "images", "format" -> "json", "continue" -> ""), response)
+        HttpStub(Map("action" -> "query", "titles" -> "Albert_Einstein", "prop" -> "images", "format" -> "json", "continue" -> ""), response)
       )
 
       val bot = getBot(commands: _*)
@@ -93,7 +93,7 @@ class PropImagesSpec extends Specification with MockBotSpec {
 
 
     val commands = Seq(
-      new HttpStub(Map("action" -> "query", "titles" -> "Commons:Wiki_Loves_Earth_2015/Winners",
+      HttpStub(Map("action" -> "query", "titles" -> "Commons:Wiki_Loves_Earth_2015/Winners",
         "prop" -> "imageinfo", "generator" -> "images", "format" -> "json", "continue" -> ""), response)
     )
 
