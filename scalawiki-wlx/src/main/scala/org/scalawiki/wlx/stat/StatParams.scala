@@ -36,9 +36,14 @@ object StatParams {
     if (parsed.handleErrors()) sys.exit(1)
     if (parsed.handleHelp()) sys.exit(0)
 
+    val year = parsed.values.getOrElse("year", Seq(ZonedDateTime.now.getYear)).asInstanceOf[Seq[Int]].sorted
+    val startYear = parsed.values.getOrElse("startyear", Seq(year)).asInstanceOf[Seq[Int]].sorted
+
+    val years = startYear.head to year.head
+
     StatConfig(
       campaign = parsed.values("campaign").asInstanceOf[String],
-      years = parsed.values.getOrElse("year", Seq(ZonedDateTime.now.getYear)).asInstanceOf[Seq[Int]].sorted,
+      years = years,
       regions = parsed.values.getOrElse("region", Nil).asInstanceOf[Seq[String]],
       exceptRegions = parsed.values.getOrElse("exceptregion", Nil).asInstanceOf[Seq[String]],
       cities = parsed.values.getOrElse("city", Nil).asInstanceOf[Seq[String]],
