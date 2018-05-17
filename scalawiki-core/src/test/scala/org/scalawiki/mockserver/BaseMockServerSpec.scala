@@ -23,7 +23,7 @@ class BaseMockServerSpec extends Specification with StubServer {
   val http = new HttpClientAkka(system)
   val apiUrl = "/w/api.php"
 
-  def getBot: MwBot = MwBot.fromHost(Host, Port, Protocol)
+  def getBot: MwBot = MwBot.fromHost(Host, Protocol, Some(Port))
 
   def login(wiki: MwBot, username: String, passwd: String): String =
     await(wiki.login(username, passwd))
@@ -31,7 +31,6 @@ class BaseMockServerSpec extends Specification with StubServer {
   def await[T](future: Future[T]): T = Await.result(future, http.timeout)
 
   def stubResponse(path: String, code: Int, body: String) = {
-    //new MockServerClient(Host, Port)
     mockServer.when(request()
       .withMethod("POST")
       .withPath(path)
