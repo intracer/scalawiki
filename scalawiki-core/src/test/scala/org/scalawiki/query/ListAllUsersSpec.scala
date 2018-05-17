@@ -30,7 +30,7 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
           }}"""
 
       val commands = Seq(
-        new HttpStub(Map("action" -> "query", "list" -> queryType, "continue" -> ""), response1)
+        HttpStub(Map("action" -> "query", "list" -> queryType, "continue" -> ""), response1)
       )
 
       val bot = getBot(commands: _*)
@@ -83,7 +83,7 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
         "auprop" -> "registration|editcount|blockinfo",
         "continue" -> "")
 
-      val bot = getBot(Seq(new HttpStub(query, response1)): _*)
+      val bot = getBot(Seq(HttpStub(query, response1)): _*)
 
       val action =
         Action(
@@ -141,8 +141,8 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
       val query = Map("action" -> "query", "list" -> queryType)
 
       val commands = Seq(
-        new HttpStub(query + ("continue" -> ""), response1),
-        new HttpStub(query ++ Map("aufrom" -> "! ! !", "continue" -> "-||"), response2)
+        HttpStub(query + ("continue" -> ""), response1),
+        HttpStub(query ++ Map("aufrom" -> "! ! !", "continue" -> "-||"), response2)
       )
 
       val bot = getBot(commands: _*)

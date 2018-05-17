@@ -4,6 +4,10 @@ import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
+import akka.actor.ActorSystem
+import akka.http.caching.LfuCache
+import akka.http.caching.javadsl.CachingSettings
+import akka.http.caching.scaladsl.Cache
 import org.scalawiki.MwBot
 import org.scalawiki.dto.{Namespace, Page}
 import org.scalawiki.dto.cmd.Action
@@ -19,9 +23,9 @@ import scala.concurrent.Future
 
 object CatScan {
 
-  import spray.caching.{Cache, LruCache}
+  val system = ActorSystem()
 
-  val cache: Cache[Set[String]] = LruCache(maxCapacity = 650000, initialCapacity = 650000)
+  val cache: Cache[String, Set[String]] = LfuCache(system)
 
   val total = Collections.newSetFromMap[String](new ConcurrentHashMap())
   val noUkWiki = Collections.newSetFromMap[String](new ConcurrentHashMap())
@@ -72,11 +76,11 @@ object CatScan {
 
   def getCount(bot: MwBot, title: String): Future[Set[String]] = {
     bot.system.log.info(s"Enter: $title, cache size: ${cache.size}")
-    cache(title) {
+    cache(title, { () =>
       Future {
         Set.empty[String]
       }
-    }
+    })
     val subCats = catsWithLinks(title, namespaces = Set(Namespace.CATEGORY), bot).flatMap { pages =>
       bot.system.log.info(s"Category $title has ${pages.size} subcats")
 

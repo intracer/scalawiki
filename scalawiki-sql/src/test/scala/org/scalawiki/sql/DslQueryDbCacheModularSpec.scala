@@ -218,7 +218,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
 
       val commands = Seq(
         // fetch for page2 content for cache
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "pageids" -> pageIds.drop(5).mkString("|"),
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid", "continue" -> ""),
           pagesJson(pageJsons.drop(5)))
@@ -266,7 +266,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
       }
 
       val commands = Seq(
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid",
           "continue" -> ""), pagesJson(pageJsons))
@@ -315,12 +315,12 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
 
       val commands = Seq(
         // fetch for page2 content for cache
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "pageids" -> pageIds.slice(5, 55).mkString("|"),
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid", "continue" -> ""),
           pagesJson(pageJsons.slice(5, 55))),
 
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "pageids" -> pageIds.slice(55, 95).mkString("|"),
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid", "continue" -> ""),
           pagesJson(pageJsons.slice(55, 95)))

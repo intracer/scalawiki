@@ -86,13 +86,13 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
 
   "get revisions text with generator and caching" should {
     "first run should use generator" in {
-      val expectedCommands = Seq(new HttpStub(Map(
+      val expectedCommands = Seq(HttpStub(Map(
         "action" -> "query",
         "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
         "prop" -> "info|revisions", "rvprop" -> "ids|user|userid", // TODO remove user?
         "continue" -> ""), responseWithRevIds()),
 
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid",
           "continue" -> ""), responseWithContent())
@@ -118,17 +118,17 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
     "from cache in" in {
 
       val expectedCommands = Seq(
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), responseWithRevIds()),
 
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid",
           "continue" -> ""), responseWithContent()),
 
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), responseWithRevIds())
@@ -174,35 +174,35 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
     "add page to cache" in {
       val expectedCommands = Seq(
         // query for page 1 ids in category
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), pagesJson(Seq(page1()))
         ),
 
         // query for page 1 content
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(Some(pageText1))))
         ),
 
         // query for page 1 and page2  ids in category
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(), page2()))
         ),
 
         // fetch for page2 content for cache
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "pageids" -> "4571809",
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid", "continue" -> ""),
           pagesJson(Seq(page2(Some(pageText2))))
         ),
 
         // query for page 1 and page2  ids in category. content should be in cache by now
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(), page2()))
@@ -266,31 +266,31 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
       // TODO more pages?
 
       val expectedCommands = Seq(
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(revId = 11)))
         ),
 
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(Some(pageText1), revId = 11)))
         ),
 
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(revId = 12)))
         ),
 
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|content|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(Some(pageText2), revId = 12)))
         ),
 
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "info|revisions", "rvprop" -> "ids|user|userid",
           "continue" -> ""), pagesJson(Seq(page1(revId = 12)))

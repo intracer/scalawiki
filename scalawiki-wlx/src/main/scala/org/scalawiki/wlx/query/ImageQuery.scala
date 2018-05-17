@@ -1,5 +1,6 @@
 package org.scalawiki.wlx.query
 
+import akka.http.caching.scaladsl.Cache
 import org.scalawiki.dto.cmd.query.Generator
 import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.{Image, Namespace}
@@ -50,31 +51,8 @@ class ImageQueryApi extends ImageQuery with WithBot with QueryLibrary {
 
 }
 
-class ImageQueryCached(underlying: ImageQuery) extends ImageQuery {
-
-  import spray.caching.{Cache, LruCache}
-
-  val cache: Cache[Seq[Image]] = LruCache()
-
-  override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]] =
-    cache(category) {
-      underlying.imagesFromCategoryAsync(category, contest)
-    }
-
-  override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]] =
-    cache(template) {
-      underlying.imagesWithTemplateAsync(template, contest)
-    }
-}
-
-
 object ImageQuery {
 
-  def create(db: Boolean = false, caching: Boolean = true, pickling: Boolean = false): ImageQuery = {
-    val query = new ImageQueryApi
+  def create(db: Boolean = false): ImageQuery = new ImageQueryApi
 
-    if (caching)
-      new ImageQueryCached(if (pickling) query else query) //          new ImageQueryPickling(api, contest)
-    else query
-  }
 }

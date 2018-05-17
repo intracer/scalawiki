@@ -11,7 +11,7 @@ class MwBotSpec extends Specification with MockBotSpec with Mockito {
     "return a page text" in {
       val pageText = "some vandalism"
 
-      val bot = getBot(new HttpStub(Map("title" -> "PageTitle", "action" -> "raw"), pageText, "/w/index.php"))
+      val bot = getBot(HttpStub(Map("title" -> "PageTitle", "action" -> "raw"), pageText, "/w/index.php"))
 
       bot.pageText("pageTitle").await === pageText
     }
@@ -20,7 +20,7 @@ class MwBotSpec extends Specification with MockBotSpec with Mockito {
   "get missing page text" should {
     "return error" in {
 
-      val bot = getBot(new HttpStub(Map("title" -> "PageTitle", "action" -> "raw"), null, "/w/index.php"))
+      val bot = getBot(HttpStub(Map("title" -> "PageTitle", "action" -> "raw"), null, "/w/index.php"))
 
       bot.pageText("pageTitle").await === "" // TODO error
     }

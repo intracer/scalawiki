@@ -24,9 +24,9 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
           | { "categorymembers": [{"pageid": 4571809, "ns": 2, "title": "User:Formator"}] }}""".stripMargin
 
       val commands = Seq(
-        new HttpStub(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max",
+        HttpStub(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max",
           "cmtitle" -> "Category:SomeCategory", "cmnamespace" -> "", "continue" -> ""), response1),
-        new HttpStub(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max",
+        HttpStub(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max",
           "cmtitle" -> "Category:SomeCategory", "cmnamespace" -> "",
           "continue" -> "-||", "cmcontinue" -> "10|Stub|6674690"), response2)
       )
@@ -87,7 +87,7 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
 
 
       val commands = Seq(
-        new HttpStub(Map("action" -> "query", "prop" -> "categoryinfo",
+        HttpStub(Map("action" -> "query", "prop" -> "categoryinfo",
           "titles" -> "Albert Einstein|Category:Foo|Category:Infobox_templates|NoSuchTitle", "continue" -> ""), response1)
       )
 

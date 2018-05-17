@@ -38,7 +38,7 @@ class ListUserContribsSpec extends Specification with MockBotSpec {
 
       val query = Map("action" -> "query", "list" -> queryType, "ucuser" -> "Catrope", "continue" -> "")
       val commands = Seq(
-        new HttpStub(query, response1)
+        HttpStub(query, response1)
       )
 
       val bot = getBot(commands: _*)

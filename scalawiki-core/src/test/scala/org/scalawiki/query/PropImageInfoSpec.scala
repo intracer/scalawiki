@@ -75,11 +75,11 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
     "query by category members" in {
 
       val commands = Seq(
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "imageinfo", "iiprop" -> "timestamp|user|comment",
           "continue" -> ""), response1("cm")),
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
           "prop" -> "imageinfo", "iiprop" -> "timestamp|user|comment",
           "continue" -> "gcmcontinue||",
@@ -103,11 +103,11 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
     "query by page images" in {
 
       val commands = Seq(
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "images", "titles" -> "Commons:SomePage", "gimlimit" -> "max",
           "prop" -> "imageinfo", "iiprop" -> "timestamp|user|comment",
           "continue" -> ""), response1("im")),
-        new HttpStub(Map("action" -> "query",
+        HttpStub(Map("action" -> "query",
           "generator" -> "images", "titles" -> "Commons:SomePage", "gimlimit" -> "max",
           "prop" -> "imageinfo", "iiprop" -> "timestamp|user|comment",
           "continue" -> "gimcontinue||",
@@ -132,7 +132,7 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
       val s = resourceAsString("/org/scalawiki/query/imageMetadata.json")
 
       val commands = Seq(
-        new HttpStub(Map("action" -> "query", "format" -> "json", "prop" -> "imageinfo", "pageids" -> "58655318",
+        HttpStub(Map("action" -> "query", "format" -> "json", "prop" -> "imageinfo", "pageids" -> "58655318",
           "iiprop" -> "metadata", "continue" -> ""), s)
       )
 
