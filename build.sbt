@@ -1,9 +1,9 @@
 import sbt.Keys._
 
-val AkkaV = "2.5.11"
-val AkkaHttpV = "10.0.13"
+val AkkaV = "2.5.12"
+val AkkaHttpV = "10.1.1"
 val PlayJsonV = "2.6.9"
-val SpecsV = "3.9.5"
+val SpecsV = "4.2.0"
 val TwirlV = "1.3.13"
 
 fork in Test in ThisBuild := true
@@ -14,7 +14,7 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.11.11",
   scalaVersion := "2.12.6",
   crossScalaVersions := Seq("2.12.6", "2.11.12"),
-//  conflictManager := ConflictManager.strict,
+  conflictManager := ConflictManager.strict,
 
   libraryDependencies ++= Seq(
     "org.specs2" %% "specs2-core" % SpecsV % Test,
@@ -28,11 +28,15 @@ lazy val commonSettings = Seq(
     Seq(
       "com.typesafe.akka" %% "akka-actor" % AkkaV,
       "org.reactivestreams" % "reactive-streams" % "1.0.2",
-      "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
-      "com.google.guava" % "guava" % "20.0",
       "org.slf4j" % "slf4j-api" % "1.7.25",
       "commons-codec" % "commons-codec" % "1.10",
-      "org.apache.commons" % "commons-lang3" % "3.6",
+      "commons-io" % "commons-io" % "2.6",
+      "org.apache.commons" % "commons-lang3" % "3.7",
+      "com.fasterxml.jackson.core" % "jackson-core" % "2.9.2",
+      "com.fasterxml.jackson.core" % "jackson-annotations" % "2.9.2",
+      "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.2",
+      "joda-time" % "joda-time" % "2.9.9",
+      "ch.qos.logback" % "logback-classic" % "1.2.3",
       "com.typesafe" % "config" % "1.3.2",
       "org.apache.poi" % "poi-ooxml" % "3.13"
     )
@@ -78,7 +82,7 @@ lazy val `scalawiki-core` =
         "com.typesafe" % "config" % "1.3.2",
         "com.iheart" %% "ficus" % "1.4.3",
         "jp.ne.opt" %% "chronoscala" % "0.1.5",
-        "ch.qos.logback" % "logback-classic" % "1.1.3",
+        "ch.qos.logback" % "logback-classic" % "1.2.3",
         "org.sweble.wikitext" % "swc-engine" % "3.1.7" exclude("org.jsoup", "jsoup"),
         "commons-codec" % "commons-codec" % "1.10",
         "org.jsoup" % "jsoup" % "1.8.3",
