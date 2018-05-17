@@ -120,7 +120,8 @@ class MwBotImpl(val site: Site,
     for (response <- http.post(apiUrl, loginParams);
          body <- http.getBody(response)) yield {
 
-      response.entity.contentType match {
+      val contentType = response.entity.contentType
+      contentType match {
         case HttpClient.JSON_UTF8 =>
           val jsResult = Json.parse(body).validate(loginResponseReads)
           if (jsResult.isError) {

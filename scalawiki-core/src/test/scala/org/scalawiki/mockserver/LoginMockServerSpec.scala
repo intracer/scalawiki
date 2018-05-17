@@ -1,9 +1,9 @@
-package org.scalawiki.wiremock
+package org.scalawiki.mockserver
 
-class LoginWireMockSpec extends BaseWireMockSpec {
+class LoginMockServerSpec extends BaseMockServerSpec {
 
-  val (user, absentUser) = ("secretPassword", "wrongPassword")
-  val (password, wrongPassword) = ("userName", "absentUSer")
+  val (user, absentUser) = ("userName", "absentUser")
+  val (password, wrongPassword) = ("secretPassword", "wrongPassword")
 
   def withCredentials(user: String, password: String) =
     Map("action" -> "login", "format" -> "json", "lgname" -> user, "lgpassword" -> password)
@@ -37,8 +37,8 @@ class LoginWireMockSpec extends BaseWireMockSpec {
   "login" should {
     "succesfully login IlyaBot" in {
       val loginAction = withCredentials(user, password)
-      stubOk(loginAction, needToken)
       stubOk(loginAction ++ Map("lgtoken" -> "token-value+\\"), loginSuccess)
+      stubOk(loginAction, needToken)
 
       val result = login(getBot, user, password)
       result === "Success"
@@ -48,10 +48,10 @@ class LoginWireMockSpec extends BaseWireMockSpec {
   "login" should {
     "reject login IlyaBot with wrong passwd" in {
       val loginAction = withCredentials(user, wrongPassword)
-      stubOk(loginAction, needToken)
       stubOk(loginAction ++ Map("lgtoken" -> "token-value+\\"), wrongPassResult)
+      stubOk(loginAction, needToken)
 
-      val result = login(getBot, "IlyaBot", "wrong")
+      val result = login(getBot, user, wrongPassword)
       result === "WrongPass"
     }
   }
@@ -59,8 +59,8 @@ class LoginWireMockSpec extends BaseWireMockSpec {
   "login" should {
     "reject login of wrong user" in {
       val loginAction = withCredentials(absentUser, wrongPassword)
-      stubOk(loginAction, needToken)
       stubOk(loginAction ++ Map("lgtoken" -> "token-value+\\"), notExistsResult)
+      stubOk(loginAction, needToken)
       val result = login(getBot, absentUser, wrongPassword)
       result === "NotExists"
     }

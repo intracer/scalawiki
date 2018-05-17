@@ -14,14 +14,14 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.11.11",
   scalaVersion := "2.12.6",
   crossScalaVersions := Seq("2.12.6", "2.11.12"),
-  conflictManager := ConflictManager.strict,
+//  conflictManager := ConflictManager.strict,
 
   libraryDependencies ++= Seq(
     "org.specs2" %% "specs2-core" % SpecsV % Test,
     "org.specs2" %% "specs2-matcher-extra" % SpecsV % Test,
     "org.specs2" %% "specs2-mock" % SpecsV % Test,
     "com.google.jimfs" % "jimfs" % "1.1" % Test,
-    "com.github.tomakehurst" % "wiremock" % "2.16.0" % Test
+    "org.mock-server" % "mockserver-netty" % "5.3.0" % Test
   ),
 
   dependencyOverrides ++= {
@@ -70,8 +70,6 @@ lazy val `scalawiki-core` =
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= {
       Seq(
-        //        "io.spray" %% "spray-util" % SprayV,
-        // https://mvnrepository.com/artifact/com.typesafe.akka/akka-http-caching
         "com.typesafe.akka" %% "akka-http-caching" % AkkaHttpV,
         "com.typesafe.play" %% "play-json" % PlayJsonV,
         "com.typesafe.akka" %% "akka-actor" % AkkaV,
