@@ -48,12 +48,12 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
 
     "years sorted" in {
       val cfg = StatParams.parse(Seq("-campaign", "wle-ua", "-year", "2016,2014,2015,2012"))
-      cfg === StatConfig("wle-ua", Seq(2012, 2014, 2015, 2016), Nil)
+      cfg === StatConfig("wle-ua", 2012 to 2016, Nil)
     }
 
     "start year" in {
       val cfg = StatParams.parse(Seq("-campaign", "wle-ua", "-y", "2017", "-sy", "2012"))
-      cfg === StatConfig("wle-ua", Seq(2017), Nil)
+      cfg === StatConfig("wle-ua", 2012 to 2017, Nil)
     }
 
     "parse new object rating" in {

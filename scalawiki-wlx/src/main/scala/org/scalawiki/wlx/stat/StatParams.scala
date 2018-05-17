@@ -37,9 +37,9 @@ object StatParams {
     if (parsed.handleHelp()) sys.exit(0)
 
     val year = parsed.values.getOrElse("year", Seq(ZonedDateTime.now.getYear)).asInstanceOf[Seq[Int]].sorted
-    val startYear = parsed.values.getOrElse("startyear", Seq(year)).asInstanceOf[Seq[Int]].sorted
+    val startYear = parsed.values.getOrElse("startyear", Seq(year.head)).asInstanceOf[Seq[Int]].sorted
 
-    val years = startYear.head to year.head
+    val years = startYear.head to year.last
 
     StatConfig(
       campaign = parsed.values("campaign").asInstanceOf[String],
