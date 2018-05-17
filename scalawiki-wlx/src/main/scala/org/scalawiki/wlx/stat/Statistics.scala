@@ -361,6 +361,6 @@ object Statistics {
       cfg = Some(cfg)
     )
 
-    stat.init(total = false)
+    stat.init(total = cfg.years.size > 1)
   }
 }
