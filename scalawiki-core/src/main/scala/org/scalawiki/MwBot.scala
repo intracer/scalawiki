@@ -90,7 +90,7 @@ class MwBotImpl(val site: Site,
 
   def host = site.domain
 
-  val baseUrl: String = site.protocol + "://" + host + ":" + site.port + site.scriptPath
+  val baseUrl: String = site.protocol + "://" + host + site.portStr + site.scriptPath
 
   val indexUrl = baseUrl + "/index.php"
 
@@ -120,7 +120,8 @@ class MwBotImpl(val site: Site,
     for (response <- http.post(apiUrl, loginParams);
          body <- http.getBody(response)) yield {
 
-      response.entity.contentType match {
+      val contentType = response.entity.contentType
+      contentType match {
         case HttpClient.JSON_UTF8 =>
           val jsResult = Json.parse(body).validate(loginResponseReads)
           if (jsResult.isError) {
@@ -258,11 +259,11 @@ object MwBot {
 
   val cache: Cache[String, MwBot] = LfuCache(system)
 
-  def fromHost(host: String, port: Int = 80, protocol: String = "https",
+  def fromHost(host: String, protocol: String = "https", port: Option[Int] = None,
                loginInfo: Option[LoginInfo] = LoginInfo.fromEnv(),
                http: HttpClient = HttpClient.get(MwBot.system)
               ): MwBot = {
-    fromSite(Site.host(host, port, protocol), loginInfo, http)
+    fromSite(Site.host(host, protocol, port), loginInfo, http)
   }
 
   def fromSite(site: Site,

@@ -8,7 +8,7 @@ import org.specs2.matcher.ThrownExpectations
 import org.specs2.mutable.Specification
 import scala.concurrent.duration._
 
-class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
+class LoginSpec(implicit ee: ExecutionEnv) extends Specification with MockBotSpec with ThrownExpectations {
 
   type EE = ExecutionEnv
 
@@ -46,7 +46,7 @@ class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
   val loginAction = Map("action" -> "login", "format" -> "json", "lgname" -> user, "lgpassword" -> password)
 
   "login" should {
-    "get token and login" in { implicit ee: EE =>
+    "get token and login" >> {
       val bot = getBot(
         HttpStub(loginAction, needToken),
         HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), loginSuccess)
@@ -55,7 +55,7 @@ class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
       bot.login(user, password).map(_ === "Success").awaitFor(timeout)
     }
 
-    "return wrong password" in { implicit ee: EE =>
+    "return wrong password" >> {
       val bot = getBot(
         HttpStub(loginAction, needToken),
         HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), wrongPass)
@@ -64,7 +64,7 @@ class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
       bot.login(user, password).map(_ === "WrongPass").awaitFor(timeout)
     }
 
-    "throttler" in { implicit ee: EE =>
+    "throttler" >> {
       val bot = getBot(
         HttpStub(loginAction, needToken),
         HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), throttled)
@@ -73,7 +73,7 @@ class LoginSpec extends Specification with MockBotSpec with ThrownExpectations {
       bot.login(user, password).map(_ === "Throttled").awaitFor(timeout)
     }
 
-    "err503" in { implicit ee: EE =>
+    "err503" >> {
 
       val err = TestUtils.resourceAsString("/org/scalawiki/Wikimedia Error.html")
 

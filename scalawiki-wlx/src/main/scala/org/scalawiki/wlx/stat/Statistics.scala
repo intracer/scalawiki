@@ -108,8 +108,8 @@ class Statistics(contest: Contest,
   def init(total: Boolean): Unit = {
     gatherData(total = total).map {
       data =>
+        data.currentYearImageDb.foreach(imageDb => currentYear(data.contest, imageDb, data))
         for (totalImageDb <- data.totalImageDb) {
-          data.currentYearImageDb.foreach(imageDb => currentYear(data.contest, imageDb, data))
           regionalStat(data.contest, data.dbsByYear, totalImageDb, data)
         }
     }.failed.map(println)
@@ -361,6 +361,6 @@ object Statistics {
       cfg = Some(cfg)
     )
 
-    stat.init(total = false)
+    stat.init(total = cfg.years.size > 1)
   }
 }

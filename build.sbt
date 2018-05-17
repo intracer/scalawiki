@@ -23,9 +23,10 @@ lazy val commonSettings = Seq(
     "org.specs2" %% "specs2-matcher-extra" % SpecsV % Test,
     "org.specs2" %% "specs2-mock" % SpecsV % Test,
     "com.google.jimfs" % "jimfs" % JimFsV % Test,
-    "com.github.tomakehurst" % "wiremock" % WireMockV % Test
+    "org.mock-server" % "mockserver-netty" % "5.3.0" % Test
   ),
 
+<<<<<<<<< Temporary merge branch 1
   dependencyOverrides ++= {
     Seq(
       "com.typesafe.akka" %% "akka-actor" % AkkaV,
@@ -36,7 +37,21 @@ lazy val commonSettings = Seq(
       "commons-codec" % "commons-codec" % CommonsCodecV,
       "org.apache.commons" % "commons-lang3" % CommonsLang3V,
       "com.typesafe" % "config" % TypesafeConfigV,
-      "org.apache.poi" % "poi-ooxml" % PoiV
+      "org.apache.poi" % "poi-ooxml" % PoiV,
+
+      "org.reactivestreams" % "reactive-streams" % "1.0.2",
+      "org.slf4j" % "slf4j-api" % "1.7.25",
+      "commons-codec" % "commons-codec" % "1.10",
+      "commons-io" % "commons-io" % "2.6",
+      "org.apache.commons" % "commons-lang3" % "3.7",
+      "com.fasterxml.jackson.core" % "jackson-core" % "2.9.2",
+      "com.fasterxml.jackson.core" % "jackson-annotations" % "2.9.2",
+      "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.2",
+      "joda-time" % "joda-time" % "2.9.9",
+      "ch.qos.logback" % "logback-classic" % "1.2.3",
+      "com.typesafe" % "config" % "1.3.2",
+      "org.apache.poi" % "poi-ooxml" % "3.13"
+
     )
   },
 
@@ -63,6 +78,8 @@ lazy val `scalawiki-core` =
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= {
       Seq(
+        //        "io.spray" %% "spray-util" % SprayV,
+        // https://mvnrepository.com/artifact/com.typesafe.akka/akka-http-caching
         "com.typesafe.akka" %% "akka-http-caching" % AkkaHttpV,
         "com.typesafe.play" %% "play-json" % PlayJsonV,
         "com.typesafe.akka" %% "akka-actor" % AkkaV,
@@ -75,7 +92,17 @@ lazy val `scalawiki-core` =
         "org.sweble.wikitext" % "swc-engine" % SwcEngineV exclude("org.jsoup", "jsoup"),
         "commons-codec" % "commons-codec" % CommonsCodecV,
         "org.jsoup" % "jsoup" % JSoupV,
-        "com.softwaremill.retry" %% "retry" % RetryV)
+        "com.softwaremill.retry" %% "retry" % RetryV
+      "com.typesafe" % "config" % "1.3.2",
+      "com.iheart" %% "ficus" % "1.4.3",
+      "jp.ne.opt" %% "chronoscala" % "0.1.5",
+      "ch.qos.logback" % "logback-classic" % "1.2.3",
+      "org.sweble.wikitext" % "swc-engine" % "3.1.7" exclude("org.jsoup", "jsoup"),
+      "commons-codec" % "commons-codec" % "1.10",
+      "org.jsoup" % "jsoup" % "1.8.3",
+      "com.softwaremill.retry" %% "retry" % "0.3.0")
+
+      )
     }).dependsOn(`http-extensions`)
 
 lazy val `scalawiki-bots` =
@@ -131,5 +158,6 @@ lazy val `http-extensions` =
       "com.typesafe.akka" %% "akka-stream" % AkkaV,
       "com.typesafe.akka" %% "akka-actor" % AkkaV,
       "com.typesafe.play" %% "twirl-api" % TwirlV,
+      "org.scalacheck" %% "scalacheck" % "1.14.0" % Test
       "org.scalacheck" %% "scalacheck" % ScalaCheckV % Test
     ))
