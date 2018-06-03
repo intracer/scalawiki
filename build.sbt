@@ -9,6 +9,7 @@ lazy val commonSettings = Seq(
   scalaVersion := Scala212V,
   crossScalaVersions := Seq(Scala212V, Scala211V),
   conflictManager := ConflictManager.strict,
+  licenses += ("Apache-2.0", url("http://opensource.org/licenses/Apache-2.0")),
 
   resolvers := Seq(
     "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
