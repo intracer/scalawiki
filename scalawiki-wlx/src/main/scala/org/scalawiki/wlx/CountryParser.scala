@@ -90,7 +90,11 @@ class RegexCampaignParser(r: Regex, typeIndex: Int = 1, yearIndex: Int = 2, coun
 
       val countryStr = m.group(countryIndex)
       val country = countries.find(_.name == countryStr).getOrElse(new Country("", countryStr))
-      contest.copy(country = country)
+
+      val campaignCode = s"${contest.contestType.code}_${country.code}".toLowerCase
+      val uploadConfigs = Contest.load(campaignCode + ".conf").map(_.uploadConfigs).getOrElse(Nil)
+
+      contest.copy(country = country, uploadConfigs = uploadConfigs)
     }
   }
 
@@ -98,7 +102,7 @@ class RegexCampaignParser(r: Regex, typeIndex: Int = 1, yearIndex: Int = 2, coun
     val typeStr = m.group(typeIndex)
     val year = m.group(yearIndex).toInt
 
-    for (typ <- ContestType.byName(typeStr))
-      yield new Contest(typ, NoAdmDivision(), year, uploadConfigs = Seq.empty)
+    for (typ <- ContestType.byName(typeStr)) yield
+      new Contest(typ, NoAdmDivision(), year, uploadConfigs = Seq.empty)
   }
 }

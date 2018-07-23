@@ -2,7 +2,8 @@ package org.scalawiki.wlx
 
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.util.TestUtils._
-import org.scalawiki.wlx.dto.{Contest, ContestType, Country, NoAdmDivision}
+import org.scalawiki.wlx.dto._
+import org.scalawiki.wlx.dto.lists.ListConfig
 import org.specs2.mutable.Specification
 
 class CountryListParserSpec extends Specification {
@@ -32,6 +33,34 @@ class CountryListParserSpec extends Specification {
         Contest(ContestType.WLM, Country("DZ", "Algeria", Seq("ar")), 2015, uploadConfigs = Seq.empty)
       )
     }
+
+    "parse WLE UA" in {
+      CountryParser.fromCategoryName("Category:Images from Wiki Loves Earth 2015 in Ukraine") === Some(
+          Contest(ContestType.WLE, Country.Ukraine, 2015,
+            uploadConfigs = Seq(
+              UploadConfig(
+                campaign = "wle-ua",
+                listTemplate = "ВЛЗ-рядок",
+                fileTemplate = "UkrainianNaturalHeritageSite",
+                listConfig = ListConfig.WleUa
+      )))
+      )
+    }
+
+    "parse WLM UA" in {
+      CountryParser.fromCategoryName("Category:Images from Wiki Loves Monuments 2015 in Ukraine") === Some(
+        Contest(ContestType.WLM, Country.Ukraine, 2015,
+          uploadConfigs = Seq(
+            UploadConfig(
+              campaign = "wlm-ua",
+              listTemplate = "ВЛП-рядок",
+              fileTemplate = "Monument Ukraine",
+              listConfig = ListConfig.WlmUa
+            )))
+      )
+    }
+
+
   }
 
   "table parser" should {

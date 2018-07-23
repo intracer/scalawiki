@@ -3,7 +3,6 @@ package org.scalawiki.wlx.dto
 import java.util.Locale
 
 import scala.collection.immutable.SortedSet
-import scala.collection.mutable
 
 trait AdmDivision {
   def code: String
