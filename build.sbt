@@ -5,7 +5,7 @@ fork in Test in ThisBuild := true
 
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
-  version := "0.5-M7",
+  version := "0.5.0",
   scalaVersion := Scala212V,
   crossScalaVersions := Seq(Scala212V, Scala211V),
   conflictManager := ConflictManager.strict,
