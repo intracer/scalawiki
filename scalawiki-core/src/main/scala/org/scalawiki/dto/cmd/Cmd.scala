@@ -27,7 +27,7 @@ abstract class EnumParameter[ARG <: EnumArg[ARG]](val name: String, val summary:
     Seq(name -> args.map(_.name).mkString("|")) ++ args.flatMap(_.pairs)
   }
 
-  def byPF[T](pf: PartialFunction[EnumArg[ARG], T]) = args.collect(pf).headOption
+  def byPF[T](pf: PartialFunction[EnumArg[ARG], T]) = args.collectFirst(pf)
 
   override def flatten = Seq(this)
 
@@ -107,7 +107,7 @@ trait ActionArg extends EnumArg[ActionArg] {
 }
 
 case class Action(override val arg: ActionArg) extends EnumParameter[ActionArg]("action", "") {
-  def query: Option[Query] = args.collect { case q: Query => q }.headOption
+  def query: Option[Query] = args.collectFirst { case q: Query => q }
   override def toString = pairs.toString()
 }
 
