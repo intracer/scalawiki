@@ -2,8 +2,6 @@ package org.scalawiki.wlx.query
 
 import java.time.ZonedDateTime
 
-import akka.http.caching.LfuCache
-import akka.http.caching.scaladsl.Cache
 import org.scalawiki.WithBot
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.prop._

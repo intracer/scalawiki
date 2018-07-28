@@ -1,6 +1,5 @@
 package org.scalawiki.wlx.query
 
-import akka.http.caching.scaladsl.Cache
 import org.scalawiki.dto.cmd.query.Generator
 import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.{Image, Namespace}
