@@ -5,7 +5,7 @@ import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.{Image, Namespace}
 import org.scalawiki.query.QueryLibrary
 import org.scalawiki.wlx.dto.Contest
-import org.scalawiki.{MwBot, WithBot}
+import org.scalawiki.{ActionBot, MwBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -18,7 +18,7 @@ trait ImageQuery {
 
 }
 
-class ImageQueryApi extends ImageQuery with WithBot with QueryLibrary {
+class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
 
   val host = MwBot.commons
 
@@ -43,6 +43,6 @@ class ImageQueryApi extends ImageQuery with WithBot with QueryLibrary {
 
 object ImageQuery {
 
-  def create(db: Boolean = false): ImageQuery = new ImageQueryApi
+  def create(db: Boolean = false)(implicit bot: ActionBot = MwBot.fromHost(MwBot.commons)): ImageQuery = new ImageQueryApi(bot)
 
 }

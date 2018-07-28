@@ -9,7 +9,7 @@ import akka.stream.ActorMaterializer
 import org.jsoup.Jsoup
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.{LoginResponse, MwException, Page, Site}
-import org.scalawiki.http.{HttpClient, HttpClientAkka}
+import org.scalawiki.http.HttpClient
 import org.scalawiki.json.MwReads._
 import org.scalawiki.query.{DslQuery, PageQuery, SinglePageQuery}
 import play.api.libs.json._
@@ -17,7 +17,13 @@ import play.api.libs.json._
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-trait MwBot {
+trait ActionBot {
+
+  def run(action: Action, context: Map[String, String] = Map.empty, limit: Option[Long] = None): Future[Seq[Page]]
+
+}
+
+trait MwBot extends ActionBot {
 
   def host: String
 

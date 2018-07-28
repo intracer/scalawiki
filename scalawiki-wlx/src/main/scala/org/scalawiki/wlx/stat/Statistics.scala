@@ -3,6 +3,7 @@ package org.scalawiki.wlx.stat
 import java.time.{ZoneOffset, ZonedDateTime}
 
 import org.scalawiki.MwBot
+import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
@@ -354,11 +355,15 @@ object Statistics {
     val contest = Contest.byCampaign(cfg.campaign).get
       .copy(year = cfg.years.last, newObjectRating = cfg.newObjectRating)
 
+    val commons = MwBot.fromHost(MwBot.commons)
+    val imageQuery = ImageQuery.create()(new CachedBot(commons))
+
     val stat = new Statistics(
       contest,
       startYear = Some(cfg.years.head),
       monumentQuery = MonumentQuery.create(contest),
-      cfg = Some(cfg)
+      cfg = Some(cfg),
+      imageQuery = imageQuery
     )
 
     stat.init(total = cfg.years.size > 1)

@@ -1,6 +1,6 @@
 package org.scalawiki.query
 
-import org.scalawiki.MwBot
+import org.scalawiki.ActionBot
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list.{UserContribs, _}
 import org.scalawiki.dto.cmd.query.meta.{EditCount, GuiUser, _}
@@ -56,7 +56,7 @@ trait QueryLibrary {
     Action(Query(ListParam(UserContribs(ucParams: _*))))
   }
 
-  def userCreatedPages(user: String, range: TimeRange)(implicit bot: MwBot): Future[(String, Set[String])] = {
+  def userCreatedPages(user: String, range: TimeRange)(implicit bot: ActionBot): Future[(String, Set[String])] = {
     bot.run(userContribs(user, range, dir = "newer")).map {
       pages =>
         user -> pages
@@ -134,7 +134,7 @@ trait QueryLibrary {
       generator))
   }
 
-  def articlesWithTemplate(template: String)(implicit bot: MwBot): Future[Seq[Long]] = {
+  def articlesWithTemplate(template: String)(implicit bot: ActionBot): Future[Seq[Long]] = {
     bot.run(pagesWithTemplate(template)).map {
       pages =>
         pages.map(p => p.subjectId.getOrElse(p.id.get))
@@ -143,6 +143,6 @@ trait QueryLibrary {
 
   def pagesToUsers(pages: Seq[Page]): Seq[Contributor] = pages.flatMap(_.lastRevisionUser)
 
-  def getUsers(action: Action)(implicit bot: MwBot): Future[Seq[Contributor]] =
+  def getUsers(action: Action)(implicit bot: ActionBot): Future[Seq[Contributor]] =
     bot.run(action).map(pagesToUsers)
 }
