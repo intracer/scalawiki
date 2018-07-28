@@ -14,9 +14,9 @@ lazy val commonSettings = Seq(
   Keys.resolvers ++= Dependencies.resolvers,
 
   libraryDependencies ++= Seq(
-    Library.Specs2.core,
-    Library.Specs2.matcherExtra,
-    Library.Specs2.mock,
+    Library.Specs2.core % Test,
+    Library.Specs2.matcherExtra % Test,
+    Library.Specs2.mock % Test,
     "com.google.jimfs" % "jimfs" % JimFsV % Test,
     "org.mock-server" % "mockserver-netty" % MockServerV % Test
   ),
@@ -33,14 +33,10 @@ lazy val commonSettings = Seq(
 
 lazy val scalawiki = (project in file("."))
   .settings(commonSettings)
-  .dependsOn(
-    `scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `scalawiki-sql`,
-    `http-extensions`)
-  .aggregate(
-    `scalawiki-core`, `scalawiki-bots`, `scalawiki-dumps`, `scalawiki-wlx`, `scalawiki-sql`,
-    `http-extensions`)
+  .dependsOn(core, bots, dumps, wlx, sql, `http-extensions`)
+  .aggregate(core, bots, dumps, wlx, sql, `http-extensions`)
 
-lazy val `scalawiki-core` = (project in file("scalawiki-core"))
+lazy val core = Project("scalawiki-core", file("scalawiki-core"))
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= {
     Seq(
@@ -60,7 +56,8 @@ lazy val `scalawiki-core` = (project in file("scalawiki-core"))
     )
   }).dependsOn(`http-extensions`)
 
-lazy val `scalawiki-bots` = (project in file("scalawiki-bots"))
+lazy val bots = Project("scalawiki-bots", file("scalawiki-bots"))
+  .dependsOn(core % "compile->compile;test->test", wlx)
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= Seq(
     "com.github.pathikrit" %% "better-files-akka" % BetterFilesAkkaV,
@@ -72,36 +69,34 @@ lazy val `scalawiki-bots` = (project in file("scalawiki-bots"))
     Library.Play.twirlApi,
     "com.github.tototoshi" %% "scala-csv" % ScalaCsvV
   ))
-  .dependsOn(`scalawiki-core` % "compile->compile;test->test", `scalawiki-wlx`)
   .enablePlugins(SbtTwirl)
 
-lazy val `scalawiki-dumps` = (project in file("scalawiki-dumps"))
+lazy val dumps = Project("scalawiki-dumps", file("scalawiki-dumps"))
+  .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++=
     Seq("com.fasterxml" % "aalto-xml" % AaltoXmlV,
       Library.Commons.compress
     ))
-  .dependsOn(`scalawiki-core` % "compile->compile;test->test")
 
-lazy val `scalawiki-wlx` = (project in file("scalawiki-wlx"))
+lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
+  .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= Seq(
     "com.github.wookietreiber" %% "scala-chart" % ScalaChartV,
     "com.concurrentthought.cla" %% "command-line-arguments" % CommandLineArgumentsV
   ))
-  .dependsOn(`scalawiki-core` % "compile->compile;test->test")
 
-lazy val `scalawiki-sql` = (project in file("scalawiki-sql"))
+lazy val sql = Project("scalawiki-sql", file("scalawiki-sql"))
+  .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= Seq(
     Library.Slick.slick,
     Library.Slick.hikaricp,
     "com.h2database" % "h2" % H2V
   ))
-  .dependsOn(`scalawiki-core` % "compile->compile;test->test")
 
-lazy val `http-extensions` =
-  (project in file("http-extensions"))
+lazy val `http-extensions` = (project in file("http-extensions"))
     .settings(commonSettings: _*)
     .settings(libraryDependencies ++= Seq(
       Library.Akka.actor,

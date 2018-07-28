@@ -112,9 +112,9 @@ object Dependencies {
     object Specs2 {
       val SpecsV = "4.2.0"
 
-      val core = "org.specs2" %% "specs2-core" % SpecsV % Test
-      val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV % Test
-      val mock = "org.specs2" %% "specs2-mock" % SpecsV % Test
+      val core = "org.specs2" %% "specs2-core" % SpecsV
+      val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV
+      val mock = "org.specs2" %% "specs2-mock" % SpecsV
     }
   }
 }
