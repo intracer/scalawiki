@@ -44,19 +44,13 @@ case class Image(title: String,
       Files.write(Paths.get(filename), bytes)
   }
 
-  def pixels: Option[Long] =
-    for (w <- width; h <- height) yield
-      w * h
+  def pixels: Option[Long] = for (w <- width; h <- height) yield  w * h
 
   def mpx: Option[Double] = pixels.map(_ / Math.pow(10, 6))
 
   def mpxStr: String = mpx.fold("")(v => f"$v%1.2f Mpx ")
 
-  def resolution: String = {
-    val maybe = for (w <- width; h <- height) yield
-      w + " x " + h
-    maybe.getOrElse("")
-  }
+  def resolution: Option[String] = for (w <- width; h <- height) yield  w + " x " + h
 
   def resizeTo(resizeToX: Int, resizeToY: Int): Int =
     Image.resizedWidth(width.get, height.get, resizeToX, resizeToY)
@@ -65,7 +59,7 @@ case class Image(title: String,
 
 object Image {
 
-  def fromPageImages(page: Page, monumentIdTemplate: Option[String]): Option[Image] =
+  def fromPageImages(page: Page): Option[Image] =
     page.images.headOption
 
   def fromPageRevision(page: Page, monumentIdTemplate: Option[String]): Option[Image] = {
@@ -84,6 +78,12 @@ object Image {
         monumentId = idOpt,
         pageId = page.id)
     }
+  }
+
+  def fromPage(page: Page, monumentIdTemplate: Option[String]): Option[Image] = {
+    for (fromImage <- Image.fromPageImages(page);
+         fromRev <- Image.fromPageRevision(page, monumentIdTemplate))
+      yield fromImage.copy(monumentId = fromRev.monumentId, author = fromRev.author)
   }
 
   def getAuthorFromPage(content: String): String = {
@@ -143,5 +143,4 @@ object Image {
     val width = Math.min(resizeToX, w / yRatio)
     width.toInt
   }
-
 }

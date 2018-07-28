@@ -28,26 +28,17 @@ class ImageQueryApi extends ImageQuery with WithBot with QueryLibrary {
     imagesByGenerator(contest, generator)
   }
 
-  def imagesByGenerator(contest: Contest, generator: Generator): Future[Seq[Image]] = {
-
-    bot.run(imagesByGenerator(generator)).map {
-      pages => pages.map {
-        page =>
-
-          val fromRev = Image.fromPageRevision(page, contest.fileTemplate)
-          val fromImage = Image.fromPageImages(page, contest.fileTemplate)
-
-          fromImage.get.copy(
-            monumentId = fromRev.flatMap(_.monumentId),
-            author = fromRev.flatMap(_.author)
-          )
-      }
-    }
+  override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]] = {
+    imagesByGenerator(contest, generatorWithTemplate(template, Set(Namespace.FILE)))
   }
 
-  override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]] =
-    imagesByGenerator(contest, generatorWithTemplate(template, Set(Namespace.FILE)))
-
+  def imagesByGenerator(contest: Contest, generator: Generator): Future[Seq[Image]] = {
+    for (pages <- bot.run(imagesByGenerator(generator))) yield {
+      val optionalImages = for (page <- pages)
+        yield Image.fromPage(page, contest.fileTemplate)
+      optionalImages.flatten
+    }
+  }
 }
 
 object ImageQuery {

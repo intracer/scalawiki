@@ -87,7 +87,7 @@ class AuthorsStat(val uploadImages: Boolean = false) {
         case (user, images) if images.nonEmpty =>
           val userLink = s"[[User:$user|$user]]"
           val header = s"== $userLink ==\n"
-          val descriptions = images.map(i => i.mpx + " МПкс (" + i.resolution +")")
+          val descriptions = images.map(i => i.mpx + " МПкс (" + i.resolution.getOrElse("") +")")
 
           header + Image.gallery(images.map(_.title), descriptions)
       }
@@ -130,7 +130,5 @@ class AuthorsStat(val uploadImages: Boolean = false) {
       MwBot.fromHost(MwBot.commons).page(intersectionFile + ".png").upload(intersectionFile + ".png")
     }
     images
-
   }
-
 }
