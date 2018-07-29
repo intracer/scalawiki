@@ -47,6 +47,10 @@ class CachedBot(site: Site, name: String, persistent: Boolean, http: HttpClient 
   override def post(params: Map[String, String]): Future[String] = {
     val key = paramsKey(params)
 
+    if (cache.containsKey(key)) {
+      log.info(s"cached $host POST equivalent to: ${getUri(params)}")
+    }
+
     val fn = (_: String) => Await.result(super.post(params), 30.minute)
     val value = cache.computeIfAbsent(key, new Caller(fn))
 
