@@ -146,3 +146,5 @@ trait QueryLibrary {
   def getUsers(action: Action)(implicit bot: ActionBot): Future[Seq[Contributor]] =
     bot.run(action).map(pagesToUsers)
 }
+
+object QueryLibrary extends QueryLibrary

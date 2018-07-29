@@ -4,14 +4,13 @@ import java.time.{ZoneOffset, ZonedDateTime}
 
 import org.scalawiki.MwBot
 import org.scalawiki.cache.CachedBot
-import org.scalawiki.dto.Image
+import org.scalawiki.dto.{Image, Site}
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
 import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.Try
 
 /**
   * Holds fetched contest data
@@ -355,8 +354,8 @@ object Statistics {
     val contest = Contest.byCampaign(cfg.campaign).get
       .copy(year = cfg.years.last, newObjectRating = cfg.newObjectRating)
 
-    val commons = MwBot.fromHost(MwBot.commons)
-    val imageQuery = ImageQuery.create()(new CachedBot(commons))
+    val cacheName = s"${cfg.campaign}-${contest.year}"
+    val imageQuery = ImageQuery.create()(new CachedBot(Site.commons, cacheName, true))
 
     val stat = new Statistics(
       contest,
