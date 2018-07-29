@@ -19,8 +19,8 @@ class AuthorsMonumentsSpec extends Specification {
     val mdb = Some(new MonumentDB(contest, monuments))
 
     val db = new ImageDB(contest, images, mdb)
-
-    new AuthorMonuments(db, gallery = gallery).table
+    val contestStat = new ContestStat(contest, 2013, mdb, Some(db), Some(db))
+    new AuthorMonuments(contestStat, gallery = gallery).table
   }
 
   def monument(id: String, name: String) =
@@ -48,7 +48,8 @@ class AuthorsMonumentsSpec extends Specification {
 
       val db = new ImageDB(noRegions, Seq.empty[Image], mdb)
 
-      val table = new AuthorMonuments(db).table
+      val contestStat = new ContestStat(contest, 2013, mdb, Some(db), Some(db))
+      val table = new AuthorMonuments(contestStat).table
 
       table.headers === Seq("User", "Objects pictured", "Photos uploaded")
 
@@ -191,8 +192,8 @@ class AuthorsMonumentsSpec extends Specification {
       )
 
       val db = new ImageDB(contest, images2, Some(mDb))
-
-      val table = new AuthorMonuments(db).table
+      val contestStat = new ContestStat(contest, 2013, Some(mDb), Some(db), Some(db))
+      val table = new AuthorMonuments(contestStat).table
       val data = table.data
 
       data.size === 6
@@ -229,7 +230,8 @@ class AuthorsMonumentsSpec extends Specification {
 
       val db = new ImageDB(contest, images2, Some(mDb))
 
-      val table = new AuthorMonuments(db, newObjectRating = Some(3), oldMonumentDb = Some(mDb)).table
+      val contestStat = new ContestStat(contest, 2013, Some(mDb), Some(db), Some(db))
+      val table = new AuthorMonuments(contestStat, newObjectRating = Some(3)).table
       val data = table.data
 
       data.size === 6
@@ -266,7 +268,9 @@ class AuthorsMonumentsSpec extends Specification {
 
       val db = new ImageDB(contest, images2, Some(mDb))
 
-      val table = new AuthorMonuments(db, newObjectRating = Some(3), oldMonumentDb = Some(new MonumentDB(contest, Seq.empty))).table
+      val contestStat = new ContestStat(contest, 2013, Some(mDb), Some(db), Some(db))
+
+      val table = new AuthorMonuments(contestStat, newObjectRating = Some(3)).table
       val data = table.data
 
       data.size === 6
@@ -312,7 +316,9 @@ class AuthorsMonumentsSpec extends Specification {
 
       val db = new ImageDB(contest, images2, Some(mDb))
 
-      val table = new AuthorMonuments(db, newObjectRating = Some(3), oldMonumentDb = Some(oldMdb)).table
+      val contestStat = new ContestStat(contest, 2013, Some(mDb), Some(db), Some(db))
+
+      val table = new AuthorMonuments(contestStat, newObjectRating = Some(3)).table
       val data = table.data
 
       data.size === 6

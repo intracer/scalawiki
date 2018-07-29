@@ -4,38 +4,48 @@ import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
-class AuthorMonuments(imageDb: ImageDB,
+class AuthorMonuments(val stat: ContestStat,
                       newObjectRating: Option[Int] = None,
                       gallery: Boolean = false,
-                      commons: Option[MwBot] = None,
-                      oldMonumentDb: Option[MonumentDB] = None) extends Reporter {
+                      commons: Option[MwBot] = None) extends Reporter {
 
-  override def stat: ContestStat = ???
+  val newAuthorObjectRating = Some(2)
 
-  override def contest = imageDb.contest
+  override def contest = stat.contest
 
   override def name: String = "Number of objects pictured by uploader"
 
   val country = contest.country
 
-  val oldIds = oldMonumentDb.map(_.monuments.map(_.id).toSet).getOrElse(Set.empty)
+  val imageDb = stat.currentYearImageDb.get
+  val currentImageIds = imageDb.images.flatMap(_.pageId).toSet
 
-  def ratingFunc(allIds: Set[String], oldIds: Set[String]): Int =
+  val totalImageDb = stat.totalImageDb.get
+
+  val oldImages = totalImageDb.images.filter(image => !currentImageIds.contains(image.pageId.get))
+
+  val oldImageDb = new ImageDB(contest, oldImages, stat.monumentDb)
+
+  val oldIds = oldImageDb.ids
+
+  def ratingFunc(allIds: Set[String], oldIds: Set[String], oldAuthorIds: Set[String]): Int =
     allIds.size + newObjectRating.fold(0) {
       rating => (allIds -- oldIds).size * (rating - 1)
+    } + newAuthorObjectRating.fold(0) {
+      rating => (allIds -- oldAuthorIds).size * (rating - 1)
     }
 
   def rowData(ids: Set[String], images: Int,
               regionRating: String => Int,
-              user: Option[String] = None): Seq[String] = {
+              userOpt: Option[String] = None): Seq[String] = {
 
-    val objects = if (gallery && user.isDefined && ids.nonEmpty) {
+    val objects = if (gallery && userOpt.isDefined && ids.nonEmpty) {
 
-      val noTemplateUser = user.get.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
+      val noTemplateUser = userOpt.get.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
 
       val galleryPage = "Commons:" + contest.name + "/" + noTemplateUser
 
-      val galleryText = new Output().galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == user))
+      val galleryText = new Output().galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt))
 
       commons.foreach(_.page(galleryPage).edit(galleryText))
 
@@ -49,7 +59,9 @@ class AuthorMonuments(imageDb: ImageDB,
       Seq(
         (ids intersect oldIds).size, // existing
         (ids -- oldIds).size, // new
-        ratingFunc(ids, oldIds) // rating
+        ratingFunc(ids, oldIds,
+          userOpt.map(user => oldImageDb._byAuthorAndId.grouped.get(user).map(_.keys).getOrElse(Set.empty)).getOrElse(Set.empty)
+        ) // rating
       )
     } else Seq.empty[String]
 
@@ -68,14 +80,19 @@ class AuthorMonuments(imageDb: ImageDB,
     val totalData = "Total" +:
       rowData(imageDb.ids, imageDb.images.size, regId => imageDb.idsByRegion(regId).size)
 
-    val authors = imageDb.authors.toSeq.sortBy(user => (-ratingFunc(imageDb._byAuthorAndId.by(user).keys, oldIds), user))
+    val authors = imageDb.authors.toSeq.sortBy{
+      user => (-ratingFunc(imageDb._byAuthorAndId.by(user).keys, oldIds,
+        oldImageDb._byAuthorAndId.grouped.get(user).map(_.keys).getOrElse(Set.empty)),
+        user)
+    }
     val authorsData = authors.map { user =>
       val noTemplateUser = user.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
       val userLink = s"[[User:$noTemplateUser|$noTemplateUser]]"
 
       def userRating(regId: String) = {
         val monumentsInRegion = imageDb._byAuthorAndRegion.by(user, regId).flatMap(_.monumentId).toSet
-        ratingFunc(monumentsInRegion, oldIds)
+        val oldMonumentsInRegion = oldImageDb._byAuthorAndRegion.by(user, regId).flatMap(_.monumentId).toSet
+        ratingFunc(monumentsInRegion, oldIds, oldMonumentsInRegion)
       }
 
       userLink +:

@@ -111,6 +111,8 @@ class Statistics(contest: Contest,
         data.currentYearImageDb.foreach(imageDb => currentYear(data.contest, imageDb, data))
         for (totalImageDb <- data.totalImageDb) {
           regionalStat(data.contest, data.dbsByYear, totalImageDb, data)
+
+          new AuthorsStat().authorsStat(data, bot)
         }
     }.failed.map(println)
   }
@@ -133,8 +135,6 @@ class Statistics(contest: Contest,
   def currentYear(contest: Contest, imageDb: ImageDB, stat: ContestStat) = {
 
     //new SpecialNominations(contest, imageDb).specialNominations()
-
-    new AuthorsStat().authorsStat(imageDb, bot, stat.monumentDbOld)
 
     lessThan2MpGallery(contest, imageDb)
 
