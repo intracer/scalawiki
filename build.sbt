@@ -52,7 +52,8 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
       "org.sweble.wikitext" % "swc-engine" % SwcEngineV exclude("org.jsoup", "jsoup"),
       Library.Commons.codec,
       "org.jsoup" % "jsoup" % JSoupV,
-      "com.softwaremill.retry" %% "retry" % RetryV
+      "com.softwaremill.retry" %% "retry" % RetryV,
+      "net.openhft" % "chronicle-map" % ChronicleMapV
     )
   }).dependsOn(`http-extensions`)
 
