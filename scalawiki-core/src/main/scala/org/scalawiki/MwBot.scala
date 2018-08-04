@@ -58,6 +58,8 @@ trait MwBot extends ActionBot {
   def system: ActorSystem
 
   def log: LoggingAdapter
+
+  def mediaWikiVersion: MediaWikiVersion
 }
 
 case class MediaWikiVersion(version: String) extends Ordered[MediaWikiVersion] {
@@ -146,7 +148,7 @@ class MwBotImpl(val site: Site,
 
   override lazy val token: String = await(getToken)
 
-  lazy val mediaWikiVersion: MediaWikiVersion = await(getMediaWikiVersion)
+  override lazy val mediaWikiVersion: MediaWikiVersion = await(getMediaWikiVersion)
 
   def getMediaWikiVersion: Future[MediaWikiVersion] =
     get(siteInfoReads, "action" -> "query", "meta" -> "siteinfo") map MediaWikiVersion.fromGenerator

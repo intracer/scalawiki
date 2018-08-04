@@ -13,10 +13,6 @@ services:
       - database
     volumes:
       - /var/www/html/images
-      # After initial setup, download LocalSettings.php to the same directory as
-      # this yaml and uncomment the following line and use compose to restart
-      # the mediawiki service
-      - ./LocalSettings.php:/var/www/html/LocalSettings.php
   database:
     image: mariadb
     restart: always
@@ -25,4 +21,4 @@ services:
       MYSQL_DATABASE: my_wiki
       MYSQL_USER: wikiuser
       MYSQL_PASSWORD: example
-      MYSQL_ROOT_PASSWORD: "ooQu5aiZeeThai7hain9die8iexel5qu"
+      MYSQL_ROOT_PASSWORD: root_pass

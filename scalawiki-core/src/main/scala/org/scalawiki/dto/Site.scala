@@ -39,7 +39,7 @@ object Site {
   val ukWiki = wikipedia("uk")
 
   val localhost = {
-    val scriptPath = "/mediawiki"
+    val scriptPath = ""
     val script = scriptPath + "/index.php"
     Site(None, "wikipedia", "localhost", "http", Some(8080), scriptPath, script, articlePath = script)
   }
