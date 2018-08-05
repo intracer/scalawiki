@@ -10,19 +10,24 @@ import scala.language.postfixOps
 import scala.sys.process._
 
 trait WithDocker extends BeforeAfterAll {
-  val s = File.separator
 
   val install = "docker exec scalawiki_mediawiki_1 " +
     "php maintenance/install.php SomeWiki admin --pass 123 " +
     "--dbserver database --dbuser wikiuser --dbpass example --installdbpass root_pass --installdbuser root " +
     "--server http://localhost:8080 --scriptpath="
-  def  checkMysql() = """docker exec scalawiki_database_1 mysqladmin --user=root --password=root_pass --host localhost ping""" !
+
+  def checkMysql() = {
+    Seq("docker", "exec", "scalawiki_database_1",
+      "mysql", "--user=root", "--password=root_pass", "-s", "-e", "use my_wiki") ! ProcessLogger(_ => (), _ => ())
+  }
 
   override def beforeAll: Unit = {
+    s"docker-compose rm -fsv" !
+
     s"docker-compose up -d" !
 
+    println(s"waiting for mysql to be alive")
     while (checkMysql() != 0) {
-      println(s"waiting for mysql to be alive")
       Thread.sleep(1000)
     }
 
