@@ -21,7 +21,10 @@ trait WithDocker extends BeforeAfterAll {
   override def beforeAll: Unit = {
     s"docker-compose up -d" !
 
-    while ((checkMysql !) != 0) {}
+    while ((checkMysql !) != 0) {
+      println("waiting for mysql to be alive")
+      Thread.sleep(1000)
+    }
 
     install !
   }
