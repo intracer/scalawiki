@@ -41,7 +41,7 @@ class DockerSpec extends Specification with WithDocker {
   "docker" should {
     "check mediawiki version" in {
       val bot = MwBot.create(Site.localhost.copy(scriptPath = ""), None)
-      bot.mediaWikiVersion.version === "1.31"
+      bot.mediaWikiVersion.version.toDouble must be >= 1.31
     }
   }
 }
