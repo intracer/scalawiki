@@ -1,4 +1,4 @@
-# MediaWiki with MariaDB
+# MediaWiki with MariaDB for integration tests
 #
 # Access via "http://localhost:8080"
 #   (or "http://$(docker-machine ip):8080" if using docker-machine)

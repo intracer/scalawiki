@@ -12,14 +12,14 @@ import scala.sys.process._
 trait WithDocker extends BeforeAfterAll {
   val s = File.separator
 
-  val install = "docker exec docker_mediawiki_1 " +
+  val install = "docker exec scalawiki_mediawiki_1 " +
     "php maintenance/install.php SomeWiki admin --pass 123 " +
     "--dbserver database --dbuser wikiuser --dbpass example --installdbpass root_pass --installdbuser root " +
     "--server http://localhost:8080 --scriptpath="
-  val checkMysql = """docker exec docker_database_1 mysqladmin --user=root --password=root_pass --host "127.0.0.1" ping --silent"""
+  val checkMysql = """docker exec scalawiki_database_1 mysqladmin --user=root --password=root_pass --host "127.0.0.1" ping --silent"""
 
   override def beforeAll: Unit = {
-    s"docker-compose -f docker${s}mediawiki.yml up -d" !
+    s"docker-compose up -d" !
 
     while ((checkMysql !) != 0) {}
 
@@ -27,7 +27,7 @@ trait WithDocker extends BeforeAfterAll {
   }
 
   override def afterAll: Unit = {
-    s"docker-compose -f docker${s}mediawiki.yml down" !
+    s"docker-compose down" !
   }
 }
 
