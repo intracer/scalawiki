@@ -16,13 +16,13 @@ trait WithDocker extends BeforeAfterAll {
     "php maintenance/install.php SomeWiki admin --pass 123 " +
     "--dbserver database --dbuser wikiuser --dbpass example --installdbpass root_pass --installdbuser root " +
     "--server http://localhost:8080 --scriptpath="
-  val checkMysql = """docker exec scalawiki_database_1 mysqladmin --user=root --password=root_pass --host "127.0.0.1" ping --silent"""
+  def  checkMysql() = """docker exec scalawiki_database_1 mysqladmin --user=root --password=root_pass --host localhost ping""" !
 
   override def beforeAll: Unit = {
     s"docker-compose up -d" !
 
-    while ((checkMysql !) != 0) {
-      println("waiting for mysql to be alive")
+    while (checkMysql() != 0) {
+      println(s"waiting for mysql to be alive")
       Thread.sleep(1000)
     }
 
