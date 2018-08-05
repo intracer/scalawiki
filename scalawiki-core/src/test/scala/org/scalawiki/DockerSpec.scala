@@ -9,6 +9,8 @@ import scala.sys.process._
 
 trait WithDocker extends BeforeAfterAll {
 
+  val appveyour = sys.env.contains("APPVEYOR")
+
   val install = "docker exec scalawiki_mediawiki_1 " +
     "php maintenance/install.php SomeWiki admin --pass 123 " +
     "--dbserver database --dbuser wikiuser --dbpass example --installdbpass root_pass --installdbuser root " +
@@ -20,28 +22,36 @@ trait WithDocker extends BeforeAfterAll {
   }
 
   override def beforeAll: Unit = {
-    s"docker-compose rm -fsv" !
+    if (!appveyour) {
+      s"docker-compose rm -fsv" !
 
-    s"docker-compose up -d" !
+      s"docker-compose up -d" !
 
-    println(s"waiting for mysql to be alive")
-    while (checkMysql() != 0) {
-      Thread.sleep(1000)
+      println(s"waiting for mysql to be alive")
+      while (checkMysql() != 0) {
+        Thread.sleep(1000)
+      }
+
+      install !
     }
-
-    install !
   }
 
   override def afterAll: Unit = {
-    s"docker-compose down" !
+    if (!appveyour) {
+      s"docker-compose down" !
+    }
   }
 }
 
 class DockerSpec extends Specification with WithDocker {
   "docker" should {
     "check mediawiki version" in {
-      val bot = MwBot.create(Site.localhost.copy(scriptPath = ""), None)
-      bot.mediaWikiVersion.version.toDouble must be >= 1.31
+      if (!appveyour) {
+        val bot = MwBot.create(Site.localhost.copy(scriptPath = ""), None)
+        bot.mediaWikiVersion.version.toDouble must be >= 1.31
+      } else {
+        ok("skip")
+      }
     }
   }
 }
