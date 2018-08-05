@@ -11,11 +11,10 @@ class AuthorsMonumentsSpec extends Specification {
 
   val contest = new Contest(ContestType.WLE, Country.Ukraine, 2013, uploadConfigs = Seq.empty[UploadConfig])
 
-  def getTable(
-                images: Seq[Image],
-                monuments: Seq[Monument],
-                contest: Contest = contest,
-                gallery: Boolean = false): Table = {
+  def getTable(images: Seq[Image],
+               monuments: Seq[Monument],
+               contest: Contest = contest,
+               gallery: Boolean = false): Table = {
     val mdb = Some(new MonumentDB(contest, monuments))
 
     val db = new ImageDB(contest, images, mdb)
@@ -237,7 +236,7 @@ class AuthorsMonumentsSpec extends Specification {
 
       table.headers.slice(0, 9) === Seq("User", "Objects pictured", "Existing", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
 
-      data.head === Seq("Total", "4", "4", "0", "4",  "5", "2", "1", "1") ++ Seq.fill(24)("0")
+      data.head === Seq("Total", "4", "4", "0", "4", "5", "2", "1", "1") ++ Seq.fill(24)("0")
 
 
       data.slice(1, 6) ===
@@ -276,7 +275,7 @@ class AuthorsMonumentsSpec extends Specification {
 
       table.headers.slice(0, 9) === Seq("User", "Objects pictured", "Existing", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
 
-      data.head === Seq("Total", "4", "0", "4", "12",  "5", "2", "1", "1") ++ Seq.fill(24)("0")
+      data.head === Seq("Total", "4", "0", "4", "12", "5", "2", "1", "1") ++ Seq.fill(24)("0")
 
 
       data.slice(1, 6) ===
@@ -322,9 +321,9 @@ class AuthorsMonumentsSpec extends Specification {
 
       data.size === 6
 
-      table.headers.slice(0, 9) === Seq("User", "Objects pictured",  "Existing", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
+      table.headers.slice(0, 9) === Seq("User", "Objects pictured", "Existing", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
 
-      data.head === Seq("Total", "4", "1", "3", "10",  "5", "2", "1", "1") ++ Seq.fill(24)("0")
+      data.head === Seq("Total", "4", "1", "3", "10", "5", "2", "1", "1") ++ Seq.fill(24)("0")
 
 
       data.slice(1, 9) ===

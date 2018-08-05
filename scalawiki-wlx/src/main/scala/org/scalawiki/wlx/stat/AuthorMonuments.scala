@@ -7,9 +7,8 @@ import org.scalawiki.wlx.{ImageDB, MonumentDB}
 class AuthorMonuments(val stat: ContestStat,
                       newObjectRating: Option[Int] = None,
                       gallery: Boolean = false,
-                      commons: Option[MwBot] = None) extends Reporter {
-
-  val newAuthorObjectRating = Some(2)
+                      commons: Option[MwBot] = None,
+                      val newAuthorObjectRating: Option[Int] = None) extends Reporter {
 
   override def contest = stat.contest
 
