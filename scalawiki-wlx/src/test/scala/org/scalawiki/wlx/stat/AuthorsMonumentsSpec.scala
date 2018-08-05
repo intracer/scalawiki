@@ -226,9 +226,14 @@ class AuthorsMonumentsSpec extends Specification {
           monuments(7, "07", "Volyn")
       )
 
-      val db = new ImageDB(contest, images2, Some(mDb))
+      val images1 = images2.map { i2 =>
+        i2.copy(pageId = i2.pageId.map(_ + 100), title = i2.title.replace("Img", "Img0"))
 
-      val contestStat = new ContestStat(contest, 2013, Some(mDb), Some(db), Some(db))
+      }
+      val db = new ImageDB(contest, images2, Some(mDb))
+      val totalDb = new ImageDB(contest, images1 ++ images2, Some(mDb))
+
+      val contestStat = new ContestStat(contest, 2013, Some(mDb), Some(db), Some(totalDb))
       val table = new AuthorMonuments(contestStat, newObjectRating = Some(3)).table
       val data = table.data
 
@@ -237,7 +242,6 @@ class AuthorsMonumentsSpec extends Specification {
       table.headers.slice(0, 9) === Seq("User", "Objects pictured", "Existing", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
 
       data.head === Seq("Total", "4", "4", "0", "4", "5", "2", "1", "1") ++ Seq.fill(24)("0")
-
 
       data.slice(1, 6) ===
         Seq(
@@ -277,7 +281,6 @@ class AuthorsMonumentsSpec extends Specification {
 
       data.head === Seq("Total", "4", "0", "4", "12", "5", "2", "1", "1") ++ Seq.fill(24)("0")
 
-
       data.slice(1, 6) ===
         Seq(
           Seq("[[User:FromCrimeaNew|FromCrimeaNew]]", "1", "0", "1", "3", "1", "3", "0", "0") ++ Seq.fill(24)("0"),
@@ -310,11 +313,10 @@ class AuthorsMonumentsSpec extends Specification {
       )
 
       val oldIds = images1.flatMap(_.monumentId).toSet
-      val oldMdb = new MonumentDB(contest, mDb.monuments.filter(m => oldIds.contains(m.id)))
-
       val db = new ImageDB(contest, images2, Some(mDb))
+      val totalDb = new ImageDB(contest, images1 ++ images2, Some(mDb))
 
-      val contestStat = new ContestStat(contest, 2013, Some(mDb), Some(db), Some(db))
+      val contestStat = new ContestStat(contest, 2013, Some(mDb), Some(db), Some(totalDb))
 
       val table = new AuthorMonuments(contestStat, newObjectRating = Some(3)).table
       val data = table.data
