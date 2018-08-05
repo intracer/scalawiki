@@ -1,7 +1,5 @@
 package org.scalawiki
 
-import java.io.File
-
 import org.scalawiki.dto.Site
 import org.specs2.mutable.Specification
 import org.specs2.specification.BeforeAfterAll
@@ -42,7 +40,7 @@ trait WithDocker extends BeforeAfterAll {
 class DockerSpec extends Specification with WithDocker {
   "docker" should {
     "check mediawiki version" in {
-      val bot = MwBot.fromSite(Site.localhost)
+      val bot = MwBot.create(Site.localhost.copy(scriptPath = ""), None)
       bot.mediaWikiVersion.version === "1.31"
     }
   }

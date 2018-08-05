@@ -20,7 +20,7 @@ class SiteSpec extends Specification {
     }
 
     "localhost page url" in {
-      Site.localhost.pageUrl("File:Image.jpg") === "http://localhost/index.php/File:Image.jpg"
+      Site.localhost.pageUrl("File:Image.jpg") === "http://localhost/w/index.php/File:Image.jpg"
     }
   }
 }
