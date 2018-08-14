@@ -11,8 +11,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.{Json, _}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future}
-import scala.util.control.NonFatal
+import scala.concurrent.Future
 
 class CopyVio(val http: HttpClient) {
 
@@ -52,47 +51,17 @@ object CopyVio extends WithBot with QueryLibrary {
   def main(args: Array[String]) {
     val copyVio = new CopyVio(HttpClient.get())
 
-    val revIdsFuture = articlesWithTemplate("Вікіпедія любить пам'ятки")
-    recover(revIdsFuture)
+    for (revIds <- articlesWithTemplate("Вікіпедія любить пам'ятки");
+         pages <- pagesByIds(revIds);
+         page <- pages;
+         sources <- copyVio.searchByRevId(page.revisions.head.revId.get)) {
 
-    val pagesF: Future[Seq[Page]] = revIdsFuture.flatMap[Seq[Page]] {
-      ids =>
-        val pagesFuture = pagesByIds(ids)
-        recover(pagesFuture)
+      val suspected = sources.filterNot(_.violation == "none") //s.violation == "suspected" || s.violation == "possible")
 
-        pagesFuture
-    }
-
-    pagesF.foreach {
-
-      pages =>
-        println("pages: " + pages.size)
-
-        pages.zipWithIndex.foreach {
-          case (p, i) =>
-            import scala.concurrent.duration._
-            println(s"# [[${p.title}]]")
-
-            val sourcesFuture: Future[Seq[CopyVioSource]] = copyVio.searchByRevId(p.revisions.head.revId.get)
-            recover(sourcesFuture)
-            val sources = Await.result(sourcesFuture, 30.minutes)
-
-            val suspected = sources.filterNot(_.violation == "none") //s.violation == "suspected" || s.violation == "possible")
-
-            if (suspected.nonEmpty) {
-              for (s <- suspected) {
-                println(s"## url: [${s.url}], violation ${s.violation}, confidence ${s.confidence}")
-              }
-            }
-        }
-    }
-  }
-
-  def recover(f: Future[_]) = {
-    f.recover {
-      case NonFatal(t) =>
-        println("Error : " + t)
-        throw t
+      println(s"# [[${page.title}]]")
+      for (s <- suspected) {
+        println(s"## url: [${s.url}], violation ${s.violation}, confidence ${s.confidence}")
+      }
     }
   }
 }
