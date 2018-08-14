@@ -32,7 +32,10 @@ class CopyVio(val http: HttpClient) {
   def searchByRevId(revId: Long, lang: String = "uk", project: String = "wikipedia") =
     http.get(baseUrl(project, lang) + s"&oldid=$revId") map parseResponse
 
-  def searchByPage(page: Page) = searchByRevId(page.revisions.head.revId.get)
+  def searchByPage(page: Page) = {
+    println(s"# [[${page.title}]]")
+    searchByRevId(page.revisions.head.revId.get)
+  }
 
   def parseResponse(body: String) = Json.parse(body).validate(sourcesReads).get
 
