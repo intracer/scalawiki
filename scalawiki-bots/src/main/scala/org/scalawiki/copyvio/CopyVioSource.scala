@@ -4,5 +4,5 @@ case class CopyVioSource(url: String,
                          confidence: Double,
                          violation: String,
                          skipped: Boolean) {
-  def isSuspected = violation == "suspected"
+  def isPossible = violation != "none"
 }

@@ -16,7 +16,7 @@ class CopyvioSpec extends Specification {
 
       seq.size === 5
 
-      val suspected = seq.filter(_.isSuspected)
+      val suspected = seq.filter(_.isPossible)
 
       suspected.size === 2
 

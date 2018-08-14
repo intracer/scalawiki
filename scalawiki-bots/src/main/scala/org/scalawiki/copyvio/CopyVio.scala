@@ -32,6 +32,8 @@ class CopyVio(val http: HttpClient) {
   def searchByRevId(revId: Long, lang: String = "uk", project: String = "wikipedia") =
     http.get(baseUrl(project, lang) + s"&oldid=$revId") map parseResponse
 
+  def searchByPage(page: Page) = searchByRevId(page.revisions.head.revId.get)
+
   def parseResponse(body: String) = Json.parse(body).validate(sourcesReads).get
 
 }
@@ -54,14 +56,9 @@ object CopyVio extends WithBot with QueryLibrary {
     for (revIds <- articlesWithTemplate("Вікіпедія любить пам'ятки");
          pages <- pagesByIds(revIds);
          page <- pages;
-         sources <- copyVio.searchByRevId(page.revisions.head.revId.get)) {
-
-      val suspected = sources.filterNot(_.violation == "none") //s.violation == "suspected" || s.violation == "possible")
-
-      println(s"# [[${page.title}]]")
-      for (s <- suspected) {
-        println(s"## url: [${s.url}], violation ${s.violation}, confidence ${s.confidence}")
-      }
+         sources <- copyVio.searchByPage(page);
+         suspected <- sources.filterNot(_.isPossible)) {
+      println(s"## url: [${suspected.url}], violation ${suspected.violation}, confidence ${suspected.confidence}")
     }
   }
 }
