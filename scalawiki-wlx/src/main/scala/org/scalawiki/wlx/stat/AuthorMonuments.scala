@@ -2,7 +2,7 @@ package org.scalawiki.wlx.stat
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
-import org.scalawiki.wlx.{ImageDB, MonumentDB}
+import org.scalawiki.wlx.ImageDB
 
 class AuthorMonuments(val stat: ContestStat,
                       newObjectRating: Option[Int] = None,
@@ -39,17 +39,7 @@ class AuthorMonuments(val stat: ContestStat,
               userOpt: Option[String] = None): Seq[String] = {
 
     val objects = if (gallery && userOpt.isDefined && ids.nonEmpty) {
-
-      val noTemplateUser = userOpt.get.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
-
-      val galleryPage = "Commons:" + contest.name + "/" + noTemplateUser
-
-      val galleryText = new Output().galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt))
-
-      commons.foreach(_.page(galleryPage).edit(galleryText))
-
-      "[[" + galleryPage + "|" + ids.size + "]]"
-
+      userGalleryLink(ids, userOpt)
     } else {
       ids.size
     }
@@ -65,6 +55,18 @@ class AuthorMonuments(val stat: ContestStat,
     val byRegion = country.regionIds.toSeq.map(regionRating)
 
     ((objects +: ratingColumns :+ images) ++ byRegion).map(_.toString)
+  }
+
+  private def userGalleryLink(ids: Set[String], userOpt: Option[String]) = {
+    val noTemplateUser = userOpt.get.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
+
+    val galleryPage = "Commons:" + contest.name + "/" + noTemplateUser
+
+    val galleryText = new Output().galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt))
+
+    commons.foreach(_.page(galleryPage).edit(galleryText))
+
+    "[[" + galleryPage + "|" + ids.size + "]]"
   }
 
   override def table: Table = {
