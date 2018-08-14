@@ -54,9 +54,11 @@ class ImageDB(val contest: Contest,
 
   def idsByRegion(regId: String) = _byRegionAndId.by(regId).keys
 
+  def idByAuthor(author: String) = _byAuthorAndId.by(author).keys
+
   def authorsByRegion(regId: String) = _byRegionAndAuthor.by(regId).keys
 
-  def byMegaPixelFilterAuthorMap(predicate: (Int => Boolean)): Map[String, Seq[Image]] = {
+  def byMegaPixelFilterAuthorMap(predicate: Int => Boolean): Map[String, Seq[Image]] = {
     _byMegaPixels.grouped.filterKeys(mpx => mpx >= 0 && predicate(mpx)).values.flatten.toSeq.groupBy(_.author.getOrElse(""))
   }
 

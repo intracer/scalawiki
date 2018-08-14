@@ -58,9 +58,7 @@ class AuthorMonuments(val stat: ContestStat,
       Seq(
         (ids intersect oldIds).size, // existing
         (ids -- oldIds).size, // new
-        ratingFunc(ids, oldIds,
-          userOpt.map(user => oldImageDb._byAuthorAndId.grouped.get(user).map(_.keys).getOrElse(Set.empty)).getOrElse(Set.empty)
-        ) // rating
+        ratingFunc(ids, oldIds, userOpt.map(oldImageDb.idByAuthor).getOrElse(Set.empty)) // rating
       )
     } else Seq.empty[String]
 
@@ -79,11 +77,14 @@ class AuthorMonuments(val stat: ContestStat,
     val totalData = "Total" +:
       rowData(imageDb.ids, imageDb.images.size, regId => imageDb.idsByRegion(regId).size)
 
-    val authors = imageDb.authors.toSeq.sortBy{
-      user => (-ratingFunc(imageDb._byAuthorAndId.by(user).keys, oldIds,
-        oldImageDb._byAuthorAndId.grouped.get(user).map(_.keys).getOrElse(Set.empty)),
-        user)
+    val authors = imageDb.authors.toSeq.sortBy {
+      user =>
+        val rating = ratingFunc(allIds = imageDb.idByAuthor(user),
+          oldIds,
+          oldAuthorIds = oldImageDb.idByAuthor(user))
+        (-rating, user)
     }
+
     val authorsData = authors.map { user =>
       val noTemplateUser = user.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
       val userLink = s"[[User:$noTemplateUser|$noTemplateUser]]"
