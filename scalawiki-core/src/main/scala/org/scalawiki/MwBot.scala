@@ -122,7 +122,7 @@ class MwBotImpl(val site: Site,
 
   def tryLogin(user: String, password: String, token: Option[String] = None): Future[LoginResponse] = {
     val loginParams = Map(
-      "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json"
+      "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json", "utf8" -> ""
     ) ++ token.map("lgtoken" -> _)
 
     for (response <- http.post(apiUrl, loginParams);
