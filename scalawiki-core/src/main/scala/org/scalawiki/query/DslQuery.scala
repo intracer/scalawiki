@@ -20,7 +20,7 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
            pages: Seq[Page] = Seq.empty[Page],
            limit: Option[Long] = None): Future[Seq[Page]] = {
 
-    val params = action.pairs ++ Seq("format" -> "json") ++ continue
+    val params = action.pairs ++ Seq("format" -> "json", "utf8" -> "") ++ continue
 
     if (startTime == 0)
       startTime = System.nanoTime()
