@@ -73,14 +73,19 @@ case class EventStat(event: ArticlesEvent, revStats: Seq[RevisionStat]) {
 
 object ArticleStatBot {
 
-  def main(args: Array[String]) {
-    val cacheName = s"article-contests"
+  def contestStat(event: ArticlesEvent) = {
+    val cacheName = event.id.getOrElse(event.name)
     val mwBot = new CachedBot(Site.ukWiki, cacheName, true)
     val bot = new ArticleStatBot()(mwBot)
 
+    bot.stat(event)
+  }
+
+  def main(args: Array[String]) {
+
     val (contests, weeks) = Events.events()
 
-    Future.sequence(contests.map(bot.stat)).map(_.map(_.asWiki).mkString("\n")).map { wikitext =>
+    Future.sequence(contests.map(contestStat)).map(_.map(_.asWiki).mkString("\n")).map { wikitext =>
       FileUtils.write("articles.wiki", wikitext)
     }
   }
