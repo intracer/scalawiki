@@ -14,9 +14,7 @@ class ArticleStatBotSpec extends Specification with MockBotSpec {
 
       val commands = getCommands(emptyResponse, emptyResponse)
 
-      val asb = new ArticleStatBot() {
-        override val bot = getBot(commands: _*)
-      }
+      val asb = new ArticleStatBot()(getBot(commands: _*))
 
       val stat = asb.stat(event).await()
 
@@ -63,9 +61,7 @@ class ArticleStatBotSpec extends Specification with MockBotSpec {
 
       val commands = listCommands :+ HttpStub(revsRequest, revResponse)
 
-      val asb = new ArticleStatBot() {
-        override val bot = getBot(commands: _*)
-      }
+      val asb = new ArticleStatBot()(getBot(commands: _*))
 
       val stat = asb.stat(event).await()
 
