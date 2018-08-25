@@ -7,5 +7,5 @@ case class HttpStub(queryParam: Map[String, String],
                     response: String,
                     path: String = "/w/api.php",
                     contentType: ContentType = HttpClient.JSON_UTF8) {
-  val query = queryParam + ("format" -> "json")
+  val query = queryParam + ("format" -> "json") + ("utf8" -> "")
 }
