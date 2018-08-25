@@ -81,7 +81,7 @@ object ArticleStatBot {
 
     val (contests, weeks) = Events.events()
 
-    weeks.find(_.newTemplate == "Cherkasy-week-new").map(bot.stat)
+    println(contests.size)
 
 //    Future.sequence(weeks.map(bot.stat)).map(eventSummary)
 //    Future.sequence(contests.map(bot.stat)).map(eventSummary)
