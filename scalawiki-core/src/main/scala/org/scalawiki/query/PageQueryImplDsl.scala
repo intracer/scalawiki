@@ -119,6 +119,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
     val params = action.pairs.toMap ++
       Map("action" -> "edit",
         "format" -> "json",
+        "utf8" -> "",
         "bot" -> "x",
         "assert" -> "user",
         "assert" -> "bot") ++ section.map(s => "section" -> s).toSeq ++ summary.map(s => "summary" -> s).toSeq

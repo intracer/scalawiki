@@ -219,10 +219,10 @@ class MwBotImpl(val site: Site,
   }
 
   def getIndexUri(params: (String, String)*) =
-    Uri(indexUrl) withQuery Query(params ++ Seq("format" -> "json"): _*)
+    Uri(indexUrl) withQuery Query(params ++ Seq("format" -> "json", "utf8" -> ""): _*)
 
   def getUri(params: (String, String)*) =
-    Uri(apiUrl) withQuery Query(params ++ Seq("format" -> "json"): _*)
+    Uri(apiUrl) withQuery Query(params ++ Seq("format" -> "json", "utf8" -> ""): _*)
 
   override def get(params: Map[String, String]): Future[String] = {
     val uri: Uri = getUri(params)
