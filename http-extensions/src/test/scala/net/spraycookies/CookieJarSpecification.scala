@@ -1,18 +1,18 @@
 package net.spraycookies
 
 import akka.http.scaladsl.model.headers.HttpCookie
-import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
-import org.scalacheck.Gen
+import org.scalacheck.{Gen, Properties}
 
 object CookieJarSpecification extends Properties("CookieHandling") {
 
   import akka.http.scaladsl.model.headers.{Cookie, `Set-Cookie`}
-  import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
+  import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
   import net.spraycookies.tldlist.EffectiveTldList
+
   import scala.concurrent._
-  import scala.concurrent.duration._
   import ExecutionContext.Implicits.global
+  import scala.concurrent.duration._
 
   def emptyRequest = HttpRequest()
 

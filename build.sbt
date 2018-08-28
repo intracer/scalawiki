@@ -45,12 +45,12 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
       Library.Akka.http,
       Library.Akka.httpCaching,
       Library.Play.json,
+      Library.Commons.codec,
       "com.typesafe" % "config" % TypesafeConfigV,
       "com.iheart" %% "ficus" % FicusV,
       "jp.ne.opt" %% "chronoscala" % ChronoScalaV,
       "ch.qos.logback" % "logback-classic" % LogbackClassicV,
       "org.sweble.wikitext" % "swc-engine" % SwcEngineV exclude("org.jsoup", "jsoup"),
-      Library.Commons.codec,
       "org.jsoup" % "jsoup" % JSoupV,
       "com.softwaremill.retry" %% "retry" % RetryV,
       "net.openhft" % "chronicle-map" % ChronicleMapV
@@ -61,14 +61,14 @@ lazy val bots = Project("scalawiki-bots", file("scalawiki-bots"))
   .dependsOn(core % "compile->compile;test->test", wlx)
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= Seq(
-    "com.github.pathikrit" %% "better-files-akka" % BetterFilesAkkaV,
-    "com.concurrentthought.cla" %% "command-line-arguments" % CommandLineArgumentsV,
-    "org.xwiki.commons" % "xwiki-commons-blame-api" % BlameApiV,
+    Library.commandLineArguments,
     Library.Poi.scratchpad,
     Library.Poi.ooxml,
     Library.Poi.converter,
     Library.Play.twirlApi,
-    "com.github.tototoshi" %% "scala-csv" % ScalaCsvV
+    "com.github.tototoshi" %% "scala-csv" % ScalaCsvV,
+    "com.github.pathikrit" %% "better-files-akka" % BetterFilesAkkaV,
+    "org.xwiki.commons" % "xwiki-commons-blame-api" % BlameApiV,
   ))
   .enablePlugins(SbtTwirl)
 
@@ -84,8 +84,9 @@ lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= Seq(
+    Library.commandLineArguments,
     "com.github.wookietreiber" %% "scala-chart" % ScalaChartV,
-    "com.concurrentthought.cla" %% "command-line-arguments" % CommandLineArgumentsV
+    Library.scalacheck % Test
   ))
 
 lazy val sql = Project("scalawiki-sql", file("scalawiki-sql"))
@@ -104,5 +105,5 @@ lazy val `http-extensions` = (project in file("http-extensions"))
       Library.Akka.stream,
       Library.Akka.http,
       Library.Play.twirlApi,
-      "org.scalacheck" %% "scalacheck" % ScalaCheckV % Test
+      Library.scalacheck % Test
     ))

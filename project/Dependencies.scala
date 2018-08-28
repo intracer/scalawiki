@@ -56,6 +56,9 @@ object Dependencies {
 
   object Library {
 
+    val commandLineArguments = "com.concurrentthought.cla" %% "command-line-arguments" % CommandLineArgumentsV
+    val scalacheck = "org.scalacheck" %% "scalacheck" % ScalaCheckV
+
     object Akka {
       val AkkaV = "2.5.12"
       val AkkaHttpV = "10.1.1"
@@ -64,23 +67,6 @@ object Dependencies {
       val stream = "com.typesafe.akka" %% "akka-stream" % AkkaV
       val http = "com.typesafe.akka" %% "akka-http" % AkkaHttpV
       val httpCaching = "com.typesafe.akka" %% "akka-http-caching" % AkkaHttpV
-    }
-
-    object Play {
-      val PlayJsonV = "2.6.9"
-      val TwirlV = "1.3.13"
-
-      val json = "com.typesafe.play" %% "play-json" % PlayJsonV
-      val twirlApi = "com.typesafe.play" %% "twirl-api" % TwirlV
-    }
-
-    object Poi {
-      val PoiV = "3.13"
-      val PoiXwpfV = "1.0.6"
-
-      val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
-      val ooxml = "org.apache.poi" % "poi-ooxml" % PoiV
-      val converter = "fr.opensagres.xdocreport" % "org.apache.poi.xwpf.converter.xhtml" % PoiXwpfV
     }
 
     object Commons {
@@ -101,6 +87,23 @@ object Dependencies {
       val core = "com.fasterxml.jackson.core" % "jackson-core" % JacksonV
       val annotations = "com.fasterxml.jackson.core" % "jackson-annotations" % JacksonV
       val databind = "com.fasterxml.jackson.core" % "jackson-databind" % JacksonV
+    }
+
+    object Play {
+      val PlayJsonV = "2.6.9"
+      val TwirlV = "1.3.13"
+
+      val json = "com.typesafe.play" %% "play-json" % PlayJsonV
+      val twirlApi = "com.typesafe.play" %% "twirl-api" % TwirlV
+    }
+
+    object Poi {
+      val PoiV = "3.13"
+      val PoiXwpfV = "1.0.6"
+
+      val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
+      val ooxml = "org.apache.poi" % "poi-ooxml" % PoiV
+      val converter = "fr.opensagres.xdocreport" % "org.apache.poi.xwpf.converter.xhtml" % PoiXwpfV
     }
 
     object Slick {
