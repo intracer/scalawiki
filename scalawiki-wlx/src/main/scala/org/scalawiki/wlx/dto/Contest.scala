@@ -25,7 +25,9 @@ case class Contest(
                     endDate: String = "",
                     uploadConfigs: Seq[UploadConfig] = Seq.empty,
                     specialNominations: Seq[SpecialNomination] = Seq.empty,
-                    newObjectRating: Option[Int] = None) extends HasImagesCategory {
+                    newObjectRating: Option[Int] = None,
+                    newAuthorObjectRating: Option[Int] = None
+                  ) extends HasImagesCategory {
 
   def campaign = contestType.code + "-" + country.code
 
