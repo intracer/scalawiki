@@ -61,6 +61,11 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
       cfg === StatConfig("wle-ua", Seq(thisYear), Nil, newObjectRating = Some(3))
     }
 
+    "parse gallery" in {
+      StatParams.parse(Seq("-campaign", "wle-ua")) === StatConfig("wle-ua", Seq(thisYear), Nil, gallery = false)
+      StatParams.parse(Seq("-campaign", "wle-ua", "-gallery")) === StatConfig("wle-ua", Seq(thisYear), Nil, gallery = true)
+    }
+
     "parse campaign with regions" in {
       val cfg = StatParams.parse(Seq("-campaign", "wle-ua", "-year", "2012",  "-region", "01,02"))
       cfg === StatConfig("wle-ua", Seq(2012), Seq("01", "02"))

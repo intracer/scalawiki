@@ -10,7 +10,8 @@ case class StatConfig(campaign: String,
                       exceptRegions: Seq[String] = Nil,
                       cities: Seq[String] = Nil,
                       exceptCities: Seq[String] = Nil,
-                      newObjectRating: Option[Int] = None)
+                      newObjectRating: Option[Int] = None,
+                      gallery: Boolean = false)
 
 object StatParams {
 
@@ -26,7 +27,8 @@ object StatParams {
       Opt.seqString("[,]")(name = "except regions", flags = Seq("-exceptregion"), help = "except region codes"),
       Opt.seqString("[,]")(name = "cities", flags = Seq("-city"), help = "cities"),
       Opt.seqString("[,]")(name = "exceptcities", flags = Seq("-exceptcity"), help = "except cities"),
-      Opt.int(name = "rating", flags = Seq("-rating"), help = "new object rating")
+      Opt.int(name = "rating", flags = Seq("-rating"), help = "new object rating"),
+      Opt.flag(name = "gallery", flags = Seq("-gallery"), help = "gallery")
     )
   )
 
@@ -48,7 +50,8 @@ object StatParams {
       exceptRegions = parsed.values.getOrElse("exceptregion", Nil).asInstanceOf[Seq[String]],
       cities = parsed.values.getOrElse("city", Nil).asInstanceOf[Seq[String]],
       exceptCities = parsed.values.getOrElse("exceptcities", Nil).asInstanceOf[Seq[String]],
-      newObjectRating = parsed.values.get("rating").asInstanceOf[Option[Int]]
+      newObjectRating = parsed.values.get("rating").asInstanceOf[Option[Int]],
+      gallery = parsed.values.get("gallery").asInstanceOf[Option[Boolean]].getOrElse(false)
     )
   }
 }

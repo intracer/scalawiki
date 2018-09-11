@@ -112,7 +112,7 @@ class Statistics(contest: Contest,
         for (totalImageDb <- data.totalImageDb) {
           regionalStat(data.contest, data.dbsByYear, totalImageDb, data)
 
-          new AuthorsStat().authorsStat(data, bot)
+          new AuthorsStat().authorsStat(data, bot, cfg.gallery)
         }
     }.failed.map(println)
   }
