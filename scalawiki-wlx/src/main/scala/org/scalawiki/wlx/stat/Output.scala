@@ -30,23 +30,35 @@ class Output {
     }
   }
 
-  def galleryByRegionAndId(monumentDb: MonumentDB, imageDb: ImageDB): String = {
+  def galleryByRegionAndId(monumentDb: MonumentDB, authorImageDb: ImageDB, oldImageDb: ImageDB): String = {
     val country = monumentDb.contest.country
-    val regionIds = country.regionIds.filter(id => imageDb.idsByRegion(id).nonEmpty)
+    val regionIds = country.regionIds.filter(id => authorImageDb.idsByRegion(id).nonEmpty)
 
     regionIds.map {
       regionId =>
         val regionName = country.regionById(regionId).name
         val regionHeader = s"== [[:uk:Вікіпедія:Вікі любить Землю/$regionName|$regionName]] ==\n"
-        val ids = imageDb.idsByRegion(regionId)
-        regionHeader + ids.map {
-          id =>
-            val images = imageDb.byId(id).map(_.title).sorted
-            s"=== $id ===\n" +
-              s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n" +
-              Image.gallery(images)
-        }.mkString("\n")
+        val ids = authorImageDb.idsByRegion(regionId)
+
+        val newIds = ids -- oldImageDb.ids
+        val oldIds = ids -- newIds
+
+        regionHeader + s"\n=== new ids ===\n" +
+        gallery(newIds, authorImageDb, monumentDb) +
+          s"\n=== old ids ===\n" +
+          gallery(oldIds, authorImageDb, monumentDb)
+
     }.mkString("\n")
   }
 
+
+  private def gallery(ids: Set[String], imageDb: ImageDB, monumentDb: MonumentDB) = {
+    ids.map {
+      id =>
+        val images = imageDb.byId(id).map(_.title).sorted
+        s"=== $id ===\n" +
+          s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n" +
+          Image.gallery(images)
+    }.mkString("\n")
+  }
 }
