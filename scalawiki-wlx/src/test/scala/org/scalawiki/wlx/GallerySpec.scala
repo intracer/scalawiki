@@ -29,20 +29,22 @@ class GallerySpec extends Specification {
 
       val expected =
         """== [[:uk:Вікіпедія:Вікі любить Землю/Автономна Республіка Крим|Автономна Республіка Крим]] ==
-          |=== 01-111-1111 ===
+          |=== old ids ===
+          |==== 01-111-1111 ====
           |[[:uk:name1]]
           |<gallery>
           |File:Img1.jpg
           |</gallery>
           |== [[:uk:Вікіпедія:Вікі любить Землю/Вінницька область|Вінницька область]] ==
-          |=== 05-111-1111 ===
+          |=== old ids ===
+          |==== 05-111-1111 ====
           |[[:uk:article2|name2]]
           |<gallery>
           |File:Img2.jpg
           |File:Img2sm.jpg
           |</gallery>""".stripMargin
 
-      val actual = new Output().galleryByRegionAndId(monumentDb, imageDb)
+      val actual = new Output().galleryByRegionAndId(monumentDb, imageDb, imageDb)
       // compare this way to work across different line endings
       actual.lines.toBuffer === expected.lines.toBuffer
     }

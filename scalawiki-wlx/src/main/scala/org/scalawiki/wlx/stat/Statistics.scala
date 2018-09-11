@@ -69,7 +69,7 @@ class Statistics(contest: Contest,
 
     val (monumentDb, monumentDbOld) = (
       Some(MonumentDB.getMonumentDb(contest, monumentQuery)),
-      Option(contest.newObjectRating).filter(_ == true).map { _ =>
+      contest.newObjectRating.map { _ =>
         MonumentDB.getMonumentDb(contest, monumentQuery, date = Some(ZonedDateTime.of(2017, 4, 30, 23, 59, 0, 0, ZoneOffset.UTC)))
       }
     )
@@ -112,7 +112,7 @@ class Statistics(contest: Contest,
         for (totalImageDb <- data.totalImageDb) {
           regionalStat(data.contest, data.dbsByYear, totalImageDb, data)
 
-          new AuthorsStat().authorsStat(data, bot)
+          new AuthorsStat().authorsStat(data, bot, cfg.gallery)
         }
     }.failed.map(println)
   }
@@ -352,7 +352,11 @@ object Statistics {
     val cfg = StatParams.parse(args)
 
     val contest = Contest.byCampaign(cfg.campaign).get
-      .copy(year = cfg.years.last, newObjectRating = cfg.newObjectRating)
+      .copy(
+        year = cfg.years.last,
+        newObjectRating = cfg.newObjectRating,
+        newAuthorObjectRating = cfg.newAuthorObjectRating
+      )
 
     val cacheName = s"${cfg.campaign}-${contest.year}"
     val imageQuery = ImageQuery.create()(new CachedBot(Site.commons, cacheName, true))

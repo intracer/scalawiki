@@ -57,8 +57,19 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     }
 
     "parse new object rating" in {
-      val cfg = StatParams.parse(Seq("-campaign", "wle-ua", "-rating", "3"))
-      cfg === StatConfig("wle-ua", Seq(thisYear), Nil, newObjectRating = Some(3))
+      StatParams.parse(Seq("-campaign", "wle-ua", "-new-object-rating", "7")) ===
+        StatConfig("wle-ua", Seq(thisYear), Nil, newObjectRating = Some(7))
+
+      StatParams.parse(Seq("-campaign", "wle-ua", "-new-author-object-rating", "3")) ===
+        StatConfig("wle-ua", Seq(thisYear), Nil, newAuthorObjectRating = Some(3))
+
+      StatParams.parse(Seq("-campaign", "wle-ua", "-new-object-rating", "10", "-new-author-object-rating", "5")) ===
+        StatConfig("wle-ua", Seq(thisYear), Nil, newObjectRating = Some(10), newAuthorObjectRating = Some(5))
+    }
+
+    "parse gallery" in {
+      StatParams.parse(Seq("-campaign", "wle-ua")) === StatConfig("wle-ua", Seq(thisYear), Nil, gallery = false)
+      StatParams.parse(Seq("-campaign", "wle-ua", "-gallery")) === StatConfig("wle-ua", Seq(thisYear), Nil, gallery = true)
     }
 
     "parse campaign with regions" in {
