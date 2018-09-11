@@ -43,22 +43,23 @@ class Output {
         val newIds = ids -- oldImageDb.ids
         val oldIds = ids -- newIds
 
-        regionHeader + s"\n=== new ids ===\n" +
-        gallery(newIds, authorImageDb, monumentDb) +
-          s"\n=== old ids ===\n" +
-          gallery(oldIds, authorImageDb, monumentDb)
+        regionHeader +
+          gallery("new ids", newIds, authorImageDb, monumentDb) +
+          gallery("old ids", oldIds, authorImageDb, monumentDb)
 
     }.mkString("\n")
   }
 
-
-  private def gallery(ids: Set[String], imageDb: ImageDB, monumentDb: MonumentDB) = {
-    ids.map {
-      id =>
-        val images = imageDb.byId(id).map(_.title).sorted
-        s"=== $id ===\n" +
-          s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n" +
-          Image.gallery(images)
-    }.mkString("\n")
+  private def gallery(header: String, ids: Set[String], imageDb: ImageDB, monumentDb: MonumentDB) = {
+    if (ids.nonEmpty) {
+      s"=== $header ===\n" +
+        ids.map {
+          id =>
+            val images = imageDb.byId(id).map(_.title).sorted
+            s"==== $id ====\n" +
+              s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n" +
+              Image.gallery(images)
+        }.mkString("\n")
+    } else ""
   }
 }

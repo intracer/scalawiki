@@ -27,7 +27,7 @@ class ReporterRegistry(stat: ContestStat) {
     new MonumentsPicturedByRegion(stat).asText
 
   def galleryByRegionAndId: Option[String] =
-    RR.galleryByRegionAndId(stat.monumentDb, stat.currentYearImageDb.get)
+    RR.galleryByRegionAndId(stat.monumentDb, stat.currentYearImageDb.get, stat.totalImageDb.get)
 
   def withArticles: Option[String] =
     RR.withArticles(stat.monumentDb)
@@ -50,8 +50,8 @@ object ReporterRegistry {
   def specialNominations(imageDB: ImageDB): String =
     new SpecialNominations(imageDB.contest, imageDB).specialNomination()
 
-  def galleryByRegionAndId(monumentDb: Option[MonumentDB], imageDb: ImageDB): Option[String] =
-    monumentDb.map(db => new Output()galleryByRegionAndId(db, imageDb))
+  def galleryByRegionAndId(monumentDb: Option[MonumentDB], imageDb: ImageDB, oldImageDb: ImageDB): Option[String] =
+    monumentDb.map(db => new Output().galleryByRegionAndId(db, imageDb, oldImageDb))
 
   def withArticles(monumentDb: Option[MonumentDB]): Option[String] =
     monumentDb.map(db => Stats.withArticles(db).asWiki("").asWiki)
