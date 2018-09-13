@@ -39,13 +39,17 @@ class Output {
         val regionName = country.regionById(regionId).name
         val regionHeader = s"== [[:uk:Вікіпедія:Вікі любить Землю/$regionName|$regionName]] ==\n"
         val ids = authorImageDb.idsByRegion(regionId)
+        val author = authorImageDb.authors.head
 
         val newIds = ids -- oldImageDb.ids
         val oldIds = ids -- newIds
+        val newForAuthorIds = oldIds -- oldImageDb.idByAuthor(author)
+        val oldForAuthorIds = oldIds -- newForAuthorIds
 
         regionHeader +
           gallery("new ids", newIds, authorImageDb, monumentDb) +
-          gallery("old ids", oldIds, authorImageDb, monumentDb)
+          gallery("new for author ids", newForAuthorIds, authorImageDb, monumentDb) +
+          gallery("old ids", oldForAuthorIds, authorImageDb, monumentDb)
 
     }.mkString("\n")
   }
