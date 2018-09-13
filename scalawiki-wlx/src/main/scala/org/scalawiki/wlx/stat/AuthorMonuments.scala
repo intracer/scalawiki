@@ -31,7 +31,7 @@ class AuthorMonuments(val stat: ContestStat,
     allIds.size + newObjectRating.fold(0) {
       rating => (allIds -- oldIds).size * (rating - 1)
     } + newAuthorObjectRating.fold(0) {
-      rating => (allIds -- oldAuthorIds).size * (rating - 1)
+      rating => ((allIds intersect oldIds) -- oldAuthorIds).size * (rating - 1)
     }
 
   def rowData(ids: Set[String], images: Int,
@@ -45,10 +45,12 @@ class AuthorMonuments(val stat: ContestStat,
     }
 
     val ratingColumns = if (newObjectRating.isDefined) {
+      val oldAuthorIds = userOpt.map(oldImageDb.idByAuthor).getOrElse(Set.empty)
       Seq(
-        (ids intersect oldIds).size, // existing
+        (ids intersect oldIds intersect oldAuthorIds).size, // existing
+        (ids intersect oldIds -- oldAuthorIds).size, // new for author
         (ids -- oldIds).size, // new
-        ratingFunc(ids, oldIds, userOpt.map(oldImageDb.idByAuthor).getOrElse(Set.empty)) // rating
+        ratingFunc(ids, oldIds, oldAuthorIds) // rating
       )
     } else Seq.empty[String]
 
@@ -72,7 +74,7 @@ class AuthorMonuments(val stat: ContestStat,
   override def table: Table = {
 
     val columns = Seq("User", "Objects pictured") ++
-      (if (newObjectRating.isDefined) Seq("Existing", "New", "Rating") else Seq.empty) ++
+      (if (newObjectRating.isDefined) Seq("Existing", "New for author", "New", "Rating") else Seq.empty) ++
       Seq("Photos uploaded") ++
       country.regionNames
 
