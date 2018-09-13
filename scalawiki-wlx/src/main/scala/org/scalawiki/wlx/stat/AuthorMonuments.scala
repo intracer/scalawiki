@@ -31,7 +31,7 @@ class AuthorMonuments(val stat: ContestStat,
     allIds.size + newObjectRating.fold(0) {
       rating => (allIds -- oldIds).size * (rating - 1)
     } + newAuthorObjectRating.fold(0) {
-      rating => (allIds -- oldAuthorIds).size * (rating - 1)
+      rating => ((allIds intersect oldIds) -- oldAuthorIds).size * (rating - 1)
     }
 
   def rowData(ids: Set[String], images: Int,
