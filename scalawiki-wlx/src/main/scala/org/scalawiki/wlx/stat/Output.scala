@@ -37,7 +37,7 @@ class Output {
     regionIds.map {
       regionId =>
         val regionName = country.regionById(regionId).name
-        val regionHeader = s"== [[:uk:Вікіпедія:Вікі любить Землю/$regionName|$regionName]] ==\n"
+        val regionHeader = s"== [[:uk:Вікіпедія:Вікі любить Землю/$regionName|$regionName]] =="
         val ids = authorImageDb.idsByRegion(regionId)
         val author = authorImageDb.authors.head
 
@@ -56,7 +56,7 @@ class Output {
 
   private def gallery(header: String, ids: Set[String], imageDb: ImageDB, monumentDb: MonumentDB) = {
     if (ids.nonEmpty) {
-      s"=== $header ===\n" +
+      s"\n=== $header ===\n" +
         ids.map {
           id =>
             val images = imageDb.byId(id).map(_.title).sorted
