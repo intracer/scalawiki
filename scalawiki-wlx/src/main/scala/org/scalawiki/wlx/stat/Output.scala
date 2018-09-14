@@ -47,9 +47,9 @@ class Output {
         val oldForAuthorIds = oldIds -- newForAuthorIds
 
         regionHeader +
-          gallery("new ids", newIds, authorImageDb, monumentDb) +
-          gallery("new for author ids", newForAuthorIds, authorImageDb, monumentDb) +
-          gallery("old ids", oldForAuthorIds, authorImageDb, monumentDb)
+          gallery(s"$regionName new ids", newIds, authorImageDb, monumentDb) +
+          gallery(s"$regionName new for author ids", newForAuthorIds, authorImageDb, monumentDb) +
+          gallery(s"$regionName old ids", oldForAuthorIds, authorImageDb, monumentDb)
 
     }.mkString("\n")
   }
