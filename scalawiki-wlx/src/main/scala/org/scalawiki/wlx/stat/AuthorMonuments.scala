@@ -38,11 +38,7 @@ class AuthorMonuments(val stat: ContestStat,
               regionRating: String => Int,
               userOpt: Option[String] = None): Seq[String] = {
 
-    val objects = if (gallery && userOpt.isDefined && ids.nonEmpty) {
-      userGalleryLink(ids, userOpt)
-    } else {
-      ids.size
-    }
+    val objects = optionalUserGalleryLink(ids.size, userOpt)
 
     val ratingColumns = if (newObjectRating.isDefined) {
       val oldAuthorIds = userOpt.map(oldImageDb.idByAuthor).getOrElse(Set.empty)
@@ -54,21 +50,33 @@ class AuthorMonuments(val stat: ContestStat,
       )
     } else Seq.empty[String]
 
-    val byRegion = country.regionIds.toSeq.map(regionRating)
+    val byRegion = country.regionIds.toSeq.map{ regionId =>
+      optionalUserGalleryLink(regionRating(regionId), userOpt, country.regionById.get(regionId).map(_.name))
+    }
 
     ((objects +: ratingColumns :+ images) ++ byRegion).map(_.toString)
   }
 
-  private def userGalleryLink(ids: Set[String], userOpt: Option[String]) = {
+  private def optionalUserGalleryLink(number: Int, userOpt: Option[String], regionOpt: Option[String] = None) = {
+    if (gallery && userOpt.isDefined && number > 0) {
+      userGalleryLink(number, userOpt, regionOpt)
+    } else {
+      number
+    }
+  }
+
+  private def userGalleryLink(number: Int, userOpt: Option[String], regionOpt: Option[String] = None) = {
     val noTemplateUser = userOpt.get.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
 
-    val galleryPage = "Commons:" + contest.name + "/" + noTemplateUser
+    val galleryPage = "Commons:" + contest.name + "/" + noTemplateUser + regionOpt.fold("") { region =>
+      "#" + region.replaceAll(" ", "_") + ":_" + number
+    }
 
     val galleryText = new Output().galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt), oldImageDb)
 
     commons.foreach(_.page(galleryPage).edit(galleryText))
 
-    "[[" + galleryPage + "|" + ids.size + "]]"
+    "[[" + galleryPage + "|" + number + "]]"
   }
 
   override def table: Table = {
