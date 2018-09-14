@@ -56,7 +56,7 @@ class Output {
 
   private def gallery(header: String, ids: Set[String], imageDb: ImageDB, monumentDb: MonumentDB) = {
     if (ids.nonEmpty) {
-      s"\n=== $header ===\n" +
+      s"\n=== $header: ${ids.size} ===\n" +
         ids.map {
           id =>
             val images = imageDb.byId(id).map(_.title).sorted
