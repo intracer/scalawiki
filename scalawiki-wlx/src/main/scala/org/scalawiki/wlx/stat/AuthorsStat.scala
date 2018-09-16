@@ -14,7 +14,6 @@ class AuthorsStat(val uploadImages: Boolean = false) {
 
   def authorsStat(data: ContestStat, bot: MwBot, gallery: Boolean) {
     new AuthorMonuments(data,
-      newObjectRating = data.contest.newObjectRating,
       gallery = gallery,
       commons = Some(bot)
     ).updateWiki(bot)
