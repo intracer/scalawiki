@@ -67,7 +67,7 @@ class AuthorMonuments(val stat: ContestStat,
     val noTemplateUser = userOpt.get.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
 
     val galleryPage = "Commons:" + contest.name + "/" + noTemplateUser + regionOpt.fold("") { region =>
-      "#" + region.replaceAll(" ", "_") + ":_" + number
+      "#" + region.replaceAll(" ", "_")
     }
 
     val galleryText = new Output().galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt), oldImageDb)
