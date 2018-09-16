@@ -32,7 +32,8 @@ class Output {
   }
 
   def galleryByRegionAndId(monumentDb: MonumentDB, authorImageDb: ImageDB, oldImageDb: ImageDB): String = {
-    val country = monumentDb.contest.country
+    val contest = monumentDb.contest
+    val country = contest.country
     val regionIds = country.regionIds.filter(id => authorImageDb.idsByRegion(id).nonEmpty)
 
     regionIds.map {
@@ -47,7 +48,20 @@ class Output {
         val newForAuthorIds = oldIds -- oldImageDb.idByAuthor(author)
         val oldForAuthorIds = oldIds -- newForAuthorIds
 
-        regionHeader +
+        val rating = oldForAuthorIds.size +
+          newForAuthorIds.size * contest.newAuthorObjectRating.getOrElse(1) +
+          newIds.size * contest.newObjectRating.getOrElse(1)
+
+        val ratingStr = s"\nRating: $rating = " +
+          (if (newIds.nonEmpty)
+            s"${newIds.size} new ids * ${contest.newObjectRating.getOrElse(1)} "
+          else "") +
+          (if (newForAuthorIds.nonEmpty)
+            s"${newForAuthorIds.size} new for author ids * ${contest.newAuthorObjectRating.getOrElse(1)} "
+          else "") +
+          (if (oldForAuthorIds.nonEmpty) s"${oldForAuthorIds.size} old for author ids" else "")
+
+        regionHeader + ratingStr +
           gallery(s"$regionName new ids", newIds, authorImageDb, monumentDb) +
           gallery(s"$regionName new for author ids", newForAuthorIds, authorImageDb, monumentDb) +
           gallery(s"$regionName old ids", oldForAuthorIds, authorImageDb, monumentDb)
