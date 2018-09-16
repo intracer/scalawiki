@@ -52,14 +52,13 @@ class Output {
           newForAuthorIds.size * contest.newAuthorObjectRating.getOrElse(1) +
           newIds.size * contest.newObjectRating.getOrElse(1)
 
-        val ratingStr = s"\nRating: $rating = " +
-          (if (newIds.nonEmpty)
-            s"${newIds.size} new ids * ${contest.newObjectRating.getOrElse(1)} "
-          else "") +
-          (if (newForAuthorIds.nonEmpty)
-            s"${newForAuthorIds.size} new for author ids * ${contest.newAuthorObjectRating.getOrElse(1)} "
-          else "") +
-          (if (oldForAuthorIds.nonEmpty) s"${oldForAuthorIds.size} old for author ids" else "")
+        val ratingStr = s"\nRating: '''$rating''' = " +
+          Seq(
+            if (newIds.nonEmpty) s"${newIds.size} new ids * ${contest.newObjectRating.getOrElse(1)} " else "",
+            if (newForAuthorIds.nonEmpty) s"${newForAuthorIds.size} new for author ids * ${contest.newAuthorObjectRating.getOrElse(1)} " else "",
+            if (oldForAuthorIds.nonEmpty) s"${oldForAuthorIds.size} old for author ids" else ""
+          ).filter(_.nonEmpty)
+            .mkString(" + ")
 
         regionHeader + ratingStr +
           gallery(s"$regionName new ids", newIds, authorImageDb, monumentDb) +
