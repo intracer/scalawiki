@@ -72,7 +72,9 @@ class AuthorMonuments(val stat: ContestStat,
 
     val galleryText = new Output().galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt), oldImageDb)
 
-    commons.foreach(_.page(galleryPage).edit(galleryText))
+    for (bot <- commons if regionOpt.isEmpty) {
+      bot.page(galleryPage).edit(galleryText)
+    }
 
     "[[" + galleryPage + "|" + number + "]]"
   }
