@@ -184,7 +184,9 @@ class MwBotImpl(val site: Site,
     response flatMap http.getBody map {
       body =>
         parseJson(reads, body).getOrElse {
-          throw parseJson(errorReads, body).get
+          val exception = parseJson(errorReads, body).get
+          log.error(exception, "mediawiki error")
+          throw exception
         }
     }
 
