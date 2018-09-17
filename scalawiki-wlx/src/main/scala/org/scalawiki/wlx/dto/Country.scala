@@ -9,9 +9,9 @@ trait AdmDivision {
 
   def name: String
 
-  def regions: Seq[AdmDivision] = Seq.empty
+  def regions: Seq[AdmDivision] = Nil
 
-  def languageCodes: Seq[String] = Seq.empty
+  def languageCodes: Seq[String] = Nil
 
   def withoutLangCodes = this
 
