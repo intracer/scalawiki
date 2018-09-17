@@ -35,6 +35,7 @@ object Koatuu {
       .toLowerCase.capitalize
       .split("-").map(_.capitalize).mkString("-")
       .split("[Мм]\\.[ ]?").map(_.capitalize).mkString("м. ")
+      .replaceFirst("^[Мм]\\.[ ]?", "")
       .replace("республіка", "Республіка")
       .replace("крим", "Крим")
   }

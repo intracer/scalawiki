@@ -13,7 +13,7 @@ class KoatuuSpec extends Specification {
     }
 
     "contain Kyiv raions" in {
-      val kyiv = regions.find(_.name == "м. Київ").get
+      val kyiv = regions.find(_.name == "Київ").get
       kyiv.regions.map(_.name) === Seq("Райони м. Київ", "Голосіївський", "Дарницький", "Деснянський", "Дніпровський",
         "Оболонський", "Печерський", "Подільський", "Святошинський", "Солом'янський", "Шевченківський")
     }
