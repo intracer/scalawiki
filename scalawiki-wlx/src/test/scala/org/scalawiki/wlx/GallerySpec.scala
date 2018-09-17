@@ -29,7 +29,7 @@ class GallerySpec extends Specification {
 
       val expected =
         """== [[:uk:Вікіпедія:Вікі любить Землю/Автономна Республіка Крим|Автономна Республіка Крим]] ==
-          |Rating: 1 = 1 old for author ids
+          |Rating: '''1''' = '''1''' old for author ids
           |=== Автономна Республіка Крим old ids: 1 ===
           |==== 01-111-1111 ====
           |[[:uk:name1]]
@@ -37,7 +37,7 @@ class GallerySpec extends Specification {
           |File:Img1.jpg
           |</gallery>
           |== [[:uk:Вікіпедія:Вікі любить Землю/Вінницька область|Вінницька область]] ==
-          |Rating: 1 = 1 old for author ids
+          |Rating: '''1''' = '''1''' old for author ids
           |=== Вінницька область old ids: 1 ===
           |==== 05-111-1111 ====
           |[[:uk:article2|name2]]
