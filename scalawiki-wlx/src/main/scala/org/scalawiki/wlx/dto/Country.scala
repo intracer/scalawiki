@@ -70,7 +70,7 @@ object Country {
       "53" -> "Полтавська область",
       "21" -> "Закарпатська область",
       "51" -> "Одеська область"
-    ).map { case (code, name) => Region(code, name) }.toSeq
+    ).map { case (code, name) => Region(code, name) }.toSeq.sortBy(_.code)
   )
 
   val customCountries = Seq(Ukraine)

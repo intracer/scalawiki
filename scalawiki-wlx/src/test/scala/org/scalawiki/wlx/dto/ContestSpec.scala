@@ -1,6 +1,5 @@
-package org.scalawiki.wlx
+package org.scalawiki.wlx.dto
 
-import org.scalawiki.wlx.dto.{Contest, ContestType, Country}
 import org.specs2.mutable.Specification
 
 class ContestSpec extends Specification {
