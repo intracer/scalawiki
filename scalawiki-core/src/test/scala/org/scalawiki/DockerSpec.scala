@@ -6,10 +6,11 @@ import org.specs2.specification.BeforeAfterAll
 
 import scala.language.postfixOps
 import scala.sys.process._
+import scala.util.Properties
 
 trait WithDocker extends BeforeAfterAll {
 
-  val appveyour = sys.env.contains("APPVEYOR")
+  val win = Properties.isWin
 
   val install = "docker exec scalawiki_mediawiki_1 " +
     "php maintenance/install.php SomeWiki admin --pass 123 " +
@@ -22,7 +23,7 @@ trait WithDocker extends BeforeAfterAll {
   }
 
   override def beforeAll: Unit = {
-    if (!appveyour) {
+    if (!win) {
       s"docker-compose rm -fsv" !
 
       s"docker-compose up -d" !
@@ -37,7 +38,7 @@ trait WithDocker extends BeforeAfterAll {
   }
 
   override def afterAll: Unit = {
-    if (!appveyour) {
+    if (!win) {
       s"docker-compose down" !
     }
   }
@@ -46,7 +47,7 @@ trait WithDocker extends BeforeAfterAll {
 class DockerSpec extends Specification with WithDocker {
   "docker" should {
     "check mediawiki version" in {
-      if (!appveyour) {
+      if (!win) {
         val bot = MwBot.create(Site.localhost.copy(scriptPath = ""), None)
         bot.mediaWikiVersion.version.toDouble must be >= 1.31
       } else {
