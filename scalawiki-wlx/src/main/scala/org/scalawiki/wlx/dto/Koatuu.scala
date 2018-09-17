@@ -21,7 +21,8 @@ object Koatuu {
     raw.map { r =>
       r.copy(
         code = shortCode(r.code),
-        name = betterName(r.name)
+        name = betterName(r.name),
+        regions = r.regions.map(withBetterName)
       )
     }
   }
@@ -29,13 +30,16 @@ object Koatuu {
   def shortCode(s: String) =
     s.take(2)
 
-  def betterName(s: String) =
+  def betterName(s: String) = {
     s.split("/").head
-      .replace("М.", "")
       .toLowerCase.capitalize
+      .split("-").map(_.capitalize).mkString("-")
+      .split("[Мм]\\.[ ]?").map(_.capitalize).mkString("м. ")
       .replace("республіка", "Республіка")
       .replace("крим", "Крим")
-      .replace("Івано-франківська", "Івано-Франківська")
+  }
+
+  def withBetterName(r: Region) = r.copy(name = betterName(r.name))
 
   def main(args: Array[String]): Unit = {
     println(regions)
