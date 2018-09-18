@@ -31,13 +31,26 @@ object Koatuu {
     s.take(2)
 
   def betterName(s: String) = {
-    s.split("/").head
+    def capitalizeRegion(s: String) = {
+      Seq("Міста обласного підпорядкування", "Міста", "Райони")
+        .filter(s.startsWith)
+        .map { prefix =>
+          prefix + " " + s.replaceFirst(prefix + " ", "").capitalize
+        }.headOption.getOrElse(s)
+    }
+
+    val s1 = s.split("/").head
       .toLowerCase.capitalize
+
+    capitalizeRegion(s1)
       .split("-").map(_.capitalize).mkString("-")
       .split("[Мм]\\.[ ]?").map(_.capitalize).mkString("м. ")
       .replaceFirst("^[Мм]\\.[ ]?", "")
       .replace("республіка", "Республіка")
+      .replace("республіки", "Республіки")
       .replace("крим", "Крим")
+
+
   }
 
   def withBetterName(r: Region) = r.copy(name = betterName(r.name))
