@@ -31,7 +31,8 @@ case class Image(title: String,
                  date: Option[ZonedDateTime] = None,
                  monumentId: Option[String] = None,
                  pageId: Option[Long] = None,
-                 metadata: Option[ImageMetadata] = None
+                 metadata: Option[ImageMetadata] = None,
+                 categories: Set[String] = Set.empty
                 ) extends Ordered[Image] {
 
   def compare(that: Image) = title.compareTo(that.title)
@@ -59,24 +60,27 @@ case class Image(title: String,
 
 object Image {
 
+  val categoryRegex = "\\[\\[Category:([^]]+)\\]\\]".r
+
   def fromPageImages(page: Page): Option[Image] =
     page.images.headOption
 
   def fromPageRevision(page: Page, monumentIdTemplate: Option[String]): Option[Image] = {
     page.revisions.headOption.map { revision =>
 
-      val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
       val content = revision.content.getOrElse("")
       val idOpt = TemplateParser.parseOne(content, monumentIdTemplate).flatMap(_.getParamOpt("1"))
-      //val ipOpt = if (id.matches(idRegex)) Some(id) else None
 
       val author = getAuthorFromPage(content)
+
+      val categories = categoryRegex.findAllIn(content).matchData.map(_.group(1))
 
       new Image(page.title,
         author = Some(author),
         date = revision.timestamp,
         monumentId = idOpt,
-        pageId = page.id)
+        pageId = page.id,
+        categories = categories.toSet)
     }
   }
 
