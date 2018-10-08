@@ -73,21 +73,21 @@ object Image {
 
       val author = getAuthorFromPage(content)
 
-      val categories = categoryRegex.findAllIn(content).matchData.map(_.group(1))
+      val categories = categoryRegex.findAllIn(content).matchData.map(_.group(1)).toSet
 
       new Image(page.title,
         author = Some(author),
         date = revision.timestamp,
         monumentId = idOpt,
         pageId = page.id,
-        categories = categories.toSet)
+        categories = categories)
     }
   }
 
   def fromPage(page: Page, monumentIdTemplate: Option[String]): Option[Image] = {
     for (fromImage <- Image.fromPageImages(page);
          fromRev <- Image.fromPageRevision(page, monumentIdTemplate))
-      yield fromImage.copy(monumentId = fromRev.monumentId, author = fromRev.author)
+      yield fromImage.copy(monumentId = fromRev.monumentId, author = fromRev.author, categories = fromRev.categories)
   }
 
   def getAuthorFromPage(content: String): String = {
