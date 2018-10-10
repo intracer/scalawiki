@@ -160,7 +160,9 @@ class Statistics(contest: Contest,
 
   def wrongIds(imageDb: ImageDB, monumentDb: MonumentDB) {
 
-    val wrongIdImages = imageDb.images.filterNot(image => image.monumentId.fold(false)(monumentDb.ids.contains))
+    val wrongIdImages = imageDb.images
+      .filterNot(image => image.monumentId.fold(false)(id => monumentDb.ids.contains(id) || id.startsWith("99")))
+      .filterNot(_.categories.exists(_.startsWith("Obviously ineligible")))
 
     val contest = imageDb.contest
     val contestPage = contest.name
