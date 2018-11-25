@@ -60,23 +60,21 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
     val rows = regionIds.map { regionId =>
 
       val withPhotoInListsCurrentRegion = withPhotoInLists.filter(id => Monument.getRegionId(id) == regionId)
-      val picturedMonumentsInRegionSet = (
-        totalImageDb.map(_.idsByRegion(regionId)).getOrElse(Set.empty) ++
-          withPhotoInListsCurrentRegion
-        ).toSet
+      val picturedMonumentsInRegionSet = totalImageDb.map(_.idsByRegion(regionId)).getOrElse(Set.empty) ++
+        withPhotoInListsCurrentRegion
       val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
       val allMonumentsInRegion = monumentDb.byRegion(regionId).size
 
       val picturedIds = yearSeq.map {
         year =>
           val db = imageDbsByYear(year).head
-          db.idsByRegion(regionId).toSet.size
+          db.idsByRegion(regionId).size
       }
       val pictured = yearSeq.flatMap {
         year =>
           val db = imageDbsByYear(year).head
           Seq(
-            db.idsByRegion(regionId).toSet.size,
+            db.idsByRegion(regionId).size,
             db.imagesByRegion(regionId).toSet.size
           )
       }

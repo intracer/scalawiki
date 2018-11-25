@@ -27,51 +27,20 @@ trait AdmDivision {
 
 case class NoAdmDivision(code: String = "", name: String = "") extends AdmDivision
 
-case class Country(
-                    code: String,
-                    name: String,
-                    override val languageCodes: Seq[String] = Seq.empty,
-                    override val regions: Seq[AdmDivision] = Seq.empty
+case class Country(code: String,
+                   name: String,
+                   override val languageCodes: Seq[String] = Nil,
+                   override val regions: Seq[AdmDivision] = Nil
                   ) extends AdmDivision {
 
-  override def withoutLangCodes = copy(languageCodes = Seq.empty)
+  override def withoutLangCodes = copy(languageCodes = Nil)
 }
 
 object Country {
 
   val Azerbaijan = new Country("AZ", "Azerbaijan", Seq("az"))
 
-  val Ukraine = new Country("UA", "Ukraine", Seq("uk"),
-    Map(
-      "01" -> "Автономна Республіка Крим",
-      "05" -> "Вінницька область",
-      "07" -> "Волинська область",
-      "12" -> "Дніпропетровська область",
-      "14" -> "Донецька область",
-      "18" -> "Житомирська область",
-      "21" -> "Закарпатська область",
-      "23" -> "Запорізька область",
-      "26" -> "Івано-Франківська область",
-      "32" -> "Київська область",
-      "35" -> "Кіровоградська область",
-      "44" -> "Луганська область",
-      "46" -> "Львівська область",
-      "48" -> "Миколаївська область",
-      "51" -> "Одеська область",
-      "53" -> "Полтавська область",
-      "56" -> "Рівненська область",
-      "59" -> "Сумська область",
-      "61" -> "Тернопільська область",
-      "65" -> "Херсонська область",
-      "63" -> "Харківська область",
-      "68" -> "Хмельницька область",
-      "71" -> "Черкаська область",
-      "73" -> "Чернівецька область",
-      "74" -> "Чернігівська область",
-      "80" -> "Київ",
-      "85" -> "Севастополь"
-    ).map { case (code, name) => Region(code, name) }.toSeq.sortBy(_.code)
-  )
+  val Ukraine = new Country("UA", "Ukraine", Seq("uk"), Koatuu.regions)
 
   val customCountries = Seq(Ukraine)
 

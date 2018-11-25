@@ -22,13 +22,15 @@ object Koatuu {
       r.copy(
         code = shortCode(r.code),
         name = betterName(r.name),
-        regions = r.regions.map(withBetterName)
+        regions = r.regions
+          .map(withBetterName)
+          .map(r => r.copy(code = shortCode(r.code, 5)))
       )
     }
   }
 
-  def shortCode(s: String) =
-    s.take(2)
+  def shortCode(s: String, init: Int = 2) =
+    s.take(init)
 
   def betterName(s: String) = {
     def capitalizeRegion(s: String) = {
