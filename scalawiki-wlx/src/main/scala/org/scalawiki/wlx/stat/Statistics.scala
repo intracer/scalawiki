@@ -44,6 +44,7 @@ class Statistics(contest: Contest,
                  startYear: Option[Int],
                  monumentQuery: MonumentQuery,
                  imageQuery: ImageQuery,
+                 imageQueryWiki: ImageQuery,
                  bot: MwBot,
                  cfg: StatConfig) {
 
@@ -51,6 +52,7 @@ class Statistics(contest: Contest,
            startYear: Option[Int] = None,
            monumentQuery: MonumentQuery,
            imageQuery: ImageQuery = ImageQuery.create(),
+           imageQueryWiki: Option[ImageQuery] = None,
            bot: MwBot = MwBot.fromHost(MwBot.commons),
            cfg: Option[StatConfig] = None) =
     this(contest, startYear, monumentQuery, imageQuery, bot, cfg.getOrElse(StatConfig(contest.campaign)))
@@ -88,9 +90,10 @@ class Statistics(contest: Contest,
   private def contestImages(monumentDb: Some[MonumentDB])(contest: Contest) =
     ImageDB.create(contest, imageQuery, monumentDb)
 
-  private def imagesByTemplate(monumentDb: Some[MonumentDB]) =
-    imageQuery.imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest).map {
-      images => Some(new ImageDB(contest, images, monumentDb))
+  private def imagesByTemplate(monumentDb: Some[MonumentDB], imageQuery: ImageQuery = imageQuery) =
+    for (commons <- imageQuery.imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest);
+         wiki <- imageQuery.imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)) yield {
+      Some(new ImageDB(contest, commons ++ wiki, monumentDb))
     }
 
   def getOldImagesMonumentDb(monumentDb: Option[MonumentDB], monumentDbOld: Option[MonumentDB],
@@ -162,12 +165,13 @@ class Statistics(contest: Contest,
 
     val wrongIdImages = imageDb.images
       .filterNot(image => image.monumentId.fold(false)(id => monumentDb.ids.contains(id) || id.startsWith("99")))
-      .filterNot(_.categories.exists(_.startsWith("Obviously ineligible")))
+
+    val notObvious = wrongIdImages.filterNot(_.categories.exists(_.startsWith("Obviously ineligible")))
 
     val contest = imageDb.contest
     val contestPage = contest.name
 
-    val text = wrongIdImages.map(_.title).mkString("<gallery>", "\n", "</gallery>")
+    val text = notObvious.map(_.title).mkString("<gallery>", "\n", "</gallery>")
     bot.page(s"Commons:$contestPage/Images with bad ids").edit(text, Some("updating"))
   }
 
@@ -203,6 +207,7 @@ class Statistics(contest: Contest,
 
 object Statistics {
 
+
   def main(args: Array[String]) {
     val cfg = StatParams.parse(args)
 
@@ -215,13 +220,15 @@ object Statistics {
 
     val cacheName = s"${cfg.campaign}-${contest.year}"
     val imageQuery = ImageQuery.create()(new CachedBot(Site.commons, cacheName, true))
+    val imageQueryWiki = ImageQuery.create()(new CachedBot(Site.ukWiki, cacheName + "-wiki", true))
 
     val stat = new Statistics(
       contest,
       startYear = Some(cfg.years.head),
       monumentQuery = MonumentQuery.create(contest),
       cfg = Some(cfg),
-      imageQuery = imageQuery
+      imageQuery = imageQuery,
+      imageQueryWiki = Some(imageQueryWiki)
     )
 
     stat.init(total = cfg.years.size > 1)

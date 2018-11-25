@@ -20,10 +20,8 @@ trait ImageQuery {
 
 class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
 
-  val host = MwBot.commons
-
   override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]] = {
-    val generator: Generator = Generator(CategoryMembers(CmTitle(category), CmNamespace(Seq(Namespace.FILE)), CmLimit("500"))) // 5000 / 10
+    val generator: Generator = Generator(CategoryMembers(CmTitle(category), CmNamespace(Seq(Namespace.FILE)), CmLimit("400"))) // 5000 / 10
 
     imagesByGenerator(contest, generator)
   }
