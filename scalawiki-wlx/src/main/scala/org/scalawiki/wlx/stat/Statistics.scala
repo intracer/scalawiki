@@ -44,7 +44,7 @@ class Statistics(contest: Contest,
                  startYear: Option[Int],
                  monumentQuery: MonumentQuery,
                  imageQuery: ImageQuery,
-                 imageQueryWiki: ImageQuery,
+                 imageQueryWiki: Option[ImageQuery],
                  bot: MwBot,
                  cfg: StatConfig) {
 
@@ -55,7 +55,7 @@ class Statistics(contest: Contest,
            imageQueryWiki: Option[ImageQuery] = None,
            bot: MwBot = MwBot.fromHost(MwBot.commons),
            cfg: Option[StatConfig] = None) =
-    this(contest, startYear, monumentQuery, imageQuery, bot, cfg.getOrElse(StatConfig(contest.campaign)))
+    this(contest, startYear, monumentQuery, imageQuery, imageQueryWiki, bot, cfg.getOrElse(StatConfig(contest.campaign)))
 
   val currentYear = contest.year
 
@@ -92,7 +92,8 @@ class Statistics(contest: Contest,
 
   private def imagesByTemplate(monumentDb: Some[MonumentDB], imageQuery: ImageQuery = imageQuery) =
     for (commons <- imageQuery.imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest);
-         wiki <- imageQuery.imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest)) yield {
+         wiki <- imageQueryWiki.map(_.imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest))
+           .getOrElse(Future.successful(Nil))) yield {
       Some(new ImageDB(contest, commons ++ wiki, monumentDb))
     }
 
