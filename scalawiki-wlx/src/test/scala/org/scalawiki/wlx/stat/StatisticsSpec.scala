@@ -30,7 +30,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
 
     val cfg = StatConfig(campaign = contest.campaign)
 
-    new Statistics(contest, None, monumentQuery, imageQuery, bot, cfg)
+    new Statistics(contest, None, monumentQuery, imageQuery, None, bot, cfg)
   }
 
   "statistics" should {
@@ -57,8 +57,19 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     }
 
     "parse new object rating" in {
-      val cfg = StatParams.parse(Seq("-campaign", "wle-ua", "-rating", "3"))
-      cfg === StatConfig("wle-ua", Seq(thisYear), Nil, newObjectRating = Some(3))
+      StatParams.parse(Seq("-campaign", "wle-ua", "-new-object-rating", "7")) ===
+        StatConfig("wle-ua", Seq(thisYear), Nil, newObjectRating = Some(7))
+
+      StatParams.parse(Seq("-campaign", "wle-ua", "-new-author-object-rating", "3")) ===
+        StatConfig("wle-ua", Seq(thisYear), Nil, newAuthorObjectRating = Some(3))
+
+      StatParams.parse(Seq("-campaign", "wle-ua", "-new-object-rating", "10", "-new-author-object-rating", "5")) ===
+        StatConfig("wle-ua", Seq(thisYear), Nil, newObjectRating = Some(10), newAuthorObjectRating = Some(5))
+    }
+
+    "parse gallery" in {
+      StatParams.parse(Seq("-campaign", "wle-ua")) === StatConfig("wle-ua", Seq(thisYear), Nil, gallery = false)
+      StatParams.parse(Seq("-campaign", "wle-ua", "-gallery")) === StatConfig("wle-ua", Seq(thisYear), Nil, gallery = true)
     }
 
     "parse campaign with regions" in {
@@ -106,7 +117,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest) returns Future.failed(new RuntimeException("Error 123"))
     monumentQuery.byMonumentTemplate(date = None) returns monuments
 
-    val stat = new Statistics(contest, None, monumentQuery, imageQuery, bot)
+    val stat = new Statistics(contest, None, monumentQuery, imageQuery, None, bot)
 
     stat.gatherData(false) must throwA[RuntimeException].await
   }
@@ -121,7 +132,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     val bot = mock[MwBot]
     val monumentQuery = mock[MonumentQuery]
     val imageQuery = mock[ImageQuery]
-    val stat = new Statistics(contest, None, monumentQuery, imageQuery, bot)
+    val stat = new Statistics(contest, None, monumentQuery, imageQuery, None, bot)
 
     "be empty" in {
       stat.getOldImagesMonumentDb(None, None, None, new ImageDB(contest, Seq.empty)) === None

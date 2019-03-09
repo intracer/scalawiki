@@ -17,9 +17,9 @@ class CachedBot(site: Site, name: String, persistent: Boolean, http: HttpClient 
 
   private val builder: ChronicleMapBuilder[String, String] = ChronicleMap
     .of(classOf[String], classOf[String])
-    .averageKeySize(256)
-    .averageValueSize(1024 * 1024)
-    .entries(1024)
+    .averageKeySize(1024)
+    .averageValueSize(128 * 1024)
+    .entries(12 * 1024)
     .name(name + ".cache")
 
   private val cache = if (persistent) {

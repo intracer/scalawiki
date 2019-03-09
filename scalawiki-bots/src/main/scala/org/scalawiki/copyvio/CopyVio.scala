@@ -60,7 +60,7 @@ object CopyVio extends WithBot with QueryLibrary {
          pages <- pagesByIds(revIds);
          page <- pages;
          sources <- copyVio.searchByPage(page);
-         suspected <- sources.filterNot(_.isPossible)) {
+         suspected <- sources.filter(_.isPossible)) {
       println(s"## url: [${suspected.url}], violation ${suspected.violation}, confidence ${suspected.confidence}")
     }
   }

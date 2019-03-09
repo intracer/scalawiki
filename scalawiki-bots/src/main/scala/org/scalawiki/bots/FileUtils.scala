@@ -1,6 +1,6 @@
 package org.scalawiki.bots
 
-import java.nio.file.{Files, Paths}
+import java.nio.file.{Files, Path, Paths}
 import java.util.regex.Pattern
 
 import better.files.File.{Order, PathMatcherSyntax}
@@ -36,8 +36,11 @@ object FileUtils {
     * @param codec    character encoding/decoding preferences, default is [[scala.io.Codec.defaultCharsetCodec()]]
     * @return
     */
-  def write(filename: String, lines: Seq[String])(implicit codec: Codec) =
-    Files.write(Paths.get(filename), lines.mkString(nl).getBytes(codec.charSet))
+  def write(filename: String, lines: Seq[String])(implicit codec: Codec): Path =
+    write(filename, lines.mkString(nl))
+
+  def write(filename: String, content: String)(implicit codec: Codec): Path =
+    Files.write(Paths.get(filename), content.getBytes(codec.charSet))
 
   def writeWithBackup(file: SFile, content: String)(implicit codec: Codec) = {
     if (file.exists) {

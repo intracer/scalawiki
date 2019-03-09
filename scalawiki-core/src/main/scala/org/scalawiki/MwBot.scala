@@ -122,7 +122,7 @@ class MwBotImpl(val site: Site,
 
   def tryLogin(user: String, password: String, token: Option[String] = None): Future[LoginResponse] = {
     val loginParams = Map(
-      "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json"
+      "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json", "utf8" -> ""
     ) ++ token.map("lgtoken" -> _)
 
     for (response <- http.post(apiUrl, loginParams);
@@ -184,7 +184,9 @@ class MwBotImpl(val site: Site,
     response flatMap http.getBody map {
       body =>
         parseJson(reads, body).getOrElse {
-          throw parseJson(errorReads, body).get
+          val exception = parseJson(errorReads, body).get
+          log.error(exception, "mediawiki error")
+          throw exception
         }
     }
 
@@ -219,10 +221,10 @@ class MwBotImpl(val site: Site,
   }
 
   def getIndexUri(params: (String, String)*) =
-    Uri(indexUrl) withQuery Query(params ++ Seq("format" -> "json"): _*)
+    Uri(indexUrl) withQuery Query(params ++ Seq("format" -> "json", "utf8" -> ""): _*)
 
   def getUri(params: (String, String)*) =
-    Uri(apiUrl) withQuery Query(params ++ Seq("format" -> "json"): _*)
+    Uri(apiUrl) withQuery Query(params ++ Seq("format" -> "json", "utf8" -> ""): _*)
 
   override def get(params: Map[String, String]): Future[String] = {
     val uri: Uri = getUri(params)

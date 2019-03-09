@@ -1,16 +1,16 @@
 package org.scalawiki.bots.stat
 
-import org.scalawiki.dto.Page
+import org.scalawiki.MwBot
+import org.scalawiki.bots.FileUtils
+import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.filter.RevisionFilterDateAndUser
+import org.scalawiki.dto.{Page, Site}
 import org.scalawiki.query.QueryLibrary
-import org.scalawiki.{MwBot, WithBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ArticleStatBot() extends WithBot with QueryLibrary {
-
-  val host = MwBot.ukWiki
+class ArticleStatBot(implicit val bot: MwBot = MwBot.fromHost(MwBot.ukWiki)) extends QueryLibrary {
 
   def pagesRevisions(ids: Seq[Long]): Future[TraversableOnce[Option[Page]]] = {
     Future.traverse(ids)(pageRevisions)
@@ -49,11 +49,7 @@ class ArticleStatBot() extends WithBot with QueryLibrary {
             case _ => None
           }.flatten.toSeq.sortBy(-_.addedOrRewritten)
 
-          val stat = new EventStat(event, revStats)
-
-          println(Seq(stat.allStat, stat.createdStat, stat.improvedStat).mkString("\n"))
-
-          stat
+          new EventStat(event, revStats)
         }
     }
   }
@@ -72,19 +68,26 @@ case class EventStat(event: ArticlesEvent, revStats: Seq[RevisionStat]) {
   val createdStat = new ArticleStat(revisionFilter, created, "created")
   val improvedStat = new ArticleStat(revisionFilter, improved, "improved")
 
+  def asWiki = Seq(allStat, createdStat, improvedStat).mkString("\n")
 }
 
 object ArticleStatBot {
 
+  def contestStat(event: ArticlesEvent) = {
+    val cacheName = event.id.getOrElse(event.name)
+    val mwBot = new CachedBot(Site.ukWiki, cacheName, true)
+    val bot = new ArticleStatBot()(mwBot)
+
+    bot.stat(event)
+  }
+
   def main(args: Array[String]) {
-    val bot = new ArticleStatBot()
 
     val (contests, weeks) = Events.events()
 
-    weeks.find(_.newTemplate == "Cherkasy-week-new").map(bot.stat)
-
-//    Future.sequence(weeks.map(bot.stat)).map(eventSummary)
-//    Future.sequence(contests.map(bot.stat)).map(eventSummary)
+    Future.sequence(contests.map(contestStat)).map(_.map(_.asWiki).mkString("\n")).map { wikitext =>
+      FileUtils.write("articles.wiki", wikitext)
+    }
   }
 
   def eventSummary(stats: Seq[Long]): Unit = {

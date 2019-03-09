@@ -119,20 +119,24 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
     val params = action.pairs.toMap ++
       Map("action" -> "edit",
         "format" -> "json",
+        "utf8" -> "",
         "bot" -> "x",
         "assert" -> "user",
         "assert" -> "bot") ++ section.map(s => "section" -> s).toSeq ++ summary.map(s => "summary" -> s).toSeq
 
-    bot.log.info(s"${bot.host} edit page: $page, summary: $summary")
 
+    import scala.concurrent.ExecutionContext.Implicits.global
     def performEdit(): Future[String] = {
+      bot.log.info(s"Request ${bot.host} edit page: $page, summary: $summary")
       if (multi)
         bot.postMultiPart(editResponseReads, params)
       else
         bot.post(editResponseReads, params)
+    }.map { s =>
+      bot.log.info(s"Response ${bot.host} edit page: $page: $s")
+      s
     }
 
-    import scala.concurrent.ExecutionContext.Implicits.global
     implicit def stringSuccess: Success[String] = Success(_ == "Success")
     retry.Backoff()(odelay.Timer.default)(() => performEdit())
   }

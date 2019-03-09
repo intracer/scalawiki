@@ -4,12 +4,14 @@ import java.time.ZonedDateTime
 
 import com.typesafe.config.{Config, ConfigFactory}
 
-case class ArticlesEvent(
-                     name: String,
-                     start: ZonedDateTime,
-                     end: ZonedDateTime,
-                     newTemplate: String,
-                     improvedTemplate: String)
+import scala.util.Try
+
+case class ArticlesEvent(name: String,
+                         start: ZonedDateTime,
+                         end: ZonedDateTime,
+                         newTemplate: String,
+                         improvedTemplate: String,
+                         id: Option[String] = None)
 
 object Events {
 
@@ -23,7 +25,8 @@ object Events {
       c.as[ZonedDateTime]("start"),
       c.as[ZonedDateTime]("end"),
       c.getString("new-template"),
-      c.getString("improved-template")
+      c.getString("improved-template"),
+      Try(c.getString("id")).toOption
     )
 
   def events() = {

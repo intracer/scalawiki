@@ -31,7 +31,7 @@ class ImageSpec extends Specification {
   }
 
   "fromPageRevision" should {
-    "parse" in {
+    "parse author and id" in {
       val wiki = makeTemplate("[[User:PhotoMaster|PhotoMaster]]", "{{Monument|nature-park-id}}")
 
       val page = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(wiki)))
@@ -40,6 +40,39 @@ class ImageSpec extends Specification {
       image.author === Some("PhotoMaster")
       image.monumentId === Some("nature-park-id")
     }
+
+    "parse categories" in {
+      val text = """=={{int:filedesc}}==
+                   |{{Information
+                   ||description={{uk|1=Храм святителя-чудотворцая Миколи на водах в Києві на Подолі}}
+                   ||date=2015-01-11 14:19:34
+                   ||source={{own}}
+                   ||author=[[User:Yuri369|Yuri369]]
+                   ||permission=
+                   ||other versions=
+                   |}}
+                   |
+                   |=={{int:license-header}}==
+                   |{{self|cc-by-sa-4.0}}
+                   |
+                   |{{Wiki Loves Monuments 2018|ua}}
+                   |<!--[[Category:Wiki loves monuments in Ukraine 2018 - Quality]]-->
+                   |
+                   |[[Category:Uploaded via Campaign:wlm-ua]]
+                   |[[Category:Obviously ineligible submissions for WLM 2018 in Ukraine]]
+                   |[[Category:Saint Nicholas Church on Water]]
+                   |""".stripMargin
+      val page = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(text)))
+
+      val image = Image.fromPageRevision(page, Some("Monument")).get
+
+      image.categories === Set("Wiki loves monuments in Ukraine 2018 - Quality",
+        "Uploaded via Campaign:wlm-ua",
+        "Obviously ineligible submissions for WLM 2018 in Ukraine",
+        "Saint Nicholas Church on Water")
+    }
+
+
   }
 
   "resize" should {

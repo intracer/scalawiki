@@ -9,9 +9,9 @@ trait AdmDivision {
 
   def name: String
 
-  def regions: Seq[AdmDivision] = Seq.empty
+  def regions: Seq[AdmDivision] = Nil
 
-  def languageCodes: Seq[String] = Seq.empty
+  def languageCodes: Seq[String] = Nil
 
   def withoutLangCodes = this
 
@@ -27,51 +27,20 @@ trait AdmDivision {
 
 case class NoAdmDivision(code: String = "", name: String = "") extends AdmDivision
 
-case class Country(
-                    code: String,
-                    name: String,
-                    override val languageCodes: Seq[String] = Seq.empty,
-                    override val regions: Seq[AdmDivision] = Seq.empty
+case class Country(code: String,
+                   name: String,
+                   override val languageCodes: Seq[String] = Nil,
+                   override val regions: Seq[AdmDivision] = Nil
                   ) extends AdmDivision {
 
-  override def withoutLangCodes = copy(languageCodes = Seq.empty)
+  override def withoutLangCodes = copy(languageCodes = Nil)
 }
 
 object Country {
 
   val Azerbaijan = new Country("AZ", "Azerbaijan", Seq("az"))
 
-  val Ukraine = new Country("UA", "Ukraine", Seq("uk"),
-    Map(
-      "80" -> "Київ",
-      "07" -> "Волинська область",
-      "68" -> "Хмельницька область",
-      "05" -> "Вінницька область",
-      "35" -> "Кіровоградська область",
-      "65" -> "Херсонська область",
-      "63" -> "Харківська область",
-      "01" -> "Автономна Республіка Крим",
-      "32" -> "Київська область",
-      "61" -> "Тернопільська область",
-      "18" -> "Житомирська область",
-      "48" -> "Миколаївська область",
-      "46" -> "Львівська область",
-      "14" -> "Донецька область",
-      "44" -> "Луганська область",
-      "74" -> "Чернігівська область",
-      "12" -> "Дніпропетровська область",
-      "73" -> "Чернівецька область",
-      "71" -> "Черкаська область",
-      "59" -> "Сумська область",
-      "26" -> "Івано-Франківська область",
-      "56" -> "Рівненська область",
-      "85" -> "Севастополь",
-      "23" -> "Запорізька область",
-      "53" -> "Полтавська область",
-      "21" -> "Закарпатська область",
-      "51" -> "Одеська область"
-    ).map { case (code, name) => Region(code, name) }.toSeq
-  )
+  val Ukraine = new Country("UA", "Ukraine", Seq("uk"), Koatuu.regions)
 
   val customCountries = Seq(Ukraine)
 

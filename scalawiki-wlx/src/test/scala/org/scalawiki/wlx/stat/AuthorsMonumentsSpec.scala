@@ -233,23 +233,23 @@ class AuthorsMonumentsSpec extends Specification {
       val db = new ImageDB(contest, images2, Some(mDb))
       val totalDb = new ImageDB(contest, images1 ++ images2, Some(mDb))
 
-      val contestStat = new ContestStat(contest, 2013, Some(mDb), Some(db), Some(totalDb))
-      val table = new AuthorMonuments(contestStat, newObjectRating = Some(3)).table
+      val contestStat = new ContestStat(contest.copy(newObjectRating = Some(3)), 2013, Some(mDb), Some(db), Some(totalDb))
+      val table = new AuthorMonuments(contestStat).table
       val data = table.data
 
       data.size === 6
 
-      table.headers.slice(0, 9) === Seq("User", "Objects pictured", "Existing", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
+      table.headers.slice(0, 10) === Seq("User", "Objects pictured", "Existing", "New for author", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
 
-      data.head === Seq("Total", "4", "4", "0", "4", "5", "2", "1", "1") ++ Seq.fill(24)("0")
+      data.head === Seq("Total", "4", "0", "4", "0", "4", "5", "2", "1", "1") ++ Seq.fill(24)("0")
 
       data.slice(1, 6) ===
         Seq(
-          Seq("[[User:FromCrimeaNew|FromCrimeaNew]]", "1", "1", "0", "1", "1", "1", "0", "0") ++ Seq.fill(24)("0"),
-          Seq("[[User:FromCrimeaOld|FromCrimeaOld]]", "1", "1", "0", "1", "1", "1", "0", "0") ++ Seq.fill(24)("0"),
-          Seq("[[User:FromPodillyaNew1|FromPodillyaNew1]]", "1", "1", "0", "1", "1", "0", "1", "0") ++ Seq.fill(24)("0"),
-          Seq("[[User:FromPodillyaNew2|FromPodillyaNew2]]", "1", "1", "0", "1", "1", "0", "1", "0") ++ Seq.fill(24)("0"),
-          Seq("[[User:FromVolynNew|FromVolynNew]]", "1", "1", "0", "1", "1", "0", "0", "1") ++ Seq.fill(24)("0")
+          Seq("[[User:FromCrimeaNew|FromCrimeaNew]]", "1", "1", "0", "0", "1", "1", "1", "0", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromCrimeaOld|FromCrimeaOld]]", "1", "1", "0", "0", "1", "1", "1", "0", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromPodillyaNew1|FromPodillyaNew1]]", "1", "1", "0", "0", "1", "1", "0", "1", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromPodillyaNew2|FromPodillyaNew2]]", "1", "1", "0", "0", "1", "1", "0", "1", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromVolynNew|FromVolynNew]]", "1", "1", "0", "0", "1", "1", "0", "0", "1") ++ Seq.fill(24)("0")
         )
     }
 
@@ -270,24 +270,24 @@ class AuthorsMonumentsSpec extends Specification {
 
       val db = new ImageDB(contest, images2, Some(mDb))
 
-      val contestStat = new ContestStat(contest, 2013, Some(mDb), Some(db), Some(db))
+      val contestStat = new ContestStat(contest.copy(newObjectRating = Some(3)), 2013, Some(mDb), Some(db), Some(db))
 
-      val table = new AuthorMonuments(contestStat, newObjectRating = Some(3)).table
+      val table = new AuthorMonuments(contestStat).table
       val data = table.data
 
       data.size === 6
 
-      table.headers.slice(0, 9) === Seq("User", "Objects pictured", "Existing", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
+      table.headers.slice(0, 10) === Seq("User", "Objects pictured", "Existing", "New for author", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
 
-      data.head === Seq("Total", "4", "0", "4", "12", "5", "2", "1", "1") ++ Seq.fill(24)("0")
+      data.head === Seq("Total", "4", "0", "0", "4", "12", "5", "2", "1", "1") ++ Seq.fill(24)("0")
 
       data.slice(1, 6) ===
         Seq(
-          Seq("[[User:FromCrimeaNew|FromCrimeaNew]]", "1", "0", "1", "3", "1", "3", "0", "0") ++ Seq.fill(24)("0"),
-          Seq("[[User:FromCrimeaOld|FromCrimeaOld]]", "1", "0", "1", "3", "1", "3", "0", "0") ++ Seq.fill(24)("0"),
-          Seq("[[User:FromPodillyaNew1|FromPodillyaNew1]]", "1", "0", "1", "3", "1", "0", "3", "0") ++ Seq.fill(24)("0"),
-          Seq("[[User:FromPodillyaNew2|FromPodillyaNew2]]", "1", "0", "1", "3", "1", "0", "3", "0") ++ Seq.fill(24)("0"),
-          Seq("[[User:FromVolynNew|FromVolynNew]]", "1", "0", "1", "3", "1", "0", "0", "3") ++ Seq.fill(24)("0")
+          Seq("[[User:FromCrimeaNew|FromCrimeaNew]]", "1", "0", "0", "1", "3", "1", "3", "0", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromCrimeaOld|FromCrimeaOld]]", "1", "0", "0", "1", "3", "1", "3", "0", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromPodillyaNew1|FromPodillyaNew1]]", "1", "0", "0", "1", "3", "1", "0", "3", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromPodillyaNew2|FromPodillyaNew2]]", "1", "0", "0", "1", "3", "1", "0", "3", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromVolynNew|FromVolynNew]]", "1", "0", "0", "1", "3", "1", "0", "0", "3") ++ Seq.fill(24)("0")
         )
     }
 
@@ -316,25 +316,24 @@ class AuthorsMonumentsSpec extends Specification {
       val db = new ImageDB(contest, images2, Some(mDb))
       val totalDb = new ImageDB(contest, images1 ++ images2, Some(mDb))
 
-      val contestStat = new ContestStat(contest, 2013, Some(mDb), Some(db), Some(totalDb))
+      val contestStat = new ContestStat(contest.copy(newObjectRating = Some(3)), 2013, Some(mDb), Some(db), Some(totalDb))
 
-      val table = new AuthorMonuments(contestStat, newObjectRating = Some(3)).table
+      val table = new AuthorMonuments(contestStat).table
       val data = table.data
 
       data.size === 6
 
-      table.headers.slice(0, 9) === Seq("User", "Objects pictured", "Existing", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
+      table.headers.slice(0, 10) === Seq("User", "Objects pictured", "Existing", "New for author", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
 
-      data.head === Seq("Total", "4", "1", "3", "10", "5", "2", "1", "1") ++ Seq.fill(24)("0")
-
+      data.head === Seq("Total", "4", "0", "1", "3", "10", "5", "2", "1", "1") ++ Seq.fill(24)("0")
 
       data.slice(1, 9) ===
         Seq(
-          Seq("[[User:FromCrimeaNew|FromCrimeaNew]]", "1", "0", "1", "3", "1", "3", "0", "0") ++ Seq.fill(24)("0"),
-          Seq("[[User:FromPodillyaNew1|FromPodillyaNew1]]", "1", "0", "1", "3", "1", "0", "3", "0") ++ Seq.fill(24)("0"),
-          Seq("[[User:FromPodillyaNew2|FromPodillyaNew2]]", "1", "0", "1", "3", "1", "0", "3", "0") ++ Seq.fill(24)("0"),
-          Seq("[[User:FromVolynNew|FromVolynNew]]", "1", "0", "1", "3", "1", "0", "0", "3") ++ Seq.fill(24)("0"),
-          Seq("[[User:FromCrimeaOld|FromCrimeaOld]]", "1", "1", "0", "1", "1", "1", "0", "0") ++ Seq.fill(24)("0")
+          Seq("[[User:FromCrimeaNew|FromCrimeaNew]]", "1", "0", "0", "1", "3", "1", "3", "0", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromPodillyaNew1|FromPodillyaNew1]]", "1", "0", "0", "1", "3", "1", "0", "3", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromPodillyaNew2|FromPodillyaNew2]]", "1", "0", "0", "1", "3", "1", "0", "3", "0") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromVolynNew|FromVolynNew]]", "1", "0", "0", "1", "3", "1", "0", "0", "3") ++ Seq.fill(24)("0"),
+          Seq("[[User:FromCrimeaOld|FromCrimeaOld]]", "1", "0", "1", "0", "1", "1", "1", "0", "0") ++ Seq.fill(24)("0")
         )
     }
   }

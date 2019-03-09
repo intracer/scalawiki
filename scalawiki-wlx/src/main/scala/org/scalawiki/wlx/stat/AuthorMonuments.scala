@@ -5,10 +5,8 @@ import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.ImageDB
 
 class AuthorMonuments(val stat: ContestStat,
-                      newObjectRating: Option[Int] = None,
                       gallery: Boolean = false,
-                      commons: Option[MwBot] = None,
-                      val newAuthorObjectRating: Option[Int] = None) extends Reporter {
+                      commons: Option[MwBot] = None) extends Reporter {
 
   override def contest = stat.contest
 
@@ -28,51 +26,63 @@ class AuthorMonuments(val stat: ContestStat,
   val oldIds = oldImageDb.ids
 
   def ratingFunc(allIds: Set[String], oldIds: Set[String], oldAuthorIds: Set[String]): Int =
-    allIds.size + newObjectRating.fold(0) {
+    allIds.size + contest.newObjectRating.fold(0) {
       rating => (allIds -- oldIds).size * (rating - 1)
-    } + newAuthorObjectRating.fold(0) {
-      rating => (allIds -- oldAuthorIds).size * (rating - 1)
+    } + contest.newAuthorObjectRating.fold(0) {
+      rating => ((allIds intersect oldIds) -- oldAuthorIds).size * (rating - 1)
     }
 
   def rowData(ids: Set[String], images: Int,
               regionRating: String => Int,
               userOpt: Option[String] = None): Seq[String] = {
 
-    val objects = if (gallery && userOpt.isDefined && ids.nonEmpty) {
-      userGalleryLink(ids, userOpt)
-    } else {
-      ids.size
-    }
+    val objects = optionalUserGalleryLink(ids.size, userOpt)
 
-    val ratingColumns = if (newObjectRating.isDefined) {
+    val ratingColumns = if (contest.newObjectRating.isDefined) {
+      val oldAuthorIds = userOpt.map(oldImageDb.idByAuthor).getOrElse(Set.empty)
       Seq(
-        (ids intersect oldIds).size, // existing
+        (ids intersect oldIds intersect oldAuthorIds).size, // existing
+        (ids intersect oldIds -- oldAuthorIds).size, // new for author
         (ids -- oldIds).size, // new
-        ratingFunc(ids, oldIds, userOpt.map(oldImageDb.idByAuthor).getOrElse(Set.empty)) // rating
+        ratingFunc(ids, oldIds, oldAuthorIds) // rating
       )
     } else Seq.empty[String]
 
-    val byRegion = country.regionIds.toSeq.map(regionRating)
+    val byRegion = country.regionIds.toSeq.map{ regionId =>
+      optionalUserGalleryLink(regionRating(regionId), userOpt, country.regionById.get(regionId).map(_.name))
+    }
 
     ((objects +: ratingColumns :+ images) ++ byRegion).map(_.toString)
   }
 
-  private def userGalleryLink(ids: Set[String], userOpt: Option[String]) = {
+  private def optionalUserGalleryLink(number: Int, userOpt: Option[String], regionOpt: Option[String] = None) = {
+    if (gallery && userOpt.isDefined && number > 0) {
+      userGalleryLink(number, userOpt, regionOpt)
+    } else {
+      number
+    }
+  }
+
+  private def userGalleryLink(number: Int, userOpt: Option[String], regionOpt: Option[String] = None) = {
     val noTemplateUser = userOpt.get.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
 
-    val galleryPage = "Commons:" + contest.name + "/" + noTemplateUser
+    val galleryPage = "Commons:" + contest.name + "/" + noTemplateUser + regionOpt.fold("") { region =>
+      "#" + region.replaceAll(" ", "_")
+    }
 
-    val galleryText = new Output().galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt))
+    val galleryText = new Output().galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt), oldImageDb)
 
-    commons.foreach(_.page(galleryPage).edit(galleryText))
+    for (bot <- commons if regionOpt.isEmpty) {
+      bot.page(galleryPage).edit(galleryText)
+    }
 
-    "[[" + galleryPage + "|" + ids.size + "]]"
+    "[[" + galleryPage + "|" + number + "]]"
   }
 
   override def table: Table = {
 
     val columns = Seq("User", "Objects pictured") ++
-      (if (newObjectRating.isDefined) Seq("Existing", "New", "Rating") else Seq.empty) ++
+      (if (contest.newObjectRating.isDefined) Seq("Existing", "New for author", "New", "Rating") else Seq.empty) ++
       Seq("Photos uploaded") ++
       country.regionNames
 
