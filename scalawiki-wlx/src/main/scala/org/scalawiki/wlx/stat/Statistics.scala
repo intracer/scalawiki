@@ -110,8 +110,7 @@ class Statistics(contest: Contest,
   }
 
   def init(total: Boolean): Unit = {
-    gatherData(total = total).map {
-      data =>
+    gatherData(total = total).map { data =>
         data.currentYearImageDb.foreach(imageDb => currentYear(data.contest, imageDb, data))
         for (totalImageDb <- data.totalImageDb) {
           regionalStat(data.contest, data.dbsByYear, totalImageDb, data)

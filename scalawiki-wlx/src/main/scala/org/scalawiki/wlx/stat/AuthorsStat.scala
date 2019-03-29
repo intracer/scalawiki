@@ -45,13 +45,10 @@ class AuthorsStat(val uploadImages: Boolean = false) {
       totalImageDb.map(_ => s"$numYears years total").toSeq ++
       yearSeq.map(_.toString)
 
-    val perRegion = monumentDb.fold(Seq.empty[Seq[String]]) {
-      db =>
+    val perRegion = monumentDb.fold(Seq.empty[Seq[String]]) { db =>
         val country = db.contest.country
-        db.regionIds.map {
-          regionId =>
+        db.regionIds.map { regionId =>
             val regionName = country.regionName(regionId)
-
 
             val shortRegionName = regionName.replaceAll("область", "").replaceAll("Автономна Республіка", "АР")
 
