@@ -49,13 +49,13 @@ class Output {
         val oldForAuthorIds = oldIds -- newForAuthorIds
 
         val rating = oldForAuthorIds.size +
-          newForAuthorIds.size * contest.newAuthorObjectRating.getOrElse(1) +
-          newIds.size * contest.newObjectRating.getOrElse(1)
+          newForAuthorIds.size * contest.rateConfig.newAuthorObjectRating.getOrElse(1) +
+          newIds.size * contest.rateConfig.newObjectRating.getOrElse(1)
 
         val ratingStr = s"\nRating: '''$rating''' = " +
           Seq(
-            if (newIds.nonEmpty) s"'''${newIds.size}''' new ids '''* ${contest.newObjectRating.getOrElse(1)}''' " else "",
-            if (newForAuthorIds.nonEmpty) s"'''${newForAuthorIds.size}''' new for author ids '''* ${contest.newAuthorObjectRating.getOrElse(1)}''' " else "",
+            if (newIds.nonEmpty) s"'''${newIds.size}''' new ids '''* ${contest.rateConfig.newObjectRating.getOrElse(1)}''' " else "",
+            if (newForAuthorIds.nonEmpty) s"'''${newForAuthorIds.size}''' new for author ids '''* ${contest.rateConfig.newAuthorObjectRating.getOrElse(1)}''' " else "",
             if (oldForAuthorIds.nonEmpty) s"'''${oldForAuthorIds.size}''' old for author ids" else ""
           ).filter(_.nonEmpty)
             .mkString(" + ")

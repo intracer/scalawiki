@@ -10,8 +10,7 @@ case class StatConfig(campaign: String,
                       exceptRegions: Seq[String] = Nil,
                       cities: Seq[String] = Nil,
                       exceptCities: Seq[String] = Nil,
-                      newObjectRating: Option[Int] = None,
-                      newAuthorObjectRating: Option[Int] = None,
+                      rateConfig: RateConfig = RateConfig(),
                       gallery: Boolean = false)
 
 object StatParams {
@@ -52,8 +51,7 @@ object StatParams {
       exceptRegions = parsed.values.getOrElse("exceptregion", Nil).asInstanceOf[Seq[String]],
       cities = parsed.values.getOrElse("city", Nil).asInstanceOf[Seq[String]],
       exceptCities = parsed.values.getOrElse("exceptcities", Nil).asInstanceOf[Seq[String]],
-      newObjectRating = parsed.values.get("new-object-rating").asInstanceOf[Option[Int]],
-      newAuthorObjectRating = parsed.values.get("new-author-object-rating").asInstanceOf[Option[Int]],
+      rateConfig = RateConfig(parsed),
       gallery = parsed.values.get("gallery").asInstanceOf[Option[Boolean]].getOrElse(false)
     )
   }

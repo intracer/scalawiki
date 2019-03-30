@@ -233,7 +233,7 @@ class AuthorsMonumentsSpec extends Specification {
       val db = new ImageDB(contest, images2, Some(mDb))
       val totalDb = new ImageDB(contest, images1 ++ images2, Some(mDb))
 
-      val contestStat = new ContestStat(contest.copy(newObjectRating = Some(3)), 2013, Some(mDb), Some(db), Some(totalDb))
+      val contestStat = new ContestStat(contest.copy(rateConfig = RateConfig(newObjectRating = Some(3))), 2013, Some(mDb), Some(db), Some(totalDb))
       val table = new AuthorMonuments(contestStat).table
       val data = table.data
 
@@ -270,7 +270,7 @@ class AuthorsMonumentsSpec extends Specification {
 
       val db = new ImageDB(contest, images2, Some(mDb))
 
-      val contestStat = new ContestStat(contest.copy(newObjectRating = Some(3)), 2013, Some(mDb), Some(db), Some(db))
+      val contestStat = new ContestStat(contest.copy(rateConfig = RateConfig(newObjectRating = Some(3))), 2013, Some(mDb), Some(db), Some(db))
 
       val table = new AuthorMonuments(contestStat).table
       val data = table.data
@@ -316,7 +316,7 @@ class AuthorsMonumentsSpec extends Specification {
       val db = new ImageDB(contest, images2, Some(mDb))
       val totalDb = new ImageDB(contest, images1 ++ images2, Some(mDb))
 
-      val contestStat = new ContestStat(contest.copy(newObjectRating = Some(3)), 2013, Some(mDb), Some(db), Some(totalDb))
+      val contestStat = new ContestStat(contest.copy(rateConfig = RateConfig(newObjectRating = Some(3))), 2013, Some(mDb), Some(db), Some(totalDb))
 
       val table = new AuthorMonuments(contestStat).table
       val data = table.data

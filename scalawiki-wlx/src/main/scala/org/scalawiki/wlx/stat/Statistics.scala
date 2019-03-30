@@ -71,7 +71,7 @@ class Statistics(contest: Contest,
 
     val (monumentDb, monumentDbOld) = (
       Some(MonumentDB.getMonumentDb(contest, monumentQuery)),
-      contest.newObjectRating.map { _ =>
+      contest.rateConfig.newObjectRating.map { _ =>
         MonumentDB.getMonumentDb(contest, monumentQuery, date = Some(ZonedDateTime.of(2017, 4, 30, 23, 59, 0, 0, ZoneOffset.UTC)))
       }
     )
@@ -214,8 +214,7 @@ object Statistics {
     val contest = Contest.byCampaign(cfg.campaign).get
       .copy(
         year = cfg.years.last,
-        newObjectRating = cfg.newObjectRating,
-        newAuthorObjectRating = cfg.newAuthorObjectRating
+        rateConfig = cfg.rateConfig,
       )
 
     val cacheName = s"${cfg.campaign}-${contest.year}"

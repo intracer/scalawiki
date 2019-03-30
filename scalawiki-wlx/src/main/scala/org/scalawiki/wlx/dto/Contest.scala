@@ -3,6 +3,7 @@ package org.scalawiki.wlx.dto
 import java.time.ZonedDateTime
 
 import com.typesafe.config.{Config, ConfigFactory, ConfigParseOptions, ConfigResolveOptions}
+import org.scalawiki.wlx.stat.RateConfig
 
 import scala.util.Try
 
@@ -25,8 +26,7 @@ case class Contest(
                     endDate: String = "",
                     uploadConfigs: Seq[UploadConfig] = Seq.empty,
                     specialNominations: Seq[SpecialNomination] = Seq.empty,
-                    newObjectRating: Option[Int] = None,
-                    newAuthorObjectRating: Option[Int] = None
+                    rateConfig: RateConfig = RateConfig()
                   ) extends HasImagesCategory {
 
   def campaign = contestType.code + "-" + country.code

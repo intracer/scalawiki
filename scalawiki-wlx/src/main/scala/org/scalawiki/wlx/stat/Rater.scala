@@ -1,6 +1,23 @@
 package org.scalawiki.wlx.stat
 
+import com.concurrentthought.cla.Args
 import org.scalawiki.wlx.ImageDB
+
+case class RateConfig(newObjectRating: Option[Int] = None,
+                      newAuthorObjectRating: Option[Int] = None)
+
+object RateConfig {
+  def apply(newObjectRating: Option[Int] = None,
+            newAuthorObjectRating: Option[Int] = None): RateConfig = new RateConfig(newObjectRating, newAuthorObjectRating)
+
+  def apply(args: Args): RateConfig = {
+    val newObjectRating = args.values.get("new-object-rating").asInstanceOf[Option[Int]]
+    val newAuthorObjectRating = args.values.get("new-author-object-rating").asInstanceOf[Option[Int]]
+
+    apply(newObjectRating, newAuthorObjectRating)
+  }
+
+}
 
 trait Rater {
 
