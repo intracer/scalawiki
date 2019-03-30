@@ -51,9 +51,9 @@ class NumberOfAuthorsBonus(authorsByMonument: Map[String, Int]) extends Rater {
 }
 
 class NumberOfImagesInPlaceBonus(imagesPerPlace: Map[String, Int],
-                                 placePerMonument: Map[String, String]) extends Rater {
+                                 placeByMonument: Map[String, String]) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
-    placePerMonument.get(monumentId).map { place =>
+    placeByMonument.get(monumentId).map { place =>
       imagesPerPlace.getOrElse(place, 0) match {
         case 0 =>
           4
