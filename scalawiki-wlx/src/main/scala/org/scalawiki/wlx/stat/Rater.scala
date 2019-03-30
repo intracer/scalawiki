@@ -37,9 +37,7 @@ class NewlyPicturedPerAuthorBonus(oldMonumentIds: Set[String],
 
 class NumberOfAuthorsBonus(authorsByMonument: Map[String, Int]) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
-    val authors = authorsByMonument.getOrElse(monumentId, 0)
-
-    authors match {
+    authorsByMonument.getOrElse(monumentId, 0) match {
       case 0 =>
         5
       case x if (1 to 3) contains x =>
@@ -55,10 +53,8 @@ class NumberOfAuthorsBonus(authorsByMonument: Map[String, Int]) extends Rater {
 class NumberOfImagesInPlaceBonus(imagesPerPlace: Map[String, Int],
                                  placePerMonument: Map[String, String]) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
-    val bonus = placePerMonument.get(monumentId).map { place =>
-      val images = imagesPerPlace.getOrElse(place, 0)
-
-      images match {
+    placePerMonument.get(monumentId).map { place =>
+      imagesPerPlace.getOrElse(place, 0) match {
         case 0 =>
           4
         case x if (1 to 9) contains x =>
@@ -68,8 +64,7 @@ class NumberOfImagesInPlaceBonus(imagesPerPlace: Map[String, Int],
         case _ =>
           0
       }
-    }
-    bonus.getOrElse(0)
+    }.getOrElse(0)
   }
 }
 
