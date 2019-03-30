@@ -10,10 +10,12 @@ object NumberOfMonuments extends Rater {
 
 class NewlyPicturedBonus(oldMonumentIds: Set[String], newlyPicturedRate: Int) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
-    if (!oldMonumentIds.contains(monumentId))
-      newlyPicturedRate
-    else
-      1
+    monumentId match {
+      case id if !oldMonumentIds.contains(id) =>
+        newlyPicturedRate
+      case _ =>
+        1
+    }
   }
 }
 
@@ -22,12 +24,14 @@ class NewlyPicturedPerAuthorBonus(oldMonumentIds: Set[String],
                                   newlyPicturedRate: Int,
                                   newlyPicturedPerAuthorRate: Int) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
-    if (!oldMonumentIds.contains(monumentId))
-      newlyPicturedRate
-    else if (!oldMonumentIdsByAuthor.getOrElse(author, Set.empty).contains(monumentId))
-      newlyPicturedPerAuthorRate
-    else
-      1
+    monumentId match {
+      case id if !oldMonumentIds.contains(id) =>
+        newlyPicturedRate
+      case id if !oldMonumentIdsByAuthor.getOrElse(author, Set.empty).contains(id) =>
+        newlyPicturedPerAuthorRate
+      case _ =>
+        1
+    }
   }
 }
 
@@ -35,14 +39,16 @@ class NumberOfAuthorsBonus(authorsByMonument: Map[String, Int]) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
     val authors = authorsByMonument.getOrElse(monumentId, 0)
 
-    if (0 == authors)
-      5
-    else if (1 <= authors && authors <= 3)
-      2
-    else if (4 <= authors && authors <= 9)
-      1
-    else
-      0
+    authors match {
+      case 0 =>
+        5
+      case x if (1 to 3) contains x =>
+        2
+      case x if (4 to 9) contains x =>
+        1
+      case _ =>
+        0
+    }
   }
 }
 
@@ -52,14 +58,16 @@ class NumberOfImagesInPlaceBonus(imagesPerPlace: Map[String, Int],
     val bonus = placePerMonument.get(monumentId).map { place =>
       val images = imagesPerPlace.getOrElse(place, 0)
 
-      if (0 == images)
-        4
-      else if (1 <= images && images <= 9)
-        2
-      else if (10 <= images && images <= 49)
-        1
-      else
-        0
+      images match {
+        case 0 =>
+          4
+        case x if (1 to 9) contains x =>
+          2
+        case x if (10 to 49) contains x =>
+          1
+        case _ =>
+          0
+      }
     }
     bonus.getOrElse(0)
   }
