@@ -1,14 +1,36 @@
 package org.scalawiki.wlx.stat
 
+import org.scalawiki.wlx.ImageDB
+
 trait Rater {
+
+  def imageDb: ImageDB
+
   def rate(monumentId: String, author: String): Int
+
+  def rateMonumentIds(monumentIds: Set[String], author: String): Int = monumentIds.map(rate(_, author)).sum
+
+  def rateRegion(regionId: String, author: String): Int = {
+    rateMonumentIds(imageDb._byAuthorAndRegion.by(author, regionId).flatMap(_.monumentId).toSet, author)
+  }
+
 }
 
-object NumberOfMonuments extends Rater {
+object Rater {
+
+  def create(imageDb: ImageDB, config: StatConfig): Rater = {
+    new NumberOfMonuments(imageDb)
+  }
+
+}
+
+
+class NumberOfMonuments(val imageDb: ImageDB) extends Rater {
   override def rate(monumentId: String, author: String) = 1
 }
 
-class NewlyPicturedBonus(oldMonumentIds: Set[String], newlyPicturedRate: Int) extends Rater {
+class NewlyPicturedBonus(val imageDb: ImageDB, oldMonumentIds: Set[String], newlyPicturedRate: Int) extends Rater {
+
   override def rate(monumentId: String, author: String): Int = {
     monumentId match {
       case id if !oldMonumentIds.contains(id) =>
@@ -19,7 +41,7 @@ class NewlyPicturedBonus(oldMonumentIds: Set[String], newlyPicturedRate: Int) ex
   }
 }
 
-class NewlyPicturedPerAuthorBonus(oldMonumentIds: Set[String],
+class NewlyPicturedPerAuthorBonus(val imageDb: ImageDB, oldMonumentIds: Set[String],
                                   oldMonumentIdsByAuthor: Map[String, Set[String]],
                                   newlyPicturedRate: Int,
                                   newlyPicturedPerAuthorRate: Int) extends Rater {
@@ -35,7 +57,7 @@ class NewlyPicturedPerAuthorBonus(oldMonumentIds: Set[String],
   }
 }
 
-class NumberOfAuthorsBonus(authorsByMonument: Map[String, Int]) extends Rater {
+class NumberOfAuthorsBonus(val imageDb: ImageDB, authorsByMonument: Map[String, Int]) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
     authorsByMonument.getOrElse(monumentId, 0) match {
       case 0 =>
@@ -50,7 +72,7 @@ class NumberOfAuthorsBonus(authorsByMonument: Map[String, Int]) extends Rater {
   }
 }
 
-class NumberOfImagesInPlaceBonus(imagesPerPlace: Map[String, Int],
+class NumberOfImagesInPlaceBonus(val imageDb: ImageDB, imagesPerPlace: Map[String, Int],
                                  placeByMonument: Map[String, String]) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
     placeByMonument.get(monumentId).map { place =>
@@ -68,7 +90,7 @@ class NumberOfImagesInPlaceBonus(imagesPerPlace: Map[String, Int],
   }
 }
 
-class RateSum(raters: Seq[Rater]) extends Rater {
+class RateSum(val imageDb: ImageDB, raters: Seq[Rater]) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
     raters.map(_.rate(monumentId, author)).sum
   }
