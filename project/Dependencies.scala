@@ -6,7 +6,7 @@ object Dependencies {
   val BetterFilesAkkaV = "3.4.0"
   val BlameApiV = "6.4.1"
   val ChronicleMapV = "3.14.5"
-  val ChronoScalaV = "0.1.5"
+  val ChronoScalaV = "0.3.0"
   val CommandLineArgumentsV = "0.5.0"
   val FicusV = "1.4.3"
   val GuavaV = "20.0"
@@ -17,13 +17,14 @@ object Dependencies {
   val LogbackClassicV = "1.2.3"
   val MockServerV = "5.3.0"
   val ReactiveStreamsV = "1.0.2"
-  val RetryV = "0.3.0"
+  val RetryV = "0.3.2"
   val Scala212V = "2.12.6"
   val Scala211V = "2.11.12"
+  val Scala213V = "2.13.0-M5"
   val ScalaChartV = "0.5.1"
   val ScalaCheckV = "1.14.0"
   val ScalaCsvV = "1.3.4"
-  val ScalaXmlV = "1.0.6"
+  val ScalaXmlV = "1.1.1"
   val Slf4jV = "1.7.25"
   val SwcEngineV = "3.1.7"
   val TypesafeConfigV = "1.3.2"
@@ -57,8 +58,8 @@ object Dependencies {
   object Library {
 
     object Akka {
-      val AkkaV = "2.5.12"
-      val AkkaHttpV = "10.1.1"
+      val AkkaV = "2.5.22"
+      val AkkaHttpV = "10.1.8"
 
       val actor = "com.typesafe.akka" %% "akka-actor" % AkkaV
       val stream = "com.typesafe.akka" %% "akka-stream" % AkkaV
@@ -67,8 +68,8 @@ object Dependencies {
     }
 
     object Play {
-      val PlayJsonV = "2.6.9"
-      val TwirlV = "1.3.13"
+      val PlayJsonV = "2.7.2"
+      val TwirlV = "1.4.0"
 
       val json = "com.typesafe.play" %% "play-json" % PlayJsonV
       val twirlApi = "com.typesafe.play" %% "twirl-api" % TwirlV
@@ -111,7 +112,7 @@ object Dependencies {
     }
 
     object Specs2 {
-      val SpecsV = "4.2.0"
+      val SpecsV = "4.5.1"
 
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV

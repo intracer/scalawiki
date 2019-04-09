@@ -6,8 +6,8 @@ fork in Test in ThisBuild := true
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
   version := "0.5.1-SNAPSHOT",
-  scalaVersion := Scala212V,
-  crossScalaVersions := Seq(Scala212V, Scala211V),
+  scalaVersion := Scala213V,
+  crossScalaVersions := Seq(Scala212V, Scala211V, Scala213V),
   conflictManager := ConflictManager.strict,
   licenses += ("Apache-2.0", url("http://opensource.org/licenses/Apache-2.0")),
 
