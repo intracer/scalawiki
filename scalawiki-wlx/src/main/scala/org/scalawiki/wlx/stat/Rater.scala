@@ -4,17 +4,19 @@ import com.concurrentthought.cla.Args
 import org.scalawiki.wlx.ImageDB
 
 case class RateConfig(newObjectRating: Option[Int] = None,
-                      newAuthorObjectRating: Option[Int] = None)
+                      newAuthorObjectRating: Option[Int] = None,
+                      numberOfAuthorsBonus: Boolean = false,
+                      numberOfImagesBonus: Boolean = false)
 
 object RateConfig {
-  def apply(newObjectRating: Option[Int] = None,
-            newAuthorObjectRating: Option[Int] = None): RateConfig = new RateConfig(newObjectRating, newAuthorObjectRating)
 
   def apply(args: Args): RateConfig = {
     val newObjectRating = args.values.get("new-object-rating").asInstanceOf[Option[Int]]
     val newAuthorObjectRating = args.values.get("new-author-object-rating").asInstanceOf[Option[Int]]
+    val numberOfAuthorsBonus = args.values.get("number-of-authors-bonus").asInstanceOf[Option[Boolean]].getOrElse(false)
+    val numberOfImagesBonus = args.values.get("number-of-images-bonus").asInstanceOf[Option[Boolean]].getOrElse(false)
 
-    apply(newObjectRating, newAuthorObjectRating)
+    apply(newObjectRating, newAuthorObjectRating, numberOfAuthorsBonus, numberOfImagesBonus)
   }
 
 }
@@ -35,7 +37,7 @@ trait Rater {
 
 object Rater {
 
-  def create(imageDb: ImageDB, config: StatConfig): Rater = {
+  def create(imageDb: ImageDB, config: RateConfig): Rater = {
     new NumberOfMonuments(imageDb)
   }
 

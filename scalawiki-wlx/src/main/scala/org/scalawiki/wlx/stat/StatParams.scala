@@ -29,6 +29,8 @@ object StatParams {
       Opt.seqString("[,]")(name = "exceptcities", flags = Seq("-exceptcity"), help = "except cities"),
       Opt.int(name = "new-object-rating", flags = Seq("-new-object-rating"), help = "new object rating"),
       Opt.int(name = "new-author-object-rating", flags = Seq("-new-author-object-rating"), help = "new author object rating"),
+      Opt.flag(name = "number-of-authors-bonus", flags = Seq("-number-of-authors-bonus"), help = "number of authors bonus"),
+      Opt.flag(name = "number-of-images-bonus", flags = Seq("-number-of-images-bonus"), help = "number of images bonus"),
       Opt.flag(name = "gallery", flags = Seq("-gallery"), help = "gallery")
     )
   )
