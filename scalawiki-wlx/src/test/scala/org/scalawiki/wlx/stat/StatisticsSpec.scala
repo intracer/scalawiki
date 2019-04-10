@@ -67,6 +67,17 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
         StatConfig("wle-ua", Seq(thisYear), Nil, rateConfig = RateConfig(newObjectRating = Some(10), newAuthorObjectRating = Some(5)))
     }
 
+    "parse bonus" in {
+      StatParams.parse(Seq("-campaign", "wle-ua", "-number-of-authors-bonus")) ===
+        StatConfig("wle-ua", Seq(thisYear), Nil, rateConfig = RateConfig(numberOfAuthorsBonus = true))
+
+      StatParams.parse(Seq("-campaign", "wle-ua", "-number-of-images-bonus")) ===
+        StatConfig("wle-ua", Seq(thisYear), Nil, rateConfig = RateConfig(numberOfImagesBonus = true))
+
+      StatParams.parse(Seq("-campaign", "wle-ua", "-number-of-authors-bonus", "-number-of-images-bonus")) ===
+        StatConfig("wle-ua", Seq(thisYear), Nil, rateConfig = RateConfig(numberOfAuthorsBonus = true, numberOfImagesBonus = true))
+    }
+
     "parse gallery" in {
       StatParams.parse(Seq("-campaign", "wle-ua")) === StatConfig("wle-ua", Seq(thisYear), Nil, gallery = false)
       StatParams.parse(Seq("-campaign", "wle-ua", "-gallery")) === StatConfig("wle-ua", Seq(thisYear), Nil, gallery = true)
