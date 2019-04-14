@@ -6,7 +6,8 @@ class KoatuuSpec extends Specification {
 
   "Koatuu" should {
 
-    val regions = Country.Ukraine.regions
+    val Ukraine = Country.Ukraine
+    val regions = Ukraine.regions
 
     val topRegions = Map(
       "01" -> "Автономна Республіка Крим",
@@ -43,7 +44,8 @@ class KoatuuSpec extends Specification {
     }
 
     "lookup level1 by code" in {
-      topRegions.toSet === Country.Ukraine.regionById.mapValues(_.name).toSet
+      Ukraine.byRegion(topRegions.keySet)
+        .map { case (adm, ids) => ids.head -> adm.name } === topRegions
     }
 
     "contain Kyiv raions" in {
@@ -53,20 +55,22 @@ class KoatuuSpec extends Specification {
     }
 
     "find Kyiv raions by code" in {
-      val kyiv = regions.find(_.name == "Київ").get
-      kyiv.regionById.mapValues(_.name).toSet === Map(
-        "80300" -> "Райони м. Київ",
-        "80361" -> "Голосіївський",
-        "80363" -> "Дарницький",
-        "80364" -> "Деснянський",
-        "80366" -> "Дніпровський",
-        "80380" -> "Оболонський",
-        "80382" -> "Печерський",
-        "80385" -> "Подільський",
-        "80386" -> "Святошинський",
-        "80389" -> "Солом'янський",
-        "80391" -> "Шевченківський",
-      ).toSet
+      val table = Map(
+        "80-300" -> "Райони м. Київ",
+        "80-361" -> "Голосіївський",
+        "80-363" -> "Дарницький",
+        "80-364" -> "Деснянський",
+        "80-366" -> "Дніпровський",
+        "80-380" -> "Оболонський",
+        "80-382" -> "Печерський",
+        "80-385" -> "Подільський",
+        "80-386" -> "Святошинський",
+        "80-389" -> "Солом'янський",
+        "80-391" -> "Шевченківський",
+      )
+
+      Ukraine.byRegion(table.keySet)
+        .map { case (adm, ids) => ids.head -> adm.name } === table
     }
 
     "contain Crimea regions" in {
@@ -93,6 +97,11 @@ class KoatuuSpec extends Specification {
         "Оратівський район", "Піщанський район", "Погребищенський район", "Теплицький район", "Томашпільський район",
         "Тростянецький район", "Тульчинський район", "Тиврівський район", "Хмільницький район", "Чернівецький район",
         "Чечельницький район", "Шаргородський район", "Ямпільський район")
+    }
+
+    "lookup regions by monumentId" in {
+      Ukraine.byId("14-215-0078").get.name === "Волноваський район"
+      Ukraine.byId("26-252-0002").get.name === "Снятинський район"
     }
 
   }

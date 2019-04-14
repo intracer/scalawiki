@@ -15,14 +15,27 @@ trait AdmDivision {
 
   def withoutLangCodes = this
 
-  val regionIds = SortedSet(regions.map(_.code): _*)
+  val regionIds: SortedSet[String] = SortedSet(regions.map(_.code): _*)
 
-  val regionNames = regions.sortBy(_.code).map(_.name)
+  val regionNames: Seq[String] = regions.sortBy(_.code).map(_.name)
 
-  val regionById = regions.groupBy(_.code).mapValues(_.head)
+  val regionById: Map[String, AdmDivision] = regions.groupBy(_.code).mapValues(_.head)
 
   def regionName(regId: String) = regionById.get(regId).map(_.name).getOrElse("")
 
+  def regionId(monumentId: String): String = monumentId.split("-").take(2).mkString
+
+  def byId(monumentId: String): Option[AdmDivision] = {
+    regionById.get(regionId(monumentId)).flatMap(region => region.byId(monumentId).orElse(Some(region)))
+  }
+
+  def byRegion(monumentIds: Set[String]): Map[AdmDivision, Set[String]] = {
+    val entries = monumentIds.flatMap(id => byId(id).map(adm => id -> adm))
+
+    entries
+      .groupBy { case (id, adm) => adm }
+      .mapValues(_.toMap.keySet)
+  }
 }
 
 case class NoAdmDivision(code: String = "", name: String = "") extends AdmDivision
@@ -34,6 +47,9 @@ case class Country(code: String,
                   ) extends AdmDivision {
 
   override def withoutLangCodes = copy(languageCodes = Nil)
+
+  override def regionId(monumentId: String): String = monumentId.split("-").head
+
 }
 
 object Country {
