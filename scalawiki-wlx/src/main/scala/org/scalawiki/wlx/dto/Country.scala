@@ -15,6 +15,8 @@ trait AdmDivision {
 
   def withoutLangCodes = this
 
+  def parent: () => Option[AdmDivision] = () => None
+
   val regionIds: SortedSet[String] = SortedSet(regions.map(_.code): _*)
 
   val regionNames: Seq[String] = regions.sortBy(_.code).map(_.name)
@@ -52,11 +54,16 @@ case class Country(code: String,
 
 }
 
+case class Region(code: String, name: String,
+                  override val regions: Seq[Region] = Nil,
+                  override val parent: () => Option[AdmDivision] = () => None)
+  extends AdmDivision
+
 object Country {
 
   val Azerbaijan = new Country("AZ", "Azerbaijan", Seq("az"))
 
-  val Ukraine = new Country("UA", "Ukraine", Seq("uk"), Koatuu.regions)
+  val Ukraine: Country = new Country("UA", "Ukraine", Seq("uk"), Koatuu.regions(() => Some(Ukraine)))
 
   val customCountries = Seq(Ukraine)
 

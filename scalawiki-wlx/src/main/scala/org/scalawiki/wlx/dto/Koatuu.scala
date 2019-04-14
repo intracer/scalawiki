@@ -6,25 +6,28 @@ import play.api.libs.functional.syntax._
 
 object Koatuu {
 
-  implicit lazy val regionReads: Reads[Region] = (
+  implicit val regionReads: Reads[Region] = (
     (__ \ "code").read[String] and
       (__ \ "name").read[String] and
-      (__ \ "level2").lazyReadNullable(Reads.seq[Region](regionReads)).map(_.getOrElse(Nil))
-    ) (Region)
+      (__ \ "level2").lazyReadNullable(Reads.seq[Region](regionReads)).map(_.getOrElse(Nil)) and
+      Reads.pure(() => None)
+    )(Region)
 
-  def regions: Seq[Region] = {
+  def regions(parent: () => Option[AdmDivision] = () => None): Seq[Region] = {
     val stream = getClass.getResourceAsStream("/koatuu.json")
     val json = Json.parse(stream)
 
     val raw = (json \ "level1").as[Seq[Region]]
 
-    raw.map { r =>
-      r.copy(
-        code = shortCode(r.code),
-        name = betterName(r.name),
-        regions = r.regions
+    raw.map { r1 =>
+      r1.copy(
+        code = shortCode(r1.code),
+        name = betterName(r1.name),
+        regions = r1.regions
           .map(withBetterName)
-          .map(r => r.copy(code = shortCode(r.code, 5)))
+          .map(r2 => r2.copy(code = shortCode(r2.code, 5)))
+          .map(r2 => r2.copy(parent = () => Some(withBetterName(r1)))),
+        parent = parent
       )
     }
   }
@@ -58,7 +61,7 @@ object Koatuu {
   def withBetterName(r: Region) = r.copy(name = betterName(r.name))
 
   def main(args: Array[String]): Unit = {
-    println(regions)
+    println(regions(() => Some(Country.Ukraine)))
   }
 
 }
