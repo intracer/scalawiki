@@ -4,6 +4,8 @@ import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
+import scala.concurrent.ExecutionContext
+
 class Output {
 
   def monumentsByType(/*imageDbs: Seq[ImageDB], totalImageDb: ImageDB,*/ monumentDb: MonumentDB) = {
@@ -225,6 +227,35 @@ class Output {
             imageDb.contest.contestType.name
           bot.page(s"$contestTitle - ${region.name} - ${index + 1}").edit(galleries.mkString("\n"))
         }
+    }
+  }
+
+  def byRegion(monumentDb: MonumentDB, imageDb: ImageDB)(implicit ec: ExecutionContext) = {
+    val bot = MwBot.fromHost(MwBot.ukWiki)
+
+    val country = monumentDb.contest.country
+    val picturedIds = imageDb.ids intersect monumentDb.ids
+    val byRegion = country.byRegion(picturedIds)
+
+        byRegion.map { case (region, ids) =>
+          val regionName = region.parent().get.name + "/" + region.name
+          val text = gallery(regionName, ids, imageDb, monumentDb)
+
+          val pageName = s"Вікіпедія:${imageDb.contest.contestType.name}/$regionName"
+          bot.page(pageName).edit(text).failed.map(println)
+        }
+
+    val byParent = byRegion.groupBy { case (region, ids) =>
+      region.parent().get.name
+    }.mapValues(_.keySet.map(_.name))
+
+    byParent.map { case (parent, regions) =>
+      val pageName = s"Вікіпедія:${imageDb.contest.contestType.name}/$parent"
+      val text = regions.toSeq.sorted.map { regionName =>
+        s"*[[Вікіпедія:${imageDb.contest.contestType.name}/$parent/$regionName|$regionName]]"
+      }.mkString("\n")
+
+      bot.page(pageName).edit(text).failed.map(println)
     }
   }
 
