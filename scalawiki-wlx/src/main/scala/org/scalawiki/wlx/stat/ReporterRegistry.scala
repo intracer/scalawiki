@@ -51,7 +51,7 @@ object ReporterRegistry {
     new SpecialNominations(imageDB.contest, imageDB).specialNomination()
 
   def galleryByRegionAndId(monumentDb: Option[MonumentDB], imageDb: ImageDB, oldImageDb: ImageDB): Option[String] =
-    monumentDb.map(db => new Output().galleryByRegionAndId(db, imageDb, oldImageDb))
+    monumentDb.map(db => Output.galleryByRegionAndId(db, imageDb, oldImageDb))
 
   def withArticles(monumentDb: Option[MonumentDB]): Option[String] =
     monumentDb.map(db => Stats.withArticles(db).asWiki("").asWiki)
