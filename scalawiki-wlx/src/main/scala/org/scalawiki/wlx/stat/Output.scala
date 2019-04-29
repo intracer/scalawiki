@@ -310,7 +310,7 @@ object Output {
   }
 
   def missingGallery(monumentDB: MonumentDB) = {
-    val allMissing = monumentDB.allMonuments.filter(_.gallery.isEmpty)
+    val allMissing = monumentDB.allMonuments.filter(m => m.gallery.isEmpty && m.photo.nonEmpty)
     val grouped = allMissing.groupBy(_.page).toSeq.sortBy(_._1)
     val text = s"Overall missing: ${allMissing.size}\n" + grouped.map { case (page, monuments) =>
       s"=== [[$page]] - ${monuments.size} ===\n" + monuments.sortBy(_.id).map { m =>
@@ -318,7 +318,7 @@ object Output {
       }.mkString
     }.mkString
 
-    val pageName = s"Вікіпедія:${monumentDB.contest.contestType.name}/missingGalleries"
+    val pageName = s"Вікіпедія:${monumentDB.contest.contestType.name}/missingGalleriesWithImages"
 
     MwBot.fromHost(MwBot.ukWiki).page(pageName).edit(text, Some("updating"))
   }
