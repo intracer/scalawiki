@@ -314,7 +314,7 @@ object Output {
     val grouped = allMissing.groupBy(_.page).toSeq.sortBy(_._1)
     val text = s"Overall missing: ${allMissing.size}\n" + grouped.map { case (page, monuments) =>
       s"=== [[$page]] - ${monuments.size} ===\n" + monuments.sortBy(_.id).map { m =>
-        s"*[[$page#${m.id}|${m.id}]] ${m.name}\n"
+        s"#[[$page#${m.id}|${m.id}]] ${m.name}\n"
       }.mkString
     }.mkString
 
