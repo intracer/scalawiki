@@ -7,7 +7,7 @@ import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.Site
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
-import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
+import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -110,15 +110,8 @@ class Statistics(contest: Contest,
   }
 
   def init(total: Boolean): Unit = {
-    gatherData(total = total).map { data =>
-        data.currentYearImageDb.foreach(imageDb => currentYear(data.contest, imageDb, data))
-        for (totalImageDb <- data.totalImageDb) {
-          Output.regionalStat(data.contest, data.dbsByYear, totalImageDb, data)
-
-          new AuthorsStat().authorsStat(data, bot, cfg.gallery)
-
-          Output.byRegion(totalImageDb.monumentDb.get, totalImageDb)
-        }
+    gatherData(total = total).map { stat =>
+      new ReporterRegistry(stat, cfg).output()
     }.failed.map(println)
   }
 
@@ -130,34 +123,10 @@ class Statistics(contest: Contest,
     users.map(name => s"{{#target:User talk:$name}}")
   }
 
-  /**
-    * Outputs current year reports.
-    *
-    * @param contest
-    * @param imageDb
-    * @param stat
-    */
-  def currentYear(contest: Contest, imageDb: ImageDB, stat: ContestStat) = {
-
-    //new SpecialNominations(contest, imageDb).specialNominations()
-
-    Output.lessThan2MpGallery(contest, imageDb)
-
-    imageDb.monumentDb.foreach {
-      mDb =>
-        Output.wrongIds(imageDb, mDb)
-
-      //fillLists(mDb, imageDb)
-    }
-  }
-
   def message(bot: MwBot, user: String, msg: String => String): Unit = {
     bot.page("User_talk:" + user).edit(msg(user), section = Some("new"))
   }
 
-  def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
-    ListFiller.fillLists(monumentDb, imageDb)
-  }
 }
 
 
