@@ -42,14 +42,22 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
   def currentYear() = {
     for (imageDb <- currentYearImageDb) {
 
-      //new SpecialNominations(contest, imageDb).specialNominations()
+      if (cfg.specialNominations) {
+        new SpecialNominations(contest, imageDb).specialNominations()
+      }
 
-      Output.lessThan2MpGallery(contest, imageDb)
+      if (cfg.lowRes) {
+        Output.lessThan2MpGallery(contest, imageDb)
+      }
 
       monumentDb.foreach { mDb =>
-        Output.wrongIds(imageDb, mDb)
+        if (cfg.wrongIds) {
+          Output.wrongIds(imageDb, mDb)
+        }
 
-        ListFiller.fillLists(mDb, imageDb)
+        if (cfg.fillLists) {
+          ListFiller.fillLists(mDb, imageDb)
+        }
       }
     }
   }

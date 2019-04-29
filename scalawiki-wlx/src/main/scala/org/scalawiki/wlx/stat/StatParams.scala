@@ -11,7 +11,11 @@ case class StatConfig(campaign: String,
                       cities: Seq[String] = Nil,
                       exceptCities: Seq[String] = Nil,
                       rateConfig: RateConfig = RateConfig(),
-                      gallery: Boolean = false)
+                      gallery: Boolean = false,
+                      fillLists: Boolean = false,
+                      wrongIds: Boolean = false,
+                      lowRes: Boolean = false,
+                      specialNominations:Boolean = false)
 
 object StatParams {
 
@@ -31,7 +35,11 @@ object StatParams {
       Opt.int(name = "new-author-object-rating", flags = Seq("-new-author-object-rating"), help = "new author object rating"),
       Opt.flag(name = "number-of-authors-bonus", flags = Seq("-number-of-authors-bonus"), help = "number of authors bonus"),
       Opt.flag(name = "number-of-images-bonus", flags = Seq("-number-of-images-bonus"), help = "number of images bonus"),
-      Opt.flag(name = "gallery", flags = Seq("-gallery"), help = "gallery")
+      Opt.flag(name = "gallery", flags = Seq("-gallery"), help = "gallery"),
+      Opt.flag(name = "fill-lists", flags = Seq("-fill-lists"), help = "fill lists"),
+      Opt.flag(name = "wrong-ids", flags = Seq("-wrong-ids"), help = "report wrong ids"),
+      Opt.flag(name = "low-res", flags = Seq("-low-res"), help = "report low resolution photos"),
+      Opt.flag(name = "special-nominations", flags = Seq("-special-nominations"), help = "report special nominations")
     )
   )
 
@@ -54,7 +62,11 @@ object StatParams {
       cities = parsed.values.getOrElse("city", Nil).asInstanceOf[Seq[String]],
       exceptCities = parsed.values.getOrElse("exceptcities", Nil).asInstanceOf[Seq[String]],
       rateConfig = RateConfig(parsed),
-      gallery = parsed.values.get("gallery").asInstanceOf[Option[Boolean]].getOrElse(false)
+      gallery = parsed.values.get("gallery").asInstanceOf[Option[Boolean]].getOrElse(false),
+      fillLists = parsed.values.get("fill-lists").asInstanceOf[Option[Boolean]].getOrElse(false),
+      wrongIds = parsed.values.get("wrong-ids").asInstanceOf[Option[Boolean]].getOrElse(false),
+      lowRes = parsed.values.get("low-res").asInstanceOf[Option[Boolean]].getOrElse(false),
+      specialNominations = parsed.values.get("special-nominations").asInstanceOf[Option[Boolean]].getOrElse(false)
     )
   }
 }
