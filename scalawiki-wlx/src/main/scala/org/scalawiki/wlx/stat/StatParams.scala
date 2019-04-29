@@ -2,6 +2,8 @@ package org.scalawiki.wlx.stat
 
 import java.time.ZonedDateTime
 
+import com.concurrentthought.cla.Opt
+
 import scala.util.Try
 
 case class StatConfig(campaign: String,
@@ -18,7 +20,8 @@ case class StatConfig(campaign: String,
                       specialNominations: Boolean = false,
                       regionalStat: Boolean = false,
                       authorsStat: Boolean = false,
-                      regionalGallery: Boolean = false)
+                      regionalGallery: Boolean = false,
+                      missingGallery: Boolean = false)
 
 object StatParams {
 
@@ -45,7 +48,8 @@ object StatParams {
       Opt.flag(name = "special-nominations", flags = Seq("-special-nominations"), help = "report special nominations"),
       Opt.flag(name = "regional-stat", flags = Seq("-regional-stat"), help = "report regional statistics"),
       Opt.flag(name = "authors-stat", flags = Seq("-authors-stat"), help = "report authors statistics"),
-      Opt.flag(name = "regional-gallery", flags = Seq("-regional-gallery"), help = "report regional gallery")
+      Opt.flag(name = "regional-gallery", flags = Seq("-regional-gallery"), help = "report regional gallery"),
+      Opt.flag(name = "missing-gallery", flags = Seq("-missing-gallery"), help = "report missing galleries")
     )
   )
 
@@ -75,7 +79,8 @@ object StatParams {
       specialNominations = parsed.values.get("special-nominations").asInstanceOf[Option[Boolean]].getOrElse(false),
       regionalStat = parsed.values.get("regional-stat").asInstanceOf[Option[Boolean]].getOrElse(false),
       authorsStat = parsed.values.get("authors-stat").asInstanceOf[Option[Boolean]].getOrElse(false),
-      regionalGallery = parsed.values.get("regional-gallery").asInstanceOf[Option[Boolean]].getOrElse(false)
+      regionalGallery = parsed.values.get("regional-gallery").asInstanceOf[Option[Boolean]].getOrElse(false),
+      missingGallery = parsed.values.get("missing-gallery").asInstanceOf[Option[Boolean]].getOrElse(false)
     )
   }
 }

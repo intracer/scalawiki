@@ -308,4 +308,17 @@ object Output {
 
     monumentDb.map(_ => new MostPopularMonuments(stat).updateWiki(bot))
   }
+
+  def missingGallery(monumentDB: MonumentDB) = {
+    val grouped = monumentDB.allMonuments.filter(_.gallery.isEmpty).groupBy(_.page)
+    val text = grouped.map { case (page, monuments) =>
+     s"===[[$page]]===\n" + monuments.sortBy(_.id).map{ m =>
+       s"*${m.id} ${m.name}\n"
+     }.mkString
+    }.mkString
+
+    val pageName = s"Вікіпедія:${monumentDB.contest.contestType.name}/missingGalleries"
+
+    MwBot.fromHost(MwBot.ukWiki).page(pageName).edit(text, Some("updating"))
+  }
 }

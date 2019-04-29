@@ -57,6 +57,10 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
         if (cfg.fillLists) {
           ListFiller.fillLists(mDb, imageDb)
         }
+
+        if (cfg.missingGallery) {
+          Output.missingGallery(mDb)
+        }
       }
     }
   }
