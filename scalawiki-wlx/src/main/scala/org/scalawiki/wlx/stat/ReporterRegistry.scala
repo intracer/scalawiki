@@ -15,8 +15,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
   val commons = MwBot.fromHost(MwBot.commons)
 
 
-  def monumentDbStat: Option[String] =
-    stat.monumentDb.map(RR.monumentDbStat)
+  def monumentDbStat: Option[String] = stat.monumentDb.map(RR.monumentDbStat)
 
 //  def authorsMonuments: String =
 //    RR.authorsMonuments(stat.currentYearImageDb.get)
@@ -64,11 +63,17 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
 
   def allYears() = {
     for (imageDb <- totalImageDb) {
-      Output.regionalStat(contest, stat.dbsByYear, imageDb, stat)
+      if (cfg.regionalStat) {
+        Output.regionalStat(contest, stat.dbsByYear, imageDb, stat)
+      }
 
-      new AuthorsStat().authorsStat(stat, commons, cfg.gallery)
+      if (cfg.authorsStat) {
+        new AuthorsStat().authorsStat(stat, commons, cfg.gallery)
+      }
 
-      Output.byRegion(monumentDb.get, imageDb)
+      if (cfg.regionalGallery) {
+        Output.byRegion(monumentDb.get, imageDb)
+      }
     }
   }
 

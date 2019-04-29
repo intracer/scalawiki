@@ -15,7 +15,10 @@ case class StatConfig(campaign: String,
                       fillLists: Boolean = false,
                       wrongIds: Boolean = false,
                       lowRes: Boolean = false,
-                      specialNominations:Boolean = false)
+                      specialNominations: Boolean = false,
+                      regionalStat: Boolean = false,
+                      authorsStat: Boolean = false,
+                      regionalGallery: Boolean = false)
 
 object StatParams {
 
@@ -39,7 +42,10 @@ object StatParams {
       Opt.flag(name = "fill-lists", flags = Seq("-fill-lists"), help = "fill lists"),
       Opt.flag(name = "wrong-ids", flags = Seq("-wrong-ids"), help = "report wrong ids"),
       Opt.flag(name = "low-res", flags = Seq("-low-res"), help = "report low resolution photos"),
-      Opt.flag(name = "special-nominations", flags = Seq("-special-nominations"), help = "report special nominations")
+      Opt.flag(name = "special-nominations", flags = Seq("-special-nominations"), help = "report special nominations"),
+      Opt.flag(name = "regional-stat", flags = Seq("-regional-stat"), help = "report regional statistics"),
+      Opt.flag(name = "authors-stat", flags = Seq("-authors-stat"), help = "report authors statistics"),
+      Opt.flag(name = "regional-gallery", flags = Seq("-regional-gallery"), help = "report regional gallery")
     )
   )
 
@@ -66,7 +72,10 @@ object StatParams {
       fillLists = parsed.values.get("fill-lists").asInstanceOf[Option[Boolean]].getOrElse(false),
       wrongIds = parsed.values.get("wrong-ids").asInstanceOf[Option[Boolean]].getOrElse(false),
       lowRes = parsed.values.get("low-res").asInstanceOf[Option[Boolean]].getOrElse(false),
-      specialNominations = parsed.values.get("special-nominations").asInstanceOf[Option[Boolean]].getOrElse(false)
+      specialNominations = parsed.values.get("special-nominations").asInstanceOf[Option[Boolean]].getOrElse(false),
+      regionalStat = parsed.values.get("regional-stat").asInstanceOf[Option[Boolean]].getOrElse(false),
+      authorsStat = parsed.values.get("authors-stat").asInstanceOf[Option[Boolean]].getOrElse(false),
+      regionalGallery = parsed.values.get("regional-gallery").asInstanceOf[Option[Boolean]].getOrElse(false)
     )
   }
 }
