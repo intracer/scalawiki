@@ -310,7 +310,7 @@ object Output {
   }
 
   def missingGallery(monumentDB: MonumentDB) = {
-    val grouped = monumentDB.allMonuments.filter(_.gallery.isEmpty).groupBy(_.page)
+    val grouped = monumentDB.allMonuments.filter(_.gallery.isEmpty).groupBy(_.page).toSeq.sortBy(_._1)
     val text = grouped.map { case (page, monuments) =>
      s"===[[$page]]===\n" + monuments.sortBy(_.id).map{ m =>
        s"*${m.id} ${m.name}\n"
