@@ -238,13 +238,13 @@ object Output {
     val picturedIds = imageDb.ids intersect monumentDb.ids
     val byRegion = country.byRegion(picturedIds)
 
-        byRegion.map { case (region, ids) =>
-          val regionName = region.parent().get.name + "/" + region.name
-          val text = gallery(regionName, ids, imageDb, monumentDb)
+    byRegion.map { case (region, ids) =>
+      val regionName = region.parent().get.name + "/" + region.name
+      val text = gallery(regionName, ids, imageDb, monumentDb)
 
-          val pageName = s"Вікіпедія:${imageDb.contest.contestType.name}/$regionName"
-          bot.page(pageName).edit(text).failed.map(println)
-        }
+      val pageName = s"Вікіпедія:${imageDb.contest.contestType.name}/$regionName"
+      bot.page(pageName).edit(text).failed.map(println)
+    }
 
     val byParent = byRegion.groupBy { case (region, ids) =>
       region.parent().get.name
@@ -312,9 +312,9 @@ object Output {
   def missingGallery(monumentDB: MonumentDB) = {
     val grouped = monumentDB.allMonuments.filter(_.gallery.isEmpty).groupBy(_.page).toSeq.sortBy(_._1)
     val text = grouped.map { case (page, monuments) =>
-     s"===[[$page]]===\n" + monuments.sortBy(_.id).map{ m =>
-       s"*[[$page#${m.id}|${m.id}]] ${m.name}\n"
-     }.mkString
+      s"=== [[$page]] - ${monuments.size} ===\n" + monuments.sortBy(_.id).map { m =>
+        s"*[[$page#${m.id}|${m.id}]] ${m.name}\n"
+      }.mkString
     }.mkString
 
     val pageName = s"Вікіпедія:${monumentDB.contest.contestType.name}/missingGalleries"
