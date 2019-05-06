@@ -1,36 +1,91 @@
 package org.scalawiki.wlx.stat
 
-import org.scalawiki.wlx.{ImageDB, MonumentDB}
+import org.scalawiki.MwBot
+import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
 
-class ReporterRegistry(stat: ContestStat) {
+import scala.concurrent.ExecutionContext
+
+class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: ExecutionContext) {
   import org.scalawiki.wlx.stat.{ReporterRegistry => RR}
 
-  def monumentDbStat: Option[String] =
-    stat.monumentDb.map(RR.monumentDbStat)
+  val contest = stat.contest
+  val monumentDb = stat.monumentDb
+  val currentYearImageDb = stat.currentYearImageDb
+  val totalImageDb = stat.totalImageDb
+  val commons = MwBot.fromHost(MwBot.commons)
+
+
+  def monumentDbStat: Option[String] = stat.monumentDb.map(RR.monumentDbStat)
 
 //  def authorsMonuments: String =
 //    RR.authorsMonuments(stat.currentYearImageDb.get)
 
-  def authorsImages: String =
-    RR.authorsImages(stat.currentYearImageDb.get, stat.monumentDb)
+  def authorsImages: String = RR.authorsImages(currentYearImageDb.get, monumentDb)
 
-  def authorsContributed: String =
-    RR.authorsContributed(stat.dbsByYear, stat.totalImageDb, stat.monumentDb)
+  def authorsContributed: String = RR.authorsContributed(stat.dbsByYear, totalImageDb, monumentDb)
 
-  def specialNominations(): String =
-    RR.specialNominations(stat.currentYearImageDb.get)
+  def specialNominations(): String = RR.specialNominations(currentYearImageDb.get)
 
-  def mostPopularMonuments: String =
-    new MostPopularMonuments(stat).asText
+  def mostPopularMonuments: String = new MostPopularMonuments(stat).asText
 
-  def monumentsPictured: String =
-    new MonumentsPicturedByRegion(stat).asText
+  def monumentsPictured: String = new MonumentsPicturedByRegion(stat).asText
 
-  def galleryByRegionAndId: Option[String] =
-    RR.galleryByRegionAndId(stat.monumentDb, stat.currentYearImageDb.get, stat.totalImageDb.get)
+  def galleryByRegionAndId: Option[String] = RR.galleryByRegionAndId(monumentDb, currentYearImageDb.get, totalImageDb.get)
 
-  def withArticles: Option[String] =
-    RR.withArticles(stat.monumentDb)
+  def withArticles: Option[String] = RR.withArticles(monumentDb)
+
+  /**
+    * Outputs current year reports.
+    *
+    */
+  def currentYear() = {
+    for (imageDb <- currentYearImageDb) {
+
+      if (cfg.specialNominations) {
+        new SpecialNominations(contest, imageDb).specialNominations()
+      }
+
+      if (cfg.lowRes) {
+        Output.lessThan2MpGallery(contest, imageDb)
+      }
+
+      monumentDb.foreach { mDb =>
+        if (cfg.wrongIds) {
+          Output.wrongIds(imageDb, mDb)
+        }
+
+        if (cfg.fillLists) {
+          ListFiller.fillLists(mDb, imageDb)
+        }
+
+        if (cfg.missingGallery) {
+          Output.missingGallery(mDb)
+        }
+      }
+    }
+  }
+
+  def allYears() = {
+    for (imageDb <- totalImageDb) {
+      if (cfg.regionalStat) {
+        Output.regionalStat(contest, stat.dbsByYear, imageDb, stat)
+      }
+
+      if (cfg.authorsStat) {
+        new AuthorsStat().authorsStat(stat, commons, cfg.gallery)
+      }
+
+      if (cfg.regionalGallery) {
+        Output.byRegion(monumentDb.get, imageDb)
+      }
+    }
+  }
+
+  def output() = {
+    currentYear()
+    allYears()
+  }
+
 }
 
 object ReporterRegistry {
@@ -51,7 +106,7 @@ object ReporterRegistry {
     new SpecialNominations(imageDB.contest, imageDB).specialNomination()
 
   def galleryByRegionAndId(monumentDb: Option[MonumentDB], imageDb: ImageDB, oldImageDb: ImageDB): Option[String] =
-    monumentDb.map(db => new Output().galleryByRegionAndId(db, imageDb, oldImageDb))
+    monumentDb.map(db => Output.galleryByRegionAndId(db, imageDb, oldImageDb))
 
   def withArticles(monumentDb: Option[MonumentDB]): Option[String] =
     monumentDb.map(db => Stats.withArticles(db).asWiki("").asWiki)

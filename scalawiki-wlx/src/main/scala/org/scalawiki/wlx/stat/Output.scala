@@ -2,9 +2,12 @@ package org.scalawiki.wlx.stat
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
+import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
-class Output {
+import scala.concurrent.ExecutionContext
+
+object Output {
 
   def monumentsByType(/*imageDbs: Seq[ImageDB], totalImageDb: ImageDB,*/ monumentDb: MonumentDB) = {
     val regions = monumentDb.contest.country.regionById
@@ -228,4 +231,95 @@ class Output {
     }
   }
 
+  def byRegion(monumentDb: MonumentDB, imageDb: ImageDB)(implicit ec: ExecutionContext) = {
+    val bot = MwBot.fromHost(MwBot.ukWiki)
+
+    val country = monumentDb.contest.country
+    val picturedIds = imageDb.ids intersect monumentDb.ids
+    val byRegion = country.byRegion(picturedIds)
+
+    byRegion.map { case (region, ids) =>
+      val regionName = region.parent().get.name + "/" + region.name
+      val text = gallery(regionName, ids, imageDb, monumentDb)
+
+      val pageName = s"Вікіпедія:${imageDb.contest.contestType.name}/$regionName"
+      bot.page(pageName).edit(text).failed.map(println)
+    }
+
+    val byParent = byRegion.groupBy { case (region, ids) =>
+      region.parent().get.name
+    }.mapValues(_.keySet.map(_.name))
+
+    byParent.map { case (parent, regions) =>
+      val pageName = s"Вікіпедія:${imageDb.contest.contestType.name}/$parent"
+      val text = regions.toSeq.sorted.map { regionName =>
+        s"*[[Вікіпедія:${imageDb.contest.contestType.name}/$parent/$regionName|$regionName]]"
+      }.mkString("\n")
+
+      bot.page(pageName).edit(text).failed.map(println)
+    }
+  }
+
+  def lessThan2MpGallery(contest: Contest, imageDb: ImageDB) = {
+    val bot = MwBot.fromHost(MwBot.commons)
+    val lessThan2Mp = imageDb.byMegaPixelFilterAuthorMap(_ < 2)
+    val gallery = new AuthorsStat().authorsImages(lessThan2Mp, imageDb.monumentDb)
+    val contestPage = contest.name
+
+    bot.page(s"Commons:$contestPage/Less than 2Mp").edit(gallery, Some("updating"))
+  }
+
+  def wrongIds(imageDb: ImageDB, monumentDb: MonumentDB) {
+    val bot = MwBot.fromHost(MwBot.commons)
+
+    val wrongIdImages = imageDb.images
+      .filterNot(image => image.monumentId.fold(false)(id => monumentDb.ids.contains(id) || id.startsWith("99")))
+
+    val notObvious = wrongIdImages.filterNot(_.categories.exists(_.startsWith("Obviously ineligible")))
+
+    val contest = imageDb.contest
+    val contestPage = contest.name
+
+    val text = notObvious.map(_.title).mkString("<gallery>", "\n", "</gallery>")
+    bot.page(s"Commons:$contestPage/Images with bad ids").edit(text, Some("updating"))
+  }
+
+  def regionalStat(wlmContest: Contest,
+                   imageDbs: Seq[ImageDB],
+                   totalImageDb: ImageDB,
+                   stat: ContestStat) {
+    val bot = MwBot.fromHost(MwBot.commons)
+
+    val contest = totalImageDb.contest
+    val categoryName = contest.contestType.name + " in " + contest.country.name
+    val monumentDb = totalImageDb.monumentDb
+
+    val authorsStat = new AuthorsStat()
+
+    val idsStat = monumentDb.map(_ => new MonumentsPicturedByRegion(stat, uploadImages = true).asText).getOrElse("")
+
+    val authorsContributed = authorsStat.authorsContributed(imageDbs, Some(totalImageDb), monumentDb)
+
+    val toc = "__TOC__"
+    val category = s"\n[[Category:$categoryName]]"
+    val regionalStat = toc + idsStat + authorsContributed + category
+
+    bot.page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, Some("updating"))
+
+    monumentDb.map(_ => new MostPopularMonuments(stat).updateWiki(bot))
+  }
+
+  def missingGallery(monumentDB: MonumentDB) = {
+    val allMissing = monumentDB.allMonuments.filter(m => m.gallery.isEmpty && m.photo.nonEmpty)
+    val grouped = allMissing.groupBy(_.page).toSeq.sortBy(_._1)
+    val text = s"Overall missing: ${allMissing.size}\n" + grouped.map { case (page, monuments) =>
+      s"=== [[$page]] - ${monuments.size} ===\n" + monuments.sortBy(_.id).map { m =>
+        s"#[[$page#${m.id}|${m.id}]] ${m.name}\n"
+      }.mkString
+    }.mkString
+
+    val pageName = s"Вікіпедія:${monumentDB.contest.contestType.name}/missingGalleriesWithImages"
+
+    MwBot.fromHost(MwBot.ukWiki).page(pageName).edit(text, Some("updating"))
+  }
 }

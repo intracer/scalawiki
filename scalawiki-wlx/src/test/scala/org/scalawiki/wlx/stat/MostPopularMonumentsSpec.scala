@@ -27,8 +27,6 @@ class MostPopularMonumentsSpec extends Specification {
       }
 
       "work on no images" in {
-        val output = new Output
-
         val monumentDb = new MonumentDB(contest,
           monuments(2, "01", "Crimea") ++
             monuments(5, "05", "Podillya") ++

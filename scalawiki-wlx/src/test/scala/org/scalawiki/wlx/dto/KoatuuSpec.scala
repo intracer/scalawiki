@@ -6,7 +6,8 @@ class KoatuuSpec extends Specification {
 
   "Koatuu" should {
 
-    val regions = Country.Ukraine.regions
+    val Ukraine = Country.Ukraine
+    val regions = Ukraine.regions
 
     val topRegions = Map(
       "01" -> "Автономна Республіка Крим",
@@ -38,40 +39,52 @@ class KoatuuSpec extends Specification {
       "85" -> "Севастополь"
     )
 
-    "contain level1 names" in {
+    "contain country parent" in {
+      regions.flatMap(_.parent()) === List.fill(topRegions.size)(Country.Ukraine)
+    }
+
+      "contain level1 names" in {
       regions.map(_.name).toSet === topRegions.toSeq.map(_._2).toSet
     }
 
     "lookup level1 by code" in {
-      topRegions.toSet === Country.Ukraine.regionById.mapValues(_.name).toSet
+      Ukraine.byRegion(topRegions.keySet)
+        .map { case (adm, ids) => ids.head -> adm.name } === topRegions
     }
 
     "contain Kyiv raions" in {
       val kyiv = regions.find(_.name == "Київ").get
-      kyiv.regions.map(_.name) === Seq("Райони м. Київ", "Голосіївський", "Дарницький", "Деснянський", "Дніпровський",
+      val regionNames = Seq("Райони м. Київ", "Голосіївський", "Дарницький", "Деснянський", "Дніпровський",
         "Оболонський", "Печерський", "Подільський", "Святошинський", "Солом'янський", "Шевченківський")
+      kyiv.regions.map(_.name) === regionNames
+      kyiv.regions.flatMap(_.parent().map(_.name)) === List.fill(regionNames.size)("Київ")
     }
 
     "find Kyiv raions by code" in {
-      val kyiv = regions.find(_.name == "Київ").get
-      kyiv.regionById.mapValues(_.name).toSet === Map(
-        "80300" -> "Райони м. Київ",
-        "80361" -> "Голосіївський",
-        "80363" -> "Дарницький",
-        "80364" -> "Деснянський",
-        "80366" -> "Дніпровський",
-        "80380" -> "Оболонський",
-        "80382" -> "Печерський",
-        "80385" -> "Подільський",
-        "80386" -> "Святошинський",
-        "80389" -> "Солом'янський",
-        "80391" -> "Шевченківський",
-      ).toSet
+      val idToName = Map(
+        "80-300" -> "Райони м. Київ",
+        "80-361" -> "Голосіївський",
+        "80-363" -> "Дарницький",
+        "80-364" -> "Деснянський",
+        "80-366" -> "Дніпровський",
+        "80-380" -> "Оболонський",
+        "80-382" -> "Печерський",
+        "80-385" -> "Подільський",
+        "80-386" -> "Святошинський",
+        "80-389" -> "Солом'янський",
+        "80-391" -> "Шевченківський",
+      )
+
+      val regionToIds = Ukraine.byRegion(idToName.keySet)
+      regionToIds.keySet.flatMap(_.parent().map(_.name)) === Set("Київ")
+
+      regionToIds
+        .map { case (adm, ids) => ids.head -> adm.name } === idToName
     }
 
     "contain Crimea regions" in {
       val crimea = regions.find(_.name == "Автономна Республіка Крим").get
-      crimea.regions.map(_.name) === Seq(
+      val regionNames = Seq(
         "Міста Автономної Республіки Крим",
         "Сімферополь", "Алушта", "Джанкой", "Євпаторія", "Керч",
         "Красноперекопськ", "Саки", "Армянськ", "Феодосія", "Судак", "Ялта",
@@ -79,11 +92,15 @@ class KoatuuSpec extends Specification {
         "Бахчисарайський район", "Білогірський район", "Джанкойський район", "Кіровський район", "Красногвардійський район",
         "Красноперекопський район", "Ленінський район", "Нижньогірський район", "Первомайський район", "Роздольненський район",
         "Сакський район", "Сімферопольський район", "Совєтський район", "Чорноморський район")
+      crimea.regions.map(_.name) === regionNames
+
+      crimea.regions.flatMap(_.parent().map(_.name)) === List.fill(regionNames.size)("Автономна Республіка Крим")
+
     }
 
     "contain Vinnytsya oblast regions" in {
       val crimea = regions.find(_.name == "Вінницька область").get
-      crimea.regions.map(_.name) === Seq(
+      val regionNames = Seq(
         "Міста обласного підпорядкування Вінницької області",
         "Вінниця", "Жмеринка", "Могилів-Подільський", "Козятин", "Ладижин", "Хмільник",
         "Райони Вінницької області",
@@ -93,6 +110,19 @@ class KoatuuSpec extends Specification {
         "Оратівський район", "Піщанський район", "Погребищенський район", "Теплицький район", "Томашпільський район",
         "Тростянецький район", "Тульчинський район", "Тиврівський район", "Хмільницький район", "Чернівецький район",
         "Чечельницький район", "Шаргородський район", "Ямпільський район")
+      crimea.regions.map(_.name) === regionNames
+
+      crimea.regions.flatMap(_.parent().map(_.name)) === List.fill(regionNames.size)("Вінницька область")
+    }
+
+    "lookup regions by monumentId" in {
+      val r1 = Ukraine.byId("14-215-0078").get
+      r1.name === "Волноваський район"
+      r1.parent().get.name === "Донецька область"
+
+      val r2 = Ukraine.byId("26-252-0002").get
+      r2.name === "Снятинський район"
+      r2.parent().get.name === "Івано-Франківська область"
     }
 
   }
