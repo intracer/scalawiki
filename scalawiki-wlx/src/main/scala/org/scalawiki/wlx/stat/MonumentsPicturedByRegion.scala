@@ -8,7 +8,7 @@ import org.scalawiki.wlx.{ImageDB, MonumentDB}
 class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = false)  extends Reporter {
 
   def this(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: MonumentDB) = {
-    this(new ContestStat(
+    this(ContestStat(
       monumentDb.contest,
       imageDbs.headOption.map(_.contest.year).getOrElse(monumentDb.contest.year),
       Some(monumentDb),
@@ -30,20 +30,17 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
     header + table.asWiki + images.getOrElse("")
   }
 
-  def table =
-    monumentsPicturedTable(stat.dbsByYear, stat.totalImageDb, stat.monumentDb.get)
+  def table = monumentsPicturedTable(stat.dbsByYear, stat.totalImageDb, stat.monumentDb.get)
 
   def monumentsPicturedTable(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: MonumentDB): Table = {
     val contest = monumentDb.contest
     val categoryName = contest.imagesCategory
     val filenamePrefix = contest.name.replace("_", "")
 
-    val imageDbsByYear = imageDbs.groupBy(_.contest.year)
-    val yearSeq = imageDbsByYear.keys.toSeq.sorted
+    val yearSeq = stat.yearSeq
     val numYears = yearSeq.size
 
-    val yearsColumns = yearSeq.flatMap {
-      year =>
+    val yearsColumns = yearSeq.flatMap { year =>
         val ys = year.toString
         Seq(ys + " Objects", ys + " Pictures")
     }
@@ -65,18 +62,13 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
       val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
       val allMonumentsInRegion = monumentDb.byRegion(regionId).size
 
-      val picturedIds = yearSeq.map {
-        year =>
-          val db = imageDbsByYear(year).head
-          db.idsByRegion(regionId).size
-      }
-      val pictured = yearSeq.flatMap {
-        year =>
-          val db = imageDbsByYear(year).head
-          Seq(
-            db.idsByRegion(regionId).size,
-            db.imagesByRegion(regionId).toSet.size
-          )
+      val picturedIds = stat.mapYears(_.idsByRegion(regionId).size)
+
+      val pictured = stat.mapYears { db =>
+        Seq(
+          db.idsByRegion(regionId).size,
+          db.imagesByRegion(regionId).toSet.size
+        )
       }
 
       val regionName = contest.country.regionName(regionId)
@@ -95,9 +87,9 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
     val allMonuments = monumentDb.monuments.size
     val picturedMonuments = (totalImageDb.map(_.ids).getOrElse(Set.empty) ++ withPhotoInLists).size
 
-    val ids = yearSeq.map(year => imageDbsByYear(year).head.ids)
+    val ids = stat.mapYears(_.ids)
 
-    val photoSize = yearSeq.map(year => imageDbsByYear(year).head.images.size)
+    val photoSize = stat.mapYears(_.images.size)
 
     val idsSize = ids.map(_.size)
 

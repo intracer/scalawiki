@@ -29,7 +29,19 @@ case class ContestStat(contest: Contest,
                        currentYearImageDb: Option[ImageDB],
                        totalImageDb: Option[ImageDB],
                        dbsByYear: Seq[ImageDB] = Seq.empty,
-                       monumentDbOld: Option[MonumentDB] = None)
+                       monumentDbOld: Option[MonumentDB] = None) {
+
+  val imageDbsByYear = dbsByYear.groupBy(_.contest.year)
+  val yearSeq = imageDbsByYear.keys.toSeq.sorted
+
+  def imageDbByYear(year: Int) = imageDbsByYear.get(year).map(_.head)
+
+  def mapYears[T](f: ImageDB => T) = {
+    for (year <- yearSeq;
+         imageDb <- imageDbByYear(year))
+      yield f(imageDb)
+  }
+}
 
 /**
   * Coordinates fetching contest statistics and creating reports/galleries etc. Needs refactoring.
