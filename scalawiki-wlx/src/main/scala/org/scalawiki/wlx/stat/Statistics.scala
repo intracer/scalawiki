@@ -144,7 +144,6 @@ class Statistics(contest: Contest,
 
 object Statistics {
 
-
   def main(args: Array[String]) {
     val cfg = StatParams.parse(args)
 
