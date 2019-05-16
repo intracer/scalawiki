@@ -35,6 +35,10 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
   def withImages = monuments.filter(_.photo.isDefined)
 
+  def picturedIds = withImages.map(_.id).toSet
+
+  def picturedInRegion(regionId: String) = byRegion(regionId).map(_.id).toSet intersect picturedIds
+
 }
 
 
