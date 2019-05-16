@@ -63,9 +63,6 @@ class MonumentsPicturedByRegionSpec extends Specification {
     }
 
     "monuments pictured" in {
-
-      val output = new Output
-
       val monumentDb = new MonumentDB(contest,
         monuments(2, "01", "Crimea") ++
           monuments(5, "05", "Podillya") ++
@@ -89,9 +86,6 @@ class MonumentsPicturedByRegionSpec extends Specification {
     }
 
     "two years monuments pictured" in {
-
-      val output = new Output
-
       val monumentDb = new MonumentDB(contest,
         monuments(2, "01", "Crimea") ++
           monuments(5, "05", "Podillya") ++
@@ -119,8 +113,6 @@ class MonumentsPicturedByRegionSpec extends Specification {
     }
 
     "4 years monuments pictured" in {
-      val output = new Output
-
       val monumentDb = new MonumentDB(contest,
         monuments(2, "01", "Crimea") ++
           monuments(5, "05", "Podillya") ++
@@ -156,7 +148,6 @@ class MonumentsPicturedByRegionSpec extends Specification {
         "7", "1", "14", "0", "0", "0", "0", "1", "1", "0", "0")
       data(3) === Seq("Total",
         "14", "4", "28", "1", "1", "1", "1", "1", "1", "1", "1")
-
     }
   }
 }

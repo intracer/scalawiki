@@ -70,7 +70,7 @@ class AuthorMonuments(val stat: ContestStat,
       "#" + region.replaceAll(" ", "_")
     }
 
-    val galleryText = new Output().galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt), oldImageDb)
+    val galleryText = Output.galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt), oldImageDb)
 
     for (bot <- commons if regionOpt.isEmpty) {
       bot.page(galleryPage).edit(galleryText)
