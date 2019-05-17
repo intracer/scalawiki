@@ -58,7 +58,9 @@ object Rater {
         new NewlyPicturedPerAuthorBonus(stat, config.newObjectRating.getOrElse(1), r)
       }.orElse {
         config.newObjectRating.map(new NewlyPicturedBonus(stat, _))
-      }
+      } ++ (if (config.numberOfAuthorsBonus) {
+      Seq(new NumberOfAuthorsBonus(stat))
+    } else Nil)
 
     if (raters.tail.isEmpty) {
       raters.head
@@ -108,7 +110,13 @@ class NewlyPicturedPerAuthorBonus(val stat: ContestStat,
   }
 }
 
-class NumberOfAuthorsBonus(val stat: ContestStat, authorsByMonument: Map[String, Int]) extends Rater {
+class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
+  val authorsByMonument: Map[String, Int] = oldImages
+    .groupBy(_.monumentId.getOrElse(""))
+    .mapValues { images =>
+      images.map(_.author.getOrElse("")).toSet.size
+    }
+
   override def rate(monumentId: String, author: String): Int = {
     authorsByMonument.getOrElse(monumentId, 0) match {
       case 0 =>
