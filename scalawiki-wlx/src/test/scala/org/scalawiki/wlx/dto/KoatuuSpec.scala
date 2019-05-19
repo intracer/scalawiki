@@ -145,4 +145,13 @@ class KoatuuSpec extends Specification {
       r2.parent().get.name === "Івано-Франківська область"
     }
   }
+
+  "level3" should {
+    "contain Irpin regions" in {
+      val irpin = Ukraine.byId("32-109").get
+      irpin.name === "Ірпінь"
+      irpin.regions.map(_.name) === Seq("Ворзель", "Гостомель", "Коцюбинське")
+    }
+  }
+
 }

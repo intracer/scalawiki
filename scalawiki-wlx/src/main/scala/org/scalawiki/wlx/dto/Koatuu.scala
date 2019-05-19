@@ -6,10 +6,12 @@ import play.api.libs.functional.syntax._
 
 object Koatuu {
 
-  implicit val regionReads: Reads[Region] = (
+  def regionReads(level: Int): Reads[Region] = (
     (__ \ "code").read[String] and
-      (__ \ "name").read[String] and
-      (__ \ "level2").lazyReadNullable(Reads.seq[Region](regionReads)).map(_.getOrElse(Nil)) and
+      (__ \ "name").read[String].map(betterName) and
+      (__ \ ("level" + level))
+        .lazyReadNullable(Reads.seq[Region](regionReads(level + 1)))
+        .map(_.getOrElse(Nil)).map(_.filterNot(groupPredicate)) and
       Reads.pure(() => None)
     ) (Region)
 
@@ -17,34 +19,28 @@ object Koatuu {
     val stream = getClass.getResourceAsStream("/koatuu.json")
     val json = Json.parse(stream)
 
+    implicit val level2Reads: Reads[Region] = regionReads(2)
     val raw = (json \ "level1").as[Seq[Region]]
 
     raw.map { r1 =>
       r1.copy(
         code = shortCode(r1.code),
-        name = betterName(r1.name),
         regions = r1.regions
-          .filterNot(groupPredicate)
-          .map(withBetterName)
           .map(r2 => r2.copy(code = shortCode(r2.code, 5)))
-          .map(r2 => r2.copy(parent = () => Some(withBetterName(r1)))),
+          .map(r2 => r2.copy(parent = () => Some(r1))),
         parent = parent
       )
     }
   }
 
-  val groupNames = Seq("Міста обласного підпорядкування", "Міста", "Райони").map(_.toUpperCase)
+  val groupNames = Seq("Міста обласного підпорядкування", "Міста", "Райони", "Селища міського типу").map(_.toUpperCase)
 
-  def groupPredicate(r: Region) = {
-    groupNames.exists(r.name.startsWith)
-  }
+  def groupPredicate(r: Region) = groupNames.exists(r.name.toUpperCase.startsWith)
 
-  def shortCode(s: String, init: Int = 2) =
-    s.take(init)
+  def shortCode(s: String, init: Int = 2) = s.take(init)
 
   def betterName(s: String) = {
-    val s1 = s.split("/").head
-      .toLowerCase.capitalize
+    val s1 = s.split("/").head.toLowerCase.capitalize
 
     s1
       .split("-").map(_.capitalize).mkString("-")
@@ -60,5 +56,4 @@ object Koatuu {
   def main(args: Array[String]): Unit = {
     println(regions(() => Some(Country.Ukraine)))
   }
-
 }
