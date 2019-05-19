@@ -106,7 +106,6 @@ class KoatuuSpec extends Specification {
       ko.regions.flatMap(_.parent().map(_.name)) === List.fill(names.size)("Київська область")
     }
 
-
     "contain Crimea regions" in {
       val crimea = regions.find(_.name == "Автономна Республіка Крим").get
       val regionNames = Seq(
@@ -146,12 +145,21 @@ class KoatuuSpec extends Specification {
     }
   }
 
-  "level3" should {
+  "level3/4" should {
     "contain Irpin regions" in {
       val irpin = Ukraine.byId("32-109").get
       irpin.name === "Ірпінь"
       irpin.regions.map(_.name) === Seq("Ворзель", "Гостомель", "Коцюбинське")
     }
-  }
 
+    "contain Simferopol regions" in {
+      val simferopol = Ukraine.byId("01-101").get
+      simferopol.name === "Сімферополь"
+      simferopol.regions.map(_.name) === Seq("Залізничний", "Київський", "Центральний", "Аерофлотський", "Гресівський",
+        "Комсомольське", "Аграрне")
+
+      val hresivskyi = simferopol.regions.find(_.name == "Гресівський").get
+      hresivskyi.regions.map(_.name) === Seq("Бітумне")
+    }
+  }
 }
