@@ -12,14 +12,16 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 // TODO async compute, do not enter twice
-class CachedBot(site: Site, name: String, persistent: Boolean, http: HttpClient = HttpClient.get(MwBot.system))
+class CachedBot(site: Site, name: String, persistent: Boolean, http: HttpClient = HttpClient.get(MwBot.system),
+                entries: Int = 12 * 1024,
+                valueSize: Int = 128 * 1024)
   extends MwBotImpl(site) {
 
   private val builder: ChronicleMapBuilder[String, String] = ChronicleMap
     .of(classOf[String], classOf[String])
     .averageKeySize(1024)
-    .averageValueSize(128 * 1024)
-    .entries(12 * 1024)
+    .averageValueSize(valueSize)
+    .entries(entries)
     .name(name + ".cache")
 
   private val cache = if (persistent) {
