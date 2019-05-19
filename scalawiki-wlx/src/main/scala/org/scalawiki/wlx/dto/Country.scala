@@ -31,10 +31,10 @@ trait AdmDivision {
     regionById.get(regionId(monumentId)).flatMap(region => region.byId(monumentId).orElse(Some(region)))
   }
 
-  def byIdAndName(regionId: String, name: String) = {
+  def byIdAndName(regionId: String, name: String): Seq[AdmDivision] = {
     byId(regionId).map { region =>
       region.byName(name)
-    }
+    }.getOrElse(Nil)
   }
 
   def byName(name: String): Seq[AdmDivision] = {

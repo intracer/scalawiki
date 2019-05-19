@@ -149,12 +149,16 @@ class KoatuuSpec extends Specification {
       val irpin = Ukraine.byId("32-109").get
       irpin.name === "Ірпінь"
       irpin.regions.map(_.name) === Seq("Ворзель", "Гостомель", "Коцюбинське")
+
+      Ukraine.byIdAndName("32-109", "Ворзель").head.name === "Ворзель"
     }
 
     "contain Obuhiv regions" in {
       val obuhiv = Ukraine.byId("32-116").get
       obuhiv.name === "Обухів"
       obuhiv.regions.map(_.name) === Seq("Ленди", "Таценки")
+
+      Ukraine.byIdAndName("32-116", "Ленди").head.name === "Ленди"
     }
 
     "contain Simferopol regions" in {
@@ -165,6 +169,8 @@ class KoatuuSpec extends Specification {
 
       val hresivskyi = simferopol.regions.find(_.name == "Гресівський").get
       hresivskyi.regions.map(_.name) === Seq("Бітумне")
+
+      Ukraine.byIdAndName("01-101", "Бітумне").head.name === "Бітумне"
     }
   }
 }
