@@ -11,7 +11,7 @@ object Koatuu {
       (__ \ "name").read[String].map(betterName) and
       (__ \ ("level" + level))
         .lazyReadNullable(Reads.seq[Region](regionReads(level + 1)))
-        .map(_.getOrElse(Nil)).map(_.filterNot(groupPredicate)) and
+        .map(_.getOrElse(Nil)).map(skipGroups) and
       Reads.pure(() => None)
     ) (Region)
 
@@ -33,9 +33,19 @@ object Koatuu {
     }
   }
 
-  val groupNames = Seq("Міста обласного підпорядкування", "Міста", "Райони", "Селища міського типу").map(_.toUpperCase)
+  val groupNames = Seq("Міста обласного підпорядкування", "Міста", "Райони", "Селища міського типу", "Населені пункти")
+    .map(_.toUpperCase)
 
   def groupPredicate(r: Region) = groupNames.exists(r.name.toUpperCase.startsWith)
+
+  def skipGroups(regions: Seq[Region]): Seq[Region] = {
+    regions flatMap {
+      _ match {
+        case r if groupPredicate(r) => skipGroups(r.regions)
+        case r => Seq(r)
+      }
+    }
+  }
 
   def shortCode(s: String, init: Int = 2) = s.take(init)
 

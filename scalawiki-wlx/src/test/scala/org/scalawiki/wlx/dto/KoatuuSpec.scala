@@ -47,7 +47,6 @@ class KoatuuSpec extends Specification {
       regions.size === 27
     }
 
-
     "contain level1 names" in {
       regions.map(_.name).toSet === topRegions.toSeq.map(_._2).toSet
     }
@@ -150,6 +149,12 @@ class KoatuuSpec extends Specification {
       val irpin = Ukraine.byId("32-109").get
       irpin.name === "Ірпінь"
       irpin.regions.map(_.name) === Seq("Ворзель", "Гостомель", "Коцюбинське")
+    }
+
+    "contain Obuhiv regions" in {
+      val obuhiv = Ukraine.byId("32-116").get
+      obuhiv.name === "Обухів"
+      obuhiv.regions.map(_.name) === Seq("Ленди", "Таценки")
     }
 
     "contain Simferopol regions" in {
