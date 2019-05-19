@@ -31,6 +31,16 @@ trait AdmDivision {
     regionById.get(regionId(monumentId)).flatMap(region => region.byId(monumentId).orElse(Some(region)))
   }
 
+  def byIdAndName(regionId: String, name: String) = {
+    byId(regionId).map { region =>
+      region.byName(name)
+    }
+  }
+
+  def byName(name: String): Seq[AdmDivision] = {
+    Seq(this).filter(_.name == name) ++ regions.flatMap(_.byName(name))
+  }
+
   def byRegion(monumentIds: Set[String]): Map[AdmDivision, Set[String]] = {
     val entries = monumentIds.flatMap(id => byId(id).map(adm => id -> adm))
 

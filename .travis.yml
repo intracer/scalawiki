@@ -18,10 +18,7 @@ scala:
 jdk:
   - oraclejdk8
 
-before_script:
-  - "echo $JAVA_OPTS"
-  - "export JAVA_OPTS=-Xmx4096m"
-script: "sbt clean coverage 'testOnly -- xonly timefactor 5' coverageReport"
+script: "sbt -jvm-opts .travis.jvmopts clean coverage 'testOnly -- xonly timefactor 5' coverageReport"
 after_success: 
   - sbt coveralls
   - bash <(curl -s https://codecov.io/bash)
