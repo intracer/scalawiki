@@ -71,7 +71,6 @@ object Rater {
 
 }
 
-
 class NumberOfMonuments(val stat: ContestStat) extends Rater {
   val monumentIds = stat.monumentDb.map(_.ids).getOrElse(Set.empty)
 

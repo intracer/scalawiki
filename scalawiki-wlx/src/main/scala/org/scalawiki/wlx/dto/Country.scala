@@ -17,11 +17,11 @@ trait AdmDivision {
 
   def parent: () => Option[AdmDivision] = () => None
 
-  val regionIds: SortedSet[String] = SortedSet(regions.map(_.code): _*)
+  lazy val regionIds: SortedSet[String] = SortedSet(regions.map(_.code): _*)
 
-  val regionNames: Seq[String] = regions.sortBy(_.code).map(_.name)
+  def regionNames: Seq[String] = regions.sortBy(_.code).map(_.name)
 
-  val regionById: Map[String, AdmDivision] = regions.groupBy(_.code).mapValues(_.head)
+  lazy val regionById: Map[String, AdmDivision] = regions.groupBy(_.code).mapValues(_.head)
 
   def regionName(regId: String) = regionById.get(regId).map(_.name).getOrElse("")
 
