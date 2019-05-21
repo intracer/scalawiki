@@ -7,7 +7,7 @@ import spray.util.pimpFuture
 class ImagesEmbeddedInMockServerSpec extends BaseMockServerSpec with QueryLibrary {
 
   "images" should {
-    "succesfully get images" in {
+    "successfully get images" in {
       val response = resourceAsString("/org/scalawiki/query/embeddedinIiPropRvProp.json")
 
       val action = Map(
@@ -32,7 +32,7 @@ class ImagesEmbeddedInMockServerSpec extends BaseMockServerSpec with QueryLibrar
       info.map(_.text.exists(_.contains("UkrainianNaturalHeritageSite"))) === List.fill(50)(true)
     }
 
-    "succesfully get images new rvslots format" in {
+    "successfully get images new rvslots format" in {
       val response = resourceAsString("/org/scalawiki/query/embeddedinIiPropRvPropRvSlots.json")
       val action = Map(
         "action" -> "query",
