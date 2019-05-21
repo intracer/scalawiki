@@ -85,9 +85,12 @@ lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= Seq(
-    "com.github.wookietreiber" %% "scala-chart" % ScalaChartV
+    "com.github.wookietreiber" %% "scala-chart" % ScalaChartV,
+    "com.storm-enroute" %% "scalameter" % ScalaMeterV % Test
   ),
-  javaOptions += "-Xmx4G")
+    testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
+    logBuffered := false
+  )
 
 lazy val sql = Project("scalawiki-sql", file("scalawiki-sql"))
   .dependsOn(core % "compile->compile;test->test")
@@ -99,11 +102,11 @@ lazy val sql = Project("scalawiki-sql", file("scalawiki-sql"))
   ))
 
 lazy val `http-extensions` = (project in file("http-extensions"))
-    .settings(commonSettings: _*)
-    .settings(libraryDependencies ++= Seq(
-      Library.Akka.actor,
-      Library.Akka.stream,
-      Library.Akka.http,
-      Library.Play.twirlApi,
-      "org.scalacheck" %% "scalacheck" % ScalaCheckV % Test
-    ))
+  .settings(commonSettings: _*)
+  .settings(libraryDependencies ++= Seq(
+    Library.Akka.actor,
+    Library.Akka.stream,
+    Library.Akka.http,
+    Library.Play.twirlApi,
+    "org.scalacheck" %% "scalacheck" % ScalaCheckV % Test
+  ))
