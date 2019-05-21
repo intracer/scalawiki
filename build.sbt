@@ -53,7 +53,8 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
       Library.Commons.codec,
       "org.jsoup" % "jsoup" % JSoupV,
       "com.softwaremill.retry" %% "retry" % RetryV,
-      "net.openhft" % "chronicle-map" % ChronicleMapV
+      "net.openhft" % "chronicle-map" % ChronicleMapV,
+      "com.concurrentthought.cla" %% "command-line-arguments" % CommandLineArgumentsV
     )
   }).dependsOn(`http-extensions`)
 
@@ -84,8 +85,7 @@ lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= Seq(
-    "com.github.wookietreiber" %% "scala-chart" % ScalaChartV,
-    "com.concurrentthought.cla" %% "command-line-arguments" % CommandLineArgumentsV
+    "com.github.wookietreiber" %% "scala-chart" % ScalaChartV
   ),
   javaOptions += "-Xmx4G")
 
