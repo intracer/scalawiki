@@ -6,10 +6,10 @@ import spray.util.pimpFuture
 
 class ImagesEmbeddedInMockServerSpec extends BaseMockServerSpec with QueryLibrary {
 
-  val response = resourceAsString("/org/scalawiki/query/embeddedinIiPropRvProp.json")
-
   "images" should {
     "succesfully get images" in {
+      val response = resourceAsString("/org/scalawiki/query/embeddedinIiPropRvProp.json")
+
       val action = Map(
         "action" -> "query",
         "geititle" -> "Template:UkrainianNaturalHeritageSite",
@@ -29,8 +29,32 @@ class ImagesEmbeddedInMockServerSpec extends BaseMockServerSpec with QueryLibrar
       val info = future.await
       info should not(beEmpty)
       info.size === 50
+      info.map(_.text.exists(_.contains("UkrainianNaturalHeritageSite"))) === List.fill(50)(true)
+    }
+
+    "succesfully get images new rvslots format" in {
+      val response = resourceAsString("/org/scalawiki/query/embeddedinIiPropRvPropRvSlots.json")
+      val action = Map(
+        "action" -> "query",
+        "geititle" -> "Template:UkrainianNaturalHeritageSite",
+        "prop" -> "info|revisions|imageinfo",
+        "rvprop" -> "ids|content|timestamp|user|userid",
+        "iiprop" -> "timestamp|user|size|metadata",
+        "generator" -> "embeddedin",
+        "geilimit" -> "500",
+        "rvslots" -> "main"
+      )
+
+      stubOk(action, response)
+
+      val bot = getBot
+
+      val future = bot.run(imagesByGenerator(generatorWithTemplate("UkrainianNaturalHeritageSite"), rvSlots = Some("main")))
+
+      val info = future.await
+      info should not(beEmpty)
+      info.size === 50
+      info.map(_.text.exists(_.contains("UkrainianNaturalHeritageSite"))) === List.fill(50)(true)
     }
   }
-
-
 }

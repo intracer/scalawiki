@@ -110,6 +110,7 @@ case class RvExpandTemplates(override val arg: Boolean = true) extends BooleanPa
 case class RvGenerateXml(override val arg: Boolean = true) extends BooleanParameter("rvgeneratexml", "Generate XML parse tree for revision content.") with RvParam
 case class RvParse(override val arg: Boolean = true) extends BooleanParameter("rvparse", "Parse revision content.") with RvParam
 case class RvSection(override val arg: Int) extends IntParameter("rvsection", "If rvprop=content is set, only retrieve the contents of this section.") with RvParam
+case class RvSlots(override val arg: String) extends StringParameter("rvslots", "rvslots") with RvParam
 
 // TODO single Enum value arg
 case class RvDiffTo(override val args: RvDiffToArg*) extends EnumParameter[RvDiffToArg]("rvdiffto", "Revision ID to diff each revision to.") with RvParam
