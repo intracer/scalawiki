@@ -20,7 +20,7 @@ import scala.util.Try
   */
 case class Contest(
                     contestType: ContestType,
-                    country: AdmDivision,
+                    country: AdmRegion,
                     year: Int,
                     startDate: String = "",
                     endDate: String = "",
