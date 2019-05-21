@@ -23,7 +23,6 @@ object Dependencies {
   val ScalaChartV = "0.5.1"
   val ScalaCheckV = "1.14.0"
   val ScalaCsvV = "1.3.4"
-  val ScalaMeterV = "0.10.1"
   val ScalaXmlV = "1.0.6"
   val Slf4jV = "1.7.25"
   val SwcEngineV = "3.1.7"
@@ -41,7 +40,6 @@ object Dependencies {
     Library.Akka.actor,
     "org.reactivestreams" % "reactive-streams" % ReactiveStreamsV,
     "org.scala-lang.modules" %% "scala-xml" % ScalaXmlV,
-    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0",
     "com.google.guava" % "guava" % GuavaV,
     Library.Commons.codec,
     Library.Commons.io,
@@ -53,7 +51,7 @@ object Dependencies {
     Library.Jackson.databind,
     "joda-time" % "joda-time" % JodaTimeV,
     "org.slf4j" % "slf4j-api" % Slf4jV,
-    "ch.qos.logback" % "logback-classic" % LogbackClassicV,
+    "ch.qos.logback" % "logback-classic" % LogbackClassicV
   )
 
   object Library {
@@ -119,7 +117,5 @@ object Dependencies {
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV
       val mock = "org.specs2" %% "specs2-mock" % SpecsV
     }
-
   }
-
 }
