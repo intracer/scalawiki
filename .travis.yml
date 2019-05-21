@@ -18,7 +18,7 @@ scala:
 jdk:
   - oraclejdk8
 
-script: "sbt clean coverage 'testOnly -- xonly timefactor 5' coverageReport"
+script: "sbt -jvm-opts .travis.jvmopts clean coverage 'testOnly -- xonly timefactor 5' coverageReport"
 after_success: 
   - sbt coveralls
   - bash <(curl -s https://codecov.io/bash)
