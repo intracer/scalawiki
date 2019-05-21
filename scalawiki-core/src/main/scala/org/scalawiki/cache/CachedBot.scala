@@ -33,9 +33,9 @@ class Cache(name: String, entries: Int = 12 * 1024, valueSize: Int = 128 * 1024,
     builder.create()
   }
 
-  def containsKey(key: String)= cache.containsKey(key)
-  def remove(key: String) = cache.remove(key)
-  def computeIfAbsent(key: String, fn: String => String) = cache.computeIfAbsent(key, new Caller(fn))
+  def containsKey(key: String): Boolean = cache.containsKey(key)
+  def remove(key: String): String = cache.remove(key)
+  def computeIfAbsent(key: String, fn: String => String): String = cache.computeIfAbsent(key, new Caller(fn))
 
 }
 
