@@ -86,7 +86,8 @@ lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
   .settings(libraryDependencies ++= Seq(
     "com.github.wookietreiber" %% "scala-chart" % ScalaChartV,
     "com.concurrentthought.cla" %% "command-line-arguments" % CommandLineArgumentsV
-  ))
+  ),
+  javaOptions += "-Xmx4G")
 
 lazy val sql = Project("scalawiki-sql", file("scalawiki-sql"))
   .dependsOn(core % "compile->compile;test->test")
