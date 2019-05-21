@@ -102,7 +102,7 @@ case class RevisionRead(override val pageId: Option[Long])
         ) (Contributor.apply _) ~
       (__ \ "timestamp").readNullable[ZonedDateTime](zonedDateTimeReads) ~
       (__ \ "comment").readNullable[String] ~
-      (__ \ "*").readNullable[String] ~
+      (__ \\ "*").readNullable[String] ~
       (__ \ "size").readNullable[Long] ~
       (__ \ "sha1").readNullable[String] //~
     //Reads.pure[Option[Long]](None) // textId
