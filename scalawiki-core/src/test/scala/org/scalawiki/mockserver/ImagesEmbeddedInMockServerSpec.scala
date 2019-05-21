@@ -55,6 +55,7 @@ class ImagesEmbeddedInMockServerSpec extends BaseMockServerSpec with QueryLibrar
       info should not(beEmpty)
       info.size === 50
       info.map(_.text.exists(_.contains("UkrainianNaturalHeritageSite"))) === List.fill(50)(true)
+      info.map(_.images.nonEmpty) === List.fill(50)(true)
     }
   }
 }
