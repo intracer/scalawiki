@@ -1,0 +1,864 @@
+{
+  "warnings": {
+    "main": {
+      "*": "Subscribe to the mediawiki-api-announce mailing list at <https://lists.wikimedia.org/mailman/listinfo/mediawiki-api-announce> for notice of API deprecations and breaking changes. Use [[Special:ApiFeatureUsage]] to see usage of deprecated features by your application."
+    },
+    "revisions": {
+      "*": "Because \"rvslots\" was not specified, a legacy format has been used for the output. This format is deprecated, and in the future the new format will always be used."
+    }
+  },
+  "query": {
+    "pages": {
+      "1316924": {
+        "pageid": 1316924,
+        "ns": 6,
+        "title": "File:Ua river seret mouth.jpg",
+        "revisions": [
+          {
+            "revid": 184645165,
+            "parentid": 156472686,
+            "user": "Mykola Swarnyk",
+            "userid": 2239236,
+            "timestamp": "2016-01-14T02:54:17Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "== {{int:filedesc}} ==\n{{Information\n|Description={{UkrainianNaturalHeritageSite|61-208-5004}}\n{{uk|1=Дністровський каньйон у місці впадіння Серету (с. Городок Заліщицького району)}}\n{{de|Mündung des Seret (rechts) in den Dnister}}\n|Source={{Own}}\n|Date=2006-10-13\n|Author=Wikisax\n}}\n\n[[Category:Dniester Canyon]]\n[[Category:Seret River]]\n[[Category:Confluences in Ukraine]]\n[[Category:Natural heritage sites in Zalishchyky Raion]]\n\n== {{int:license-header}} ==\n{{self|cc-by-sa-2.5}}"
+          }
+        ]
+      },
+      "1317333": {
+        "pageid": 1317333,
+        "ns": 6,
+        "title": "File:Ua river dnestr piliptsche.jpg",
+        "revisions": [
+          {
+            "revid": 312257667,
+            "parentid": 312257564,
+            "user": "Бучач-Львів",
+            "userid": 3092441,
+            "timestamp": "2018-07-24T06:55:38Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "== {{int:filedesc}} ==\n{{Information\n|Description={{UkrainianNaturalHeritageSite|61-208-5004}}\n{{uk|1=Дністер поблизу с. [[:uk:Пилипче|Пилипче]] [[:uk:Борщівський район|Борщівського району]] [[:uk:Тернопільська область|Тернопільської області]], [[:en:Ukraine|Україна]]}}\n{{de|Schleife des Dnestr beim Dorf Piliptsche zwischen [[:de:Salischtschyky|Salischtschyky]] und Melnyzja-Podilska}}\n|Source={{Own}}\n|Date=2006-10-14\n|Author=Wikisax\n}}\n\n[[Category:Dniester Canyon]]\n\n== {{int:license-header}} ==\n{{self|cc-by-sa-2.5}}"
+          }
+        ]
+      },
+      "2255726": {
+        "pageid": 2255726,
+        "ns": 6,
+        "title": "File:Kiev Orikhuvatka 070617.jpg",
+        "revisions": [
+          {
+            "revid": 197233497,
+            "parentid": 137113477,
+            "user": "BotAdventures",
+            "userid": 4447763,
+            "timestamp": "2016-05-26T02:45:00Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "== {{int:filedesc}} ==\n{{Information\n|Description=Kiev, Golosiivsky park/forest, Orikhuvatka stream {{UkrainianNaturalHeritageSite|80-361-5005}}\n|Source={{Own}}\n|Date=2007-06-17\n|Author= [[User:Dgri|Dgri]]\n}}\n[[Category:Golosiivsky Park and Forest]]\n[[Category:Horikhuvatka River]]\n\n== {{int:license-header}} ==\n{{Self|GFDL|Cc-by-sa-3.0-migrated|cc-by-sa-2.5,2.0,1.0|author=I, [[User:Dgri|Dgri]]}}\n[[Category:Taken with Sony Ericsson K790]]"
+          }
+        ]
+      },
+      "4278424": {
+        "pageid": 4278424,
+        "ns": 6,
+        "title": "File:Ternopil stav teper.jpg",
+        "revisions": [
+          {
+            "revid": 325845267,
+            "parentid": 204986245,
+            "user": "Микола Василечко",
+            "userid": 1760561,
+            "timestamp": "2018-10-29T18:17:21Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "{{Information\n|Description={{en|Ternopil Pond.}}\n{{ru|Яхта «Світлана» на Тернопольском пруду и Остров любви.}}\n{{uk|Яхта «Світлана» на [[:uk:Тернопільський став|Тернопільському ставі]] та Острів кохання.}}\n{{UkrainianNaturalHeritageSite|61-101-5008}}\n|Source={{Own}}\n|Date=2006-07-04\n|Author=[[User:Bumbaka|Bumbaka]]\n|Permission=Released into the public domain (by the author).\n|other_versions=\n}}\n\n== {{int:license-header}} ==\n{{PD-user|Bumbaka|uk}}\n\n== {{original upload log}} ==\n{{original description page|uk.wikipedia|Ternopil_stav_teper.jpg}}\n* 2007-03-15 16:54 [[:uk:User:Tomahiv|Tomahiv]] 1152&times;864&times;8 (463951 bytes) ''<nowiki>{{ÐÐ¾Ð±ÑÐ°Ð¶ÐµÐ½Ð½Ñ |ÐÐ°Ð·Ð²Ð°=Ð¢ÐµÑÐ½Ð¾Ð¿ÑÐ»ÑÑÑÐºÐ¸Ð¹ Ð¡ÑÐ°Ð² |ÐÐ¿Ð¸Ñ=Ð¢ÐµÑÐ½Ð¾Ð¿ÑÐ»ÑÑÑÐºÐ¸Ð¹ ÑÑÐ°Ð² |ÐÐ²ÑÐ¾Ñ=bumbaka |ÐÐ¶ÐµÑÐµÐ»Ð¾=bumbaka |Ð§Ð°Ñ ÑÑÐ²Ð¾ÑÐµÐ½Ð½Ñ=2006 |ÐÑÑÐµÐ½Ð·ÑÑ={{PD-self}} }} [[ÐÐ°ÑÐµÐ³Ð¾ÑÑÑ:ÐÐ¾</nowiki>''\n\n[[Category:Ternopil Pond]]\n[[Category:Svitlana (yacht, Ternopil)]]\n[[Category:Kohannia Island, Ternopil]]\n[[Category:July 2006 in Ternopil]]\n[[Category:Taken with Sony DCR-HC42]]\n[[Category:Sky over Ternopil]]"
+          }
+        ]
+      },
+      "4278522": {
+        "pageid": 4278522,
+        "ns": 6,
+        "title": "File:Ternopil Lake11.jpg",
+        "revisions": [
+          {
+            "revid": 341731703,
+            "parentid": 326155227,
+            "user": "FrescoBot",
+            "userid": 1047183,
+            "timestamp": "2019-03-06T16:43:36Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "== {{int:filedesc}} ==\n{{Information\n|Description={{en|Ternopil Lake}}\n{{Ru|Тернопольский пруд}}\n{{uk|1=[[:uk:Тернопільський став|Тернопільський став]] і Кутківецький ліс у [[:uk:Регіональний ландшафтний парк «Загребелля»|регіональному ландшафтному парку «Загребелля»]] [[:uk:Тернопіль|м. Тернополя]].}}{{UkrainianNaturalHeritageSite|61-101-5008}}\n|Source={{Own}}\n|Author={{User:Ahonc/Author}}\n|Date=2007-08-13\n|Permission= Creative Commons Attribution ShareAlike\n|other_versions=\n}}\n\n[[Category:Ternopil Pond and Kutkivtsi Forest]]\n== {{int:license-header}} ==\n{{Cc-by-sa-all}}\n[[Category:Unassessed QI candidates]]\n[[Category:August 2007 in Ternopil]]\n[[Category:13 August in Ternopil Oblast]]\n[[Category:Chumatska Street, Ternopil]]\n[[Category:Hotel \"Halychyna\"]]\n[[Category:2 Hetman Mazepa Street, Ternopil]]\n[[Category:23 Chumatska Street, Ternopil]]\n[[Category:27 Chumatska Street, Ternopil]]"
+          }
+        ]
+      },
+      "4280006": {
+        "pageid": 4280006,
+        "ns": 6,
+        "title": "File:Ternopil Lake18.jpg",
+        "revisions": [
+          {
+            "revid": 323052578,
+            "parentid": 323052569,
+            "user": "Микола Василечко",
+            "userid": 1760561,
+            "timestamp": "2018-10-06T07:00:05Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "== {{int:filedesc}} ==\n{{Information\n|Description={{en|Ternopil Lake}}\n{{Ru|Тернопольский пруд}}\n{{uk|1=[[:uk:Тернопільський став|Тернопільський став]] і Кутківецький ліс у [[:uk:Регіональний ландшафтний парк «Загребелля»|регіональному ландшафтному парку «Загребелля»]] [[:uk:Тернопіль|м. Тернополя]].}}{{UkrainianNaturalHeritageSite|61-101-5008}}\n|Source={{Own}}\n|Author={{User:Ahonc/Author}}\n|Date=2007-08-13\n|Permission= Creative Commons Attribution ShareAlike\n|other_versions=\n}}\n\n[[Category:Ternopil Pond and Kutkivtsi Forest]]\n[[Category:Railings of Ternopil Pond]]\n[[Category:August 2007 in Ternopil]]\n[[Category:13 August in Ternopil Oblast]]\n== {{int:license-header}} ==\n{{Cc-by-sa-all}}"
+          }
+        ]
+      },
+      "4284999": {
+        "pageid": 4284999,
+        "ns": 6,
+        "title": "File:Ternopil Lake9.jpg",
+        "revisions": [
+          {
+            "revid": 325845264,
+            "parentid": 323052582,
+            "user": "Микола Василечко",
+            "userid": 1760561,
+            "timestamp": "2018-10-29T18:17:16Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "== {{int:filedesc}} ==\n{{Information\n|Description={{en|Kohannia Island and Ternopil Pond.}}\n{{ru|Остров любви и Тернопольский пруд.}}\n{{uk|Острів кохання і [[:uk:Тернопільський став|Тернопільський став]].}}\n{{UkrainianNaturalHeritageSite|61-101-5008}}\n|Source={{Own}}\n|Author={{User:Ahonc/Author}}\n|Date=2007-08-13\n|Permission= Creative Commons Attribution ShareAlike\n|other_versions=\n}}\n{{Location|49|33|15.1|N|25|35|14.3|E}}\n\n== {{int:license-header}} ==\n{{Cc-by-sa-all}}\n\n[[Category:Ternopil Pond]]\n[[Category:Kohannia Island, Ternopil]]\n[[Category:August 2007 in Ternopil]]\n[[Category:13 August in Ternopil Oblast]]\n[[Category:Sky over Ternopil]]"
+          }
+        ]
+      },
+      "4303899": {
+        "pageid": 4303899,
+        "ns": 6,
+        "title": "File:Chernolesskoe raskopki.JPG",
+        "revisions": [
+          {
+            "revid": 212446859,
+            "parentid": 128869879,
+            "user": "Tat adv",
+            "userid": 6230197,
+            "timestamp": "2016-11-07T19:12:14Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "== {{int:filedesc}} ==\n{{Information\n|Description={{en|1=Archeological research of Chernolesskoe antient city - }}\n{{UkrainianNaturalHeritageSite|35-222-5007}}\n|Source={{Own}}\n|Author=Igor Luzhanov\n|Date=2008-06-25\n|Permission=\n|other_versions=\n}}\n\n== {{int:license-header}} ==\n{{self|cc-by-sa-3.0}}\n\n[[Category:Forests in Kirovohrad Oblast]]\n[[Category:Chornyi Lis Swamp]]\n[[Category:Marshes of Ukraine]]"
+          }
+        ]
+      },
+      "4798235": {
+        "pageid": 4798235,
+        "ns": 6,
+        "title": "File:Остров Любви Тернополь.jpg",
+        "revisions": [
+          {
+            "revid": 342681360,
+            "parentid": 314472312,
+            "user": "Themightyquill",
+            "userid": 43986,
+            "timestamp": "2019-03-14T09:11:01Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "{{Information\n|Description={{en|Kohannia Island and Ternopil Pond.}}\n{{ru|Остров любви и Тернопольский пруд.}}\n{{uk|Острів кохання і [[:uk:Тернопільський став|Тернопільський став]].}}\n{{UkrainianNaturalHeritageSite|61-101-5008}}\n|Source=Transferred from [http://ru.wikipedia.org ru.wikipedia]; transferred to Commons by [[User:Ahonc]] using [http://tools.wikimedia.de/~magnus/commonshelper.php CommonsHelper].\n|Date=2007-09-23\n|Author=Original uploader was [[:ru:User:Водник|Водник]] at [http://ru.wikipedia.org ru.wikipedia]\n|Permission=CC-BY-SA-3.0.\n|other_versions=\n}}\n\n== {{int:license-header}} ==\n{{self|author=[[:ru:User:Водник|Водник]] at [http://ru.wikipedia.org ru.wikipedia]|Cc-by-sa-3.0}}\n\n== {{original upload log}} ==\n{{original description page|ru.wikipedia|%D0%9E%D1%81%D1%82%D1%80%D0%BE%D0%B2_%D0%9B%D1%8E%D0%B1%D0%B2%D0%B8_%D0%A2%D0%B5%D1%80%D0%BD%D0%BE%D0%BF%D0%BE%D0%BB%D1%8C.jpg}}\n* 2008-09-15 21:04 [[:ru:User:Водник|Водник]] 600×450×??? (166758 bytes) ''<nowiki>{{Изображение | Описание       = Остров любви на Тернопольском пруду | Автор          = Участник:Водник | Время создания = 2007, сентябрь | Источник       = </nowiki>''\n\n[[Category:Ternopil Pond]]\n[[Category:Kohannia Island, Ternopil]]\n[[Category:September 2007 in Ternopil]]\n[[Category:2007-09-23]]"
+          }
+        ]
+      },
+      "7333069": {
+        "pageid": 7333069,
+        "ns": 6,
+        "title": "File:I vsel.jpg",
+        "revisions": [
+          {
+            "revid": 211006385,
+            "parentid": 160031955,
+            "user": "NataliaRy",
+            "userid": 6200633,
+            "timestamp": "2016-10-27T07:10:36Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "== {{int:filedesc}} ==\n{{Information\n|Description={{uk|1=Гідрологічний заказник загальнодержавного значення \"[[:uk:Великоселецький заказник|Великоселецький]]\"}}{{UkrainianNaturalHeritageSite|53-236-5003}}\n|Source={{own}}\n|Author=[[User:mpas|Mpas]]\n|Date=2009-07-18\n|Permission=\n|other_versions=\n}}\n\n== {{int:license-header}} ==\n{{self|GFDL|cc-by-sa-all|migration=redundant}}\n\n[[Category:Velykoseletskyi Hydrological Reserve]]\n[[Category:Images by Mpas]]\n[[Category:Sula River (Ukraine)]]"
+          }
+        ]
+      },
+      "7333249": {
+        "pageid": 7333249,
+        "ns": 6,
+        "title": "File:I mperes.jpg",
+        "revisions": [
+          {
+            "revid": 159918710,
+            "parentid": 159918594,
+            "user": "Figure19",
+            "userid": 1001310,
+            "timestamp": "2015-05-05T16:17:35Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "== {{int:filedesc}} ==\n{{Information\n|Description={{uk|1=Ботанічний заказник загальнодержавного значення \"МАЛОПЕРЕЩЕПИНСЬКИЙ\"}}{{UkrainianNaturalHeritageSite|53-234-5004}}\n|Source={{own}}\n|Author=[[User:Mpas|Mpas]]\n|Date=2009-07-18\n|Permission=\n|other_versions=\n}}\n\n== {{int:license-header}} ==\n{{self|GFDL|cc-by-sa-all|migration=redundant}}\n\n[[Category:Malopereshchepynskyi Botanic Reserve]]\n[[Category:Images by Mpas]]"
+          }
+        ]
+      },
+      "11862110": {
+        "pageid": 11862110,
+        "ns": 6,
+        "title": "File:Велика Вись.jpg",
+        "revisions": [
+          {
+            "revid": 351155959,
+            "parentid": 351047371,
+            "user": "SchlurcherBot",
+            "userid": 771189,
+            "timestamp": "2019-05-19T23:26:10Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "== {{int:filedesc}} ==\n{{Information\n|Description={{uk|Велика Вись}}\n{{UkrainianNaturalHeritageSite|35-238-5001}}\n{{ru|Большая Высь}}\n{{en|Velyka Vys' River}}\n|Source={{transferred from|uk.wikipedia|Innotata|CommonsHelper}}\n|Date={{original upload date|2009-07-27}}\n|Author={{original uploader|Elvis|wikipedia|uk}}\n|Permission=\n|other_versions=\n}}\n\n== {{int:license-header}} ==\n{{Cc-by-sa-2.5}}\n\n== {{Original upload log}} ==\n{{original description page|uk.wikipedia|04072008959.jpg}}\n* 2010-07-31 19:32 [[:uk:User:Elvis|Elvis]] 2048×1536× (406820 bytes) ''<nowiki>{{Зображення |Назва=Велика Вись |Опис= |Автор=Elvis |Джерело=Elvis |Час створення=2008 |Ліцензія={{cc-by-sa-2.5}} }} [[Категорія:Зображення:Новомиргород]]</nowiki>''\n* 2009-07-27 16:37 [[:uk:User:Elvis|Elvis]] 2048×1536× (457394 bytes) ''<nowiki>{{Зображення |Назва=Велика Вись |Опис= |Автор=Elvis |Джерело=Elvis |Час створення=2009 |Ліцензія={{PD-self}} }} [[Категорія:Зображення:Кіровоградська облас</nowiki>''\n\n[[Category:Novomyrhorod]]\n[[Category:Velyka Vys]]\n[[Category:Panski Hory Natural Reserve]]"
+          }
+        ]
+      },
+      "13291847": {
+        "pageid": 13291847,
+        "ns": 6,
+        "title": "File:Русилівські водоспади.JPG",
+        "revisions": [
+          {
+            "revid": 336424235,
+            "parentid": 174441323,
+            "user": "Микола Василечко",
+            "userid": 1760561,
+            "timestamp": "2019-01-25T20:31:13Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "{{Information\n|description={{en|1=Rusyliv Waterfalls.}}{{uk|1=«[[:uk:Русилівські водоспади|Каскад русилівських водоспадів]]» у кварталі 50 виділі 4 лісового урочища «Язловець» Язловецького лісництва біля с. Русилів Бучацького району Тернопільської області.}}{{ru|1=Каскад русиловских водопадов.}}{{UkrainianNaturalHeritageSite|61-212-5024}}\n|Source={{transferred from|uk.wikipedia|Hugo.arg|CommonsHelper}}\n|Date={{original upload date|2009-11-12}}\n|Author={{original uploader|Tomahiv|wikipedia|uk}}\n|Permission=\n|other_versions=\n}}\n\n== {{int:license-header}} ==\n{{Attribution}}\n\n== {{Original upload log}} ==\n{{original description page|uk.wikipedia|%D0%A0%D1%83%D1%81%D0%B8%D0%BB%D1%96%D0%B2%D1%81%D1%8C%D0%BA%D1%96_%D0%B2%D0%BE%D0%B4%D0%BE%D1%81%D0%BF%D0%B0%D0%B4%D0%B8.JPG}}\n* 2009-11-12 03:53 [[:uk:User:Tomahiv|Tomahiv]] 1280×853× (817800 bytes) ''<nowiki>{{Зображення |Назва=Русилівські водоспади |Опис=Русилівські водоспади |Автор=[[Користувач:Bumbaka]] |Джерело=Bumbaka photo collection |Час створення=2008 |Ліц�</nowiki>''\n\n[[Category:Rusyliv Waterfalls]]"
+          }
+        ]
+      },
+      "15419258": {
+        "pageid": 15419258,
+        "ns": 6,
+        "title": "File:Urochische Kruglyk.jpg",
+        "revisions": [
+          {
+            "revid": 323267243,
+            "parentid": 312110694,
+            "user": "MSha",
+            "userid": 1199673,
+            "timestamp": "2018-10-08T07:50:58Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "== {{int:filedesc}} ==\n{{Information\n|Description    ={{en|1=Urochische Kruglyk}}\n{{uk|1=Урочище [[:uk:Круглик (урочище)|Круглик]]}}{{UkrainianNaturalHeritageSite|68-221-5021}}\n|Source         ={{own}}\n|Author         =[[User:ValeriySh|ValeriySh]]\n|Date           =2011-06-4\n|Permission     =\n|other_versions =\n}}\n\n== {{int:license-header}} ==\n{{self|GFDL|cc-by-3.0}}\n\n\n[[Category:Urochysche Kruglyk]]\n[[Category:Photographs by ValeriySh]]"
+          }
+        ]
+      },
+      "15803913": {
+        "pageid": 15803913,
+        "ns": 6,
+        "title": "File:Urochische Kruglyk-2.JPG",
+        "revisions": [
+          {
+            "revid": 323267299,
+            "parentid": 204009624,
+            "user": "MSha",
+            "userid": 1199673,
+            "timestamp": "2018-10-08T07:51:52Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "== {{int:filedesc}} ==\n{{Information\n|Description    = {{en|1=Urochische Kruglyk. Spruces}}\n{{uk|1=[[:uk:Круглик (урочище)|Круглик]]. Столітні ялини}}{{UkrainianNaturalHeritageSite|68-221-5021}}\n|Source         = {{own}}\n|Author         = [[User:ValeriySh|ValeriySh]]\n|Date           = 2011-06-04\n|Permission     =\n|other_versions =\n}}\n\n\n[[Category:Urochysche Kruglyk]]\n\n== {{int:license-header}} ==\n{{self|GFDL|cc-by-3.0}}\n[[Category:Photographs by ValeriySh]]"
+          }
+        ]
+      },
+      "15804003": {
+        "pageid": 15804003,
+        "ns": 6,
+        "title": "File:Urochische Kruglyk-3.JPG",
+        "revisions": [
+          {
+            "revid": 323267320,
+            "parentid": 312110699,
+            "user": "MSha",
+            "userid": 1199673,
+            "timestamp": "2018-10-08T07:52:04Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "== {{int:filedesc}} ==\n{{Information\n|Description    ={{en|1=Urochische Kruglyk}}\n{{uk|1=[[:uk:Круглик (урочище)|Круглик]]. [[:uk:Листяний ліс|Листяний ліс]]}}{{UkrainianNaturalHeritageSite|68-221-5021}}\n|Source         ={{own}}\n|Author         =[[User:ValeriySh|ValeriySh]]\n|Date           =2011-06-4\n|Permission     =\n|other_versions =\n}}\n\n\n[[Category:Urochysche Kruglyk]]\n\n== {{int:license-header}} ==\n{{self|GFDL|cc-by-3.0}}\n[[Category:Photographs by ValeriySh]]"
+          }
+        ]
+      },
+      "19377320": {
+        "pageid": 19377320,
+        "ns": 6,
+        "title": "File:Big Zgorany lake.jpg",
+        "revisions": [
+          {
+            "revid": 218206813,
+            "parentid": 124657254,
+            "user": "SchlurcherBot",
+            "userid": 771189,
+            "timestamp": "2016-11-23T15:20:35Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=Велике Згоранське озеро. Любомльський район. Волинь. Україна.}}{{en|1=Big Zgorany lake. Liuboml Raion. Volyn Oblast. Ukraine.}}{{UkrainianNaturalHeritageSite|07-233-5021}}\n|date=2011-05-29\n|source={{own}}\n|author=[[User:Sparrov|Sparrov]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:Zhorany Lakes Reserve]]"
+          }
+        ]
+      },
+      "20001735": {
+        "pageid": 20001735,
+        "ns": 6,
+        "title": "File:Pluzhne Park.JPG",
+        "revisions": [
+          {
+            "revid": 267851079,
+            "parentid": 221482323,
+            "user": "MSha",
+            "userid": 1199673,
+            "timestamp": "2017-11-17T07:23:07Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Pluzhne. Old Park. 2012}}\n{{uk|1=Плужне. Старий парк маєтку князів Яблоновських. 2012 рік}}{{UkrainianNaturalHeritageSite|68-221-5014}}\n|date=2012-06-20\n|source={{own}}\n|author=[[User:ValeriySh|ValeriySh]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:Tyszkiewicz Palace, Pluzhne]]\n[[Category:Photographs by ValeriySh]]\n[[Category:Pluzhne Park]]"
+          }
+        ]
+      },
+      "20019647": {
+        "pageid": 20019647,
+        "ns": 6,
+        "title": "File:Pluzhne Stable.JPG",
+        "revisions": [
+          {
+            "revid": 267851109,
+            "parentid": 237128423,
+            "user": "MSha",
+            "userid": 1199673,
+            "timestamp": "2017-11-17T07:23:26Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=[[w:en:Pluzhne|Pluzhne]]. Palace [[w:en:Jabłonowski family|Jabłonowski family]]. [[Stable]]}}\n{{uk|1=[[w:uk:Плужне|Плужне]]. Приміщення конюшні маєтку князів [[w:uk:Яблоновські|Яблоновських]] (в останні часи тут була ветлікарня)}}{{UkrainianNaturalHeritageSite|68-221-5014}}\n|date=2012-06-20\n|source={{own}}\n|author=[[User:ValeriySh|ValeriySh]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:Tyszkiewicz Palace, Pluzhne]]\n[[Category:Photographs by ValeriySh]]\n[[Category:Cultural heritage monuments in Pluzhne]]\n[[Category:Pluzhne Park]]"
+          }
+        ]
+      },
+      "20635979": {
+        "pageid": 20635979,
+        "ns": 6,
+        "title": "File:Swans on the Big Zhoranske Lake.JPG",
+        "revisions": [
+          {
+            "revid": 330233378,
+            "parentid": 217557029,
+            "user": "Ruff tuff cream puff",
+            "userid": 4026111,
+            "timestamp": "2018-12-04T05:02:03Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Swans on the Big Zhoranske Lake}}\n{{uk|1=Лебеді на Великому Згоранському озері}}{{UkrainianNaturalHeritageSite|07-233-5021}}\n|date=2011-06-07\n|source={{own}}\n|author=[[User:GSerhiy|GSerhiy]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:Zhorany Lakes Reserve]]\n[[Category:Landscapes with swimming Cygnus olor]]"
+          }
+        ]
+      },
+      "21165310": {
+        "pageid": 21165310,
+        "ns": 6,
+        "title": "File:Липа 1.JPG",
+        "revisions": [
+          {
+            "revid": 263625242,
+            "parentid": 216298517,
+            "user": "AHbot",
+            "userid": 313688,
+            "timestamp": "2017-10-20T10:36:55Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{UkrainianNaturalHeritageSite|80-391-5007}}\n|date=2012-09-07 18:45:52\n|source={{own}}\n|author=[[User:Kosh12|Kosh12]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n{{Object location dec|50.4575418|30.5172132|region:UA_type:landmark_scale:1500}}<!-- Location from http://uk.wikipedia.org/w/index.php?title=Вікіпедія:Вікі_любить_пам'ятки/Київ/Шевченківський_(А—Є)&redirect=no&useskin=monobook&oldid=10480641 -->\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n{{Wiki Loves Monuments 2012|ua}}\n[[Category:Petro Mohyla Tilia]]"
+          }
+        ]
+      },
+      "21165311": {
+        "pageid": 21165311,
+        "ns": 6,
+        "title": "File:Липа 2.JPG",
+        "revisions": [
+          {
+            "revid": 263625243,
+            "parentid": 216298528,
+            "user": "AHbot",
+            "userid": 313688,
+            "timestamp": "2017-10-20T10:36:56Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{UkrainianNaturalHeritageSite|80-391-5007}}\n|date=2012-09-07 18:51:48\n|source={{own}}\n|author=[[User:Kosh12|Kosh12]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n{{Object location dec|50.4575418|30.5172132|region:UA_type:landmark_scale:1500}}<!-- Location from http://uk.wikipedia.org/w/index.php?title=Вікіпедія:Вікі_любить_пам'ятки/Київ/Шевченківський_(А—Є)&redirect=no&useskin=monobook&oldid=10480641 -->\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n{{Wiki Loves Monuments 2012|ua}}\n[[Category:Petro Mohyla Tilia]]"
+          }
+        ]
+      },
+      "21203911": {
+        "pageid": 21203911,
+        "ns": 6,
+        "title": "File:Віковий дуб (160-річний).JPG",
+        "revisions": [
+          {
+            "revid": 215717065,
+            "parentid": 208245246,
+            "user": "AkBot",
+            "userid": 1178453,
+            "timestamp": "2016-11-19T14:56:51Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{UkrainianNaturalHeritageSite|80-382-5010}}\n|date=2012-09-09 11:20:58\n|source={{own}}\n|author=[[User:Віктор|Віктор]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n{{Object location dec|50.4375976|30.5466638|region:UA_type:landmark_scale:1500}}<!-- Location from http://uk.wikipedia.org/w/index.php?title=Вікіпедія:Вікі_любить_пам'ятки/Київ/Печерський&redirect=no&useskin=monobook&oldid=10467575 -->\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n{{Wiki Loves Monuments 2012|ua}}\n[[Category:Quercus on Suvorova Street 14/12, Kiev]]"
+          }
+        ]
+      },
+      "21290371": {
+        "pageid": 21290371,
+        "ns": 6,
+        "title": "File:\"Пантеры\", ск. В.А.Ватагин, 1932 г. Харьковский зоопарк.jpg",
+        "revisions": [
+          {
+            "revid": 248796024,
+            "parentid": 248772380,
+            "user": "Elkost",
+            "userid": 224239,
+            "timestamp": "2017-06-22T16:43:11Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Location dec|50.0020584|36.2295405}}\n{{Information\n|description={{ru|1=Архитектор В.П.Ширшов и скульптор В.А.Ватагин. Уничтожена во время войны и восстановлена в 1984 г. С.А.Якубовичем}}{{UkrainianNaturalHeritageSite|63-101-5010}}\n|date=2012-09-13 02:00:18\n|source={{own}}\n|author=[[User:Avaness|Avaness]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n{{Wiki Loves Monuments 2012|ua}}\n\n[[Category:Vasily Vatagin]]\n[[Category:Statues of panthers in Ukraine]]\n[[Category:Statues in Kharkiv]]\n[[Category:2012 in Kharkiv]]\n[[Category:Kharkiv Zoo]]"
+          }
+        ]
+      },
+      "21317609": {
+        "pageid": 21317609,
+        "ns": 6,
+        "title": "File:Вікова липа.JPG",
+        "revisions": [
+          {
+            "revid": 263625244,
+            "parentid": 215716326,
+            "user": "AHbot",
+            "userid": 313688,
+            "timestamp": "2017-10-20T10:36:57Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Location dec|50.4562|30.5132}}\n{{Information\n|description={{UkrainianNaturalHeritageSite|80-391-5007}}\n|date=2012-03-09 14:57:36\n|source={{own}}\n|author=[[User:Okosmin|Okosmin]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n{{Wiki Loves Monuments 2012|ua}}\n[[Category:Petro Mohyla Tilia]]"
+          }
+        ]
+      },
+      "21459725": {
+        "pageid": 21459725,
+        "ns": 6,
+        "title": "File:Вид на озеро.JPG",
+        "revisions": [
+          {
+            "revid": 215424068,
+            "parentid": 160394980,
+            "user": "AkBot",
+            "userid": 1178453,
+            "timestamp": "2016-11-18T17:32:40Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=[[:uk:Тернопільський став|Тернопільський став]] [[:uk:Регіональний ландшафтний парк «Загребелля»|регіонального ландшафтного парку «Загребелля»]] і [[:uk:Парк імені Тараса Шевченка (Тернопіль)|парк імені Тараса Шевченка]] в [[:uk:Тернопіль|м. Тернополі]].}}{{UkrainianNaturalHeritageSite|61-101-5008}}\n|date=2012-09-19 20:26:43\n|source={{own}}\n|author=[[User:Romyaldo|Romyaldo]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:Ternopil Pond and Taras Shevchenko park]]\n[[Category:Arbour on waterfront Ternopil Pond]]\n[[Category:July 2011 in Ternopil]]"
+          }
+        ]
+      },
+      "21460133": {
+        "pageid": 21460133,
+        "ns": 6,
+        "title": "File:Островок.JPG",
+        "revisions": [
+          {
+            "revid": 217291741,
+            "parentid": 160392420,
+            "user": "AkBot",
+            "userid": 1178453,
+            "timestamp": "2016-11-22T09:24:14Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|Kohannia Island and Ternopil Pond.}}\n{{ru|Остров любви и Тернопольский пруд.}}\n{{uk|Острів кохання і [[:uk:Тернопільський став|Тернопільський став]].}}\n{{UkrainianNaturalHeritageSite|61-101-5008}}\n|date=2012-09-19 1229:50\n|source={{own}}\n|author=[[User:Romyaldo|Romyaldo]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:Ternopil Pond]]\n[[Category:Kohannia Island, Ternopil]]\n[[Category:July 2011 in Ternopil]]"
+          }
+        ]
+      },
+      "21460508": {
+        "pageid": 21460508,
+        "ns": 6,
+        "title": "File:Острів мрій.JPG",
+        "revisions": [
+          {
+            "revid": 325845294,
+            "parentid": 217293428,
+            "user": "Микола Василечко",
+            "userid": 1760561,
+            "timestamp": "2018-10-29T18:17:48Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|Kohannia Island and Ternopil Pond.}}\n{{ru|Остров любви и Тернопольский пруд.}}\n{{uk|Острів кохання і набережна [[:uk:Тернопільський став|Тернопільського ставу]].}}\n{{UkrainianNaturalHeritageSite|61-101-5008}}\n|date=2012-09-19 12:28:01\n|source={{own}}\n|author=[[User:Romyaldo|Romyaldo]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:Ternopil Pond and Taras Shevchenko park]]\n[[Category:Metal railings in Ternopil]]\n[[Category:Railings of Ternopil Pond]]\n[[Category:Arbour on waterfront Ternopil Pond]]\n[[Category:Ternopil Pond embankment]]\n[[Category:Kohannia Island, Ternopil]]\n[[Category:July 2011 in Ternopil]]\n[[Category:Blue sky in Ternopil]]"
+          }
+        ]
+      },
+      "21656956": {
+        "pageid": 21656956,
+        "ns": 6,
+        "title": "File:Старая вековая липа на ул. Владимирской.JPG",
+        "revisions": [
+          {
+            "revid": 263624500,
+            "parentid": 217130847,
+            "user": "Ahonc",
+            "userid": 26615,
+            "timestamp": "2017-10-20T10:23:37Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{ru|1=Старая вековая липа на ул. Владимирской}}{{UkrainianNaturalHeritageSite|80-382-5011}}\n|date=2008-03-01 16:45:48\n|source={{own}}\n|author=[[User:Мижаню|Мижаню]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n{{Object location dec|50.4423893|30.5215262|region:UA_type:landmark_scale:1500}}<!-- Location from https://uk.wikipedia.org/w/index.php?title=Вікіпедія:Вікі_любить_пам'ятки/Київ/Шевченківський_(А—В)&redirect=no&useskin=monobook&oldid=13319761 -->\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n{{Wiki Loves Monuments 2012|ua}}\n\n[[Category:Petro Mohyla Tilia]]"
+          }
+        ]
+      },
+      "21656957": {
+        "pageid": 21656957,
+        "ns": 6,
+        "title": "File:Вековая липа.JPG",
+        "revisions": [
+          {
+            "revid": 263625245,
+            "parentid": 215377637,
+            "user": "AHbot",
+            "userid": 313688,
+            "timestamp": "2017-10-20T10:36:57Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{ru|1=Вековая липа на ул. Владимирской}}{{UkrainianNaturalHeritageSite|80-391-5007}}\n|date=2008-01-27 14:27:34\n|source={{own}}\n|author=[[User:Мижаню|Мижаню]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n{{Object location dec|50.4575418|30.5172132|region:UA_type:landmark_scale:1500}}<!-- Location from https://uk.wikipedia.org/w/index.php?title=Вікіпедія:Вікі_любить_пам'ятки/Київ/Шевченківський_(А—В)&redirect=no&useskin=monobook&oldid=13319761 -->\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n{{Wiki Loves Monuments 2012|ua}}\n\n[[Category:Petro Mohyla Tilia]]"
+          }
+        ]
+      },
+      "21806358": {
+        "pageid": 21806358,
+        "ns": 6,
+        "title": "File:LitockiWall 01.jpg",
+        "revisions": [
+          {
+            "revid": 258527373,
+            "parentid": 218445458,
+            "user": "NickK",
+            "userid": 342769,
+            "timestamp": "2017-09-13T20:03:08Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=Залишки валів древнього городища поблизу с. Літочки Броварського району. Скоріш за все це так звані \"Срібні Ворота\"}}{{UkrainianNaturalHeritageSite|32-212-5002}}\n|date=2012-09-29 16:52:19\n|source={{own}}\n|author=[[User:Scunk|Scunk]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n{{Location dec|50.759075|30.808617}}\nПам'ятка знаходиться на території державного заказника \"Залісся\", а простіше - мисливських угіддях президента, тому простим смертним туди вхід заборонений. По цій причині довелось лізти через паркан, і не бралась хороша фототехніка. Як потім виявилось, під час фотографування попав бруд на об'єктив і всі фотографії запоролись. Тому вдалось вирізати лише ці шматки. Хоча на них все дуже погано видно, але іншого не маємо :(\nМожливо, журналісти зможуть отримати офіційно доступ туди і зробити якісні фотогрфії.\n\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n{{Wiki Loves Monuments 2012|ua}}[[Category:Zalissya National Nature Park]]\n[[Category:Litochky Hill Fort]]"
+          }
+        ]
+      },
+      "21806359": {
+        "pageid": 21806359,
+        "ns": 6,
+        "title": "File:LitockiWall 02.jpg",
+        "revisions": [
+          {
+            "revid": 258527554,
+            "parentid": 218445462,
+            "user": "NickK",
+            "userid": 342769,
+            "timestamp": "2017-09-13T20:04:29Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=Залишки валів древнього городища поблизу с. Літочки Броварського району. Скоріш за все це так звані \"Срібні Ворота\"}}{{UkrainianNaturalHeritageSite|32-212-5002}}\n|date=2012-09-29 16:52:19\n|source={{own}}\n|author=[[User:Scunk|Scunk]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n{{Location dec|50.759075|30.808617}}\nПам'ятка знаходиться на території державного заказника \"Залісся\", а простіше - мисливських угіддях президента, тому простим смертним туди вхід заборонений. По цій причині довелось лізти через паркан, і не бралась хороша фототехніка. Як потім виявилось, під час фотографування попав бруд на об'єктив і всі фотографії запоролись. Тому вдалось вирізати лише ці шматки. Хоча на них все дуже погано видно, але іншого не маємо :(\nМожливо, журналісти зможуть отримати офіційно доступ туди і зробити якісні фотогрфії.\n\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n{{Wiki Loves Monuments 2012|ua}}[[Category:Zalissya National Nature Park]]\n[[Category:Litochky Hill Fort]]"
+          }
+        ]
+      },
+      "21832636": {
+        "pageid": 21832636,
+        "ns": 6,
+        "title": "File:Руины Херсонеса (12).jpg",
+        "revisions": [
+          {
+            "revid": 340428618,
+            "parentid": 340412151,
+            "user": "NickK",
+            "userid": 342769,
+            "timestamp": "2019-02-24T21:25:45Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=[[:uk:Національний заповідник «Херсонес Таврійський»|Комплекс «Стародавнє місто Херсонес-Таврійський»]], [[:uk:Севастополь|Севастополь]], вул. Древня, 1}}\n{{UkrainianNaturalHeritageSite|85-364-5002}}\n|date=2012-09-30 23:48:46\n|source={{own}}\n|author=[[User:Avaness|Avaness]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n{{Wiki Loves Monuments 2012|ua}}\n\n[[Category:Chersonesus Coastal Aquatic System]]\n[[Category:Black Sea, Sevastopol]]\n[[Category:Sea cliffs of Crimea]]"
+          }
+        ]
+      },
+      "21833749": {
+        "pageid": 21833749,
+        "ns": 6,
+        "title": "File:Тернопільський став.JPG",
+        "revisions": [
+          {
+            "revid": 217065863,
+            "parentid": 160393043,
+            "user": "SteinsplitterBot",
+            "userid": 3714013,
+            "timestamp": "2016-11-22T00:10:59Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|Ternopil Pond.}}\n{{ru|Ночной пейзаж Тернопольского пруду.}}\n{{uk|Нічний пейзаж [[:uk:Тернопільський став|Тернопільського ставу]].}}\n{{UkrainianNaturalHeritageSite|61-101-5008}}\n|date=2012-05-15 21:42:40\n|source={{own}}\n|author=[[User:Sergij Striletskyj|Sergij Striletskyj]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:Night at the Ternopil Pond]]\n[[Category:May 2012 in Ternopil]]"
+          }
+        ]
+      },
+      "21962991": {
+        "pageid": 21962991,
+        "ns": 6,
+        "title": "File:Lodochnaya stancia.jpg",
+        "revisions": [
+          {
+            "revid": 330208573,
+            "parentid": 252720207,
+            "user": "Wieralee",
+            "userid": 1159597,
+            "timestamp": "2018-12-03T21:56:52Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{UkrainianNaturalHeritageSite|12-110-5013}}{{uk|1=Човникова станція на злитті річок Інгулець і Саксагань (Кривий Ріг, Україна)}}\n|date=2006-05-01 12:25:19\n|source={{own}}\n|author=[[User:Dogvillan|Dogvillan]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n{{Object location dec|47.897823|33.333144|region:ua}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:Boat station (Kryvyi Rih)]]\n[[Category:Ingulets River]]\n[[Category:Saksagan River]]\n[[Category:Confluences in Ukraine]]\n[[Category:2006 in Kryvyi Rih]]"
+          }
+        ]
+      },
+      "21970795": {
+        "pageid": 21970795,
+        "ns": 6,
+        "title": "File:Kinburn sandbar.jpg",
+        "revisions": [
+          {
+            "revid": 200164898,
+            "parentid": 147816715,
+            "user": "Joostik",
+            "userid": 669757,
+            "timestamp": "2016-06-28T15:37:56Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=The coast of the Kinburn sandbar}}\n{{UkrainianNaturalHeritageSite|48-209-5006}}\n|date=2012-07-07 06:13:51\n|source={{own}}\n|author={{Yuriy Kvach}}\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0|GFDL}}\n\n[[Category:Kinburn sandbar]]\n[[Category:Dnieper Estuary]]\n[[Category:July 2012 in Mykolaiv Oblast]]\n[[Category:Nature of Mykolaiv Oblast]]\n[[Category:Beaches of Mykolaiv Oblast]]\n[[Category:Summer in Mykolaiv Oblast]]\n[[Category:Biloberezhia Sviatoslava National Nature Park]]"
+          }
+        ]
+      },
+      "22563017": {
+        "pageid": 22563017,
+        "ns": 6,
+        "title": "File:Місце,де стоїть катер.JPG",
+        "revisions": [
+          {
+            "revid": 243876422,
+            "parentid": 159762527,
+            "user": "Микола Василечко",
+            "userid": 1760561,
+            "timestamp": "2017-05-12T19:46:49Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "{{Information\n|description= {{uk|База тернопільських теплоходів. Теплохідна стоянка. [[:uk:Тернопільський став|Тернопільський став]] і Кутківецький ліс у [[:uk:Регіональний ландшафтний парк «Загребелля»|регіональному ландшафтному парку «Загребелля»]] [[:uk:Тернопіль|м. Тернополя]].}}{{UkrainianNaturalHeritageSite|61-101-5008}}\n|date       = 2008-05-24\n|source     = {{own}}\n|author     = [[:uk:User:Олег Михайлович|Олег Михайлович]]\n|permission = \n|other_versions=\n|other_fields=\n}}\n\n== {{int:license-header}} ==\n{{PD-user-uk|Олег Михайлович}}\n<!-- Templates \"Template:Ref-ru\", were used in the original description page as well , but do not appear to exist on commons. -->\n\n== {{Original upload log}} ==\n{{original description|uk.wikipedia|%D0%9C%D1%96%D1%81%D1%86%D0%B5%2C%D0%B4%D0%B5+%D1%81%D1%82%D0%BE%D1%97%D1%82%D1%8C+%D0%BA%D0%B0%D1%82%D0%B5%D1%80.JPG}}\n* 2008-07-09 09:51 [[:uk:User:Олег Михайлович|Олег Михайлович]] 1024×475× (84482 bytes) ''<nowiki>{{Зображення |Назва=Приватна стоянка Тернопільських прогулянкових катерів |Опис=Стоянка,яка знаходиться біля р.Хутір |Автор=Олег Михайлови</nowiki>''\n\n[[Category:Ternopil Pond and Kutkivtsi Forest]]\n[[Category:Hero Tantsorov (ship, 1963)]]\n[[Category:May 2008 in Ternopil]]"
+          }
+        ]
+      },
+      "22563025": {
+        "pageid": 22563025,
+        "ns": 6,
+        "title": "File:Острів серед літа.jpg",
+        "revisions": [
+          {
+            "revid": 293712001,
+            "parentid": 160392313,
+            "user": "ArndBot",
+            "userid": 4549641,
+            "timestamp": "2018-03-25T21:03:42Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "{{Information\n|description= {{en|Kohannia Island and Ternopil Pond.}}\n{{ru|Остров любви и Тернопольский пруд.}}\n{{uk|Острів кохання і [[:uk:Тернопільський став|Тернопільський став]].}}\n{{UkrainianNaturalHeritageSite|61-101-5008}}\n|date       = 2006\n|source     = {{own}}\n|author     = [[:uk:user:Олег Михайлович]]\n|permission = \n|other_versions=\n|other_fields=\n}}\n\n== {{int:license-header}} ==\n{{PD-user-uk|Олег Михайлович}}\n<!-- Templates \"Template:Ref-ru\", were used in the original description page as well , but do not appear to exist on commons. -->\n\n== {{Original upload log}} ==\n{{original description|uk.wikipedia|%D0%9E%D1%81%D1%82%D1%80%D1%96%D0%B2+%D1%81%D0%B5%D1%80%D0%B5%D0%B4+%D0%BB%D1%96%D1%82%D0%B0.jpg}}\n* 2008-06-22 15:22 [[:uk:User:Олег Михайлович|Олег Михайлович]] 1280×960× (270696 bytes) ''<nowiki>{{Зображення |Назва=Тернопільський острів |Опис= |Автор=Олег Михайлович |Джерело= |Час створення=2008рік |Ліцензія= }} [[Категорія:Тернопільське </nowiki>''\n\n[[Category:Ternopil Pond]]\n[[Category:Kohannia Island, Ternopil]]\n[[Category:2006 in Ternopil]]"
+          }
+        ]
+      },
+      "23770967": {
+        "pageid": 23770967,
+        "ns": 6,
+        "title": "File:Тернополь. Вечер на берегу пруда..jpg",
+        "revisions": [
+          {
+            "revid": 325855577,
+            "parentid": 217065832,
+            "user": "Микола Василечко",
+            "userid": 1760561,
+            "timestamp": "2018-10-29T20:52:42Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=Вечір на [[:uk:Тернопільський став|Тернопільському ставі]] [[:uk:Регіональний ландшафтний парк «Загребелля»|регіонального ландшафтного парку «Загребелля»]] [[:uk:Тернопіль|м. Тернополя]].}}{{en|1=Ternopil. Regional landscape park «Zagrebellia».}}{{ru|1=Вечер на берегу Тернопольского пруда}}{{UkrainianNaturalHeritageSite|61-101-5008}}\n|date=2012-05-17 06:43:06\n|source={{own}}\n|author=[[User:Борис Мавлютов|Борис Мавлютов]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:Evening at the Ternopil Pond]]\n[[Category:Svitlana (yacht, Ternopil)]]\n[[Category:May 2012 in Ternopil]]\n[[Category:Blue sky in Ternopil]]"
+          }
+        ]
+      },
+      "25228194": {
+        "pageid": 25228194,
+        "ns": 6,
+        "title": "File:Дністровський каньйон - Вигляд із Дністра на Червону гору - 09093553.jpg",
+        "revisions": [
+          {
+            "revid": 343802759,
+            "parentid": 342725487,
+            "user": "Микола Василечко",
+            "userid": 1760561,
+            "timestamp": "2019-03-25T19:51:03Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=Національний природний парк «[[:uk:Національний природний парк «Дністровський каньйон»|Дністровський каньйон]]» біля Червоної гори та русла Стрипи поблизу с. [[:uk:Берем'яни (Бучацький район)|Берем'яни]] [[:uk:Бучацький район|Бучацького району]] [[:uk:Тернопільська область|Тернопільської області]]. «[[:uk:Берем'янська наскельно-степова ділянка|Берем'янська наскельно-степова ділянка]]».}}{{UkrainianNaturalHeritageSite|61-208-5089}}{{UkrainianNaturalHeritageSite|61-212-5008}}\n|date={{Taken on|2009-09-27 11:59:26|location=Ukraine}}\n|source={{own}}\n|author={{WasMykola}}\n|permission=\n|other_versions=\n|other_fields=\n}}\n{{Location dec|48.868111|25.425980}}\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:Dniester Canyon near Chervona mountain]]\n[[Category:Beremiany Rocky Steppe Area]]\n[[Category:Taken with Nikon Coolpix P5000]]\n[[Category:Photographs by Mykola Vasylechko by Nikon Coolpix P5000]]\n[[Category:2009 photographs by Mykola Vasylechko]]\n[[Category:Photographs by Mykola Vasylechko by nature — Landscape]]\n[[Category:Photographs by Mykola Vasylechko by nature — Rivers]]\n[[Category:September 2009 in Ternopil Oblast]]\n[[Category:2009 in Buchach Raion]]\n[[Category:Stones in Ternopil Oblast]]"
+          }
+        ]
+      },
+      "25228239": {
+        "pageid": 25228239,
+        "ns": 6,
+        "title": "File:Дністровський каньйон - Червона гора - 10043701.jpg",
+        "revisions": [
+          {
+            "revid": 343802735,
+            "parentid": 333331769,
+            "user": "Микола Василечко",
+            "userid": 1760561,
+            "timestamp": "2019-03-25T19:50:34Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=Національний природний парк «[[:uk:Національний природний парк «Дністровський каньйон»|Дністровський каньйон]]» біля Червоної гори та русла Стрипи поблизу с. [[:uk:Берем'яни (Бучацький район)|Берем'яни]] [[:uk:Бучацький район|Бучацького району]] [[:uk:Тернопільська область|Тернопільської області]].}}{{UkrainianNaturalHeritageSite|61-208-5089}}\n|date={{Taken on|2010-04-04 16:51:22|location=Ukraine}}\n|source={{own}}\n|author={{WasMykola}}\n|permission=\n|other_versions=\n|other_fields=\n}}\n{{Location dec|48.8727015|25.4316142}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:Dniester Canyon near Chervona mountain]]\n[[Category:Taken with Nikon Coolpix P5000]]\n[[Category:Photographs by Mykola Vasylechko by Nikon Coolpix P5000]]\n[[Category:2010 photographs by Mykola Vasylechko]]\n[[Category:April 2010 in Ternopil Oblast]]\n[[Category:2010 in Buchach Raion]]\n[[Category:Photographs by Mykola Vasylechko by nature — Rivers]]\n[[Category:Photographs by Mykola Vasylechko by nature — Rocks]]"
+          }
+        ]
+      },
+      "25487658": {
+        "pageid": 25487658,
+        "ns": 6,
+        "title": "File:Дальній пляж.jpg",
+        "revisions": [
+          {
+            "revid": 260400917,
+            "parentid": 246658878,
+            "user": "BotAdventures",
+            "userid": 4447763,
+            "timestamp": "2017-09-30T04:15:47Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "== {{int:filedesc}} ==\n{{Information\n|description= {{uk|1=Дальній пляж - улюблений пляж тернополян і гостей міста на [[:uk:Тернопільський став|Тернопільському озері]] та [[:uk:Лісове урочище «Пронятин»|лісове урочище «Пронятин»]] у [[:uk:Регіональний ландшафтний парк «Загребелля»|регіональному ландшафтному парку «Загребелля»]] [[:uk:Тернопіль|м. Тернополя]].}}{{UkrainianNaturalHeritageSite|61-101-5008}}\n|date       = 2008-07-25\n|source     = {{own}}\n|author     = [[:uk:Користувач:Олег Михайлович|Користувач:Олег Михайлович]]\n|permission = \n|other_versions=\n|other_fields=\n}}\n\n== {{int:license-header}} ==\n{{PD-user|Олег Михайлович|uk}}\n\n=={{Original upload log}}==\n''File was transfered from Ukrainian Wikipedia using UWCTransferBot v.0.1.2 based on [[:en:User:Chris G|Chris G]]'s [http://toolserver.org/~chris/highlight.php?d=chris/classes/&f=botclasses.php botclasses] framework.''\n\n{{original description|uk.wikipedia|%D0%94%D0%B0%D0%BB%D1%8C%D0%BD%D1%96%D0%B9+%D0%BF%D0%BB%D1%8F%D0%B6.jpg}}\n* 2008-07-09 10:23 [[:uk:User:Олег Михайлович|Олег Михайлович]] 1280×1024×8 (162290 bytes) ''<nowiki>{{Зображення |Назва=Дальній пляж. |Опис=Всіми улюблений пляж на Тернопільському озері |Автор=Олег Михайлович |Джерело=відсутнє |Час створенн</nowiki>''\n\n[[Category:Ternopil Pond and Proniatyn forest tract]]\n[[Category:Beaches of Ternopil]]\n[[Category:Lake beaches in Ukraine]]\n[[Category:July 2008 in Ukraine]]\n[[Category:Taken with Samsung SGH-E200]]"
+          }
+        ]
+      },
+      "25487743": {
+        "pageid": 25487743,
+        "ns": 6,
+        "title": "File:Єланецький степ.jpg",
+        "revisions": [
+          {
+            "revid": 200171882,
+            "parentid": 132638103,
+            "user": "Joostik",
+            "userid": 669757,
+            "timestamp": "2016-06-28T16:36:24Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "{{Information\n|description= {{uk|Природний заповідник «Єланецький степ»: Природний заповідник «Єланецький степ»}}{{UkrainianNaturalHeritageSite|48-230-5006}}\n|date       = \n|source     = [http://ukrainaincognita.com/mykolaivska-oblast/novoodeskyi-raion/pryrodnyi-zapovidnyk-elanetskyi-step Україна Інкогніта]\n|author     = {{unknown|author}}\n|permission = {{PermissionOTRS| 2010031710025113}} {{cc-by-3.0}}\n|other_versions=\n|other_fields=\n}}\n\n=={{Original upload log}}==\n''File was transfered from Ukrainian Wikipedia using UWCTransferBot v.0.1.2 based on [[:en:User:Chris G|Chris G]]'s [http://toolserver.org/~chris/highlight.php?d=chris/classes/&f=botclasses.php botclasses] framework.''\n\n{{original description|uk.wikipedia|%D0%84%D0%BB%D0%B0%D0%BD%D0%B5%D1%86%D1%8C%D0%BA%D0%B8%D0%B9+%D1%81%D1%82%D0%B5%D0%BF.jpg}}\n* 2010-02-24 00:30 [[:uk:User:Krystofer|Krystofer]] 269×358×8 (67336 bytes) ''<nowiki>{{Зображення |Назва=  Природний заповідник «Єланецький степ» |Опис=  Природний заповідник «Єланецький степ» |Автор= невідомий |Джерело= [http://u</nowiki>''\n\n[[Category:Yelanetskyi Step Zapovednik]]"
+          }
+        ]
+      },
+      "25514405": {
+        "pageid": 25514405,
+        "ns": 6,
+        "title": "File:Оазис.jpg",
+        "revisions": [
+          {
+            "revid": 216729437,
+            "parentid": 122580271,
+            "user": "AkBot",
+            "userid": 1178453,
+            "timestamp": "2016-11-21T07:20:25Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=[[Національний ботанічний сад імені Миколи Гришка НАН України|Національний ботанічний сад ім. М.Гришка]],}}{{UkrainianNaturalHeritageSite|80-382-5001}}\n|date=2007-08-18 12:31:47\n|source={{own}}\n|author=[[User:Darkmario|Darkmario]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:National M. M. Grishko botanical garden (Kiev)]]"
+          }
+        ]
+      },
+      "25514406": {
+        "pageid": 25514406,
+        "ns": 6,
+        "title": "File:Вхід до парку.jpg",
+        "revisions": [
+          {
+            "revid": 215703821,
+            "parentid": 122580274,
+            "user": "AkBot",
+            "userid": 1178453,
+            "timestamp": "2016-11-19T14:27:51Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=[[Національний ботанічний сад імені Миколи Гришка НАН України|Національний ботанічний сад ім. М.Гришка]],}}{{UkrainianNaturalHeritageSite|80-382-5001}}\n|date=2007-08-18 15:01:35\n|source={{own}}\n|author=[[User:Darkmario|Darkmario]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:National M. M. Grishko botanical garden (Kiev)]]"
+          }
+        ]
+      },
+      "25514409": {
+        "pageid": 25514409,
+        "ns": 6,
+        "title": "File:Кактусы.JPG",
+        "revisions": [
+          {
+            "revid": 216066308,
+            "parentid": 122580277,
+            "user": "AkBot",
+            "userid": 1178453,
+            "timestamp": "2016-11-20T05:24:37Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=[[Національний ботанічний сад імені Миколи Гришка НАН України|Національний ботанічний сад ім. М.Гришка]],}}{{UkrainianNaturalHeritageSite|80-382-5001}}\n|date=2012-05-02 12:08:57\n|source={{own}}\n|author=[[User:Darkmario|Darkmario]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:National M. M. Grishko botanical garden (Kiev)]]"
+          }
+        ]
+      },
+      "25514414": {
+        "pageid": 25514414,
+        "ns": 6,
+        "title": "File:Кактуси.JPG",
+        "revisions": [
+          {
+            "revid": 216066171,
+            "parentid": 122580278,
+            "user": "AkBot",
+            "userid": 1178453,
+            "timestamp": "2016-11-20T05:24:14Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=[[Національний ботанічний сад імені Миколи Гришка НАН України|Національний ботанічний сад ім. М.Гришка]],}}{{UkrainianNaturalHeritageSite|80-382-5001}}\n|date=2012-05-02 12:10:07\n|source={{own}}\n|author=[[User:Darkmario|Darkmario]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:National M. M. Grishko botanical garden (Kiev)]]"
+          }
+        ]
+      },
+      "25514416": {
+        "pageid": 25514416,
+        "ns": 6,
+        "title": "File:Орхідеї.JPG",
+        "revisions": [
+          {
+            "revid": 217276916,
+            "parentid": 122580280,
+            "user": "AkBot",
+            "userid": 1178453,
+            "timestamp": "2016-11-22T08:51:07Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=[[Національний ботанічний сад імені Миколи Гришка НАН України|Національний ботанічний сад ім. М.Гришка]],}}{{UkrainianNaturalHeritageSite|80-382-5001}}\n|date=2012-05-02 12:14:39\n|source={{own}}\n|author=[[User:Darkmario|Darkmario]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:National M. M. Grishko botanical garden (Kiev)]]"
+          }
+        ]
+      },
+      "25514419": {
+        "pageid": 25514419,
+        "ns": 6,
+        "title": "File:Тропинка.JPG",
+        "revisions": [
+          {
+            "revid": 217039192,
+            "parentid": 122580281,
+            "user": "SteinsplitterBot",
+            "userid": 3714013,
+            "timestamp": "2016-11-21T22:50:25Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=[[Національний ботанічний сад імені Миколи Гришка НАН України|Національний ботанічний сад ім. М.Гришка]],}}{{UkrainianNaturalHeritageSite|80-382-5001}}\n|date=2012-05-02 12:19:25\n|source={{own}}\n|author=[[User:Darkmario|Darkmario]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:National M. M. Grishko botanical garden (Kiev)]]"
+          }
+        ]
+      },
+      "25514421": {
+        "pageid": 25514421,
+        "ns": 6,
+        "title": "File:Тюьпаны.JPG",
+        "revisions": [
+          {
+            "revid": 217027449,
+            "parentid": 122580284,
+            "user": "SteinsplitterBot",
+            "userid": 3714013,
+            "timestamp": "2016-11-21T22:20:58Z",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=[[Національний ботанічний сад імені Миколи Гришка НАН України|Національний ботанічний сад ім. М.Гришка]],}}{{UkrainianNaturalHeritageSite|80-382-5001}}\n|date=2012-05-02 12:51:44\n|source={{own}}\n|author=[[User:Darkmario|Darkmario]]\n|permission=\n|other_versions=\n|other_fields=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-3.0}}\n\n[[Category:National M. M. Grishko botanical garden (Kiev)]]"
+          }
+        ]
+      }
+    }
+  }
+}

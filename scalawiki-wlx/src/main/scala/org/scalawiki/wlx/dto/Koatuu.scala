@@ -6,39 +6,29 @@ import play.api.libs.functional.syntax._
 
 object Koatuu {
 
-  def regionReads(level: Int): Reads[Region] = (
-    (__ \ "code").read[String] and
+  def regionReads(level: Int, parent: () => Option[AdmDivision] = () => None): Reads[AdmDivision] = (
+    (__ \ "code").read[String].map(c => shortCode(c, level)) and
       (__ \ "name").read[String].map(betterName) and
       (__ \ ("level" + level))
-        .lazyReadNullable(Reads.seq[Region](regionReads(level + 1)))
+        .lazyReadNullable(Reads.seq[AdmDivision](regionReads(level + 1)))
         .map(_.getOrElse(Nil)).map(skipGroups) and
-      Reads.pure(() => None)
-    ) (Region)
+      Reads.pure(parent)
+    ) (AdmDivision.apply(_, _, _, _))
 
-  def regions(parent: () => Option[AdmDivision] = () => None): Seq[Region] = {
+  def regions(parent: () => Option[AdmDivision] = () => None): Seq[AdmDivision] = {
     val stream = getClass.getResourceAsStream("/koatuu.json")
     val json = Json.parse(stream)
 
-    implicit val level2Reads: Reads[Region] = regionReads(2)
-    val raw = (json \ "level1").as[Seq[Region]]
-
-    raw.map { r1 =>
-      r1.copy(
-        code = shortCode(r1.code),
-        regions = r1.regions
-          .map(r2 => r2.copy(code = shortCode(r2.code, 5)))
-          .map(r2 => r2.copy(parent = () => Some(r1))),
-        parent = parent
-      )
-    }
+    implicit val level2Reads: Reads[AdmDivision] = regionReads(2, parent)
+    (json \ "level1").as[Seq[AdmDivision]].map(_.withParents(parent))
   }
 
   val groupNames = Seq("Міста обласного підпорядкування", "Міста", "Райони", "Селища міського типу", "Населені пункти")
     .map(_.toUpperCase)
 
-  def groupPredicate(r: Region) = groupNames.exists(r.name.toUpperCase.startsWith)
+  def groupPredicate(r: AdmDivision) = groupNames.exists(r.name.toUpperCase.startsWith)
 
-  def skipGroups(regions: Seq[Region]): Seq[Region] = {
+  def skipGroups(regions: Seq[AdmDivision]): Seq[AdmDivision] = {
     regions flatMap {
       _ match {
         case r if groupPredicate(r) => skipGroups(r.regions)
@@ -47,7 +37,13 @@ object Koatuu {
     }
   }
 
-  def shortCode(s: String, init: Int = 2) = s.take(init)
+  def shortCode(s: String, level: Int) = {
+    level match {
+      case 2 => s.take(2)
+      case 3 => s.take(5)
+      case _ => s
+    }
+  }
 
   def betterName(s: String) = {
     val s1 = s.split("/").head.toLowerCase.capitalize

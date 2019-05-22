@@ -144,14 +144,20 @@ class Statistics(contest: Contest,
 
 object Statistics {
 
+  def getContest(cfg: StatConfig): Contest = {
+    val contest = Contest.byCampaign(cfg.campaign).getOrElse {
+      throw new IllegalArgumentException(s"Unknown campaign: ${cfg.campaign}")
+    }
+
+    contest.copy(
+      year = cfg.years.last,
+      rateConfig = cfg.rateConfig,
+    )
+  }
+
   def main(args: Array[String]) {
     val cfg = StatParams.parse(args)
-
-    val contest = Contest.byCampaign(cfg.campaign).get
-      .copy(
-        year = cfg.years.last,
-        rateConfig = cfg.rateConfig,
-      )
+    val contest = getContest(cfg)
 
     val cacheName = s"${cfg.campaign}-${contest.year}"
     val imageQuery = ImageQuery.create()(new CachedBot(Site.commons, cacheName, true))

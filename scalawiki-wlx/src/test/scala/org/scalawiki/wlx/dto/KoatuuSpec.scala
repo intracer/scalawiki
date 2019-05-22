@@ -40,7 +40,7 @@ class KoatuuSpec extends Specification {
     )
 
     "contain country parent" in {
-      regions.flatMap(_.parent()) === List.fill(topRegions.size)(Country.Ukraine)
+      regions.flatMap(_.parent().map(_.name)) === List.fill(topRegions.size)(Country.Ukraine.name)
     }
 
     "have 27 elements" in {

@@ -3,7 +3,7 @@ package org.scalawiki.mockserver
 import org.scalawiki.util.TestUtils.resourceAsString
 import spray.util.pimpFuture
 
-class EmbeddedInMockServerSpec extends BaseMockServerSpec {
+class ImagesMockServerSpec extends BaseMockServerSpec {
 
   val response = resourceAsString("/org/scalawiki/query/Commons_Wiki_Loves_Earth_2017_Winners.json")
 

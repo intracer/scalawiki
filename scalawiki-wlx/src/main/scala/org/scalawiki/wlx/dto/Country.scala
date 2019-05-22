@@ -17,25 +17,11 @@ trait AdmDivision {
 
   def parent: () => Option[AdmDivision] = () => None
 
-  lazy val regionIds: SortedSet[String] = SortedSet(regions.map(_.code): _*)
-
-  def regionNames: Seq[String] = regions.sortBy(_.code).map(_.name)
-
-  lazy val regionById: Map[String, AdmDivision] = regions.groupBy(_.code).mapValues(_.head)
-
-  def regionName(regId: String) = regionById.get(regId).map(_.name).getOrElse("")
-
   def regionId(monumentId: String): String = monumentId.split("-").take(2).mkString
 
-  def byId(monumentId: String): Option[AdmDivision] = {
-    regionById.get(regionId(monumentId)).flatMap(region => region.byId(monumentId).orElse(Some(region)))
-  }
+  def regionName(regId: String) = if (regId == code) name else ""
 
-  def byIdAndName(regionId: String, name: String): Seq[AdmDivision] = {
-    byId(regionId).map { region =>
-      region.byName(name)
-    }.getOrElse(Nil)
-  }
+  def byId(monumentId: String): Option[AdmDivision] = if (regionId(monumentId) == code) Some(this) else None
 
   def byName(name: String): Seq[AdmDivision] = {
     Seq(this).filter(_.name == name) ++ regions.flatMap(_.byName(name))
@@ -48,26 +34,84 @@ trait AdmDivision {
       .groupBy { case (id, adm) => adm }
       .mapValues(_.toMap.keySet)
   }
+
+  def byIdAndName(regionId: String, name: String): Seq[AdmDivision] = {
+    byId(regionId).map { region =>
+      region.byName(name)
+    }.getOrElse(Nil)
+  }
+
+  def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision
+
+  def regionsWithParents(): Seq[AdmDivision] = {
+    regions.map(_.withParents(() => Some(this)))
+  }
 }
 
-case class NoAdmDivision(code: String = "", name: String = "") extends AdmDivision
+trait AdmRegion extends AdmDivision {
+  lazy val regionIds: SortedSet[String] = SortedSet(regions.map(_.code): _*)
+
+  lazy val regionNames: Seq[String] = regions.sortBy(_.code).map(_.name)
+
+  lazy val regionById: Map[String, AdmDivision] = regions.groupBy(_.code).mapValues(_.head)
+
+  override def regionName(regId: String) = regionById.get(regId).map(_.name).getOrElse("")
+
+  override def byId(monumentId: String): Option[AdmDivision] = {
+    regionById.get(regionId(monumentId)).flatMap(region => region.byId(monumentId).orElse(Some(region)))
+  }
+}
+
+
+case class NoAdmDivision(code: String = "", name: String = "") extends AdmRegion {
+  override def withParents(parent: () => Option[AdmDivision]): AdmDivision = this
+}
 
 case class Country(code: String,
                    name: String,
                    override val languageCodes: Seq[String] = Nil,
                    override val regions: Seq[AdmDivision] = Nil
-                  ) extends AdmDivision {
+                  ) extends AdmRegion {
 
   override def withoutLangCodes = copy(languageCodes = Nil)
 
   override def regionId(monumentId: String): String = monumentId.split("-").head
 
+  override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
+    copy(regions = regionsWithParents())
+  }
 }
 
 case class Region(code: String, name: String,
-                  override val regions: Seq[Region] = Nil,
+                  override val regions: Seq[AdmDivision] = Nil,
                   override val parent: () => Option[AdmDivision] = () => None)
-  extends AdmDivision
+  extends AdmRegion {
+
+  override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
+    copy(parent = parent, regions = regionsWithParents())
+  }
+}
+
+case class NoRegions(code: String, name: String,
+                     override val parent: () => Option[AdmDivision] = () => None)
+  extends AdmDivision {
+  override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
+    copy(parent = parent)
+  }
+
+}
+
+object AdmDivision {
+  def apply(code: String, name: String,
+            regions: Seq[AdmDivision],
+            parent: () => Option[AdmDivision]): AdmDivision = {
+    if (regions.isEmpty) {
+      NoRegions(code, name, parent)
+    } else {
+      Region(code, name, regions, parent)
+    }
+  }
+}
 
 object Country {
 
