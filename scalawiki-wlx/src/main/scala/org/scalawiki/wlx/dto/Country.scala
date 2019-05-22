@@ -136,7 +136,6 @@ object Country {
       }
   }
 
-
   def fromJavaLocales: Seq[Country] = {
 
     val countryLangs = langMap
