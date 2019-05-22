@@ -37,7 +37,12 @@ trait AdmDivision {
 
   def byIdAndName(regionId: String, name: String): Seq[AdmDivision] = {
     byId(regionId).map { region =>
-      region.byName(name)
+      val here = region.byName(name)
+      if (here.isEmpty) {
+        region.parent().map(_.byName(name)).getOrElse(Nil)
+      } else {
+        here
+      }
     }.getOrElse(Nil)
   }
 

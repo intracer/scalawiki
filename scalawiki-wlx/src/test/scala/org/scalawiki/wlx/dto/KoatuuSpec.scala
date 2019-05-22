@@ -54,6 +54,8 @@ class KoatuuSpec extends Specification {
     "lookup level1 by code" in {
       Ukraine.byRegion(topRegions.keySet)
         .map { case (adm, ids) => ids.head -> adm.name } === topRegions
+
+      Ukraine.byIdAndName("80-361", "Київ").head.name === "Київ"
     }
   }
 
