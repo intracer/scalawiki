@@ -27,10 +27,16 @@ class WlmUaListsSpec extends Specification {
         val city = m.city.getOrElse("")
           .replace("[[", "")
           .replace("]]", "")
+          .replace("&nbsp;", "")
+          .replace("м.", "")
+          .replace("с.", "")
+          .replace(".", "")
           .replace("село", "")
           .replace("смт", "")
+          .replace("с-ще", "")
           .replace("'''", "")
           .replace("''", "")
+          .replace("’", "'")
           .split("\\(").head
           .split("\\|").head
           .trim
@@ -46,7 +52,8 @@ class WlmUaListsSpec extends Specification {
         .map { case (k, v) => s"$k - $v " }
         .foreach(println)
 
-      notFound.size * 100 / all.size should be < 20 // less than 20%
+      val percentage = notFound.size * 100 / all.size
+      percentage should be < 10 // less than 10%
     }
   }
 }
