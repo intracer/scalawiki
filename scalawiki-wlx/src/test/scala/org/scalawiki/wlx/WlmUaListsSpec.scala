@@ -40,6 +40,11 @@ class WlmUaListsSpec extends Specification {
       }
 
       println(s"notFound size: ${notFound.size}")
+      notFound.groupBy(_._1)
+        .mapValues(_.size)
+        .toSeq.sortBy { case (k, v) => -v }
+        .map { case (k, v) => s"$k - $v " }
+        .foreach(println)
 
       notFound.size * 100 / all.size should be < 20 // less than 20%
     }
