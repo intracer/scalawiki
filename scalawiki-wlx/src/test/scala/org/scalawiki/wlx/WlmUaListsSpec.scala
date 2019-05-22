@@ -2,7 +2,7 @@ package org.scalawiki.wlx
 
 import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.Site
-import org.scalawiki.wlx.dto.Contest
+import org.scalawiki.wlx.dto.{Contest, Country}
 import org.scalawiki.wlx.query.MonumentQuery
 import org.specs2.mutable.Specification
 
@@ -10,6 +10,7 @@ class WlmUaListsSpec extends Specification {
 
   val campaign = "wlm-ua"
   val contest = Contest.byCampaign(campaign).get.copy(year = 2019)
+  val country = Country.Ukraine
 
   "lists" should {
     "be ok" in {
@@ -19,10 +20,28 @@ class WlmUaListsSpec extends Specification {
       val monumentQuery = MonumentQuery.create(contest)(bot)
       val monumentDb = MonumentDB.getMonumentDb(contest, monumentQuery)
 
-      monumentDb.allMonuments must not(beEmpty)
+      val all = monumentDb.allMonuments
+      all must not(beEmpty)
+      println(s"all size: ${all.size}")
+      val notFound = all.map { m =>
+        val city = m.city.getOrElse("")
+          .replace("[[", "")
+          .replace("]]", "")
+          .replace("село", "")
+          .replace("смт", "")
+          .replace("'''", "")
+          .replace("''", "")
+          .split("\\(").head
+          .split("\\|").head
+          .trim
+        city -> country.byIdAndName(m.id, city)
+      }.filter { case (m, cities) =>
+        cities.isEmpty || cities.tail.nonEmpty
+      }
 
-      ok
+      println(s"notFound size: ${notFound.size}")
+
+      notFound.size * 100 / all.size should be < 20 // less than 20%
     }
   }
-
 }
