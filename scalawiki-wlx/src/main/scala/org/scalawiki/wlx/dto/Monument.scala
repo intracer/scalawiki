@@ -32,6 +32,23 @@ case class Monument(page: String = "",
                     listConfig: Option[ListConfig] = None
                    ) {
 
+  val cityName = city.getOrElse("")
+    .replace("[[", "")
+    .replace("]]", "")
+    .replace("&nbsp;", "")
+    .replace("м.", "")
+    .replace("с.", "")
+    .replace(".", "")
+    .replace("село", "")
+    .replace("смт", "")
+    .replace("с-ще", "")
+    .replace("'''", "")
+    .replace("''", "")
+    .replace("’", "'")
+    .split("\\(").head
+    .split("\\|").head
+    .trim
+
   def toUrls = Monument.wikiLinkToUrl(name + " * " + place, "uk.wikipedia.org")
 
   def galleryLink = gallery.fold("") { title => s" [[:Category:$title|$title]]" }

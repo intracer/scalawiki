@@ -41,7 +41,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
   def getAdmDivision(monumentId: String): Option[AdmDivision] = {
     for (monument <- byId(monumentId);
-         division <- Country.Ukraine.byIdAndName(monument.regionId, monument.city.getOrElse("")).headOption
+         division <- Country.Ukraine.byIdAndName(monument.regionId, monument.cityName).headOption
     ) yield division
   }
 }
