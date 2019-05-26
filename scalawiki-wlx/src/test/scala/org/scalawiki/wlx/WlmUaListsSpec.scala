@@ -30,15 +30,17 @@ class WlmUaListsSpec extends Specification {
       }
 
       println(s"notFound size: ${notFound.size}")
-      notFound.groupBy(_._1).mapValues(_.flatMap(_._2))
-        .toSeq.sortBy { case (k, v) => -v.size }
-        .map { case (k, v) =>
+      notFound.groupBy(_._1).mapValues { seq =>
+        (seq.flatMap(_._2), seq.size)
+      }.toSeq.sortBy { case (k, (v, s)) => -s}
+        .map { case (k, (v, s)) =>
           val parents = v.map(_.parent().map(_.name).getOrElse("")).toSet.mkString(", ")
-          s"$k - ${v.size} ($parents)"
+          s"$k - $s ($parents)"
         }
         .foreach(println)
 
       val percentage = notFound.size * 100 / all.size
+      println(s"percentage: $percentage%")
       percentage should be < 10 // less than 10%
     }
   }
