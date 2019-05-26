@@ -46,10 +46,12 @@ class WlmUaListsSpec extends Specification {
       }
 
       println(s"notFound size: ${notFound.size}")
-      notFound.groupBy(_._1)
-        .mapValues(_.size)
-        .toSeq.sortBy { case (k, v) => -v }
-        .map { case (k, v) => s"$k - $v " }
+      notFound.groupBy(_._1).mapValues(_.flatMap(_._2))
+        .toSeq.sortBy { case (k, v) => -v.size }
+        .map { case (k, v) =>
+          val parents = v.map(_.parent().map(_.name).getOrElse("")).toSet.mkString(", ")
+          s"$k - ${v.size} ($parents)"
+        }
         .foreach(println)
 
       val percentage = notFound.size * 100 / all.size
