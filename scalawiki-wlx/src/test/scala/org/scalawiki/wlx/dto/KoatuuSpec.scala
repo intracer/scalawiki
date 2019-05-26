@@ -57,6 +57,15 @@ class KoatuuSpec extends Specification {
 
       Ukraine.byIdAndName("80-361", "Київ").head.name === "Київ"
     }
+
+    "lookup by different codes should be same" in {
+      val kyiv1 = Ukraine.byIdAndName("80", "Київ").head
+      val kyiv2 = Ukraine.byIdAndName("80-361", "Київ").head
+      val kyiv3 = Ukraine.byIdAndName("80-361-0", "Київ").head
+
+      kyiv1 === kyiv2
+      kyiv2 === kyiv3
+    }
   }
 
   "level2" should {

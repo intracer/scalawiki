@@ -11,13 +11,13 @@ trait AdmDivision {
 
   override def toString = s"$name ($code)"
 
-  def regions: Seq[AdmDivision] = Nil
+  def regions: Seq[AdmDivision]
 
   def languageCodes: Seq[String] = Nil
 
   def withoutLangCodes: AdmDivision = this
 
-  def parent: () => Option[AdmDivision] = () => None
+  def parent: () => Option[AdmDivision]
 
   def regionId(monumentId: String): String = monumentId.split("-").take(2).mkString
 
@@ -71,39 +71,52 @@ trait AdmRegion extends AdmDivision {
 
 
 case class NoAdmDivision(code: String = "", name: String = "") extends AdmRegion {
+  override val regions: Seq[AdmDivision] = Nil
+
   override def withParents(parent: () => Option[AdmDivision]): AdmDivision = this
+
+  override val parent: () => Option[AdmDivision] = () => None
 }
 
 case class Country(code: String,
                    name: String,
                    override val languageCodes: Seq[String] = Nil,
-                   override val regions: Seq[AdmDivision] = Nil
+                   var regions: Seq[AdmDivision] = Nil
                   ) extends AdmRegion {
+
+  val parent: () =>  Option[AdmDivision] = () => None
 
   override def withoutLangCodes = copy(languageCodes = Nil)
 
   override def regionId(monumentId: String): String = monumentId.split("-").head
 
   override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
-    copy(regions = regionsWithParents())
+    regions = regionsWithParents()
+    this
   }
 }
 
 case class Region(code: String, name: String,
-                  override val regions: Seq[AdmDivision] = Nil,
-                  override val parent: () => Option[AdmDivision] = () => None)
+                  var regions: Seq[AdmDivision] = Nil,
+                  var parent: () => Option[AdmDivision] = () => None)
   extends AdmRegion {
 
   override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
-    copy(parent = parent, regions = regionsWithParents())
+    this.parent = parent
+    this.regions = regionsWithParents()
+    this
   }
 }
 
 case class NoRegions(code: String, name: String,
-                     override val parent: () => Option[AdmDivision] = () => None)
+                     var parent: () => Option[AdmDivision] = () => None)
   extends AdmDivision {
+
+  val regions: Seq[AdmDivision] = Nil
+
   override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
-    copy(parent = parent)
+    this.parent = parent
+    this
   }
 
 }

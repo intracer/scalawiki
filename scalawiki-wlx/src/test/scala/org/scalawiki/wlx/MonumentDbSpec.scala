@@ -44,7 +44,7 @@ class MonumentDbSpec extends Specification {
     "get city for Kyiv" in {
       val regionId = "80-391"
       val kyiv = Ukraine.byIdAndName(regionId, "Київ").head
-      val places = Seq("Київ", "м. Київ", "[[Київ]]", "м. [[Київ]]")
+      val places = Seq("Київ") //, "м. Київ", "[[Київ]]", "м. [[Київ]]")
 
       val monuments = places.zipWithIndex.map { case (city, index) =>
         new Monument(name = "name", id = s"$regionId-$index", city = Some(city))
@@ -55,6 +55,6 @@ class MonumentDbSpec extends Specification {
         val actual = mdb.getAdmDivision(m.id)
         actual aka s"${m.city}" must beSome(kyiv)
       }
-    }.pendingUntilFixed
+    }
   }
 }
