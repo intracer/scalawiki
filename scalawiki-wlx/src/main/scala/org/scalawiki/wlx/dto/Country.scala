@@ -155,18 +155,24 @@ object AdmDivision {
 
   def cleanName(raw: String): String = {
     raw
+      .replace("р-н", "район")
+      .replace("сільська рада", "")
+      .replace("селищна рада", "")
       .replace("[[", "")
       .replace("]]", "")
       .replace("&nbsp;", "")
       .replace("м.", "")
       .replace("с.", "")
+      .replace("С.", "")
       .replace(".", "")
       .replace("село", "")
       .replace("смт", "")
+      .replace("Смт", "")
       .replace("с-ще", "")
       .replace("'''", "")
       .replace("''", "")
       .replace("’", "'")
+      .replace("”", "'")
       .split("\\(").head
       .split("\\|").head
       .trim
