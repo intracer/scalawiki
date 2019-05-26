@@ -70,6 +70,14 @@ class KoatuuSpec extends Specification {
 
   "level2" should {
 
+    "have 490 raions" in {
+      val withoutCities = Country.Ukraine.regions.filter(adm => !Set("Київ", "Севастополь").contains(adm.name))
+      withoutCities.size === 25
+
+      val raions = withoutCities.flatMap(_.regions).filter(_.name.endsWith("район"))
+      raions.size === 490
+    }
+
     "contain Kyiv raions" in {
       val regionNames = Seq("Голосіївський", "Дарницький", "Деснянський", "Дніпровський",
         "Оболонський", "Печерський", "Подільський", "Святошинський", "Солом'янський", "Шевченківський")
@@ -199,6 +207,16 @@ class KoatuuSpec extends Specification {
       selo1.head.regionType === Some(RegionTypes.codeToType("С"))
       selo2.size === 1
       selo2.head.regionType === Some(RegionTypes.codeToType("С"))
+    }
+
+    "contain lesser regions" in {
+      Ukraine.byIdAndName("18-240", "Новоград-Волинський район").size === 1
+      Ukraine.byIdAndName("14-224", "Іванопільська").size === 1  // сільська рада
+      Ukraine.byIdAndName("18-211", "Хорошівський район").size === 1
+      Ukraine.byIdAndName("35-236", "Новоархангельський район").size === 1
+      Ukraine.byIdAndName("18-254", "Пулинський район").size === 1
+//      Ukraine.byIdAndName("01-116", "Феодосійська").size === 1  //  м/р
+//      Ukraine.byIdAndName("01-119", "Ялтинська").size === 1  //  м/р
     }
   }
 }

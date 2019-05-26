@@ -166,6 +166,7 @@ object AdmDivision {
       .replace("С.", "")
       .replace(".", "")
       .replace("село", "")
+      .replace("сел.", "")
       .replace("смт", "")
       .replace("Смт", "")
       .replace("с-ще", "")
