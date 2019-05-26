@@ -51,7 +51,7 @@ class WlmUaListsSpec extends Specification {
       raions.size === 490
       val raionNames = raions.map(_.name).toSet
 
-      val highLevel = all.filter(m => raionNames.contains(m.cityName))
+      val highLevel = all.filter(m => raionNames.contains(m.cityName) && m.place.exists(_.trim.nonEmpty))
       println(s"highLevel size: ${highLevel.size}")
 
       highLevel.groupBy(_.page).toSeq.sortBy(-_._2.size).foreach{ case (page, monuments) =>
