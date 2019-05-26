@@ -183,5 +183,22 @@ class KoatuuSpec extends Specification {
 
       Ukraine.byIdAndName("01-101", "Бітумне").head.name === "Бітумне"
     }
+
+    "contain only one" in {
+      Ukraine.byIdAndName("53-236", "Тарасівка").size === 1
+      Ukraine.byIdAndName("14-242", "Миколаївка").size === 1
+    }
+
+    "differentiate types" in {
+      val smt = Ukraine.byIdAndName("14-215", "смт Андріївка")
+      val selo1 = Ukraine.byIdAndName("14-215", "село Андріївка")
+      val selo2 = Ukraine.byIdAndName("14-215", "[[Андріївка (Волноваський район, село)|Андріївка (село)]]")
+      smt.size === 1
+      smt.head.regionType === Some(RegionTypes.codeToType("Т"))
+      selo1.size === 1
+      selo1.head.regionType === Some(RegionTypes.codeToType("С"))
+      selo2.size === 1
+      selo2.head.regionType === Some(RegionTypes.codeToType("С"))
+    }
   }
 }

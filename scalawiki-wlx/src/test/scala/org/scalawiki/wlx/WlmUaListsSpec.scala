@@ -24,8 +24,7 @@ class WlmUaListsSpec extends Specification {
       all must not(beEmpty)
       println(s"all size: ${all.size}")
       val notFound = all.map { m =>
-        val city = m.cityName
-        city -> country.byIdAndName(m.id, city)
+        s"${m.page}/${m.city.getOrElse("")}" -> country.byIdAndName(m.id, m.city.getOrElse(""))
       }.filter { case (m, cities) =>
         cities.isEmpty || cities.tail.nonEmpty
       }

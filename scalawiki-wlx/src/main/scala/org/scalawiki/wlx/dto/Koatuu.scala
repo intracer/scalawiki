@@ -4,6 +4,21 @@ import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 
+case class RegionType(code: String, name: String, abbreviation: String)
+
+object RegionTypes {
+
+  val types = Seq(
+    RegionType("Р", "Район", "район"),
+    RegionType("Т", "Селище міського типу", "смт"),
+    RegionType("С", "Село", "село"),
+    RegionType("Щ", "Селище", "селище"),
+  )
+
+  val codeToType = types.groupBy(_.code).mapValues(_.head)
+  val abbreviationToType = types.groupBy(_.abbreviation).mapValues(_.head)
+}
+
 object Koatuu {
 
   def regions(parent: () => Option[AdmDivision] = () => None): Seq[AdmDivision] = {
@@ -20,8 +35,9 @@ object Koatuu {
       (__ \ ("level" + level))
         .lazyReadNullable(Reads.seq[AdmDivision](regionReads(level + 1)))
         .map(_.getOrElse(Nil)).map(skipGroups) and
-      Reads.pure(parent)
-    ) (AdmDivision.apply(_, _, _, _))
+      Reads.pure(parent) and
+      (__ \ "type").readNullable[String].map(_.flatMap(RegionTypes.codeToType.get))
+    ) (AdmDivision.apply(_, _, _, _, _))
 
   val groupNames = Seq("Міста обласного підпорядкування", "Міста", "Райони", "Селища міського типу", "Населені пункти")
     .map(_.toUpperCase)

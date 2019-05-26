@@ -9,15 +9,17 @@ trait AdmDivision {
 
   def name: String
 
+  def regionType: Option[RegionType]
+
   override def toString = s"$name ($code)"
 
   def regions: Seq[AdmDivision]
 
+  def parent: () => Option[AdmDivision]
+
   def languageCodes: Seq[String] = Nil
 
   def withoutLangCodes: AdmDivision = this
-
-  def parent: () => Option[AdmDivision]
 
   def regionId(monumentId: String): String = monumentId.split("-").take(2).mkString
 
@@ -37,15 +39,27 @@ trait AdmDivision {
       .mapValues(_.toMap.keySet)
   }
 
-  def byIdAndName(regionId: String, name: String): Seq[AdmDivision] = {
-    byId(regionId).map { region =>
-      val here = region.byName(name)
+  def byIdAndName(regionId: String, rawName: String): Seq[AdmDivision] = {
+    val cleanName = AdmDivision.cleanName(rawName)
+
+    val candidates = byId(regionId).map { region =>
+      val here = region.byName(cleanName)
       if (here.isEmpty) {
-        region.parent().map(_.byName(name)).getOrElse(Nil)
+        region.parent().map(_.byName(cleanName)).getOrElse(Nil)
       } else {
         here
       }
     }.getOrElse(Nil)
+
+    val types = RegionTypes.abbreviationToType.filter { case (abbreviation, _) =>
+      rawName.contains(abbreviation)
+    }.values.toSet
+
+    if (candidates.size > 1 && types.nonEmpty) {
+      candidates.filter(c => c.regionType.exists(types.contains))
+    } else {
+      candidates
+    }
   }
 
   def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision
@@ -76,6 +90,8 @@ case class NoAdmDivision(code: String = "", name: String = "") extends AdmRegion
   override def withParents(parent: () => Option[AdmDivision]): AdmDivision = this
 
   override val parent: () => Option[AdmDivision] = () => None
+
+  override def regionType: Option[RegionType] = None
 }
 
 case class Country(code: String,
@@ -84,7 +100,7 @@ case class Country(code: String,
                    var regions: Seq[AdmDivision] = Nil
                   ) extends AdmRegion {
 
-  val parent: () =>  Option[AdmDivision] = () => None
+  val parent: () => Option[AdmDivision] = () => None
 
   override def withoutLangCodes = copy(languageCodes = Nil)
 
@@ -94,11 +110,14 @@ case class Country(code: String,
     regions = regionsWithParents()
     this
   }
+
+  override def regionType: Option[RegionType] = None
 }
 
 case class Region(code: String, name: String,
                   var regions: Seq[AdmDivision] = Nil,
-                  var parent: () => Option[AdmDivision] = () => None)
+                  var parent: () => Option[AdmDivision] = () => None,
+                  regionType: Option[RegionType] = None)
   extends AdmRegion {
 
   override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
@@ -109,7 +128,8 @@ case class Region(code: String, name: String,
 }
 
 case class NoRegions(code: String, name: String,
-                     var parent: () => Option[AdmDivision] = () => None)
+                     var parent: () => Option[AdmDivision] = () => None,
+                     regionType: Option[RegionType] = None)
   extends AdmDivision {
 
   val regions: Seq[AdmDivision] = Nil
@@ -124,13 +144,34 @@ case class NoRegions(code: String, name: String,
 object AdmDivision {
   def apply(code: String, name: String,
             regions: Seq[AdmDivision],
-            parent: () => Option[AdmDivision]): AdmDivision = {
+            parent: () => Option[AdmDivision],
+            regionType: Option[RegionType]): AdmDivision = {
     if (regions.isEmpty) {
-      NoRegions(code, name, parent)
+      NoRegions(code, name, parent, regionType)
     } else {
-      Region(code, name, regions, parent)
+      Region(code, name, regions, parent, regionType)
     }
   }
+
+  def cleanName(raw: String): String = {
+    raw
+      .replace("[[", "")
+      .replace("]]", "")
+      .replace("&nbsp;", "")
+      .replace("м.", "")
+      .replace("с.", "")
+      .replace(".", "")
+      .replace("село", "")
+      .replace("смт", "")
+      .replace("с-ще", "")
+      .replace("'''", "")
+      .replace("''", "")
+      .replace("’", "'")
+      .split("\\(").head
+      .split("\\|").head
+      .trim
+  }
+
 }
 
 object Country {
