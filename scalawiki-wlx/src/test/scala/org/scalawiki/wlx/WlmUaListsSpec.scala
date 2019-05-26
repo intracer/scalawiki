@@ -2,7 +2,7 @@ package org.scalawiki.wlx
 
 import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.Site
-import org.scalawiki.wlx.dto.{Contest, Country}
+import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country}
 import org.scalawiki.wlx.query.MonumentQuery
 import org.specs2.mutable.Specification
 
@@ -54,7 +54,15 @@ class WlmUaListsSpec extends Specification {
       val highLevel = all.filter(m => raionNames.contains(m.cityName) && m.place.exists(_.trim.nonEmpty))
       println(s"highLevel size: ${highLevel.size}")
 
-      highLevel.groupBy(_.page).toSeq.sortBy(-_._2.size).foreach{ case (page, monuments) =>
+      val canBeFixed = highLevel.filter { m =>
+        m.place.exists { p =>
+          country.byIdAndName(m.regionId, p.split(",").head).size == 1
+        }
+      }
+
+      println(s"canBeFixed: ${canBeFixed.size}")
+
+      highLevel.groupBy(_.page).toSeq.sortBy(-_._2.size).foreach { case (page, monuments) =>
         println(s"$page ${monuments.size} (${monuments.head.city.getOrElse("")})")
       }
       val percentage = highLevel.size * 100 / all.size
