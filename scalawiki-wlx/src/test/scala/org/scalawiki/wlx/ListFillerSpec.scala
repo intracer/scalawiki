@@ -60,9 +60,9 @@ class ListFillerSpec extends Specification {
       val text = "header\n" + monuments.map(_.asWiki()).mkString + "\nfooter"
 
       val images = Seq(
-        Image("File:Img1.jpg", size = Some(10^6), width = Some(2048), height = Some(1024), monumentId = Some("id1")),
-        Image("File:Img2.jpg", size = Some(10^6), width = Some(1280), height = Some(1024), monumentId = Some("id2")),
-        Image("File:Img2sm.jpg", size = Some(10^6), width = Some(1024), height = Some(768), monumentId = Some("id2"))
+        Image("File:Img1.jpg", size = Some(10 ^ 6), width = Some(2048), height = Some(1024), monumentId = Some("id1")),
+        Image("File:Img2.jpg", size = Some(10 ^ 6), width = Some(1280), height = Some(1024), monumentId = Some("id2")),
+        Image("File:Img2sm.jpg", size = Some(10 ^ 6), width = Some(1024), height = Some(768), monumentId = Some("id2"))
       )
       val monumentDb = new MonumentDB(contest, monuments)
       val imageDb = new ImageDB(contest, images, monumentDb)
@@ -70,11 +70,40 @@ class ListFillerSpec extends Specification {
 
       val (newText, comment) = task.updatePage("page", text)
       val updatedMonuments = Seq(
-      monument1,
-      monument2.copy(photo = Some("Img2.jpg")),
-      monument3
+        monument1,
+        monument2.copy(photo = Some("Img2.jpg")),
+        monument3
       )
       val expected = "header\n" + updatedMonuments.map(_.asWiki()).mkString + "\nfooter"
+      newText === expected
+      comment === "adding 1 image(s)"
+    }
+
+    "addPhotosToPageText add 1 image preserve comments" in {
+      val monument1 = Monument(id = "id1", name = "name1", photo = Some("Img1.jpg"), listConfig = Some(listConfig))
+      val monument2 = Monument(id = "id2", name = "name2", listConfig = Some(listConfig))
+      val monument3 = Monument(id = "id3", name = "name3", listConfig = Some(listConfig))
+      val monuments = Seq(monument1, monument2, monument3)
+      val text = "header\n" + Seq("<!-- " + monument1.asWiki() + " --> ",
+        monument2.asWiki(),
+        monument3.asWiki()
+      ).mkString + "\nfooter"
+
+      val images = Seq(
+        Image("File:Img1.jpg", size = Some(10 ^ 6), width = Some(2048), height = Some(1024), monumentId = Some("id1")),
+        Image("File:Img2.jpg", size = Some(10 ^ 6), width = Some(1280), height = Some(1024), monumentId = Some("id2")),
+        Image("File:Img2sm.jpg", size = Some(10 ^ 6), width = Some(1024), height = Some(768), monumentId = Some("id2"))
+      )
+      val monumentDb = new MonumentDB(contest, monuments)
+      val imageDb = new ImageDB(contest, images, monumentDb)
+      val task = new ListFillerTask(host, monumentDb, imageDb)
+
+      val (newText, comment) = task.updatePage("page", text)
+
+      val expected = "header\n" + Seq("<!-- " + monument1.asWiki() + " --> ",
+        monument2.copy(photo = Some("Img2.jpg")).asWiki(),
+        monument3.asWiki()
+      ).mkString + "\nfooter"
       newText === expected
       comment === "adding 1 image(s)"
     }
@@ -87,9 +116,9 @@ class ListFillerSpec extends Specification {
       val text = "header\n" + monuments.map(_.asWiki()).mkString("{|\n|}\n") + "\nfooter"
 
       val images = Seq(
-        Image("File:Img1.jpg", size = Some(10^6), width = Some(2048), height = Some(1024), monumentId = Some("id1")),
-        Image("File:Img2.jpg", size = Some(10^6), width = Some(1280), height = Some(1024), monumentId = Some("id2")),
-        Image("File:Img3.jpg", size = Some(10^6), width = Some(1024), height = Some(768), monumentId = Some("id3"))
+        Image("File:Img1.jpg", size = Some(10 ^ 6), width = Some(2048), height = Some(1024), monumentId = Some("id1")),
+        Image("File:Img2.jpg", size = Some(10 ^ 6), width = Some(1280), height = Some(1024), monumentId = Some("id2")),
+        Image("File:Img3.jpg", size = Some(10 ^ 6), width = Some(1024), height = Some(768), monumentId = Some("id3"))
       )
       val monumentDb = new MonumentDB(contest, monuments)
       val imageDb = new ImageDB(contest, images, monumentDb)

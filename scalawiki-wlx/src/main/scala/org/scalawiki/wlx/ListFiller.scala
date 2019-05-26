@@ -49,9 +49,18 @@ class ListFillerTask(val host: String, monumentDb: MonumentDB, imageDb: ImageDB)
       }
     }
 
-    val newText = replace(pageText, { case t: WtTemplate if getTemplateName(t) == template => t }, mapper)
+    val noComments = pageText
+      .replace("<!--", "<x-comment>")
+      .replace("-->", "</x-comment>")
+
+    val newText = replace(noComments, { case t: WtTemplate if getTemplateName(t) == template => t }, mapper)
+
+    val withComments = newText
+      .replace("<x-comment>", "<!--")
+      .replace("</x-comment>", "-->")
+
     val comment = s"adding $added image(s)"
-    (newText, comment)
+    (withComments, comment)
   }
 
   def needsUpdate(m: Monument): Boolean =
