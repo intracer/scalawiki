@@ -6,6 +6,14 @@ import play.api.libs.functional.syntax._
 
 object Koatuu {
 
+  def regions(parent: () => Option[AdmDivision] = () => None): Seq[AdmDivision] = {
+    val stream = getClass.getResourceAsStream("/koatuu.json")
+    val json = Json.parse(stream)
+
+    implicit val level2Reads: Reads[AdmDivision] = regionReads(2, parent)
+    (json \ "level1").as[Seq[AdmDivision]].map(_.withParents(parent))
+  }
+
   def regionReads(level: Int, parent: () => Option[AdmDivision] = () => None): Reads[AdmDivision] = (
     (__ \ "code").read[String].map(c => shortCode(c, level)) and
       (__ \ "name").read[String].map(betterName) and
@@ -14,14 +22,6 @@ object Koatuu {
         .map(_.getOrElse(Nil)).map(skipGroups) and
       Reads.pure(parent)
     ) (AdmDivision.apply(_, _, _, _))
-
-  def regions(parent: () => Option[AdmDivision] = () => None): Seq[AdmDivision] = {
-    val stream = getClass.getResourceAsStream("/koatuu.json")
-    val json = Json.parse(stream)
-
-    implicit val level2Reads: Reads[AdmDivision] = regionReads(2, parent)
-    (json \ "level1").as[Seq[AdmDivision]].map(_.withParents(parent))
-  }
 
   val groupNames = Seq("Міста обласного підпорядкування", "Міста", "Райони", "Селища міського типу", "Населені пункти")
     .map(_.toUpperCase)

@@ -9,17 +9,19 @@ trait AdmDivision {
 
   def name: String
 
+  override def toString = s"$name ($code)"
+
   def regions: Seq[AdmDivision] = Nil
 
   def languageCodes: Seq[String] = Nil
 
-  def withoutLangCodes = this
+  def withoutLangCodes: AdmDivision = this
 
   def parent: () => Option[AdmDivision] = () => None
 
   def regionId(monumentId: String): String = monumentId.split("-").take(2).mkString
 
-  def regionName(regId: String) = if (regId == code) name else ""
+  def regionName(regId: String): String = if (regId == code) name else ""
 
   def byId(monumentId: String): Option[AdmDivision] = if (regionId(monumentId) == code) Some(this) else None
 
