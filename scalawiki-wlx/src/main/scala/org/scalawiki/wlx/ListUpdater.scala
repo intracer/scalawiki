@@ -11,7 +11,7 @@ import org.sweble.wikitext.parser.nodes.WtTemplate
 
 object ListUpdater {
 
-  def fillLists(monumentDb: MonumentDB, monumentUpdater: MonumentUpdater) {
+  def updateLists(monumentDb: MonumentDB, monumentUpdater: MonumentUpdater) {
     val task = new ListUpdaterTask(MwBot.ukWiki, monumentDb, monumentUpdater)
     val updater = new PageUpdater(task)
     updater.update()
