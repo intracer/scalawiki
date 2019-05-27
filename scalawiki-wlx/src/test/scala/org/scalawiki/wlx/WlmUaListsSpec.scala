@@ -7,6 +7,7 @@ import org.scalawiki.wlx.query.MonumentQuery
 import org.specs2.mutable.Specification
 
 class WlmUaListsSpec extends Specification {
+  sys.props.put("jna.nosys", "true")
 
   sequential
 
