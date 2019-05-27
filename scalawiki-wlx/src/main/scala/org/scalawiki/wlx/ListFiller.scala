@@ -19,7 +19,7 @@ object ListFiller {
   }
 
   def bestImage(images: Seq[Image]) =
-    images.maxBy(image => image.size.get + image.width.get * image.height.get)
+    images.sortBy(image => image.size.get + image.width.get * image.height.get).last
 
 }
 
