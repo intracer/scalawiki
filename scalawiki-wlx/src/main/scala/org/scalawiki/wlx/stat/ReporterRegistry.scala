@@ -1,7 +1,7 @@
 package org.scalawiki.wlx.stat
 
 import org.scalawiki.MwBot
-import org.scalawiki.wlx.{ImageDB, ListFiller, MonumentDB}
+import org.scalawiki.wlx.{ImageDB, ImageFiller, MonumentDB}
 
 import scala.concurrent.ExecutionContext
 
@@ -55,7 +55,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
         }
 
         if (cfg.fillLists) {
-          ListFiller.fillLists(mDb, imageDb)
+          ImageFiller.fillLists(mDb, imageDb)
         }
 
         if (cfg.missingGallery) {
