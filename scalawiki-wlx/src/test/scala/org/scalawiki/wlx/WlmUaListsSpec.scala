@@ -2,11 +2,13 @@ package org.scalawiki.wlx
 
 import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.Site
-import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country}
+import org.scalawiki.wlx.dto.{Contest, Country}
 import org.scalawiki.wlx.query.MonumentQuery
 import org.specs2.mutable.Specification
 
 class WlmUaListsSpec extends Specification {
+
+  sequential
 
   val campaign = "wlm-ua"
   val cacheName = s"$campaign-2019"
