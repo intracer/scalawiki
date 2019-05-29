@@ -9,3 +9,5 @@ addSbtPlugin("org.scoverage" % "sbt-coveralls" % "1.2.2")
 addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.3.13")
 
 addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.4")
+
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.9")

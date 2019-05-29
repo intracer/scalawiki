@@ -28,6 +28,14 @@ lazy val commonSettings = Seq(
     val required = VersionNumber("1.8")
     val curr = VersionNumber(sys.props("java.specification.version"))
     assert(CompatibleJavaVersion(curr, required), s"Java $required or above required")
+  },
+
+  test in assembly := {},
+  assemblyMergeStrategy in assembly := {
+    case PathList("org", "xmlpull", "v1", xs@_*) => MergeStrategy.first
+    case x =>
+      val oldStrategy = (assemblyMergeStrategy in assembly).value
+      oldStrategy(x)
   }
 )
 
@@ -79,14 +87,19 @@ lazy val dumps = Project("scalawiki-dumps", file("scalawiki-dumps"))
   .settings(libraryDependencies ++=
     Seq("com.fasterxml" % "aalto-xml" % AaltoXmlV,
       Library.Commons.compress
-    ))
+    ),
+    mainClass in assembly := Some("org.scalawiki.wlx.stat.Statistics")
+  )
 
 lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings: _*)
-  .settings(libraryDependencies ++= Seq(
-    "com.github.wookietreiber" %% "scala-chart" % ScalaChartV
-  ))
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.github.wookietreiber" %% "scala-chart" % ScalaChartV
+    ),
+    assemblyJarName in assembly := s"scalawiki-wlx-$version.jar"
+  )
 
 lazy val sql = Project("scalawiki-sql", file("scalawiki-sql"))
   .dependsOn(core % "compile->compile;test->test")
@@ -98,11 +111,11 @@ lazy val sql = Project("scalawiki-sql", file("scalawiki-sql"))
   ))
 
 lazy val `http-extensions` = (project in file("http-extensions"))
-    .settings(commonSettings: _*)
-    .settings(libraryDependencies ++= Seq(
-      Library.Akka.actor,
-      Library.Akka.stream,
-      Library.Akka.http,
-      Library.Play.twirlApi,
-      "org.scalacheck" %% "scalacheck" % ScalaCheckV % Test
-    ))
+  .settings(commonSettings: _*)
+  .settings(libraryDependencies ++= Seq(
+    Library.Akka.actor,
+    Library.Akka.stream,
+    Library.Akka.http,
+    Library.Play.twirlApi,
+    "org.scalacheck" %% "scalacheck" % ScalaCheckV % Test
+  ))
