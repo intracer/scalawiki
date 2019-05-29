@@ -161,7 +161,7 @@ object Statistics {
 
     val cacheName = s"${cfg.campaign}-${contest.year}"
     val imageQuery = ImageQuery.create()(new CachedBot(Site.commons, cacheName, true))
-    val imageQueryWiki = ImageQuery.create()(new CachedBot(Site.ukWiki, cacheName + "-wiki", true))
+    val imageQueryWiki = ImageQuery.create()(new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 100))
 
     val stat = new Statistics(
       contest,
