@@ -30,6 +30,9 @@ lazy val commonSettings = Seq(
     assert(CompatibleJavaVersion(curr, required), s"Java $required or above required")
   },
 
+  assemblyJarName in assembly := {
+    s"${name.value}-${version.value}.jar"
+  },
   test in assembly := {},
   assemblyMergeStrategy in assembly := {
     case PathList("org", "xmlpull", "v1", xs@_*) => MergeStrategy.first
@@ -87,8 +90,7 @@ lazy val dumps = Project("scalawiki-dumps", file("scalawiki-dumps"))
   .settings(libraryDependencies ++=
     Seq("com.fasterxml" % "aalto-xml" % AaltoXmlV,
       Library.Commons.compress
-    ),
-    mainClass in assembly := Some("org.scalawiki.wlx.stat.Statistics")
+    )
   )
 
 lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
@@ -98,7 +100,7 @@ lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
     libraryDependencies ++= Seq(
       "com.github.wookietreiber" %% "scala-chart" % ScalaChartV
     ),
-    assemblyJarName in assembly := s"scalawiki-wlx-$version.jar"
+    mainClass in assembly := Some("org.scalawiki.wlx.stat.Statistics")
   )
 
 lazy val sql = Project("scalawiki-sql", file("scalawiki-sql"))
