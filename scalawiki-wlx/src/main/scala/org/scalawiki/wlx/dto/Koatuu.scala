@@ -12,7 +12,7 @@ object RegionTypes {
     RegionType("Р", "Район", "район"),
     RegionType("Т", "Селище міського типу", "смт"),
     RegionType("С", "Село", "село"),
-    RegionType("Щ", "Селище", "селище"),
+    RegionType("Щ", "Селище", "селище")
   )
 
   val codeToType = types.groupBy(_.code).mapValues(_.head)
