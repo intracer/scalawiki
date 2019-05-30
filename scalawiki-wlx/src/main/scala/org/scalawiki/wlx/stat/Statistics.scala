@@ -151,7 +151,7 @@ object Statistics {
 
     contest.copy(
       year = cfg.years.last,
-      rateConfig = cfg.rateConfig,
+      rateConfig = cfg.rateConfig
     )
   }
 
