@@ -25,7 +25,7 @@ object Dependencies {
   val ScalaCsvV = "1.3.5"
   val ScalaXmlV = "1.0.6"
   val Slf4jV = "1.7.25"
-  val SwcEngineV = "3.1.7"
+  val SwcEngineV = "3.1.9"
   val TypesafeConfigV = "1.3.4"
 
   val resolvers = Seq(
