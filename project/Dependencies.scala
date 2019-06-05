@@ -4,7 +4,7 @@ object Dependencies {
 
   val AaltoXmlV = "1.2.1"
   val BetterFilesAkkaV = "3.4.0"
-  val BlameApiV = "6.4.1"
+  val BlameApiV = "6.4.8"
   val ChronicleMapV = "3.14.6"
   val ChronoScalaV = "0.1.6"
   val CommandLineArgumentsV = "0.5.0"
@@ -13,7 +13,7 @@ object Dependencies {
   val H2V = "1.4.199"
   val JimFsV = "1.1"
   val JodaTimeV = "2.9.9"
-  val JSoupV = "1.8.3"
+  val JSoupV = "1.12.1"
   val LogbackClassicV = "1.2.3"
   val MockServerV = "5.3.0"
   val ReactiveStreamsV = "1.0.2"
@@ -75,7 +75,7 @@ object Dependencies {
     }
 
     object Poi {
-      val PoiV = "3.13"
+      val PoiV = "3.17"
       val PoiXwpfV = "1.0.6"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
