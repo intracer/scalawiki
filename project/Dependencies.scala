@@ -67,7 +67,7 @@ object Dependencies {
     }
 
     object Play {
-      val PlayJsonV = "2.6.9"
+      val PlayJsonV = "2.6.13"
       val TwirlV = "1.3.13"
 
       val json = "com.typesafe.play" %% "play-json" % PlayJsonV
