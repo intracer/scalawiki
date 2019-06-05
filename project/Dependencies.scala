@@ -10,7 +10,7 @@ object Dependencies {
   val CommandLineArgumentsV = "0.5.0"
   val FicusV = "1.4.3"
   val GuavaV = "20.0"
-  val H2V = "1.4.189"
+  val H2V = "1.4.199"
   val JimFsV = "1.1"
   val JodaTimeV = "2.9.9"
   val JSoupV = "1.8.3"
