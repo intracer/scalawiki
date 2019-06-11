@@ -57,8 +57,8 @@ object Dependencies {
   object Library {
 
     object Akka {
-      val AkkaV = "2.5.12"
-      val AkkaHttpV = "10.1.1"
+      val AkkaV = "2.5.23"
+      val AkkaHttpV = "10.1.8"
 
       val actor = "com.typesafe.akka" %% "akka-actor" % AkkaV
       val stream = "com.typesafe.akka" %% "akka-stream" % AkkaV
@@ -111,7 +111,7 @@ object Dependencies {
     }
 
     object Specs2 {
-      val SpecsV = "4.2.0"
+      val SpecsV = "4.5.1"
 
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV
