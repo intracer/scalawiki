@@ -2,31 +2,31 @@ import sbt._
 
 object Dependencies {
 
-  val AaltoXmlV = "1.0.0"
+  val AaltoXmlV = "1.2.1"
   val BetterFilesAkkaV = "3.4.0"
-  val BlameApiV = "6.4.1"
-  val ChronicleMapV = "3.14.5"
-  val ChronoScalaV = "0.1.5"
+  val BlameApiV = "6.4.8"
+  val ChronicleMapV = "3.14.6"
+  val ChronoScalaV = "0.1.6"
   val CommandLineArgumentsV = "0.5.0"
-  val FicusV = "1.4.3"
+  val FicusV = "1.4.6"
   val GuavaV = "20.0"
-  val H2V = "1.4.189"
+  val H2V = "1.4.199"
   val JimFsV = "1.1"
   val JodaTimeV = "2.9.9"
-  val JSoupV = "1.8.3"
+  val JSoupV = "1.12.1"
   val LogbackClassicV = "1.2.3"
   val MockServerV = "5.3.0"
   val ReactiveStreamsV = "1.0.2"
-  val RetryV = "0.3.0"
+  val RetryV = "0.3.2"
   val Scala212V = "2.12.6"
   val Scala211V = "2.11.12"
   val ScalaChartV = "0.5.1"
   val ScalaCheckV = "1.14.0"
-  val ScalaCsvV = "1.3.4"
+  val ScalaCsvV = "1.3.5"
   val ScalaXmlV = "1.0.6"
   val Slf4jV = "1.7.25"
-  val SwcEngineV = "3.1.7"
-  val TypesafeConfigV = "1.3.2"
+  val SwcEngineV = "3.1.9"
+  val TypesafeConfigV = "1.3.4"
 
   val resolvers = Seq(
     "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
@@ -67,15 +67,15 @@ object Dependencies {
     }
 
     object Play {
-      val PlayJsonV = "2.6.9"
-      val TwirlV = "1.3.13"
+      val PlayJsonV = "2.6.13"
+      val TwirlV = "1.3.15"
 
       val json = "com.typesafe.play" %% "play-json" % PlayJsonV
       val twirlApi = "com.typesafe.play" %% "twirl-api" % TwirlV
     }
 
     object Poi {
-      val PoiV = "3.13"
+      val PoiV = "3.17"
       val PoiXwpfV = "1.0.6"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
@@ -84,8 +84,8 @@ object Dependencies {
     }
 
     object Commons {
-      val CommonsCodecV = "1.10"
-      val CommonsCompressV = "1.9"
+      val CommonsCodecV = "1.12"
+      val CommonsCompressV = "1.18"
       val CommonsLang3V = "3.7"
       val CommonsIoV = "2.6"
 
@@ -104,7 +104,7 @@ object Dependencies {
     }
 
     object Slick {
-      val SlickV = "3.2.3"
+      val SlickV = "3.3.1"
 
       val slick = "com.typesafe.slick" %% "slick" % SlickV
       val hikaricp = "com.typesafe.slick" %% "slick-hikaricp" % SlickV
