@@ -42,12 +42,14 @@ class ArticleStatBot(implicit val bot: MwBot = MwBot.fromHost(MwBot.ukWiki)) ext
 
         pagesRevisions(allIds.toSeq).map { allPages =>
 
-          val revStats = allPages.map {
-            case Some(page)
-              if page.history.editedIn(revisionFilter) =>
+          val revStats = allPages.flatten.zipWithIndex.flatMap {
+            case (page, index) if page.history.editedIn(revisionFilter) =>
+              bot.log.info(s"$index/${allIds.size} making revision stat for ${page.title}")
               Some(RevisionStat.fromPage(page, revisionFilter))
-            case _ => None
-          }.flatten.toSeq.sortBy(-_.addedOrRewritten)
+            case (page, index) =>
+              bot.log.info(s"$index/${allIds.size} skipping ${page.title} because it's rejected by revision filter")
+              None
+          }.toSeq.sortBy(-_.addedOrRewritten)
 
           new EventStat(event, revStats)
         }
@@ -56,6 +58,8 @@ class ArticleStatBot(implicit val bot: MwBot = MwBot.fromHost(MwBot.ukWiki)) ext
 }
 
 case class EventStat(event: ArticlesEvent, revStats: Seq[RevisionStat]) {
+
+  println(s"making event stat for ${event.name}")
 
   val from = Some(event.start)
   val to = Some(event.end)
@@ -85,7 +89,8 @@ object ArticleStatBot {
 
     val (contests, weeks) = Events.events()
 
-    Future.sequence(contests.map(contestStat)).map(_.map(_.asWiki).mkString("\n")).map { wikitext =>
+    val sweden = weeks.find(_.newTemplate.startsWith("2019Sweden-week")).toSeq
+    Future.sequence(sweden.map(contestStat)).map(_.map(_.asWiki).mkString("\n")).map { wikitext =>
       FileUtils.write("articles.wiki", wikitext)
     }
   }
