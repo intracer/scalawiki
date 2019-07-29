@@ -1,38 +1,35 @@
 package org.scalawiki.wlx
 
 import org.scalawiki.wlx.dto.lists.ListConfig.WleUa
-import org.scalawiki.wlx.dto.{Contest, Country, Monument}
+import org.scalawiki.wlx.dto.{Contest, Country, Koatuu, Monument}
 import org.specs2.mutable.Specification
 
 class MonumentDbSpec extends Specification {
 
-  private val Ukraine = Country.Ukraine
+  val Ukraine = Country.Ukraine
+  val contest = Contest.WLMUkraine(2014)
 
-  val monuments = Ukraine.regionIds.flatMap{
+  val monuments = Ukraine.regionIds.flatMap {
     regionId =>
       (1 to regionId.toInt).map { i =>
         Monument(
           page = "",
           id = regionId + "-001-" + f"$i%04d",
-          name = "Monument in " +  Ukraine.regionName(regionId),
+          name = "Monument in " + Ukraine.regionName(regionId),
           listConfig = Some(WleUa)
         )
       }
   }
 
-   "monument db" should {
-     "contain monuments ids" in {
-       val contest = Contest.WLMUkraine(2014)
+  "monument db" should {
+    "contain monuments ids" in {
+      val db = new MonumentDB(contest, monuments.toSeq)
 
-       val db = new MonumentDB(contest, monuments.toSeq)
-
-       db.ids.size === monuments.size
-       db.ids ===  monuments.map(_.id)
-     }
+      db.ids.size === monuments.size
+      db.ids === monuments.map(_.id)
+    }
 
     "group monuments by regions" in {
-      val contest = Contest.WLMUkraine(2014)
-
       val db = new MonumentDB(contest, monuments.toSeq)
 
       val regions = db._byRegion.keySet
@@ -43,6 +40,21 @@ class MonumentDbSpec extends Specification {
 
       regions === Ukraine.regionIds
     }
-  }
 
+    "get city for Kyiv" in {
+      val regionId = "80-391"
+      val kyiv = Ukraine.byIdAndName(regionId, "Київ").head
+      val places = Seq("Київ", "м. Київ", "[[Київ]]", "м. [[Київ]]")
+
+      val monuments = places.zipWithIndex.map { case (city, index) =>
+        new Monument(name = "name", id = s"$regionId-$index", city = Some(city))
+      }
+      val mdb = new MonumentDB(contest, monuments)
+
+      monuments.map { m =>
+        val actual = mdb.getAdmDivision(m.id)
+        actual aka s"${m.city}" must beSome(kyiv)
+      }
+    }
+  }
 }

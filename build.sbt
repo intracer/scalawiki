@@ -5,9 +5,10 @@ fork in Test in ThisBuild := true
 
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
-  version := "0.5.1-SNAPSHOT",
+  version := "0.6.1-SNAPSHOT",
   scalaVersion := Scala213V,
-  crossScalaVersions := Seq(Scala212V, Scala211V, Scala213V),
+  crossScalaVersions := Seq(Scala212V, Scala211V),
+  scalacOptions := Seq("-target:jvm-1.8"),
   conflictManager := ConflictManager.strict,
   licenses += ("Apache-2.0", url("http://opensource.org/licenses/Apache-2.0")),
 
@@ -28,6 +29,17 @@ lazy val commonSettings = Seq(
     val required = VersionNumber("1.8")
     val curr = VersionNumber(sys.props("java.specification.version"))
     assert(CompatibleJavaVersion(curr, required), s"Java $required or above required")
+  },
+
+  assemblyJarName in assembly := {
+    s"${name.value}-${version.value}.jar"
+  },
+  test in assembly := {},
+  assemblyMergeStrategy in assembly := {
+    case PathList("org", "xmlpull", "v1", xs@_*) => MergeStrategy.first
+    case x =>
+      val oldStrategy = (assemblyMergeStrategy in assembly).value
+      oldStrategy(x)
   }
 )
 
@@ -53,7 +65,8 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
       Library.Commons.codec,
       "org.jsoup" % "jsoup" % JSoupV,
       "com.softwaremill.retry" %% "retry" % RetryV,
-      "net.openhft" % "chronicle-map" % ChronicleMapV
+      "net.openhft" % "chronicle-map" % ChronicleMapV,
+      "com.concurrentthought.cla" %% "command-line-arguments" % CommandLineArgumentsV
     )
   }).dependsOn(`http-extensions`)
 
@@ -78,15 +91,18 @@ lazy val dumps = Project("scalawiki-dumps", file("scalawiki-dumps"))
   .settings(libraryDependencies ++=
     Seq("com.fasterxml" % "aalto-xml" % AaltoXmlV,
       Library.Commons.compress
-    ))
+    )
+  )
 
 lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
   .dependsOn(core % "compile->compile;test->test")
   .settings(commonSettings: _*)
-  .settings(libraryDependencies ++= Seq(
-    "com.github.wookietreiber" %% "scala-chart" % ScalaChartV,
-    "com.concurrentthought.cla" %% "command-line-arguments" % CommandLineArgumentsV
-  ))
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.github.wookietreiber" %% "scala-chart" % ScalaChartV
+    ),
+    mainClass in assembly := Some("org.scalawiki.wlx.stat.Statistics")
+  )
 
 lazy val sql = Project("scalawiki-sql", file("scalawiki-sql"))
   .dependsOn(core % "compile->compile;test->test")
@@ -98,11 +114,11 @@ lazy val sql = Project("scalawiki-sql", file("scalawiki-sql"))
   ))
 
 lazy val `http-extensions` = (project in file("http-extensions"))
-    .settings(commonSettings: _*)
-    .settings(libraryDependencies ++= Seq(
-      Library.Akka.actor,
-      Library.Akka.stream,
-      Library.Akka.http,
-      Library.Play.twirlApi,
-      "org.scalacheck" %% "scalacheck" % ScalaCheckV % Test
-    ))
+  .settings(commonSettings: _*)
+  .settings(libraryDependencies ++= Seq(
+    Library.Akka.actor,
+    Library.Akka.stream,
+    Library.Akka.http,
+    Library.Play.twirlApi,
+    "org.scalacheck" %% "scalacheck" % ScalaCheckV % Test
+  ))

@@ -5,7 +5,7 @@ install:
       Add-Type -AssemblyName System.IO.Compression.FileSystem
       if (!(Test-Path -Path "C:\sbt" )) {
         (new-object System.Net.WebClient).DownloadFile(
-          'https://dl.bintray.com/sbt/native-packages/sbt/0.13.8/sbt-0.13.8.zip',
+          'https://piccolo.link/sbt-1.2.8.zip',
           'C:\sbt-bin.zip'
         )
         [System.IO.Compression.ZipFile]::ExtractToDirectory("C:\sbt-bin.zip", "C:\sbt")
@@ -13,7 +13,7 @@ install:
   - cmd: SET PATH=C:\sbt\sbt\bin;%JAVA_HOME%\bin;%PATH%
   - cmd: SET SBT_OPTS=-XX:MaxPermSize=2g -Xmx4g
 build_script:
-  - sbt clean compile test
+  - sbt "-Djna.nosys=true" ";clean; compile; test"
 cache:
   - C:\Users\appveyor\.m2
   - C:\Users\appveyor\.ivy2

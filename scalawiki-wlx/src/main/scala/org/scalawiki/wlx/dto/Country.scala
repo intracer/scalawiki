@@ -9,26 +9,26 @@ trait AdmDivision {
 
   def name: String
 
-  def regions: Seq[AdmDivision] = Nil
+  def regionType: Option[RegionType]
+
+  override def toString = s"$name ($code)"
+
+  def regions: Seq[AdmDivision]
+
+  def parent: () => Option[AdmDivision]
 
   def languageCodes: Seq[String] = Nil
 
-  def withoutLangCodes = this
-
-  def parent: () => Option[AdmDivision] = () => None
-
-  val regionIds: SortedSet[String] = SortedSet(regions.map(_.code): _*)
-
-  val regionNames: Seq[String] = regions.sortBy(_.code).map(_.name)
-
-  val regionById: Map[String, AdmDivision] = regions.groupBy(_.code).mapValues(_.head)
-
-  def regionName(regId: String) = regionById.get(regId).map(_.name).getOrElse("")
+  def withoutLangCodes: AdmDivision = this
 
   def regionId(monumentId: String): String = monumentId.split("-").take(2).mkString
 
-  def byId(monumentId: String): Option[AdmDivision] = {
-    regionById.get(regionId(monumentId)).flatMap(region => region.byId(monumentId).orElse(Some(region)))
+  def regionName(regId: String): String = if (regId == code) name else ""
+
+  def byId(monumentId: String): Option[AdmDivision] = if (regionId(monumentId) == code) Some(this) else None
+
+  def byName(name: String): Seq[AdmDivision] = {
+    Seq(this).filter(_.name == name) ++ regions.flatMap(_.byName(name))
   }
 
   def byRegion(monumentIds: Set[String]): Map[AdmDivision, Set[String]] = {
@@ -38,26 +38,148 @@ trait AdmDivision {
       .groupBy { case (id, adm) => adm }
       .mapValues(_.toMap.keySet)
   }
+
+  def byIdAndName(regionId: String, rawName: String): Seq[AdmDivision] = {
+    val cleanName = AdmDivision.cleanName(rawName)
+
+    val candidates = byId(regionId).map { region =>
+      val here = region.byName(cleanName)
+      if (here.isEmpty) {
+        region.parent().map(_.byName(cleanName)).getOrElse(Nil)
+      } else {
+        here
+      }
+    }.getOrElse(Nil)
+
+    val types = RegionTypes.abbreviationToType.filter { case (abbreviation, _) =>
+      rawName.contains(abbreviation)
+    }.values.toSet
+
+    if (candidates.size > 1 && types.nonEmpty) {
+      candidates.filter(c => c.regionType.exists(types.contains))
+    } else {
+      candidates
+    }
+  }
+
+  def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision
+
+  def regionsWithParents(): Seq[AdmDivision] = {
+    regions.map(_.withParents(() => Some(this)))
+  }
 }
 
-case class NoAdmDivision(code: String = "", name: String = "") extends AdmDivision
+trait AdmRegion extends AdmDivision {
+  lazy val regionIds: SortedSet[String] = SortedSet(regions.map(_.code): _*)
+
+  lazy val regionNames: Seq[String] = regions.sortBy(_.code).map(_.name)
+
+  lazy val regionById: Map[String, AdmDivision] = regions.groupBy(_.code).mapValues(_.head)
+
+  override def regionName(regId: String) = regionById.get(regId).map(_.name).getOrElse("")
+
+  override def byId(monumentId: String): Option[AdmDivision] = {
+    regionById.get(regionId(monumentId)).flatMap(region => region.byId(monumentId).orElse(Some(region)))
+  }
+}
+
+
+case class NoAdmDivision(code: String = "", name: String = "") extends AdmRegion {
+  override val regions: Seq[AdmDivision] = Nil
+
+  override def withParents(parent: () => Option[AdmDivision]): AdmDivision = this
+
+  override val parent: () => Option[AdmDivision] = () => None
+
+  override def regionType: Option[RegionType] = None
+}
 
 case class Country(code: String,
                    name: String,
                    override val languageCodes: Seq[String] = Nil,
-                   override val regions: Seq[AdmDivision] = Nil
-                  ) extends AdmDivision {
+                   var regions: Seq[AdmDivision] = Nil
+                  ) extends AdmRegion {
+
+  val parent: () => Option[AdmDivision] = () => None
 
   override def withoutLangCodes = copy(languageCodes = Nil)
 
   override def regionId(monumentId: String): String = monumentId.split("-").head
 
+  override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
+    regions = regionsWithParents()
+    this
+  }
+
+  override def regionType: Option[RegionType] = None
 }
 
 case class Region(code: String, name: String,
-                  override val regions: Seq[Region] = Nil,
-                  override val parent: () => Option[AdmDivision] = () => None)
-  extends AdmDivision
+                  var regions: Seq[AdmDivision] = Nil,
+                  var parent: () => Option[AdmDivision] = () => None,
+                  regionType: Option[RegionType] = None)
+  extends AdmRegion {
+
+  override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
+    this.parent = parent
+    this.regions = regionsWithParents()
+    this
+  }
+}
+
+case class NoRegions(code: String, name: String,
+                     var parent: () => Option[AdmDivision] = () => None,
+                     regionType: Option[RegionType] = None)
+  extends AdmDivision {
+
+  val regions: Seq[AdmDivision] = Nil
+
+  override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
+    this.parent = parent
+    this
+  }
+
+}
+
+object AdmDivision {
+  def apply(code: String, name: String,
+            regions: Seq[AdmDivision],
+            parent: () => Option[AdmDivision],
+            regionType: Option[RegionType]): AdmDivision = {
+    if (regions.isEmpty) {
+      NoRegions(code, name, parent, regionType)
+    } else {
+      Region(code, name, regions, parent, regionType)
+    }
+  }
+
+  def cleanName(raw: String): String = {
+    raw
+      .replace("р-н", "район")
+      .replace("сільська рада", "")
+      .replace("селищна рада", "")
+      .replace("[[", "")
+      .replace("]]", "")
+      .replace("&nbsp;", "")
+      .replace("м.", "")
+      .replace("с.", "")
+      .replace("С.", "")
+      .replace(".", "")
+      .replace("село", "")
+      .replace("сел.", "")
+      .replace("смт", "")
+      .replace("Смт", "")
+      .replace("с-ще", "")
+      .replace("'''", "")
+      .replace("''", "")
+      .replace("’", "'")
+      .replace("”", "'")
+      .split("\\(").head
+      .split("\\|").head
+      .trim
+  }
+
+}
 
 object Country {
 
@@ -81,7 +203,6 @@ object Country {
           countryCode -> langs.toSeq
       }
   }
-
 
   def fromJavaLocales: Seq[Country] = {
 

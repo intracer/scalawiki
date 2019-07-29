@@ -29,7 +29,19 @@ case class ContestStat(contest: Contest,
                        currentYearImageDb: Option[ImageDB],
                        totalImageDb: Option[ImageDB],
                        dbsByYear: Seq[ImageDB] = Seq.empty,
-                       monumentDbOld: Option[MonumentDB] = None)
+                       monumentDbOld: Option[MonumentDB] = None) {
+
+  val imageDbsByYear = dbsByYear.groupBy(_.contest.year)
+  val yearSeq = imageDbsByYear.keys.toSeq.sorted
+
+  def imageDbByYear(year: Int) = imageDbsByYear.get(year).map(_.head)
+
+  def mapYears[T](f: ImageDB => T) = {
+    for (year <- yearSeq;
+         imageDb <- imageDbByYear(year))
+      yield f(imageDb)
+  }
+}
 
 /**
   * Coordinates fetching contest statistics and creating reports/galleries etc. Needs refactoring.
@@ -132,19 +144,24 @@ class Statistics(contest: Contest,
 
 object Statistics {
 
+  def getContest(cfg: StatConfig): Contest = {
+    val contest = Contest.byCampaign(cfg.campaign).getOrElse {
+      throw new IllegalArgumentException(s"Unknown campaign: ${cfg.campaign}")
+    }
+
+    contest.copy(
+      year = cfg.years.last,
+      rateConfig = cfg.rateConfig
+    )
+  }
 
   def main(args: Array[String]) {
     val cfg = StatParams.parse(args)
-
-    val contest = Contest.byCampaign(cfg.campaign).get
-      .copy(
-        year = cfg.years.last,
-        rateConfig = cfg.rateConfig,
-      )
+    val contest = getContest(cfg)
 
     val cacheName = s"${cfg.campaign}-${contest.year}"
     val imageQuery = ImageQuery.create()(new CachedBot(Site.commons, cacheName, true))
-    val imageQueryWiki = ImageQuery.create()(new CachedBot(Site.ukWiki, cacheName + "-wiki", true))
+    val imageQueryWiki = ImageQuery.create()(new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 100))
 
     val stat = new Statistics(
       contest,

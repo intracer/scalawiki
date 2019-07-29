@@ -2,8 +2,6 @@ package org.scalawiki.wlx.stat
 
 import java.time.ZonedDateTime
 
-import com.concurrentthought.cla.Opt
-
 import scala.util.Try
 
 case class StatConfig(campaign: String,

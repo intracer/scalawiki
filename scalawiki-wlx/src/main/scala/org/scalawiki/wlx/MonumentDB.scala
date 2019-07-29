@@ -2,7 +2,7 @@ package org.scalawiki.wlx
 
 import java.time.{ZoneOffset, ZonedDateTime}
 
-import org.scalawiki.wlx.dto.{Contest, Monument}
+import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Monument}
 import org.scalawiki.wlx.query.MonumentQuery
 
 class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFalseIds: Boolean = true) {
@@ -35,6 +35,15 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
   def withImages = monuments.filter(_.photo.isDefined)
 
+  def picturedIds = withImages.map(_.id).toSet
+
+  def picturedInRegion(regionId: String) = byRegion(regionId).map(_.id).toSet intersect picturedIds
+
+  def getAdmDivision(monumentId: String): Option[AdmDivision] = {
+    for (monument <- byId(monumentId);
+         division <- Country.Ukraine.byIdAndName(monument.regionId, monument.cityName).headOption
+    ) yield division
+  }
 }
 
 
