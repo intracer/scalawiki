@@ -20,7 +20,7 @@ object Dependencies {
   val RetryV = "0.3.3"
   val Scala212V = "2.12.6"
   val Scala211V = "2.11.12"
-  val Scala213V = "2.13.0-M5"
+  val Scala213V = "2.13.0"
   val ScalaChartV = "0.5.1"
   val ScalaCheckV = "1.14.0"
   val ScalaCsvV = "1.3.6"
@@ -68,13 +68,11 @@ object Dependencies {
     }
 
     object Play {
-      val PlayJsonV = "2.6.13"
-      val TwirlV = "1.3.15"
-      val PlayJsonV = "2.7.2"
-      val TwirlV = "1.4.0"
+      def PlayJsonV(isScala213: Boolean) = if (isScala213) "2.7.4" else "2.6.13"
+      def TwirlV(isScala213: Boolean) = if (isScala213) "1.4.2" else "1.3.15"
 
-      val json = "com.typesafe.play" %% "play-json" % PlayJsonV
-      val twirlApi = "com.typesafe.play" %% "twirl-api" % TwirlV
+      def json(isScala213: Boolean) = "com.typesafe.play" %% "play-json" % PlayJsonV(isScala213)
+      def twirlApi(isScala213: Boolean) = "com.typesafe.play" %% "twirl-api" % TwirlV(isScala213)
     }
 
     object Poi {

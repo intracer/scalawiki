@@ -3,11 +3,14 @@ import Dependencies._
 
 fork in Test in ThisBuild := true
 
+lazy val isScala213 = settingKey[Boolean]("Is the scala version 2.13.")
+
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
   version := "0.6.1-SNAPSHOT",
-  scalaVersion := Scala213V,
-  crossScalaVersions := Seq(Scala212V, Scala211V),
+  crossScalaVersions := Seq(Scala211V, Scala212V, Scala213V),
+  scalaVersion := crossScalaVersions.value.last,
+  isScala213 := scalaVersion.value.startsWith("2.13."),
   scalacOptions := Seq("-target:jvm-1.8"),
   conflictManager := ConflictManager.strict,
   licenses += ("Apache-2.0", url("http://opensource.org/licenses/Apache-2.0")),
@@ -56,7 +59,7 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
       Library.Akka.stream,
       Library.Akka.http,
       Library.Akka.httpCaching,
-      Library.Play.json,
+      Library.Play.json(isScala213.value),
       "com.typesafe" % "config" % TypesafeConfigV,
       "com.iheart" %% "ficus" % FicusV,
       "jp.ne.opt" %% "chronoscala" % ChronoScalaV,
@@ -80,7 +83,7 @@ lazy val bots = Project("scalawiki-bots", file("scalawiki-bots"))
     Library.Poi.scratchpad,
     Library.Poi.ooxml,
     Library.Poi.converter,
-    Library.Play.twirlApi,
+    Library.Play.twirlApi(isScala213.value),
     "com.github.tototoshi" %% "scala-csv" % ScalaCsvV
   ))
   .enablePlugins(SbtTwirl)
@@ -119,6 +122,5 @@ lazy val `http-extensions` = (project in file("http-extensions"))
     Library.Akka.actor,
     Library.Akka.stream,
     Library.Akka.http,
-    Library.Play.twirlApi,
     "org.scalacheck" %% "scalacheck" % ScalaCheckV % Test
   ))
