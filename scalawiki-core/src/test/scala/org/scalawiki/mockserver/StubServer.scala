@@ -1,27 +1,25 @@
 package org.scalawiki.mockserver
 
-import org.specs2.specification.BeforeAfterAll
-
 import org.mockserver.integration.ClientAndProxy.startClientAndProxy
 import org.mockserver.integration.ClientAndServer.startClientAndServer
+import org.specs2.specification.BeforeAfterEach
 
-trait StubServer extends BeforeAfterAll {
+trait StubServer extends BeforeAfterEach  {
   val Port = 8080
   val Host = "localhost"
   val Protocol = "http"
 
-  import org.mockserver.integration.ClientAndProxy
-  import org.mockserver.integration.ClientAndServer
+  import org.mockserver.integration.{ClientAndProxy, ClientAndServer}
 
   var mockServer: ClientAndServer = _
   var proxy: ClientAndProxy = _
 
-  override def beforeAll = {
+  override def before = {
     mockServer = startClientAndServer(Port)
     proxy = startClientAndProxy(Port + 10)
   }
 
-  override def afterAll = {
+  override def after = {
     proxy.stop()
     mockServer.stop()
   }

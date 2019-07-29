@@ -279,7 +279,7 @@ class AuthorsMonumentsSpec extends Specification {
 
       table.headers.slice(0, 10) === Seq("User", "Objects pictured", "Existing", "New for author", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
 
-      data.head === Seq("Total", "4", "0", "0", "4", "12", "5", "2", "1", "1") ++ Seq.fill(24)("0")
+      data.head === Seq("Total", "4", "0", "0", "4", "4", "5", "2", "1", "1") ++ Seq.fill(24)("0")
 
       data.slice(1, 6) ===
         Seq(
@@ -325,7 +325,7 @@ class AuthorsMonumentsSpec extends Specification {
 
       table.headers.slice(0, 10) === Seq("User", "Objects pictured", "Existing", "New for author", "New", "Rating", "Photos uploaded", "Автономна Республіка Крим", "Вінницька область", "Волинська область")
 
-      data.head === Seq("Total", "4", "0", "1", "3", "10", "5", "2", "1", "1") ++ Seq.fill(24)("0")
+      data.head === Seq("Total", "4", "0", "1", "3", "4", "5", "2", "1", "1") ++ Seq.fill(24)("0")
 
       data.slice(1, 9) ===
         Seq(

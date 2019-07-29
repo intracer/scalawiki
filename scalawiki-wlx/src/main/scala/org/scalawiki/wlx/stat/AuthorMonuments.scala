@@ -25,16 +25,11 @@ class AuthorMonuments(val stat: ContestStat,
 
   val oldIds = oldImageDb.ids
 
-  def ratingFunc(allIds: Set[String], oldIds: Set[String], oldAuthorIds: Set[String]): Int =
-    allIds.size + contest.rateConfig.newObjectRating.fold(0) {
-      rating => (allIds -- oldIds).size * (rating - 1)
-    } + contest.rateConfig.newAuthorObjectRating.fold(0) {
-      rating => ((allIds intersect oldIds) -- oldAuthorIds).size * (rating - 1)
-    }
+  val rater = Rater.create(stat)
 
-  def rowData(ids: Set[String], images: Int,
-              regionRating: String => Int,
-              userOpt: Option[String] = None): Seq[String] = {
+  val monumentDb = stat.monumentDb.get
+
+  def rowData(ids: Set[String], images: Int, userOpt: Option[String] = None): Seq[String] = {
 
     val objects = optionalUserGalleryLink(ids.size, userOpt)
 
@@ -44,15 +39,48 @@ class AuthorMonuments(val stat: ContestStat,
         (ids intersect oldIds intersect oldAuthorIds).size, // existing
         (ids intersect oldIds -- oldAuthorIds).size, // new for author
         (ids -- oldIds).size, // new
-        ratingFunc(ids, oldIds, oldAuthorIds) // rating
+        userOpt.map { user =>
+          rater.rateMonumentIds(ids, user).toString
+        }.getOrElse(ids.size)
       )
     } else Seq.empty[String]
 
-    val byRegion = country.regionIds.toSeq.map{ regionId =>
-      optionalUserGalleryLink(regionRating(regionId), userOpt, country.regionById.get(regionId).map(_.name))
+    val byRegion = country.regionIds.toSeq.map { regionId =>
+      val regionIds = monumentDb.byRegion(regionId).map(_.id).toSet
+      val currentIds = regionIds intersect ids
+      val rating = userOpt.map(user => rater.rateMonumentIds(currentIds, user)).getOrElse(currentIds.size)
+      optionalUserGalleryLink(rating, userOpt, country.regionById.get(regionId).map(_.name))
     }
 
     ((objects +: ratingColumns :+ images) ++ byRegion).map(_.toString)
+  }
+
+  override def table: Table = {
+
+    val columns = Seq("User", "Objects pictured") ++
+      (if (contest.rateConfig.newObjectRating.isDefined) Seq("Existing", "New for author", "New", "Rating") else Seq.empty) ++
+      Seq("Photos uploaded") ++
+      country.regionNames
+
+    val totalData = "Total" +: rowData(imageDb.ids, imageDb.images.size)
+
+    val authorsRating = imageDb.authors.map { user =>
+      user -> rater.rateMonumentIds(imageDb.idByAuthor(user), user)
+    }.toMap
+
+    val authors = imageDb.authors.toSeq.sortBy { user =>
+      (-authorsRating(user), user)
+    }
+
+    val authorsData = authors.map { user =>
+      val noTemplateUser = user.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
+      val userLink = s"[[User:$noTemplateUser|$noTemplateUser]]"
+
+      userLink +:
+        rowData(imageDb._byAuthorAndId.by(user).keys, imageDb._byAuthor.by(user).size, Some(user))
+    }
+
+    Table(columns, totalData +: authorsData, name)
   }
 
   private def optionalUserGalleryLink(number: Int, userOpt: Option[String], regionOpt: Option[String] = None) = {
@@ -78,39 +106,4 @@ class AuthorMonuments(val stat: ContestStat,
 
     "[[" + galleryPage + "|" + number + "]]"
   }
-
-  override def table: Table = {
-
-    val columns = Seq("User", "Objects pictured") ++
-      (if (contest.rateConfig.newObjectRating.isDefined) Seq("Existing", "New for author", "New", "Rating") else Seq.empty) ++
-      Seq("Photos uploaded") ++
-      country.regionNames
-
-    val totalData = "Total" +:
-      rowData(imageDb.ids, imageDb.images.size, regId => imageDb.idsByRegion(regId).size)
-
-    val authors = imageDb.authors.toSeq.sortBy { user =>
-        val rating = ratingFunc(allIds = imageDb.idByAuthor(user),
-          oldIds,
-          oldAuthorIds = oldImageDb.idByAuthor(user))
-        (-rating, user)
-    }
-
-    val authorsData = authors.map { user =>
-      val noTemplateUser = user.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
-      val userLink = s"[[User:$noTemplateUser|$noTemplateUser]]"
-
-      def userRating(regId: String) = {
-        val monumentsInRegion = imageDb._byAuthorAndRegion.by(user, regId).flatMap(_.monumentId).toSet
-        val oldMonumentsInRegion = oldImageDb._byAuthorAndRegion.by(user, regId).flatMap(_.monumentId).toSet
-        ratingFunc(monumentsInRegion, oldIds, oldMonumentsInRegion)
-      }
-
-      userLink +:
-        rowData(imageDb._byAuthorAndId.by(user).keys, imageDb._byAuthor.by(user).size, userRating, Some(user))
-    }
-
-    new Table(columns, totalData +: authorsData, name)
-  }
-
 }

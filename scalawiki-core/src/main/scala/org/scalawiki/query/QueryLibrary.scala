@@ -16,7 +16,7 @@ import scala.concurrent.Future
 
 trait QueryLibrary {
 
-  def imagesByGenerator(generator: Generator, withUrl: Boolean = false): Action = {
+  def imagesByGenerator(generator: Generator, withUrl: Boolean = false, rvSlots: Option[String] = None): Action = {
     import org.scalawiki.dto.cmd.query.prop._
 
     val iiProps = Seq(Timestamp, iiprop.User, iiprop.Size, iiprop.Metadata) ++ (if (withUrl) Seq(iiprop.Url) else Seq.empty)
@@ -24,8 +24,10 @@ trait QueryLibrary {
     Action(Query(
       Prop(
         Info(),
-        Revisions(RvProp(rvprop.Ids, rvprop.Content, rvprop.Timestamp, rvprop.User, rvprop.UserId)),
-        ImageInfo(IiProp(iiProps:_*))
+        Revisions(
+          Seq(RvProp(rvprop.Ids, rvprop.Content, rvprop.Timestamp, rvprop.User, rvprop.UserId)) ++ rvSlots.map(s => RvSlots(s)).toSeq: _*
+        ),
+        ImageInfo(IiProp(iiProps: _*))
       ),
       generator
     ))

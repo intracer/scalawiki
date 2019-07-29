@@ -32,6 +32,8 @@ case class Monument(page: String = "",
                     listConfig: Option[ListConfig] = None
                    ) {
 
+  val cityName = AdmDivision.cleanName(city.getOrElse(""))
+
   def toUrls = Monument.wikiLinkToUrl(name + " * " + place, "uk.wikipedia.org")
 
   def galleryLink = gallery.fold("") { title => s" [[:Category:$title|$title]]" }

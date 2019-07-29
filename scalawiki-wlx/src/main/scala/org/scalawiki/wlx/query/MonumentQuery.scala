@@ -2,7 +2,7 @@ package org.scalawiki.wlx.query
 
 import java.time.ZonedDateTime
 
-import org.scalawiki.WithBot
+import org.scalawiki.{ActionBot, MwBot, WithBot}
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{PageIdsParam, Query}
@@ -31,7 +31,7 @@ trait MonumentQuery {
     Await.result(byPageAsync(page, template, pageIsTemplate), 15.minutes): Seq[Monument]
 }
 
-class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot with QueryLibrary {
+class MonumentQueryApi(val contest: Contest)(implicit val bot: MwBot) extends MonumentQuery with QueryLibrary {
 
   val host = getHost.get
 
@@ -115,7 +115,8 @@ class MonumentQueryApi(val contest: Contest) extends MonumentQuery with WithBot 
 
 object MonumentQuery {
 
-  def create(contest: Contest): MonumentQuery = new MonumentQueryApi(contest)
+  def create(contest: Contest)(implicit bot: MwBot = MwBot.fromHost(MwBot.ukWiki)): MonumentQuery =
+    new MonumentQueryApi(contest)(bot)
 
 }
 

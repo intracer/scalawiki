@@ -1,5 +1,6 @@
 package org.scalawiki
 
+
 import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import akka.http.caching.LfuCache
@@ -16,6 +17,8 @@ import play.api.libs.json._
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import scala.util.control.NonFatal
+import java.lang.Throwable
 
 trait ActionBot {
 
@@ -168,7 +171,11 @@ class MwBotImpl(val site: Site,
   override def run(action: Action,
                    context: Map[String, String] = Map.empty,
                    limit: Option[Long] = None): Future[Seq[Page]] = {
-    new DslQuery(action, this, context).run(limit = limit)
+    new DslQuery(action, this, context).run(limit = limit).recover {
+      case t: Throwable =>
+        log.error(t, s"Error ${t.getMessage} running action" + action)
+        throw t
+    }
   }
 
   def get[T](reads: Reads[T], params: (String, String)*): Future[T] =
