@@ -41,6 +41,16 @@ class ImageSpec extends Specification {
       image.monumentId === Some("nature-park-id")
     }
 
+    "parse two monuments" in {
+      val wiki = makeTemplate("[[User:PhotoMaster|PhotoMaster]]", "{{Monument|id1}}{{Monument|id2}}")
+
+      val page = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(wiki)))
+      val image = Image.fromPageRevision(page, Some("Monument")).get
+
+      image.author === Some("PhotoMaster")
+      image.monumentId === Some("id1")
+    }
+
     "parse categories" in {
       val text = """=={{int:filedesc}}==
                    |{{Information
@@ -71,8 +81,6 @@ class ImageSpec extends Specification {
         "Obviously ineligible submissions for WLM 2018 in Ukraine",
         "Saint Nicholas Church on Water")
     }
-
-
   }
 
   "resize" should {
