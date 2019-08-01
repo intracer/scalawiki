@@ -97,7 +97,7 @@ class AuthorsMonumentsSpec extends Specification {
 
     "have 1 image with author and monument with undefined regions" in {
       val user = "user"
-      val images = Seq(Image("image1.jpg", author = Some(user), monumentId = Some("123"), pageId = Some(1)))
+      val images = Seq(Image("image1.jpg", author = Some(user), monumentIds = List("123"), pageId = Some(1)))
       val monuments = Seq(new Monument(id = "123", name = "123 monument"))
 
       val table = getTable(images, monuments)
@@ -113,7 +113,7 @@ class AuthorsMonumentsSpec extends Specification {
     "have 1 image with author and monument no regions" in {
       val noRegions = contest.copy(country = Country.Azerbaijan)
       val user = "user"
-      val images = Seq(Image("image1.jpg", author = Some(user), monumentId = Some("123"), pageId = Some(1)))
+      val images = Seq(Image("image1.jpg", author = Some(user), monumentIds = List("123"), pageId = Some(1)))
       val monuments = Seq(new Monument(id = "123", name = "123 monument"))
 
       val table = getTable(images, monuments, noRegions)
@@ -129,7 +129,7 @@ class AuthorsMonumentsSpec extends Specification {
     "link to user details" in {
       val noRegions = contest.copy(country = Country.Azerbaijan)
       val user = "user"
-      val images = Seq(Image("image1.jpg", author = Some(user), monumentId = Some("123"), pageId = Some(1)))
+      val images = Seq(Image("image1.jpg", author = Some(user), monumentIds = List("123"), pageId = Some(1)))
       val monuments = Seq(new Monument(id = "123", name = "123 monument"))
 
       val table = getTable(images, monuments, noRegions, gallery = true)
@@ -146,15 +146,15 @@ class AuthorsMonumentsSpec extends Specification {
       val noRegions = contest.copy(country = Country.Azerbaijan)
       val (user1, user2) = ("user1", "user2")
       val images = Seq(
-        Image("image11.jpg", author = Some(user1), monumentId = Some("11"), pageId = Some(111)),
-        Image("image12.jpg", author = Some(user1), monumentId = Some("11"), pageId = Some(112)),
-        Image("image13.jpg", author = Some(user1), monumentId = Some("12"), pageId = Some(113)),
+        Image("image11.jpg", author = Some(user1), monumentIds = List("11"), pageId = Some(111)),
+        Image("image12.jpg", author = Some(user1), monumentIds = List("11"), pageId = Some(112)),
+        Image("image13.jpg", author = Some(user1), monumentIds = List("12"), pageId = Some(113)),
 
-        Image("image21.jpg", author = Some(user2), monumentId = Some("21"), pageId = Some(121)),
-        Image("image22.jpg", author = Some(user2), monumentId = Some("22"), pageId = Some(122)),
-        Image("image23.jpg", author = Some(user2), monumentId = Some("22"), pageId = Some(123)),
-        Image("image24.jpg", author = Some(user2), monumentId = Some("23"), pageId = Some(124)),
-        Image("image25.jpg", author = Some(user2), monumentId = Some("24"), pageId = Some(125))
+        Image("image21.jpg", author = Some(user2), monumentIds = List("21"), pageId = Some(121)),
+        Image("image22.jpg", author = Some(user2), monumentIds = List("22"), pageId = Some(122)),
+        Image("image23.jpg", author = Some(user2), monumentIds = List("22"), pageId = Some(123)),
+        Image("image24.jpg", author = Some(user2), monumentIds = List("23"), pageId = Some(124)),
+        Image("image25.jpg", author = Some(user2), monumentIds = List("24"), pageId = Some(125))
       )
 
       val monuments = Seq(
@@ -177,11 +177,11 @@ class AuthorsMonumentsSpec extends Specification {
 
     "with regions in" in {
       val images2 = Seq(
-        Image("File:Img11y2f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimeaOld"), pageId = Some(11)),
-        Image("File:Img12y2f1.jpg", monumentId = Some("01-xxx-0002"), author = Some("FromCrimeaNew"), pageId = Some(12)),
-        Image("File:Img52y2f1.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillyaNew1"), pageId = Some(5121)),
-        Image("File:Img52y2f2.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillyaNew2"), pageId = Some(5222)),
-        Image("File:Img72y2f1.jpg", monumentId = Some("07-xxx-0002"), author = Some("FromVolynNew"), pageId = Some(72))
+        Image("File:Img11y2f1.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimeaOld"), pageId = Some(11)),
+        Image("File:Img12y2f1.jpg", monumentIds = List("01-xxx-0002"), author = Some("FromCrimeaNew"), pageId = Some(12)),
+        Image("File:Img52y2f1.jpg", monumentIds = List("05-xxx-0002"), author = Some("FromPodillyaNew1"), pageId = Some(5121)),
+        Image("File:Img52y2f2.jpg", monumentIds = List("05-xxx-0002"), author = Some("FromPodillyaNew2"), pageId = Some(5222)),
+        Image("File:Img72y2f1.jpg", monumentIds = List("07-xxx-0002"), author = Some("FromVolynNew"), pageId = Some(72))
       )
 
       val mDb = new MonumentDB(contest,
@@ -213,11 +213,11 @@ class AuthorsMonumentsSpec extends Specification {
 
     "rate no new images" in {
       val images2 = Seq(
-        Image("File:Img11y2f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimeaOld"), pageId = Some(11)),
-        Image("File:Img12y2f1.jpg", monumentId = Some("01-xxx-0002"), author = Some("FromCrimeaNew"), pageId = Some(12)),
-        Image("File:Img52y2f1.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillyaNew1"), pageId = Some(5221)),
-        Image("File:Img52y2f2.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillyaNew2"), pageId = Some(5222)),
-        Image("File:Img72y2f1.jpg", monumentId = Some("07-xxx-0002"), author = Some("FromVolynNew"), pageId = Some(72))
+        Image("File:Img11y2f1.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimeaOld"), pageId = Some(11)),
+        Image("File:Img12y2f1.jpg", monumentIds = List("01-xxx-0002"), author = Some("FromCrimeaNew"), pageId = Some(12)),
+        Image("File:Img52y2f1.jpg", monumentIds = List("05-xxx-0002"), author = Some("FromPodillyaNew1"), pageId = Some(5221)),
+        Image("File:Img52y2f2.jpg", monumentIds = List("05-xxx-0002"), author = Some("FromPodillyaNew2"), pageId = Some(5222)),
+        Image("File:Img72y2f1.jpg", monumentIds = List("07-xxx-0002"), author = Some("FromVolynNew"), pageId = Some(72))
       )
 
       val mDb = new MonumentDB(contest,
@@ -255,11 +255,11 @@ class AuthorsMonumentsSpec extends Specification {
 
     "rate with all new images" in {
       val images2 = Seq(
-        Image("File:Img11y2f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimeaOld"), pageId = Some(11)),
-        Image("File:Img12y2f1.jpg", monumentId = Some("01-xxx-0002"), author = Some("FromCrimeaNew"), pageId = Some(12)),
-        Image("File:Img52y2f1.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillyaNew1"), pageId = Some(5221)),
-        Image("File:Img52y2f2.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillyaNew2"), pageId = Some(5222)),
-        Image("File:Img72y2f1.jpg", monumentId = Some("07-xxx-0002"), author = Some("FromVolynNew"), pageId = Some(72))
+        Image("File:Img11y2f1.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimeaOld"), pageId = Some(11)),
+        Image("File:Img12y2f1.jpg", monumentIds = List("01-xxx-0002"), author = Some("FromCrimeaNew"), pageId = Some(12)),
+        Image("File:Img52y2f1.jpg", monumentIds = List("05-xxx-0002"), author = Some("FromPodillyaNew1"), pageId = Some(5221)),
+        Image("File:Img52y2f2.jpg", monumentIds = List("05-xxx-0002"), author = Some("FromPodillyaNew2"), pageId = Some(5222)),
+        Image("File:Img72y2f1.jpg", monumentIds = List("07-xxx-0002"), author = Some("FromVolynNew"), pageId = Some(72))
       )
 
       val mDb = new MonumentDB(contest,
@@ -293,17 +293,17 @@ class AuthorsMonumentsSpec extends Specification {
 
     "order by rate in" in {
       val images1 = Seq(
-        Image("File:Img11y1f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimea"), pageId = Some(1111)),
-        Image("File:Img51y1f1.jpg", monumentId = Some("05-xxx-0001"), author = Some("FromPodillya"), pageId = Some(51)),
-        Image("File:Img71y1f1.jpg", monumentId = Some("07-xxx-0001"), author = Some("FromVolyn"), pageId = Some(71))
+        Image("File:Img11y1f1.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimea"), pageId = Some(1111)),
+        Image("File:Img51y1f1.jpg", monumentIds = List("05-xxx-0001"), author = Some("FromPodillya"), pageId = Some(51)),
+        Image("File:Img71y1f1.jpg", monumentIds = List("07-xxx-0001"), author = Some("FromVolyn"), pageId = Some(71))
       )
 
       val images2 = Seq(
-        Image("File:Img11y2f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimeaOld"), pageId = Some(1121)),
-        Image("File:Img12y2f1.jpg", monumentId = Some("01-xxx-0002"), author = Some("FromCrimeaNew"), pageId = Some(1221)),
-        Image("File:Img52y2f1.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillyaNew1"), pageId = Some(5221)),
-        Image("File:Img52y2f2.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillyaNew2"), pageId = Some(5222)),
-        Image("File:Img72y2f1.jpg", monumentId = Some("07-xxx-0002"), author = Some("FromVolynNew"), pageId = Some(72))
+        Image("File:Img11y2f1.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimeaOld"), pageId = Some(1121)),
+        Image("File:Img12y2f1.jpg", monumentIds = List("01-xxx-0002"), author = Some("FromCrimeaNew"), pageId = Some(1221)),
+        Image("File:Img52y2f1.jpg", monumentIds = List("05-xxx-0002"), author = Some("FromPodillyaNew1"), pageId = Some(5221)),
+        Image("File:Img52y2f2.jpg", monumentIds = List("05-xxx-0002"), author = Some("FromPodillyaNew2"), pageId = Some(5222)),
+        Image("File:Img72y2f1.jpg", monumentIds = List("07-xxx-0002"), author = Some("FromVolynNew"), pageId = Some(72))
       )
 
       val mDb = new MonumentDB(contest,
