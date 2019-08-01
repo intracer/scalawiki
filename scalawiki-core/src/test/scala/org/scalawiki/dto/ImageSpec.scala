@@ -49,6 +49,7 @@ class ImageSpec extends Specification {
 
       image.author === Some("PhotoMaster")
       image.monumentId === Some("id1")
+      image.monumentIds === Seq("id1", "id2")
     }
 
     "parse categories" in {
