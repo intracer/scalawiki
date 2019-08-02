@@ -3,9 +3,9 @@ import sbt._
 object Dependencies {
 
   val AaltoXmlV = "1.2.1"
-  val BetterFilesAkkaV = "3.4.0"
-  val BlameApiV = "11.5"
-  val ChronicleMapV = "3.17.3"
+  val BetterFilesAkkaV = "3.6.0"
+  val BlameApiV = "11.6"
+  val ChronicleMapV = "3.17.4"
   val ChronoScalaV = "0.3.2"
   val CommandLineArgumentsV = "0.5.0"
   val FicusV = "1.4.7"
@@ -17,12 +17,13 @@ object Dependencies {
   val LogbackClassicV = "1.2.3"
   val MockServerV = "5.6.1"
   val ReactiveStreamsV = "1.0.2"
-  val RetryV = "0.3.2"
+  val RetryV = "0.3.3"
   val Scala212V = "2.12.6"
   val Scala211V = "2.11.12"
   val ScalaChartV = "0.5.1"
   val ScalaCheckV = "1.14.0"
   val ScalaCsvV = "1.3.6"
+  val ScalaParserCombinatorsV = "1.1.2"
   val ScalaXmlV = "1.0.6"
   val Slf4jV = "1.7.25"
   val SwcEngineV = "3.1.9"
@@ -40,6 +41,7 @@ object Dependencies {
     Library.Akka.actor,
     "org.reactivestreams" % "reactive-streams" % ReactiveStreamsV,
     "org.scala-lang.modules" %% "scala-xml" % ScalaXmlV,
+    "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsV,
     "com.google.guava" % "guava" % GuavaV,
     Library.Commons.codec,
     Library.Commons.io,
@@ -75,7 +77,7 @@ object Dependencies {
     }
 
     object Poi {
-      val PoiV = "3.17"
+      val PoiV = "4.1.0"
       val PoiXwpfV = "1.0.6"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
@@ -84,7 +86,7 @@ object Dependencies {
     }
 
     object Commons {
-      val CommonsCodecV = "1.12"
+      val CommonsCodecV = "1.13"
       val CommonsCompressV = "1.18"
       val CommonsLang3V = "3.7"
       val CommonsIoV = "2.6"
@@ -111,7 +113,7 @@ object Dependencies {
     }
 
     object Specs2 {
-      val SpecsV = "4.5.1"
+      val SpecsV = "4.6.0"
 
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV

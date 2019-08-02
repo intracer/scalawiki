@@ -104,7 +104,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
   }
 
   "give some stat" in {
-    val images = Seq(Image("image1.jpg", author = Some("user"), monumentId = Some("123")))
+    val images = Seq(Image("image1.jpg", author = Some("user"), monumentIds = List("123")))
     val monuments = Seq(new Monument(id = "123", name = "123 monument"))
 
     val stat = mockedStat(monuments, images)
@@ -154,9 +154,9 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
 
     "have images from old monument db" in {
 
-      val images1 = Seq(Image("File:Img11y1f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimea")))
+      val images1 = Seq(Image("File:Img11y1f1.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimea")))
 
-      val images2 = Seq(Image("File:Img11y2f1.jpg", monumentId = Some("01-xxx-0002"), author = Some("FromCrimeaOld")))
+      val images2 = Seq(Image("File:Img11y2f1.jpg", monumentIds = List("01-xxx-0002"), author = Some("FromCrimeaOld")))
 
       val withoutPhotos = monuments(3, "01", "Crimea")
       val withPhotos = withoutPhotos.head.copy(photo = Some(images1.head.title)) +: withoutPhotos.tail

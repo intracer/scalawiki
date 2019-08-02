@@ -29,7 +29,7 @@ case class Image(title: String,
                  uploader: Option[User] = None,
                  year: Option[String] = None,
                  date: Option[ZonedDateTime] = None,
-                 monumentId: Option[String] = None,
+                 monumentIds: Seq[String] = Nil,
                  pageId: Option[Long] = None,
                  metadata: Option[ImageMetadata] = None,
                  categories: Set[String] = Set.empty
@@ -37,7 +37,7 @@ case class Image(title: String,
 
   def compare(that: Image) = title.compareTo(that.title)
 
-  //  def region: Option[String] = monumentId.map(_.split("-")(0))
+  def monumentId: Option[String] = monumentIds.headOption
 
   def download(filename: String) {
     import scala.concurrent.ExecutionContext.Implicits.global
@@ -45,13 +45,13 @@ case class Image(title: String,
       Files.write(Paths.get(filename), bytes)
   }
 
-  def pixels: Option[Long] = for (w <- width; h <- height) yield  w * h
+  def pixels: Option[Long] = for (w <- width; h <- height) yield w * h
 
   def mpx: Option[Double] = pixels.map(_ / Math.pow(10, 6))
 
   def mpxStr: String = mpx.fold("")(v => f"$v%1.2f Mpx ")
 
-  def resolution: Option[String] = for (w <- width; h <- height) yield  w + " x " + h
+  def resolution: Option[String] = for (w <- width; h <- height) yield w + " x " + h
 
   def resizeTo(resizeToX: Int, resizeToY: Int): Int =
     Image.resizedWidth(width.get, height.get, resizeToX, resizeToY)
@@ -69,7 +69,9 @@ object Image {
     page.revisions.headOption.map { revision =>
 
       val content = revision.content.getOrElse("")
-      val idOpt = TemplateParser.parseOne(content, monumentIdTemplate).flatMap(_.getParamOpt("1"))
+      val ids = monumentIdTemplate.toList.flatMap { template =>
+        TemplateParser.parse(content, template).flatMap(_.getParamOpt("1"))
+      }
 
       val author = getAuthorFromPage(content)
 
@@ -78,7 +80,7 @@ object Image {
       new Image(page.title,
         author = Some(author),
         date = revision.timestamp,
-        monumentId = idOpt,
+        monumentIds = ids,
         pageId = page.id,
         categories = categories)
     }
@@ -87,7 +89,7 @@ object Image {
   def fromPage(page: Page, monumentIdTemplate: Option[String]): Option[Image] = {
     for (fromImage <- Image.fromPageImages(page);
          fromRev <- Image.fromPageRevision(page, monumentIdTemplate))
-      yield fromImage.copy(monumentId = fromRev.monumentId, author = fromRev.author, categories = fromRev.categories)
+      yield fromImage.copy(monumentIds = fromRev.monumentIds, author = fromRev.author, categories = fromRev.categories)
   }
 
   def getAuthorFromPage(content: String): String = {

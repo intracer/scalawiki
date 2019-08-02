@@ -60,9 +60,9 @@ class ImageFillerSpec extends Specification {
       val text = "header\n" + monuments.map(_.asWiki()).mkString + "\nfooter"
 
       val images = Seq(
-        Image("File:Img1.jpg", size = Some(10 ^ 6), width = Some(2048), height = Some(1024), monumentId = Some("id1")),
-        Image("File:Img2.jpg", size = Some(10 ^ 6), width = Some(1280), height = Some(1024), monumentId = Some("id2")),
-        Image("File:Img2sm.jpg", size = Some(10 ^ 6), width = Some(1024), height = Some(768), monumentId = Some("id2"))
+        Image("File:Img1.jpg", size = Some(10 ^ 6), width = Some(2048), height = Some(1024), monumentIds = List("id1")),
+        Image("File:Img2.jpg", size = Some(10 ^ 6), width = Some(1280), height = Some(1024), monumentIds = List("id2")),
+        Image("File:Img2sm.jpg", size = Some(10 ^ 6), width = Some(1024), height = Some(768), monumentIds = List("id2"))
       )
       val monumentDb = new MonumentDB(contest, monuments)
       val imageDb = new ImageDB(contest, images, monumentDb)
@@ -90,9 +90,9 @@ class ImageFillerSpec extends Specification {
       ).mkString + "\nfooter"
 
       val images = Seq(
-        Image("File:Img1.jpg", size = Some(10 ^ 6), width = Some(2048), height = Some(1024), monumentId = Some("id1")),
-        Image("File:Img2.jpg", size = Some(10 ^ 6), width = Some(1280), height = Some(1024), monumentId = Some("id2")),
-        Image("File:Img2sm.jpg", size = Some(10 ^ 6), width = Some(1024), height = Some(768), monumentId = Some("id2"))
+        Image("File:Img1.jpg", size = Some(10 ^ 6), width = Some(2048), height = Some(1024), monumentIds = List("id1")),
+        Image("File:Img2.jpg", size = Some(10 ^ 6), width = Some(1280), height = Some(1024), monumentIds = List("id2")),
+        Image("File:Img2sm.jpg", size = Some(10 ^ 6), width = Some(1024), height = Some(768), monumentIds = List("id2"))
       )
       val monumentDb = new MonumentDB(contest, monuments)
       val imageDb = new ImageDB(contest, images, monumentDb)
@@ -116,9 +116,9 @@ class ImageFillerSpec extends Specification {
       val text = "header\n" + monuments.map(_.asWiki()).mkString("{|\n|}\n") + "\nfooter"
 
       val images = Seq(
-        Image("File:Img1.jpg", size = Some(10 ^ 6), width = Some(2048), height = Some(1024), monumentId = Some("id1")),
-        Image("File:Img2.jpg", size = Some(10 ^ 6), width = Some(1280), height = Some(1024), monumentId = Some("id2")),
-        Image("File:Img3.jpg", size = Some(10 ^ 6), width = Some(1024), height = Some(768), monumentId = Some("id3"))
+        Image("File:Img1.jpg", size = Some(10 ^ 6), width = Some(2048), height = Some(1024), monumentIds = List("id1")),
+        Image("File:Img2.jpg", size = Some(10 ^ 6), width = Some(1280), height = Some(1024), monumentIds = List("id2")),
+        Image("File:Img3.jpg", size = Some(10 ^ 6), width = Some(1024), height = Some(768), monumentIds = List("id3"))
       )
       val monumentDb = new MonumentDB(contest, monuments)
       val imageDb = new ImageDB(contest, images, monumentDb)
@@ -138,7 +138,7 @@ class ImageFillerSpec extends Specification {
 
     "addPhotosToPageText should not add localized File:" in {
       val images = Seq(
-        Image("Файл:Image1.jpg", monumentId = Some("id1"))
+        Image("Файл:Image1.jpg", monumentIds = List("id1"))
       )
 
       val monument1 = Monument(id = "id1", name = "name1", listConfig = Some(listConfig))

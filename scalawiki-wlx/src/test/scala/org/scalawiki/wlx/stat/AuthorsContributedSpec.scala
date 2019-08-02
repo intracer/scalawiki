@@ -50,11 +50,11 @@ class AuthorsContributedSpec extends Specification {
       val output = new AuthorsStat
 
       val images = Seq(
-        Image("File:Img11.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimea")),
-        Image("File:Img51.jpg", monumentId = Some("05-xxx-0001"), author = Some("FromPodillya1")),
-        Image("File:Img52.jpg", monumentId = Some("05-xxx-0001"), author = Some("FromPodillya2")),
-        Image("File:Img71.jpg", monumentId = Some("07-xxx-0001"), author = Some("FromVolyn")),
-        Image("File:Img12.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimea"))
+        Image("File:Img11.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimea")),
+        Image("File:Img51.jpg", monumentIds = List("05-xxx-0001"), author = Some("FromPodillya1")),
+        Image("File:Img52.jpg", monumentIds = List("05-xxx-0001"), author = Some("FromPodillya2")),
+        Image("File:Img71.jpg", monumentIds = List("07-xxx-0001"), author = Some("FromVolyn")),
+        Image("File:Img12.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimea"))
       )
 
       val monumentDb = new MonumentDB(contest,
@@ -78,19 +78,19 @@ class AuthorsContributedSpec extends Specification {
       val output = new AuthorsStat
 
       val images1 = Seq(
-        Image("File:Img11y1f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimea")),
-        Image("File:Img11y1f2.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimea")),
-        Image("File:Img51y1f1.jpg", monumentId = Some("05-xxx-0001"), author = Some("FromPodillya1")),
-        Image("File:Img51y1f2.jpg", monumentId = Some("05-xxx-0001"), author = Some("FromPodillya2")),
-        Image("File:Img71y1f1.jpg", monumentId = Some("07-xxx-0001"), author = Some("FromVolyn"))
+        Image("File:Img11y1f1.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimea")),
+        Image("File:Img11y1f2.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimea")),
+        Image("File:Img51y1f1.jpg", monumentIds = List("05-xxx-0001"), author = Some("FromPodillya1")),
+        Image("File:Img51y1f2.jpg", monumentIds = List("05-xxx-0001"), author = Some("FromPodillya2")),
+        Image("File:Img71y1f1.jpg", monumentIds = List("07-xxx-0001"), author = Some("FromVolyn"))
       )
 
       val images2 = Seq(
-        Image("File:Img11y2f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimea1")),
-        Image("File:Img12y2f1.jpg", monumentId = Some("01-xxx-0002"), author = Some("FromCrimea2")),
-        Image("File:Img52y2f1.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillya1")),
-        Image("File:Img52y2f1.jpg", monumentId = Some("05-xxx-0002"), author = Some("FromPodillya2")),
-        Image("File:Img72y2f1.jpg", monumentId = Some("07-xxx-0002"), author = Some("FromVolyn"))
+        Image("File:Img11y2f1.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimea1")),
+        Image("File:Img12y2f1.jpg", monumentIds = List("01-xxx-0002"), author = Some("FromCrimea2")),
+        Image("File:Img52y2f1.jpg", monumentIds = List("05-xxx-0002"), author = Some("FromPodillya1")),
+        Image("File:Img52y2f1.jpg", monumentIds = List("05-xxx-0002"), author = Some("FromPodillya2")),
+        Image("File:Img72y2f1.jpg", monumentIds = List("07-xxx-0002"), author = Some("FromVolyn"))
       )
 
       val monumentDb = new MonumentDB(contest,
