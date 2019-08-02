@@ -44,6 +44,7 @@ object Dependencies {
     "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsV,
     "com.google.guava" % "guava" % GuavaV,
     Library.Commons.codec,
+    Library.Commons.collections,
     Library.Commons.io,
     Library.Commons.lang,
     "com.typesafe" % "config" % TypesafeConfigV,
@@ -87,6 +88,7 @@ object Dependencies {
 
     object Commons {
       val CommonsCodecV = "1.13"
+      val CommonsCollectionsV = "4.3"
       val CommonsCompressV = "1.18"
       val CommonsLang3V = "3.7"
       val CommonsIoV = "2.6"
@@ -95,6 +97,7 @@ object Dependencies {
       val io = "commons-io" % "commons-io" % CommonsIoV
       val lang = "org.apache.commons" % "commons-lang3" % CommonsLang3V
       val compress = "org.apache.commons" % "commons-compress" % CommonsCompressV
+      val collections = "org.apache.commons" % "commons-collections4" % CommonsCollectionsV
     }
 
     object Jackson {
