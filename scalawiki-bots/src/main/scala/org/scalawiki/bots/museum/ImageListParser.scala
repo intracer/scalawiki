@@ -2,7 +2,7 @@ package org.scalawiki.bots.museum
 
 import java.io.{ByteArrayOutputStream, File, FileInputStream}
 
-import org.apache.poi.POIXMLDocument
+import org.apache.poi.ooxml.POIXMLDocument
 import org.apache.poi.hwpf.converter.WordToHtmlConverter
 import org.apache.poi.hwpf.extractor.WordExtractor
 import org.apache.poi.xwpf.converter.core.FileURIResolver
