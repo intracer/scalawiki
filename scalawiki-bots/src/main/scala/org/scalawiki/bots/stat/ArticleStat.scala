@@ -4,6 +4,8 @@ import org.scalawiki.dto.filter.RevisionFilter
 
 class ArticleStat(val filter: RevisionFilter, val revisionStats: Seq[RevisionStat], label: String) {
 
+  println(s"making ArticleStat for label: $label")
+
   val deltas = revisionStats.map(_.delta)
   val addedOrRewritten = revisionStats.map(_.addedOrRewritten)
 

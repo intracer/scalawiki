@@ -34,7 +34,9 @@ class Cache(name: String, entries: Int = 12 * 1024, valueSize: Int = 128 * 1024,
   }
 
   def containsKey(key: String): Boolean = cache.containsKey(key)
+
   def remove(key: String): String = cache.remove(key)
+
   def computeIfAbsent(key: String, fn: String => String): String = cache.computeIfAbsent(key, new Caller(fn))
 
 }
@@ -70,10 +72,15 @@ class CachedBot(site: Site, name: String, persistent: Boolean, http: HttpClient 
       log.info(s"cached $host POST equivalent to: ${getUri(params)}")
     }
 
-    val fn = (_: String) => Await.result(super.post(params), 30.minute)
-    val value = cache.computeIfAbsent(key, fn)
+    try {
+      val fn = (_: String) => Await.result(super.post(params), 30.minutes)
+      val value = cache.computeIfAbsent(key, fn)
 
-    Future.successful(value)
+      Future.successful(value)
+    } catch {
+      case t: Throwable =>
+        Future.failed(t)
+    }
   }
 }
 

@@ -13,6 +13,8 @@
         </encoder>
     </appender>
 
+    <logger name="org.mockserver" level="${mockserver.logLevel:-WARN}"/>
+
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>

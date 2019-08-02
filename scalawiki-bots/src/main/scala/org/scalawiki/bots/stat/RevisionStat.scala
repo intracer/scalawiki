@@ -36,7 +36,6 @@ object RevisionStat {
   def statHeader = s"! title !! added or rewritten !! size increase !! users !! users by added or rewritten text size\n"
 
   def fromPage(page: Page, revFilter: RevisionFilter = AllRevisionsFilter) = {
-
     val annotation = new RevisionAnnotation(page, revFilter)
 
     val byRevisionSize = annotation.byRevisionContent.map {
