@@ -67,7 +67,7 @@ object PageGenerators {
 
   def argsToConfig(args: Args): PageGenConfig = {
     def nameToSeq(name: String) = args.values(name).asInstanceOf[Seq[String]]
-    new PageGenConfig(
+    PageGenConfig(
       cat = nameToSeq("category"),
       namespaces = nameToSeq("namespace")
     )

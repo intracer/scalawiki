@@ -21,6 +21,18 @@ class ReplaceSpec extends Specification {
       parse(Seq("old1", "new1", "old2", "new2")).remaining === Seq("old1", "new1", "old2", "new2")
     }
 
+    "replacements and cat after" in {
+      val args = parse(Seq("old", "new", "-cat", "category name"))
+      args.remaining === Seq("old", "new")
+      args.values("category") === Seq("category name")
+    }
+
+    "replacements and cat before" in {
+      val args = parse(Seq("-cat", "category name", "old1", "new1", "old2", "new2"))
+      args.remaining === Seq("old1", "new1", "old2", "new2")
+      args.values("category") === Seq("category name")
+    }
+
     "regex" in {
       parse(Seq("-regex")).values("regex") === true
       parse(Seq()).values("regex") === false
