@@ -5,6 +5,8 @@ import org.sweble.wikitext.engine.config.WikiConfig
 import org.sweble.wikitext.engine.utils.DefaultConfigEnWp
 import org.sweble.wikitext.parser.nodes.WtTemplate
 
+import scala.collection.mutable
+
 object TemplateParser extends SwebleParser {
 
   val config: WikiConfig = DefaultConfigEnWp.generate
@@ -14,7 +16,7 @@ object TemplateParser extends SwebleParser {
     findNode(page, { case t: WtTemplate if templateName.forall(getTemplateName(t).equals) => nodeToTemplate(t) })
   }
 
-  def parse(wiki: String, templateName: String): Seq[Template] = {
+  def parse(wiki: String, templateName: String): mutable.Buffer[Template] = {
     val page = parsePage("Some title", wiki).getPage
     collectNodes(page, { case t: WtTemplate if getTemplateName(t) == templateName => nodeToTemplate(t) })
   }
