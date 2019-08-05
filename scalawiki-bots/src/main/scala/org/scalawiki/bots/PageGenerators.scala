@@ -1,7 +1,6 @@
 package org.scalawiki.bots
 
-import com.concurrentthought.cla.{Args, Opt}
-
+import org.rogach.scallop.ScallopConf
 
 case class PageGenConfig(cat: Seq[String] = Seq.empty, //,
                          //                         catR: String,
@@ -49,28 +48,7 @@ case class PageGenConfig(cat: Seq[String] = Seq.empty, //,
                          //                         onlyIfNot: String
                         )
 
-object PageGenerators {
-
-  val category = Opt.seqString(delimsRE = "[,|]")(
-    name = "category",
-    flags = Seq("-cat"),
-    help = "Work on all pages which are in a specific category."
-  )
-
-  val namespace = Opt.seqString(delimsRE = "[,|]")(
-    name = "namespace",
-    flags = Seq("-ns", "-namespace", "-namespaces"),
-    help = "Work on all pages in given namespaces."
-  )
-
-  val opts = Seq(category, namespace)
-
-  def argsToConfig(args: Args): PageGenConfig = {
-    def nameToSeq(name: String) = args.values(name).asInstanceOf[Seq[String]]
-    new PageGenConfig(
-      cat = nameToSeq("category"),
-      namespaces = nameToSeq("namespace")
-    )
-  }
-
+class PageGeneratorsScallop(arguments: Seq[String]) extends ScallopConf(arguments) {
+  val category = opt[String]("cat", descr = "Work on all pages which are in a specific category.", required = false)
+  val namespace = opt[String]("namespace", descr = "Work on all pages in given namespaces.", required = false)
 }

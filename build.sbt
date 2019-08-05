@@ -69,7 +69,7 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
       "org.jsoup" % "jsoup" % JSoupV,
       "com.softwaremill.retry" %% "retry" % RetryV,
       "net.openhft" % "chronicle-map" % ChronicleMapV,
-      "com.concurrentthought.cla" %% "command-line-arguments" % CommandLineArgumentsV
+      "org.rogach" %% "scallop" % ScallopV
     )
   }).dependsOn(`http-extensions`)
 
@@ -78,7 +78,7 @@ lazy val bots = Project("scalawiki-bots", file("scalawiki-bots"))
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= Seq(
     "com.github.pathikrit" %% "better-files-akka" % BetterFilesAkkaV,
-    "com.concurrentthought.cla" %% "command-line-arguments" % CommandLineArgumentsV,
+    "org.rogach" %% "scallop" % ScallopV,
     "org.xwiki.commons" % "xwiki-commons-blame-api" % BlameApiV,
     Library.Poi.scratchpad,
     Library.Poi.ooxml,
