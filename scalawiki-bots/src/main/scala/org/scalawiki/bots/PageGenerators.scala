@@ -48,7 +48,7 @@ case class PageGenConfig(cat: Seq[String] = Seq.empty, //,
                          //                         onlyIfNot: String
                         )
 
-class PageGeneratorsScallop(arguments: Seq[String]) extends ScallopConf(arguments) {
+class PageGenerators(arguments: Seq[String]) extends ScallopConf(arguments) {
   val category = opt[String]("cat", descr = "Work on all pages which are in a specific category.", required = false)
   val namespace = opt[String]("namespace", descr = "Work on all pages in given namespaces.", required = false)
 }

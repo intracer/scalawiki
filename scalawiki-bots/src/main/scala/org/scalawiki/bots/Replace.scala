@@ -43,18 +43,18 @@ case class ReplaceConfig(regex: Boolean = false,
                          replacements: Map[String, String] = Map.empty,
                          pages: PageGenConfig = PageGenConfig())
 
-class ReplaceScallop(arguments: Seq[String]) extends PageGeneratorsScallop(arguments) {
+class Replace(arguments: Seq[String]) extends PageGenerators(arguments) {
   val regex = opt[Boolean]("regex", descr = "Make replacements using regular expressions.", default = Some(false))
   val replacements = trailArg[List[String]](descr = "Replacement pairs.", required = false, default = Some(Nil))
   verify()
 }
 
 
-object ReplaceScallop {
+object Replace {
 
   def parse(args: Seq[String]): ReplaceConfig = {
 
-    val parsed = new ReplaceScallop(args)
+    val parsed = new Replace(args)
     ReplaceConfig(
       regex = parsed.regex(),
       replacements = parsed.replacements().sliding(2, 2).toSeq

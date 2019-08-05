@@ -3,6 +3,7 @@ package org.scalawiki.cache
 import java.io.File
 
 import net.openhft.chronicle.map.{ChronicleMap, ChronicleMapBuilder}
+import org.rogach.scallop.ScallopConf
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.{MwBot, MwBotImpl}
 import org.scalawiki.dto.{MwException, Page, Site}
@@ -87,22 +88,16 @@ class CachedBot(site: Site, name: String, persistent: Boolean, http: HttpClient 
 object CachedBot {
 
   import scala.collection.JavaConverters._
-  import com.concurrentthought.cla.{Args, Opt}
 
-  val argsDefs = Args(
-    "Cache [options]",
-    Seq(
-      Opt.string(name = "cache", flags = Seq("-c", "-cache"), help = "cache file", requiredFlag = true)
-    )
-  )
+  class CachedArgs(arguments: Seq[String]) extends ScallopConf(arguments) {
+    val cache = opt[String](descr = "cache file")
+    verify()
+  }
 
   def main(args: Array[String]): Unit = {
-    val parsed = argsDefs.parse(args)
+    val parsed = new CachedArgs(args)
 
-    if (parsed.handleErrors()) sys.exit(1)
-    if (parsed.handleHelp()) sys.exit(0)
-
-    val cacheFile = parsed.values("cache").asInstanceOf[String]
+    val cacheFile = parsed.cache()
     val file = new File(cacheFile)
     if (!file.exists()) {
       throw new IllegalArgumentException(s"File $cacheFile is absent")

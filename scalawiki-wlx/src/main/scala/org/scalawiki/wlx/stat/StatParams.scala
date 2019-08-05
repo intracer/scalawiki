@@ -22,7 +22,7 @@ case class StatConfig(campaign: String,
 
 import org.rogach.scallop._
 
-class StatParamsScallop(arguments: Seq[String]) extends ScallopConf(arguments) {
+class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
   val years = opt[List[Int]]("year", 'y', "contest year.")
   val startYear = opt[Int]("startyear", 's', "contest year.")
   val campaign = opt[String]("campaign", 'c', "upload campaign, like wlm-ua.", required = true)
@@ -46,11 +46,11 @@ class StatParamsScallop(arguments: Seq[String]) extends ScallopConf(arguments) {
   verify()
 }
 
-object StatParamsScallop {
+object StatParams {
 
   def parse(args: Seq[String]): StatConfig = {
 
-    val conf = new StatParamsScallop(args)
+    val conf = new StatParams(args)
 
     val year = conf.years.getOrElse(List(ZonedDateTime.now.getYear)).sorted
     val startYear = conf.startYear.getOrElse(year.head)
