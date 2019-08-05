@@ -125,14 +125,14 @@ class Parser(val action: Action) {
     }.getOrElse(Map.empty[String, String])
   }
 
-  def getLinks(pageJson: JsObject): collection.Seq[Page] = {
+  def getLinks(pageJson: JsObject): Seq[Page] = {
     (pageJson \ "links").asOpt[JsArray].map {
       _.value.map { l =>
         new Page(id = None,
           ns = (l \ "ns").as[Int],
           title = (l \ "title").as[String]
         )
-      }
+      }.toSeq
     }.getOrElse(Nil)
   }
 
