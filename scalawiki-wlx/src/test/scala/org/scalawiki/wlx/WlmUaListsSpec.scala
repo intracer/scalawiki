@@ -2,9 +2,18 @@ package org.scalawiki.wlx
 
 import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.Site
-import org.scalawiki.wlx.dto.{Contest, Country}
+import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Monument}
 import org.scalawiki.wlx.query.MonumentQuery
 import org.specs2.mutable.Specification
+
+case class UnknownPlace(page: String, regionId: String, name: String, candidates: Seq[AdmDivision], monuments: Seq[Monument]) {
+  def parents: Set[String] = candidates.map(_.parent().map(_.name).getOrElse("")).toSet
+
+  override def toString =
+    s"$page/$regionId/$name. monuments: ${monuments.size}" +
+      (if (candidates.nonEmpty)
+        s", Candidates: ${candidates.map(_.name).mkString(", ")}, Parents: ${parents.mkString(", ")}}" else "")
+}
 
 class WlmUaListsSpec extends Specification {
   sys.props.put("jna.nosys", "true")
@@ -27,25 +36,25 @@ class WlmUaListsSpec extends Specification {
   "places" should {
     "be mostly detected" in {
       all must not(beEmpty)
-      val notFound = all.map { m =>
-        s"${m.page}/${m.city.getOrElse("")}" -> country.byIdAndName(m.id, m.city.getOrElse(""))
-      }.filter { case (m, cities) =>
-        cities.isEmpty || cities.tail.nonEmpty
-      }
 
+      val toFind = all.map(m => UnknownPlace(m.page, country.regionId(m.id), m.city.getOrElse(""), Nil, Seq(m)))
+        .groupBy(u => s"${u.page}/${u.regionId}/${u.name}").mapValues { places =>
+        places.head.copy(monuments = places.flatMap(_.monuments))
+      }.values.toSeq
+
+      val notFound = toFind.flatMap { p =>
+        Some(p.copy(candidates = country.byIdAndName(p.regionId, p.name)))
+          .filterNot(_.candidates.size == 1)
+      }
       println(s"notFound size: ${notFound.size}")
-      notFound.groupBy(_._1).mapValues { seq =>
-        (seq.flatMap(_._2), seq.size)
-      }.toSeq.sortBy { case (k, (v, s)) => -s }
-        .map { case (k, (v, s)) =>
-          val parents = v.map(_.parent().map(_.name).getOrElse("")).toSet.mkString(", ")
-          s"$k - $s ($parents)"
-        }
+
+      notFound
+        .sortBy(-_.monuments.size)
         .foreach(println)
 
       val percentage = notFound.size * 100 / all.size
       println(s"percentage: $percentage%")
-      percentage should be < 5 // less than 5%
+      percentage should be <= 5 // less than 5%
     }
 
     "not be just high level region" in {

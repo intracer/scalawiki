@@ -284,6 +284,17 @@ object Output {
     bot.page(s"Commons:$contestPage/Images with bad ids").edit(text, Some("updating"))
   }
 
+  def multipleIds(imageDb: ImageDB, monumentDb: MonumentDB) {
+    val bot = MwBot.fromHost(MwBot.commons)
+
+    val images = imageDb.images.filter(image => image.monumentIds.size > 1)
+
+    val contestPage = imageDb.contest.name
+
+    val text = images.map(_.title).mkString("<gallery>", "\n", "</gallery>")
+    bot.page(s"Commons:$contestPage/Images with multiple ids").edit(text, Some("updating"))
+  }
+
   def regionalStat(wlmContest: Contest,
                    imageDbs: Seq[ImageDB],
                    totalImageDb: ImageDB,

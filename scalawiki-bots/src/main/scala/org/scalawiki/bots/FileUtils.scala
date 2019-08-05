@@ -4,7 +4,7 @@ import java.nio.file.{Files, Path, Paths}
 import java.util.regex.Pattern
 
 import better.files.File.{Order, PathMatcherSyntax}
-import better.files.{Files, File => SFile}
+import better.files.{File => SFile}
 import org.scalawiki.AlphaNumOrdering
 
 import scala.io.{Codec, Source}

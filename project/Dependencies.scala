@@ -3,9 +3,9 @@ import sbt._
 object Dependencies {
 
   val AaltoXmlV = "1.2.1"
-  val BetterFilesAkkaV = "3.4.0"
-  val BlameApiV = "11.5"
-  val ChronicleMapV = "3.17.3"
+  val BetterFilesAkkaV = "3.6.0"
+  val BlameApiV = "11.6"
+  val ChronicleMapV = "3.17.4"
   val ChronoScalaV = "0.3.2"
   val FicusV = "1.4.7"
   val GuavaV = "20.0"
@@ -23,6 +23,7 @@ object Dependencies {
   val ScalaChartV = "0.7.1"
   val ScalaCheckV = "1.14.0"
   val ScalaCsvV = "1.3.6"
+  val ScalaParserCombinatorsV = "1.1.2"
   val ScalaXmlV = "1.2.0"
   val ScallopV = "3.3.1"
   val Slf4jV = "1.7.25"
@@ -41,6 +42,7 @@ object Dependencies {
     Library.Akka.actor,
     "org.reactivestreams" % "reactive-streams" % ReactiveStreamsV,
     "org.scala-lang.modules" %% "scala-xml" % ScalaXmlV,
+    "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsV,
     "com.google.guava" % "guava" % GuavaV,
     Library.Commons.codec,
     Library.Commons.io,
@@ -76,7 +78,7 @@ object Dependencies {
     }
 
     object Poi {
-      val PoiV = "3.17"
+      val PoiV = "4.1.0"
       val PoiXwpfV = "1.0.6"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
@@ -112,7 +114,7 @@ object Dependencies {
     }
 
     object Specs2 {
-      val SpecsV = "4.5.1"
+      val SpecsV = "4.7.0"
 
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV
