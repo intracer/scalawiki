@@ -9,10 +9,12 @@ import org.specs2.mutable.Specification
 case class UnknownPlace(page: String, regionId: String, name: String, candidates: Seq[AdmDivision], monuments: Seq[Monument]) {
   def parents: Set[String] = candidates.map(_.parent().map(_.name).getOrElse("")).toSet
 
-  override def toString =
-    s"$page/$regionId/$name. monuments: ${monuments.size}" +
-      (if (candidates.nonEmpty)
-        s", Candidates: ${candidates.map(_.name).mkString(", ")}, Parents: ${parents.mkString(", ")}}" else "")
+  override def toString = {
+    val candidatesStr = candidates.map { c =>
+      c.parent().map(p => s"${p.name}(${p.code})/").getOrElse("") + s"${c.name}(${c.code})"
+    }.mkString(", ")
+    s"$page/$regionId/$name. monuments: ${monuments.size}" + (if (candidates.nonEmpty) s", Candidates: $candidatesStr" else "")
+  }
 }
 
 class WlmUaListsSpec extends Specification {
