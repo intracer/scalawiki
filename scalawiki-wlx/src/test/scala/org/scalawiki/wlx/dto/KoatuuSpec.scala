@@ -161,6 +161,19 @@ class KoatuuSpec extends Specification {
       r2.name === "Снятинський район"
       r2.parent().get.name === "Івано-Франківська область"
     }
+
+    "differentiate by name and id" in {
+      val regs = Ukraine.byIdAndName("23-101-1234", "[[Запоріжжя]]")
+      regs.size === 1
+
+      val r = regs.head
+      r.name === "Запоріжжя"
+      r.code === "23101"
+
+      val parent = r.parent().get
+      parent.name === "Запорізька область"
+      parent.code === "23"
+    }
   }
 
   "level3/4" should {

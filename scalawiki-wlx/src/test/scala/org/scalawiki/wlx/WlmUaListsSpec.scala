@@ -39,10 +39,13 @@ class WlmUaListsSpec extends Specification {
     "be mostly detected" in {
       all must not(beEmpty)
 
-      val toFind = all.map(m => UnknownPlace(m.page, country.regionId(m.id), m.city.getOrElse(""), Nil, Seq(m)))
-        .groupBy(u => s"${u.page}/${u.regionId}/${u.name}").mapValues { places =>
-        places.head.copy(monuments = places.flatMap(_.monuments))
-      }.values.toSeq
+      val toFind = all.map(m => UnknownPlace(m.page,
+        m.id.split("-").take(2).mkString("-"),
+        m.city.getOrElse(""), Nil, Seq(m))
+      ).groupBy(u => s"${u.page}/${u.regionId}/${u.name}")
+        .mapValues { places =>
+          places.head.copy(monuments = places.flatMap(_.monuments))
+        }.values.toSeq
 
       val notFound = toFind.flatMap { p =>
         Some(p.copy(candidates = country.byIdAndName(p.regionId, p.name)))
@@ -56,7 +59,7 @@ class WlmUaListsSpec extends Specification {
 
       val percentage = notFound.size * 100 / all.size
       println(s"percentage: $percentage%")
-      percentage should be <= 5 // less than 5%
+      percentage should be <= 1 // less than 1%
     }
 
     "not be just high level region" in {
@@ -81,7 +84,7 @@ class WlmUaListsSpec extends Specification {
       }
       val percentage = highLevel.size * 100 / all.size
       println(s"percentage: $percentage%")
-      percentage should be < 10 // less than 50%
+      percentage should be <= 5 // less than 10%
     }
   }
 }
