@@ -57,9 +57,9 @@ class WlmUaListsSpec extends Specification {
         .sortBy(-_.monuments.size)
         .foreach(println)
 
-      val percentage = notFound.size * 100 / all.size
+      val percentage = notFound.map(_.monuments.size).sum * 100 / all.size
       println(s"percentage: $percentage%")
-      percentage should be <= 1 // less than 1%
+      percentage should be < 5 // less than 1%
     }
 
     "not be just high level region" in {
