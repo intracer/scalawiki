@@ -6,17 +6,6 @@ import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Monument}
 import org.scalawiki.wlx.query.MonumentQuery
 import org.specs2.mutable.Specification
 
-case class UnknownPlace(page: String, regionId: String, name: String, candidates: Seq[AdmDivision], monuments: Seq[Monument]) {
-  def parents: Set[String] = candidates.map(_.parent().map(_.name).getOrElse("")).toSet
-
-  override def toString = {
-    val candidatesStr = candidates.map { c =>
-      c.parent().map(p => s"${p.name}(${p.code})/").getOrElse("") + s"${c.name}(${c.code})"
-    }.mkString(", ")
-    s"$page/$regionId/$name. monuments: ${monuments.size}" + (if (candidates.nonEmpty) s", Candidates: $candidatesStr" else "")
-  }
-}
-
 class WlmUaListsSpec extends Specification {
   sys.props.put("jna.nosys", "true")
 
@@ -39,18 +28,8 @@ class WlmUaListsSpec extends Specification {
     "be mostly detected" in {
       all must not(beEmpty)
 
-      val toFind = all.map(m => UnknownPlace(m.page,
-        m.id.split("-").take(2).mkString("-"),
-        m.city.getOrElse(""), Nil, Seq(m))
-      ).groupBy(u => s"${u.page}/${u.regionId}/${u.name}")
-        .mapValues { places =>
-          places.head.copy(monuments = places.flatMap(_.monuments))
-        }.values.toSeq
+      val notFound = monumentDb.unknownPlaces()
 
-      val notFound = toFind.flatMap { p =>
-        Some(p.copy(candidates = country.byIdAndName(p.regionId, p.name)))
-          .filterNot(_.candidates.size == 1)
-      }
       println(s"notFound size: ${notFound.size}")
 
       notFound
@@ -63,7 +42,7 @@ class WlmUaListsSpec extends Specification {
     }
 
     "not be just high level region" in {
-      val oblasts = Country.Ukraine.regions.filter(adm => !Set("Київ", "Севастополь").contains(adm.name))
+      val oblasts = country.regions.filter(adm => !Set("Київ", "Севастополь").contains(adm.name))
       val raions = oblasts.flatMap(_.regions).filter(_.name.endsWith("район"))
       raions.size === 490
       val raionNames = raions.map(_.name).toSet
