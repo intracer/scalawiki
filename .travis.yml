@@ -12,6 +12,7 @@ cache:
 language: scala
 
 scala:
+   - 2.13.0
    - 2.12.6
    - 2.11.12
 
