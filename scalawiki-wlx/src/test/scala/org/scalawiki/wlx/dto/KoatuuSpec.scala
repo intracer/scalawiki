@@ -97,7 +97,7 @@ class KoatuuSpec extends Specification {
         "80-385" -> "Подільський",
         "80-386" -> "Святошинський",
         "80-389" -> "Солом'янський",
-        "80-391" -> "Шевченківський",
+        "80-391" -> "Шевченківський"
       )
 
       val regionToIds = Ukraine.byRegion(idToName.keySet).mapValues(_.head)
@@ -160,6 +160,19 @@ class KoatuuSpec extends Specification {
       val r2 = Ukraine.byId("26-252-0002").get
       r2.name === "Снятинський район"
       r2.parent().get.name === "Івано-Франківська область"
+    }
+
+    "differentiate by name and id" in {
+      val regs = Ukraine.byIdAndName("23-101-1234", "[[Запоріжжя]]")
+      regs.size === 1
+
+      val r = regs.head
+      r.name === "Запоріжжя"
+      r.code === "23101"
+
+      val parent = r.parent().get
+      parent.name === "Запорізька область"
+      parent.code === "23"
     }
   }
 

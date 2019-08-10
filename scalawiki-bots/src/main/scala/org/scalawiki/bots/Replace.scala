@@ -1,9 +1,6 @@
 package org.scalawiki.bots
 
 import java.util.regex.Pattern
-
-import com.concurrentthought.cla.{Args, Opt}
-
 import scala.util.matching.{Regex, RegexFactory}
 
 class ReplacementBase(old: String,
@@ -46,31 +43,26 @@ case class ReplaceConfig(regex: Boolean = false,
                          replacements: Map[String, String] = Map.empty,
                          pages: PageGenConfig = PageGenConfig())
 
+class Replace(arguments: Seq[String]) extends PageGenerators(arguments) {
+  val regex = opt[Boolean]("regex", descr = "Make replacements using regular expressions.", default = Some(false))
+  val replacements = trailArg[List[String]](descr = "Replacement pairs.", required = false, default = Some(Nil))
+  verify()
+}
+
+
 object Replace {
 
-  val argsDefs = Args(
-    "Replace [options]",
-    Seq(
-      Opt.flag(
-        name = "regex",
-        flags = Seq("-regex"),
-        help = "Make replacements using regular expressions."
-      ),
-      Args.makeRemainingOpt(
-        name = "replacements",
-        help = "Replacement pairs.",
-        requiredFlag = true)
-    ) ++ PageGenerators.opts
-  )
+  def parse(args: Seq[String]): ReplaceConfig = {
 
-  def parse(args: Array[String]): ReplaceConfig = {
-    val parsed = argsDefs.parse(args)
+    val parsed = new Replace(args)
     ReplaceConfig(
-      regex = parsed.values("regex").asInstanceOf[Boolean],
-      replacements = parsed.values("replacements").asInstanceOf[Seq[String]]
-        .map(_.sliding(2, 2).toSeq)
+      regex = parsed.regex(),
+      replacements = parsed.replacements().sliding(2, 2).toSeq
         .map(s => s.head -> s.last).toMap,
-      pages = PageGenerators.argsToConfig(parsed)
+      pages =  PageGenConfig(
+        cat = parsed.category.toOption.toSeq,
+        namespaces = parsed.namespace.toOption.toSeq
+      )
     )
   }
 

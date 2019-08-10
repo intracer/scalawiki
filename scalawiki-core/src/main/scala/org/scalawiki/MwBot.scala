@@ -19,6 +19,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 import java.lang.Throwable
+import scala.language.postfixOps
 
 trait ActionBot {
 

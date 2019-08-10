@@ -69,7 +69,7 @@ class MonumentsPicturedByRegionSpec extends Specification {
           monuments(7, "07", "Volyn")
       )
 
-      val image = Image("File:Img3.jpg", monumentId = Some("01-xxx-0001"))
+      val image = Image("File:Img3.jpg", monumentIds = List("01-xxx-0001"))
 
       val totalImageDb = new ImageDB(contest, Seq(image), monumentDb)
       val imageDbs = Seq.empty
@@ -93,8 +93,8 @@ class MonumentsPicturedByRegionSpec extends Specification {
       )
 
       val images = Seq(
-        Image("File:Img1.jpg", monumentId = Some("01-xxx-0001")),
-        Image("File:Img2.jpg", monumentId = Some("05-xxx-0001"))
+        Image("File:Img1.jpg", monumentIds = List("01-xxx-0001")),
+        Image("File:Img2.jpg", monumentIds = List("05-xxx-0001"))
       )
 
       val totalImageDb = new ImageDB(contest, images, monumentDb)
@@ -120,10 +120,10 @@ class MonumentsPicturedByRegionSpec extends Specification {
       )
 
       val images = Seq(
-        Image("File:Img1.jpg", monumentId = Some("01-xxx-0001")),
-        Image("File:Img2.jpg", monumentId = Some("05-xxx-0001")),
-        Image("File:Img3.jpg", monumentId = Some("07-xxx-0001")),
-        Image("File:Img4.jpg", monumentId = Some("01-xxx-0002"))
+        Image("File:Img1.jpg", monumentIds = List("01-xxx-0001")),
+        Image("File:Img2.jpg", monumentIds = List("05-xxx-0001")),
+        Image("File:Img3.jpg", monumentIds = List("07-xxx-0001")),
+        Image("File:Img4.jpg", monumentIds = List("01-xxx-0002"))
       )
 
       val totalImageDb = new ImageDB(contest, images, monumentDb)

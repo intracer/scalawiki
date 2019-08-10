@@ -37,54 +37,54 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     val thisYear = ZonedDateTime.now.getYear
     "parse campaign" in {
 
-      val cfg = StatParams.parse(Seq("-campaign", "wlm-ua"))
+      val cfg = StatParams.parse(Seq("--campaign", "wlm-ua"))
       cfg === StatConfig("wlm-ua", Seq(thisYear), Nil)
     }
 
     "parse campaign with years" in {
-      val cfg = StatParams.parse(Seq("-campaign", "wle-ua", "-year", "2015,2016"))
+      val cfg = StatParams.parse(Seq("--campaign", "wle-ua", "--year", "2015", "2016"))
       cfg === StatConfig("wle-ua", Seq(2015, 2016), Nil)
     }
 
     "years sorted" in {
-      val cfg = StatParams.parse(Seq("-campaign", "wle-ua", "-year", "2016,2014,2015,2012"))
+      val cfg = StatParams.parse(Seq("--campaign", "wle-ua", "--year", "2016", "2014", "2015", "2012"))
       cfg === StatConfig("wle-ua", 2012 to 2016, Nil)
     }
 
     "start year" in {
-      val cfg = StatParams.parse(Seq("-campaign", "wle-ua", "-y", "2017", "-sy", "2012"))
+      val cfg = StatParams.parse(Seq("--campaign", "wle-ua", "-y", "2017", "--startyear", "2012"))
       cfg === StatConfig("wle-ua", 2012 to 2017, Nil)
     }
 
     "parse new object rating" in {
-      StatParams.parse(Seq("-campaign", "wle-ua", "-new-object-rating", "7")) ===
+      StatParams.parse(Seq("--campaign", "wle-ua", "--new-object-rating", "7")) ===
         StatConfig("wle-ua", Seq(thisYear), Nil, rateConfig = RateConfig(newObjectRating = Some(7)))
 
-      StatParams.parse(Seq("-campaign", "wle-ua", "-new-author-object-rating", "3")) ===
+      StatParams.parse(Seq("--campaign", "wle-ua", "--new-author-object-rating", "3")) ===
         StatConfig("wle-ua", Seq(thisYear), Nil, rateConfig = RateConfig(newAuthorObjectRating = Some(3)))
 
-      StatParams.parse(Seq("-campaign", "wle-ua", "-new-object-rating", "10", "-new-author-object-rating", "5")) ===
+      StatParams.parse(Seq("--campaign", "wle-ua", "--new-object-rating", "10", "--new-author-object-rating", "5")) ===
         StatConfig("wle-ua", Seq(thisYear), Nil, rateConfig = RateConfig(newObjectRating = Some(10), newAuthorObjectRating = Some(5)))
     }
 
     "parse bonus" in {
-      StatParams.parse(Seq("-campaign", "wle-ua", "-number-of-authors-bonus")) ===
+      StatParams.parse(Seq("--campaign", "wle-ua", "--number-of-authors-bonus")) ===
         StatConfig("wle-ua", Seq(thisYear), Nil, rateConfig = RateConfig(numberOfAuthorsBonus = true))
 
-      StatParams.parse(Seq("-campaign", "wle-ua", "-number-of-images-bonus")) ===
+      StatParams.parse(Seq("--campaign", "wle-ua", "--number-of-images-bonus")) ===
         StatConfig("wle-ua", Seq(thisYear), Nil, rateConfig = RateConfig(numberOfImagesBonus = true))
 
-      StatParams.parse(Seq("-campaign", "wle-ua", "-number-of-authors-bonus", "-number-of-images-bonus")) ===
+      StatParams.parse(Seq("--campaign", "wle-ua", "--number-of-authors-bonus", "--number-of-images-bonus")) ===
         StatConfig("wle-ua", Seq(thisYear), Nil, rateConfig = RateConfig(numberOfAuthorsBonus = true, numberOfImagesBonus = true))
     }
 
     "parse gallery" in {
-      StatParams.parse(Seq("-campaign", "wle-ua")) === StatConfig("wle-ua", Seq(thisYear), Nil, gallery = false)
-      StatParams.parse(Seq("-campaign", "wle-ua", "-gallery")) === StatConfig("wle-ua", Seq(thisYear), Nil, gallery = true)
+      StatParams.parse(Seq("--campaign", "wle-ua")) === StatConfig("wle-ua", Seq(thisYear), Nil, gallery = false)
+      StatParams.parse(Seq("--campaign", "wle-ua", "--gallery")) === StatConfig("wle-ua", Seq(thisYear), Nil, gallery = true)
     }
 
     "parse campaign with regions" in {
-      val cfg = StatParams.parse(Seq("-campaign", "wle-ua", "-year", "2012",  "-region", "01,02"))
+      val cfg = StatParams.parse(Seq("--campaign", "wle-ua", "--year", "2012", "--region", "01", "02"))
       cfg === StatConfig("wle-ua", Seq(2012), Seq("01", "02"))
     }
 
@@ -104,7 +104,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
   }
 
   "give some stat" in {
-    val images = Seq(Image("image1.jpg", author = Some("user"), monumentId = Some("123")))
+    val images = Seq(Image("image1.jpg", author = Some("user"), monumentIds = List("123")))
     val monuments = Seq(new Monument(id = "123", name = "123 monument"))
 
     val stat = mockedStat(monuments, images)
@@ -154,9 +154,9 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
 
     "have images from old monument db" in {
 
-      val images1 = Seq(Image("File:Img11y1f1.jpg", monumentId = Some("01-xxx-0001"), author = Some("FromCrimea")))
+      val images1 = Seq(Image("File:Img11y1f1.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimea")))
 
-      val images2 = Seq(Image("File:Img11y2f1.jpg", monumentId = Some("01-xxx-0002"), author = Some("FromCrimeaOld")))
+      val images2 = Seq(Image("File:Img11y2f1.jpg", monumentIds = List("01-xxx-0002"), author = Some("FromCrimeaOld")))
 
       val withoutPhotos = monuments(3, "01", "Crimea")
       val withPhotos = withoutPhotos.head.copy(photo = Some(images1.head.title)) +: withoutPhotos.tail

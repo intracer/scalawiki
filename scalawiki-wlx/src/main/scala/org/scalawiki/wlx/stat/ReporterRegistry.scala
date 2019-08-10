@@ -54,6 +54,10 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
           Output.wrongIds(imageDb, mDb)
         }
 
+        if (cfg.multipleIds) {
+          Output.multipleIds(imageDb, mDb)
+        }
+
         if (cfg.fillLists) {
           ImageFiller.fillLists(mDb, imageDb)
         }

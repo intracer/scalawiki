@@ -1,6 +1,5 @@
 package org.scalawiki.wlx.stat
 
-import com.concurrentthought.cla.Args
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.ImageDB
 
@@ -11,15 +10,13 @@ case class RateConfig(newObjectRating: Option[Int] = None,
 
 object RateConfig {
 
-  def apply(args: Args): RateConfig = {
-    val newObjectRating = args.values.get("new-object-rating").asInstanceOf[Option[Int]]
-    val newAuthorObjectRating = args.values.get("new-author-object-rating").asInstanceOf[Option[Int]]
-    val numberOfAuthorsBonus = args.values.get("number-of-authors-bonus").asInstanceOf[Option[Boolean]].getOrElse(false)
-    val numberOfImagesBonus = args.values.get("number-of-images-bonus").asInstanceOf[Option[Boolean]].getOrElse(false)
-
-    apply(newObjectRating, newAuthorObjectRating, numberOfAuthorsBonus, numberOfImagesBonus)
+  def apply(conf: StatParams): RateConfig = {
+    apply(conf.newObjectRating.toOption,
+      conf.newAuthorObjectRating.toOption,
+      conf.numberOfAuthorsBonus.getOrElse(false),
+      conf.numberOfImagesBonus.getOrElse(false)
+    )
   }
-
 }
 
 trait Rater {

@@ -10,6 +10,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
   val monuments = allMonuments.filter(m => withFalseIds || isIdCorrect(m.id))
   val wrongIdMonuments = allMonuments.filterNot(m => isIdCorrect(m.id))
   val withArticles = allMonuments.filter(m => m.name.contains("[[")).groupBy(m => Monument.getRegionId(m.id))
+  val country = contest.country
 
   val _byId: Map[String, Seq[Monument]] = monuments.groupBy(_.id)
   val _byRegion: Map[String, Seq[Monument]] = monuments.groupBy(m => Monument.getRegionId(m.id))
@@ -41,11 +42,36 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
   def getAdmDivision(monumentId: String): Option[AdmDivision] = {
     for (monument <- byId(monumentId);
-         division <- Country.Ukraine.byIdAndName(monument.regionId, monument.cityName).headOption
+         division <- country.byIdAndName(monument.regionId, monument.cityName).headOption
     ) yield division
+  }
+
+  def unknownPlaces(): Seq[UnknownPlace] = {
+    val toFind = allMonuments.map(m => UnknownPlace(m.page,
+      m.id.split("-").take(2).mkString("-"),
+      m.city.getOrElse(""), Nil, Seq(m))
+    ).groupBy(u => s"${u.page}/${u.regionId}/${u.name}")
+      .mapValues { places =>
+        places.head.copy(monuments = places.flatMap(_.monuments))
+      }.values.toSeq
+
+    toFind.flatMap { p =>
+      Some(p.copy(candidates = country.byIdAndName(p.regionId, p.name)))
+        .filterNot(_.candidates.size == 1)
+    }
   }
 }
 
+case class UnknownPlace(page: String, regionId: String, name: String, candidates: Seq[AdmDivision], monuments: Seq[Monument]) {
+  def parents: Set[String] = candidates.map(_.parent().map(_.name).getOrElse("")).toSet
+
+  override def toString = {
+    val candidatesStr = candidates.map { c =>
+      c.parent().map(p => s"${p.name}(${p.code})/").getOrElse("") + s"${c.name}(${c.code})"
+    }.mkString(", ")
+    s"$page/$regionId/$name. monuments: ${monuments.size}" + (if (candidates.nonEmpty) s", Candidates: $candidatesStr" else "")
+  }
+}
 
 object MonumentDB {
 

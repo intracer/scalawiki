@@ -1,30 +1,39 @@
 package org.scalawiki.bots
 
-import com.concurrentthought.cla.Args.MissingRequiredArgument
 import org.scalawiki.bots.TextLib._
 import org.specs2.mutable.Specification
 
 class ReplaceSpec extends Specification {
 
   "parse params" should {
-    def parse(args: Seq[String]) = Replace.argsDefs.parse(args)
+    def parse(args: Seq[String]) = Replace.parse(args)
 
-    "empty should fail" in {
-      val opt = Replace.argsDefs.opts.find(_.name == "replacements").get
-      parse(Seq.empty).failures === Seq(
-        "replacements" -> MissingRequiredArgument(opt)
-      )
+    "empty" in {
+      parse(Nil) === ReplaceConfig()
     }
 
     "replacements" in {
-      parse(Seq("old", "new")).remaining === Seq("old", "new")
-      parse(Seq("old1", "new1", "old2", "new2")).remaining === Seq("old1", "new1", "old2", "new2")
+      parse(Seq("old", "new")).replacements === Map("old" -> "new")
+      parse(Seq("old1", "new1", "old2", "new2")).replacements === Map("old1" -> "new1", "old2" -> "new2")
+    }
+
+    "replacement and cat" in {
+      val args = parse(Seq("--cat", "category name", "old", "new"))
+      args.replacements === Map("old" -> "new")
+      args.pages.cat === Seq("category name")
+    }
+
+    "replacements and cat" in {
+      val args = parse(Seq("--cat", "category name", "old1", "new1", "old2", "new2"))
+      args.pages.cat === Seq("category name")
+      args.replacements === Map("old1" -> "new1", "old2" -> "new2")
     }
 
     "regex" in {
-      parse(Seq("-regex")).values("regex") === true
-      parse(Seq()).values("regex") === false
+      parse(Seq("--regex")).regex === true
+      parse(Seq()).regex === false
     }
+
   }
 
   "replaceExcept" should {

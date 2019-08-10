@@ -2,7 +2,7 @@ package org.scalawiki.wlx
 
 import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.Site
-import org.scalawiki.wlx.dto.{Contest, Country}
+import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Monument}
 import org.scalawiki.wlx.query.MonumentQuery
 import org.specs2.mutable.Specification
 
@@ -27,29 +27,22 @@ class WlmUaListsSpec extends Specification {
   "places" should {
     "be mostly detected" in {
       all must not(beEmpty)
-      val notFound = all.map { m =>
-        s"${m.page}/${m.city.getOrElse("")}" -> country.byIdAndName(m.id, m.city.getOrElse(""))
-      }.filter { case (m, cities) =>
-        cities.isEmpty || cities.tail.nonEmpty
-      }
+
+      val notFound = monumentDb.unknownPlaces()
 
       println(s"notFound size: ${notFound.size}")
-      notFound.groupBy(_._1).mapValues { seq =>
-        (seq.flatMap(_._2), seq.size)
-      }.toSeq.sortBy { case (k, (v, s)) => -s }
-        .map { case (k, (v, s)) =>
-          val parents = v.map(_.parent().map(_.name).getOrElse("")).toSet.mkString(", ")
-          s"$k - $s ($parents)"
-        }
+
+      notFound
+        .sortBy(-_.monuments.size)
         .foreach(println)
 
-      val percentage = notFound.size * 100 / all.size
+      val percentage = notFound.map(_.monuments.size).sum * 100 / all.size
       println(s"percentage: $percentage%")
-      percentage should be < 5 // less than 5%
+      percentage should be < 5 // less than 1%
     }
 
     "not be just high level region" in {
-      val oblasts = Country.Ukraine.regions.filter(adm => !Set("Київ", "Севастополь").contains(adm.name))
+      val oblasts = country.regions.filter(adm => !Set("Київ", "Севастополь").contains(adm.name))
       val raions = oblasts.flatMap(_.regions).filter(_.name.endsWith("район"))
       raions.size === 490
       val raionNames = raions.map(_.name).toSet
@@ -70,7 +63,7 @@ class WlmUaListsSpec extends Specification {
       }
       val percentage = highLevel.size * 100 / all.size
       println(s"percentage: $percentage%")
-      percentage should be < 10 // less than 50%
+      percentage should be <= 5 // less than 10%
     }
   }
 }

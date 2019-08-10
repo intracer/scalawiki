@@ -132,8 +132,8 @@ class Parser(val action: Action) {
           ns = (l \ "ns").as[Int],
           title = (l \ "title").as[String]
         )
-      }
-    }.getOrElse(Seq.empty[Page])
+      }.toSeq
+    }.getOrElse(Nil)
   }
 
   def getCategoryInfo(pageJson: JsObject): Option[CategoryInfo] =
