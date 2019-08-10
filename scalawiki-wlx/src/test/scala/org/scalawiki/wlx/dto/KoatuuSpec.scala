@@ -97,7 +97,7 @@ class KoatuuSpec extends Specification {
         "80-385" -> "Подільський",
         "80-386" -> "Святошинський",
         "80-389" -> "Солом'янський",
-        "80-391" -> "Шевченківський",
+        "80-391" -> "Шевченківський"
       )
 
       val regionToIds = Ukraine.byRegion(idToName.keySet).mapValues(_.head)
