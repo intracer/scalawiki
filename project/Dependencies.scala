@@ -69,7 +69,7 @@ object Dependencies {
     }
 
     object Play {
-      def PlayJsonV(isScala213: Boolean) = if (isScala213) "2.7.4" else "2.6.13"
+      def PlayJsonV(isScala213: Boolean) = if (isScala213) "2.7.4" else "2.7.4"
       def TwirlV(isScala213: Boolean) = "1.4.2"
 
       def json(isScala213: Boolean) = "com.typesafe.play" %% "play-json" % PlayJsonV(isScala213)
