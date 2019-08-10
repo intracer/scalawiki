@@ -17,6 +17,7 @@ import org.scalawiki.MwBot
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{Duration, _}
+import scala.language.postfixOps
 
 class HttpClientAkka(val system: ActorSystem = MwBot.system) extends HttpClient {
 

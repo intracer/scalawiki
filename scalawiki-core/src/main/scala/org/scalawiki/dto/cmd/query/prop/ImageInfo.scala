@@ -84,7 +84,7 @@ object BitDepth extends EnumArgument[IiPropArg]("bitdepth", "The bit depth of th
 object IiPropArgs {
   val args = Seq(Timestamp, User, UserId, Comment, ParsedComment, CanonicalTitle, Url, Size, Dimensions, Sha1,
     ThumbMime, MediaType, Metadata, CommonMetadata, ExtMetadata, ArchiveName, BitDepth)
-  val argsByName: Map[String, IiPropArg] = args.groupBy(_.name).mapValues(_.head)
+  val argsByName: Map[String, IiPropArg] = args.groupBy(_.name).mapValues(_.head).toMap
 
   def byNames(names: Seq[String]): Seq[IiPropArg] = {
     names.flatMap(argsByName.get)

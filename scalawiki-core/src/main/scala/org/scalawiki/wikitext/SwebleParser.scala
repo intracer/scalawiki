@@ -7,6 +7,8 @@ import org.sweble.wikitext.engine.{PageId, PageTitle, WtEngineImpl}
 import org.sweble.wikitext.parser.nodes._
 import org.sweble.wikitext.parser.utils.WtRtDataPrinter
 
+import scala.collection.mutable
+
 trait SwebleParser {
 
   import scala.collection.JavaConverters._
@@ -29,14 +31,14 @@ trait SwebleParser {
       node.asScala.view.flatMap(child => findNode(child, pf)).headOption
   }
 
-  def collectNodes[T](node: WtNode, pf: PartialFunction[WtNode, T]): Seq[T] = {
+  def collectNodes[T](node: WtNode, pf: PartialFunction[WtNode, T]): mutable.Buffer[T] = {
     if (pf.isDefinedAt(node))
-      Seq(pf(node))
+      mutable.Buffer(pf(node))
     else
       node.asScala.flatMap(child => collectNodes(child, pf))
   }
 
-  def nodesToText[T <: AstNode[WtNode]](node: WtNode, pf: PartialFunction[WtNode, T]): Seq[String] =
+  def nodesToText[T <: AstNode[WtNode]](node: WtNode, pf: PartialFunction[WtNode, T]): mutable.Buffer[String] =
     collectNodes(node, pf).map(c => getText(c.get(1)).trim)
 
   def getText(node: WtNode): String = {

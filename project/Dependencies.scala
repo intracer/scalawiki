@@ -3,11 +3,10 @@ import sbt._
 object Dependencies {
 
   val AaltoXmlV = "1.2.1"
-  val BetterFilesAkkaV = "3.6.0"
+  def BetterFilesAkkaV(isScala213: Boolean) = if (isScala213) "3.8.0" else "3.6.0"
   val BlameApiV = "11.6.1"
   val ChronicleMapV = "3.17.4"
   val ChronoScalaV = "0.3.2"
-  val CommandLineArgumentsV = "0.5.0"
   val FicusV = "1.4.7"
   val GuavaV = "20.0"
   val H2V = "1.4.199"
@@ -20,11 +19,12 @@ object Dependencies {
   val RetryV = "0.3.3"
   val Scala212V = "2.12.6"
   val Scala211V = "2.11.12"
-  val ScalaChartV = "0.5.1"
+  val ScalaChartV = "0.7.1"
   val ScalaCheckV = "1.14.0"
   val ScalaCsvV = "1.3.6"
   val ScalaParserCombinatorsV = "1.1.2"
-  val ScalaXmlV = "1.0.6"
+  val ScalaXmlV = "1.2.0"
+  val ScallopV = "3.3.1"
   val Slf4jV = "1.7.25"
   val SwcEngineV = "3.1.9"
   val TypesafeConfigV = "1.3.4"
@@ -69,11 +69,11 @@ object Dependencies {
     }
 
     object Play {
-      val PlayJsonV = "2.6.13"
-      val TwirlV = "1.3.15"
+      def PlayJsonV(isScala213: Boolean) = if (isScala213) "2.7.4" else "2.6.13"
+      def TwirlV(isScala213: Boolean) = "1.4.2"
 
-      val json = "com.typesafe.play" %% "play-json" % PlayJsonV
-      val twirlApi = "com.typesafe.play" %% "twirl-api" % TwirlV
+      def json(isScala213: Boolean) = "com.typesafe.play" %% "play-json" % PlayJsonV(isScala213)
+      def twirlApi(isScala213: Boolean) = "com.typesafe.play" %% "twirl-api" % TwirlV(isScala213)
     }
 
     object Poi {
