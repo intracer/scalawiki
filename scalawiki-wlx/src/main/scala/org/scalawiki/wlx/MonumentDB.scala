@@ -2,6 +2,7 @@ package org.scalawiki.wlx
 
 import java.time.{ZoneOffset, ZonedDateTime}
 
+import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Monument}
 import org.scalawiki.wlx.query.MonumentQuery
 
@@ -43,7 +44,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
   def getAdmDivision(monumentId: String): Option[AdmDivision] = {
     for (monument <- byId(monumentId);
          division <- country.byIdAndName(monument.regionId, monument.cityName).headOption
-    ) yield division
+         ) yield division
   }
 
   def unknownPlaces(): Seq[UnknownPlace] = {
@@ -59,6 +60,20 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
       Some(p.copy(candidates = country.byIdAndName(p.regionId, p.name)))
         .filterNot(_.candidates.size == 1)
     }
+  }
+
+  def reportUnknownPlaces(places: Seq[UnknownPlace] = unknownPlaces()) = {
+    val headers = Seq("region Id", "name", "candidates", "monuments")
+    places.groupBy(_.page).map { case (page, places) =>
+      val data = places.map { place =>
+        Seq(
+          place.regionId, place.name,
+          place.candidates.map(_.name).mkString(", "),
+          place.monuments.map(_.name).mkString(",")
+        )
+      }
+      Table(headers, data, page)
+    }.toSeq
   }
 }
 
