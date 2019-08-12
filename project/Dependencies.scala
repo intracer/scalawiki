@@ -3,7 +3,9 @@ import sbt._
 object Dependencies {
 
   val AaltoXmlV = "1.2.1"
+
   def BetterFilesAkkaV(isScala213: Boolean) = if (isScala213) "3.8.0" else "3.6.0"
+
   val BlameApiV = "11.6.1"
   val ChronicleMapV = "3.17.4"
   val ChronoScalaV = "0.3.2"
@@ -69,10 +71,18 @@ object Dependencies {
     }
 
     object Play {
-      def PlayJsonV(isScala213: Boolean) = if (isScala213) "2.7.4" else "2.6.13"
+      def PlayJsonV(isScala213: Boolean) = {
+        if (isScala213) {
+          "2.7.4"
+        } else {
+          "2.6.13" // scala-steward:off
+        }
+      }
+
       def TwirlV(isScala213: Boolean) = "1.4.2"
 
       def json(isScala213: Boolean) = "com.typesafe.play" %% "play-json" % PlayJsonV(isScala213)
+
       def twirlApi(isScala213: Boolean) = "com.typesafe.play" %% "twirl-api" % TwirlV(isScala213)
     }
 
@@ -119,5 +129,7 @@ object Dependencies {
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV
       val mock = "org.specs2" %% "specs2-mock" % SpecsV
     }
+
   }
+
 }
