@@ -62,10 +62,10 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
     }
   }
 
-  def reportUnknownPlaces(places: Seq[UnknownPlace] = unknownPlaces()) = {
+  def reportUnknownPlaces(places: Seq[UnknownPlace] = unknownPlaces()): Seq[Table] = {
     val headers = Seq("region Id", "name", "candidates", "monuments")
-    places.groupBy(_.page).map { case (page, places) =>
-      val data = places.map { place =>
+    places.groupBy(_.page).toSeq.sortBy(_._1).map { case (page, places) =>
+      val data = places.sortBy(_.name).map { place =>
         Seq(
           place.regionId, place.name,
           place.candidates.map(_.name).mkString(", "),
@@ -73,7 +73,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
         )
       }
       Table(headers, data, page)
-    }.toSeq
+    }
   }
 }
 
