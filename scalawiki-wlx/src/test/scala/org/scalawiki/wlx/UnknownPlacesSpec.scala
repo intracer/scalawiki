@@ -47,6 +47,4 @@ class UnknownPlacesSpec extends Specification {
       ), "page2")
     )
   }
-
-
 }
