@@ -76,7 +76,7 @@ object StatParams {
       authorsStat = conf.authorsStat.getOrElse(false),
       regionalGallery = conf.regionalGallery.getOrElse(false),
       missingGallery = conf.missingGallery.getOrElse(false),
-      placeDetection = conf.placeDetection.getOrElse(false),
+      placeDetection = conf.placeDetection.getOrElse(false)
     )
   }
 }
