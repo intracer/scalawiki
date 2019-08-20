@@ -65,6 +65,10 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
         if (cfg.missingGallery) {
           Output.missingGallery(mDb)
         }
+
+        if (cfg.placeDetection) {
+          Output.unknownPlaces(mDb)
+        }
       }
     }
   }

@@ -333,4 +333,18 @@ object Output {
 
     MwBot.fromHost(MwBot.ukWiki).page(pageName).edit(text, Some("updating"))
   }
+
+  def unknownPlaces(monumentDB: MonumentDB) = {
+    val places = monumentDB.unknownPlaces()
+    val tables = monumentDB.unknownPlacesTables()
+    val text = s"Overall unknown places: ${places.size}, monuments: ${places.map(_.monuments.size).sum}" + tables.map { table =>
+      s"\n=== [[${table.title}]] - ${table.data.size} ===\n" +
+        table.asWiki
+      }.mkString
+
+    val pageName = s"Вікіпедія:${monumentDB.contest.contestType.name}/unknownPlaces"
+
+    MwBot.fromHost(MwBot.ukWiki).page(pageName).edit(text, Some("updating"))
+  }
+
 }
