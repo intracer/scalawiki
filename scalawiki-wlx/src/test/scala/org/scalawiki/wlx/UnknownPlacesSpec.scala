@@ -9,18 +9,18 @@ class UnknownPlacesSpec extends Specification {
   val campaign = "wlm-ua"
   val contest = Contest.byCampaign(campaign).get.copy(year = 2019)
   val db = new MonumentDB(contest, Nil)
-  val headers = Seq("region Id", "name", "candidates", "monuments")
+  val headers = Seq("name", "candidates", "monuments")
 
   "report nothing" in {
-    db.reportUnknownPlaces(Nil) === Nil
+    db.unknownPlacesTables(Nil) === Nil
   }
 
   "report one no candidates" in {
     val monument = new Monument("page1", "regionId1-1", "monument1")
     val place = UnknownPlace("page1", "regionId1", "place1", Nil, Seq(monument))
 
-    db.reportUnknownPlaces(Seq(place)) === Seq(Table(headers, Seq(
-      Seq("regionId1", "place1", "", "monument1")
+    db.unknownPlacesTables(Seq(place)) === Seq(Table(headers, Seq(
+      Seq("place1", "", "monument1")
     ), "page1"))
   }
 
@@ -36,14 +36,14 @@ class UnknownPlacesSpec extends Specification {
       UnknownPlace("page2", "regionId3", "place4", Nil, Seq(monument4))
     )
 
-    db.reportUnknownPlaces(places) === Seq(
+    db.unknownPlacesTables(places) === Seq(
       Table(headers, Seq(
-        Seq("regionId1", "place1", "", "monument1"),
-        Seq("regionId1", "place2", "", "monument2")
+        Seq("place1", "", "monument1"),
+        Seq("place2", "", "monument2")
       ), "page1"),
       Table(headers, Seq(
-        Seq("regionId2", "place3", "", "monument3"),
-        Seq("regionId3", "place4", "", "monument4")
+        Seq("place3", "", "monument3"),
+        Seq("place4", "", "monument4")
       ), "page2")
     )
   }
