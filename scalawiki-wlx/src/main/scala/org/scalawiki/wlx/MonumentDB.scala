@@ -62,12 +62,12 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
     }
   }
 
-  def reportUnknownPlaces(places: Seq[UnknownPlace] = unknownPlaces()): Seq[Table] = {
-    val headers = Seq("region Id", "name", "candidates", "monuments")
+  def unknownPlacesTables(places: Seq[UnknownPlace] = unknownPlaces()): Seq[Table] = {
+    val headers = Seq("name", "candidates", "monuments")
     places.groupBy(_.page).toSeq.sortBy(_._1).map { case (page, places) =>
       val data = places.sortBy(_.name).map { place =>
         Seq(
-          place.regionId, place.name,
+          place.name,
           place.candidates.map(_.name).mkString(", "),
           place.monuments.map(_.name).mkString(",")
         )
