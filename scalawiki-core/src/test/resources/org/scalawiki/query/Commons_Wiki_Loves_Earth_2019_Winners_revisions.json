@@ -1,0 +1,1167 @@
+{
+  "batchcomplete": "",
+  "warnings": {
+    "main": {
+      "*": "Subscribe to the mediawiki-api-announce mailing list at <https://lists.wikimedia.org/mailman/listinfo/mediawiki-api-announce> for notice of API deprecations and breaking changes. Use [[Special:ApiFeatureUsage]] to see usage of deprecated features by your application."
+    },
+    "revisions": {
+      "*": "Because \"rvslots\" was not specified, a legacy format has been used for the output. This format is deprecated, and in the future the new format will always be used."
+    }
+  },
+  "query": {
+    "pages": {
+      "79587474": {
+        "pageid": 79587474,
+        "ns": 6,
+        "title": "File:-تيناكاشاكير- الحضيرة الوطنية لطاسيلي الهقار - تامنراست - الجزائر.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:47:38Z",
+        "lastrevid": 360327751,
+        "length": 489,
+        "revisions": [
+          {
+            "revid": 360327751,
+            "parentid": 360325725,
+            "user": "Great11",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* {{int:filedesc}} */",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{fr|1=Hoggar, Réserve national de Tamanrasset}} {{en|1=Hoggar, Tamanrasset National Reserve}}\n|date=2018-10-09 17:41:49\n|source={{own}}\n|author=[[User:Aboubakrhadnine|Aboubakrhadnine]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|dz}}\n\n[[Category:Uploaded via Campaign:wle-dz]]\n[[Category:Qualified images from Wiki Loves Earth 2019 in Algeria]]\n[[Category:Ahaggar Mountains]]"
+          }
+        ]
+      },
+      "78808880": {
+        "pageid": 78808880,
+        "ns": 6,
+        "title": "File:03102016-IMG 6592.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:35:30Z",
+        "lastrevid": 362244044,
+        "length": 613,
+        "revisions": [
+          {
+            "revid": 362244044,
+            "parentid": 362177326,
+            "user": "Sarah Krichen WMFr",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* {{int:filedesc}} */",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{fr|1=Photographie du Phare du Petit Minou en mer d'Iroise}}\n{{en|1=Photograph of the Lighthouse of Petit Minou in the Iroise Sea}}\n|date=2017\n|source={{own}}\n|author=[[User:Mickael Jonas|Mickael Jonas]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|fr}}\n\n[[Category:Marine natural park of Iroise]]\n[[Category:Eligible submissions for Wiki Loves Earth 2019 in France]]\n[[Category:Uploaded via Campaign:wle-fr]]\n[[Category:Petit Minou lighthouse]]\n[[Category:Winners of Wiki Loves Earth 2019 in France]]"
+          }
+        ]
+      },
+      "32228631": {
+        "pageid": 32228631,
+        "ns": 6,
+        "title": "File:0 green.svg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-07-29T14:37:53Z",
+        "lastrevid": 277274740,
+        "length": 353,
+        "revisions": [
+          {
+            "revid": 277274740,
+            "parentid": 210998869,
+            "user": "W like wiki",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "Moving from [[Category:0 (number)]] to [[Category:0 (numeral)]] using [[c:Help:Cat-a-lot|Cat-a-lot]]",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=One of ten numbers on green background. The typeface is Linux Libertine.}}\n|date=2014-04-17 20:35:38\n|source={{own}}\n|author=[[User:Amakuha|Amakuha]]\n|permission=\n|other_versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-zero}}\n\n\n\n[[Category:0 (numeral)]]\n[[Category:Numbers with green background]]"
+          }
+        ]
+      },
+      "48562559": {
+        "pageid": 48562559,
+        "ns": 6,
+        "title": "File:0h. mancala hole.svg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-06-24T01:07:30Z",
+        "lastrevid": 213568991,
+        "length": 380,
+        "revisions": [
+          {
+            "revid": 213568991,
+            "parentid": 195745575,
+            "user": "SteinsplitterBot",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "Bot: Removing [[Special:Redirect/revision/209344599|phased out category]].",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{ru|1=Числовая лунка с подсветкой для манкала-игр. Цвет #FFEEAA.}}\n|date=2016-05-05\n|source={{own}}\n|author=[[User:ПростоУчастник|ПростоУчастник]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-zero}}\n\n[[Category:2. Set of mancala holes]]"
+          }
+        ]
+      },
+      "79799602": {
+        "pageid": 79799602,
+        "ns": 6,
+        "title": "File:1074 ภาพเขียนสีบนผาแต้ม อุทยานแห่งชาติผาแต้ม.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:49:35Z",
+        "lastrevid": 355401256,
+        "length": 493,
+        "revisions": [
+          {
+            "revid": 355401256,
+            "parentid": 355401246,
+            "user": "Taweelarp Prasittinawa",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* wbsetlabel-add:1|th */ 1074 ภาพเขียนสีบนผาแต้ม อุทยานแห่งชาติผาแต้ม",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{th|1='''[[อุทยานแห่งชาติผาแต้ม]]'''}}{{ThaiNaturalHeritageSite|1074}}\n|date=2017-11-17 09:26:33\n|source={{own}}\n|author=[[User:Taweelarp Prasittinawa|Taweelarp Prasittinawa]]\n|permission=\n|other versions=\n}}\n{{Location|15.40209|105.49994}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|th}}\n\n[[Category:Protected areas of Thailand]]\n[[Category:Uploaded via Campaign:wle-th]]"
+          }
+        ]
+      },
+      "50420952": {
+        "pageid": 50420952,
+        "ns": 6,
+        "title": "File:10 green.svg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T10:53:26Z",
+        "lastrevid": 353910747,
+        "length": 482,
+        "revisions": [
+          {
+            "revid": 353910747,
+            "parentid": 308676571,
+            "user": "DannyS712",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "Moving from [[Category:10 (number)]] to [[Category:Number 10 in icons]]",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=One of ten numbers on green background. The typeface is Linux Libertine.}}{{se|1=Një nga dhjetë numrat në sfond të gjelbër. Typeface është Linux Libertine.}}\n|date=2016-07-31\n|source={{own}}\n|author=[[User:Liridon|Liridon]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n[[Category:Numbers with green background]]\n[[Category:Number 10 in icons]]\n[[Category:White number 10 on discs]]"
+          }
+        ]
+      },
+      "80069604": {
+        "pageid": 80069604,
+        "ns": 6,
+        "title": "File:143 FORET DES CEDRES DE THENIET EL HAD.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:51:57Z",
+        "lastrevid": 360276574,
+        "length": 919,
+        "revisions": [
+          {
+            "revid": 360276574,
+            "parentid": 360126896,
+            "user": "Great11",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* {{int:filedesc}} */ add information",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{fr|1=Le Parc national de Theniet El Had est situé dans la commune Theniet El Had de la wilaya de Tissemsilt en Algérie.La forêt des cèdres de Theniet El Had s’étend sur 3424 ha dont 1000 ha de cèdres}} {{en|1= Theniet El Had National Park is located in the district Theniet El Had, wilaya of Tissemsilt in Algeria. The cedar forest of Theniet El had covers 3424 ha including 1000 ha of cedars}}\n|date=2015-05-22 19:29:42\n|source={{own}}\n|author=[[User:BRAHIM DJELLOUL|BRAHIM DJELLOUL]]\n|permission=\n|other versions=\n}}\n{{Location dec|1.9336|35.8653}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|dz}}\n\n[[Category:Théniet El Had National Park]]\n[[Category:Uploaded via Campaign:wle-dz]]\n[[Category:Qualified images from Wiki Loves Earth 2019 in Algeria]]\n[[Category:Qualified images top lt 1 from Wiki Loves Earth 2019 in Algeria]]"
+          }
+        ]
+      },
+      "32228633": {
+        "pageid": 32228633,
+        "ns": 6,
+        "title": "File:1 green.svg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T10:53:26Z",
+        "lastrevid": 343012930,
+        "length": 473,
+        "revisions": [
+          {
+            "revid": 343012930,
+            "parentid": 293778856,
+            "user": "Allforrous",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "+[[Category:1 (numeral)]]; +[[Category:Numbers with green background]]",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=One of ten numbers on green background. The typeface is Linux Libertine.}}\n|date=2014-04-17 20:35:38\n|source={{own}}\n|author=[[User:Amakuha|Amakuha]]\n|permission=\n|other_versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-zero}}\n\n[[Category:Number 1 depicted by Western Arabic numerals]]\n[[Category:White number 1 on green discs]]\n[[Category:1 icons]]\n[[Category:1 (numeral)]]\n[[Category:Numbers with green background]]"
+          }
+        ]
+      },
+      "79606432": {
+        "pageid": 79606432,
+        "ns": 6,
+        "title": "File:20140705T093454 Lat 1 19 32.63077201 N Long 103 25 57.76068003 E.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:47:54Z",
+        "lastrevid": 360970356,
+        "length": 535,
+        "revisions": [
+          {
+            "revid": 360970356,
+            "parentid": 353864939,
+            "user": "Twhrl",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Crab at Taman Negara Johor Pulau Kukup}}\n|date=2014-07-05 09:34:54\n|source={{own}}\n|author=[[User:Twhrl|Toni Wöhrl]]\n|permission=\n|other versions=\n}}\n{{Location|1.325731|103.432711}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|my}}\n{{WLE finalist or winner image |year=2019 |country=Malaysia |place=6}}\n[[Category:Protected areas of Malaysia]]\n[[Category:Taman Negara Johor Pulau Kukup]]\n[[Category:Crabs]]\n[[Category:Uploaded via Campaign:wle-my]]"
+          }
+        ]
+      },
+      "79606433": {
+        "pageid": 79606433,
+        "ns": 6,
+        "title": "File:20140705T094723 Lat 1 19 31.01995211 N Long 103 25 54.49810845 E.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:47:54Z",
+        "lastrevid": 360970341,
+        "length": 535,
+        "revisions": [
+          {
+            "revid": 360970341,
+            "parentid": 353864915,
+            "user": "Twhrl",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Crab at Taman Negara Johor Pulau Kukup}}\n|date=2014-07-05 09:47:23\n|source={{own}}\n|author=[[User:Twhrl|Toni Wöhrl]]\n|permission=\n|other versions=\n}}\n{{Location|1.325283|103.431805}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|my}}\n{{WLE finalist or winner image |year=2019 |country=Malaysia |place=5}}\n[[Category:Protected areas of Malaysia]]\n[[Category:Taman Negara Johor Pulau Kukup]]\n[[Category:Crabs]]\n[[Category:Uploaded via Campaign:wle-my]]"
+          }
+        ]
+      },
+      "79606707": {
+        "pageid": 79606707,
+        "ns": 6,
+        "title": "File:20140817T130730 Lat 2 2 33.94590025 N Long 103 33 26.02664975 E.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:47:54Z",
+        "lastrevid": 360970305,
+        "length": 557,
+        "revisions": [
+          {
+            "revid": 360970305,
+            "parentid": 360970255,
+            "user": "Twhrl",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Vegetation at Gunung Belumut Recreational Forest/Hutan Lipur Gunung Berlumut}}\n|date=2014-08-17 13:07:30\n|source={{own}}\n|author=[[User:Twhrl|Toni Wöhrl]]\n|permission=\n|other versions=\n}}\n{{Location|2.042763|103.55723}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|my}}\n{{WLE finalist or winner image |year=2019 |country=Malaysia |place=9}}\n[[Category:Protected areas of Malaysia]]\n[[Category:Gunung Belumut Recreational Forest]]\n[[Category:Uploaded via Campaign:wle-my]]"
+          }
+        ]
+      },
+      "79606443": {
+        "pageid": 79606443,
+        "ns": 6,
+        "title": "File:20140817T132831 Lat 2 2 41.49049430 N Long 103 33 24.74152953 E.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:47:54Z",
+        "lastrevid": 360970323,
+        "length": 630,
+        "revisions": [
+          {
+            "revid": 360970323,
+            "parentid": 353864610,
+            "user": "Twhrl",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Insect at Gunung Belumut Recreational Forest/Hutan Lipur Gunung Berlumut}}\n|date=2014-08-17 13:28:31\n|source={{own}}\n|author=[[User:Twhrl|Toni Wöhrl]]\n|permission=\n|other versions=\n}}\n{{Location|2.044858|103.556873}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|my}}\n{{WLE finalist or winner image |year=2019 |country=Malaysia |place=2}}\n[[Category:Protected areas of Malaysia]]\n[[Category:Gunung Belumut Recreational Forest]]\n[[Category:Unidentified insects of Malaysia]]\n[[Category:Insects of Johor]]\n[[Category:Uploaded via Campaign:wle-my]]"
+          }
+        ]
+      },
+      "79186571": {
+        "pageid": 79186571,
+        "ns": 6,
+        "title": "File:2014 03 Trejrumbina (3).jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:40:43Z",
+        "lastrevid": 359940199,
+        "length": 484,
+        "revisions": [
+          {
+            "revid": 359940199,
+            "parentid": 359940198,
+            "user": "Papuass",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* wbsetlabel-add:1|en */ Trejrumbiņa, Riežupe Nature park",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{lv|1=Riežupes dabas parks}}{{LatvianNaturalHeritageSite|LV0301100}}\n|date=2014-03-31 18:19:31\n|source={{own}}\n|author=[[User:Laima Gutmane|Laima Gutmane]]\n|permission=\n|other versions=\n}}\n{{Location|56.989883|22.034085}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|lv}}\n\n[[Category:Riežupe Nature Park]]\n[[Category:Uploaded via Campaign:wle-lv]]\n[[Category:Winners of Wiki Loves Earth 2019 in Latvia]]"
+          }
+        ]
+      },
+      "79547959": {
+        "pageid": 79547959,
+        "ns": 6,
+        "title": "File:2016-11-27-232859 Lat 6,2742 Long 99,7345.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:47:15Z",
+        "lastrevid": 360970404,
+        "length": 510,
+        "revisions": [
+          {
+            "revid": 360970404,
+            "parentid": 353609846,
+            "user": "Twhrl",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Amphibia at Langkawi UNESCO Global Geopark}}\n|date=2016-11-27 23:28:59\n|source={{own}}\n|author=[[User:Twhrl|Toni Wöhrl]]\n|permission=\n|other versions=\n}}\n{{Location|6.274209|99.734474}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|my}}\n{{WLE finalist or winner image |year=2019 |country=Malaysia |place=3}}\n[[Category:Protected areas of Malaysia]]\n[[Category:Unidentified Amphibia]]\n[[Category:Uploaded via Campaign:wle-my]]"
+          }
+        ]
+      },
+      "79547964": {
+        "pageid": 79547964,
+        "ns": 6,
+        "title": "File:2016-11-28-144858 Lat 6,3890 Long 99,6735.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:47:15Z",
+        "lastrevid": 360970383,
+        "length": 596,
+        "revisions": [
+          {
+            "revid": 360970383,
+            "parentid": 353725043,
+            "user": "Twhrl",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Caterpillar at Langkawi UNESCO Global Geopark}}\n|date=2016-11-28 14:48:58\n|source={{own}}\n|author=[[User:Twhrl|Toni Wöhrl]]\n|permission=\n|other versions=\n}}\n{{Location|6.388958|99.673547}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|my}}\n{{WLE finalist or winner image |year=2019 |country=Malaysia |place=10}}\n[[Category:Protected areas of Malaysia]]\n[[Category:Uploaded via Campaign:wle-my]]\n[[Category:Unidentified caterpillars of Malaysia]]\n[[Category:Unidentified caterpillars to be classified by family]]"
+          }
+        ]
+      },
+      "79692019": {
+        "pageid": 79692019,
+        "ns": 6,
+        "title": "File:2016.09.26 Big Caucasian mountain Qakh street Lyakit-Kothuklu village.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:48:39Z",
+        "lastrevid": 359500641,
+        "length": 452,
+        "revisions": [
+          {
+            "revid": 359500641,
+            "parentid": 356593916,
+            "user": "Interfase",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* {{int:filedesc}} */",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description=Caucasus Mountains in Lyakit-Kothuklu village of Gakh District of Azerbaijan. Gakh State Sanctuary{{Natural Heritage Azerbaijan|3.18}}\n|date=2016-09-27 00:20:15\n|source={{own}}\n|author=[[User:Sky Lord 96|Sahib Aslanov]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|az}}\n\n[[Category:Mountain puzzle]]\n[[Category:Uploaded via Campaign:wle-az]]"
+          }
+        ]
+      },
+      "79593976": {
+        "pageid": 79593976,
+        "ns": 6,
+        "title": "File:20160130T130105 Lat 39 40 14.93335200 N Long 49 10 56.53462783 E.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:47:38Z",
+        "lastrevid": 360970083,
+        "length": 465,
+        "revisions": [
+          {
+            "revid": 360970083,
+            "parentid": 353777838,
+            "user": "Twhrl",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Vegetation at Shirvan National Park}}\n|date=2016-01-30 13:01:05\n|source={{own}}\n|author=[[User:Twhrl|Toni Wöhrl]]\n|permission=\n|other versions=\n}}\n{{Location|39.670815|49.182371}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|az}}\n{{WLE finalist or winner image |year=2019 |country=Azerbaijan |place=5}}\n[[Category:Shirvan National Park]]\n[[Category:Uploaded via Campaign:wle-az]]"
+          }
+        ]
+      },
+      "79593154": {
+        "pageid": 79593154,
+        "ns": 6,
+        "title": "File:20170415T052902 Lat 2 27 13.49308800 N Long 103 14 17.18214005 E.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:47:38Z",
+        "lastrevid": 360970364,
+        "length": 659,
+        "revisions": [
+          {
+            "revid": 360970364,
+            "parentid": 353852199,
+            "user": "Twhrl",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Insect at Endau-Rompin National Park/Taman Negara Endau-Rompin}}\n|date=2017-04-15 05:29:02\n|source={{own}}\n|author=[[User:Twhrl|Toni Wöhrl]]\n|permission=\n|other versions=\n}}\n{{Location|2.453748|103.238106}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|my}}\n{{WLE finalist or winner image |year=2019 |country=Malaysia |place=4}}\n[[Category:Protected areas of Malaysia]]\n[[Category:Uploaded via Campaign:wle-my]]\n[[Category:Endau-Rompin National Park]]\n[[Category:Unidentified Lepidoptera of Malaysia]]\n[[Category:Unidentified Graphium]]\n[[Category:Papilionidae of Malaysia]]"
+          }
+        ]
+      },
+      "79227100": {
+        "pageid": 79227100,
+        "ns": 6,
+        "title": "File:2018-06 Réserve naturelle nationale de Sixt-Passy 05.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:41:43Z",
+        "lastrevid": 362177248,
+        "length": 869,
+        "revisions": [
+          {
+            "revid": 362177248,
+            "parentid": 351994617,
+            "user": "Sarah Krichen WMFr",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "added [[Category:Winners of Wiki Loves Earth 2019 in France]]",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Landscape of the [[:fr:Réserve naturelle nationale de Sixt-Passy|Sixt-Passy national nature reserve]], [[:en:Haute-Savoie|Haute-Savoie]], France.}}\n{{fr|1=Paysage dans la [[:fr:Réserve naturelle nationale de Sixt-Passy|réserve naturelle nationale de Sixt-Passy]], [[:fr:Haute-Savoie|Haute-Savoie]], France.}}\n|date=2018-06-26 15:45:07\n|source={{own}}\n|author=[[User:0x010C|0x010C]]\n|permission=\n|other versions=\n}}\n{{Location|46.109712|6.862447}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|fr}}\n\n[[Category:Réserve naturelle nationale de Sixt-Passy]]\n[[Category:Images by 0x010C]]\n[[Category:Eligible submissions for Wiki Loves Earth 2019 in France]]\n[[Category:Uploaded via Campaign:wle-fr]]\n[[Category:Antoine Lamielle]]\n[[Category:Winners of Wiki Loves Earth 2019 in France]]"
+          }
+        ]
+      },
+      "79460479": {
+        "pageid": 79460479,
+        "ns": 6,
+        "title": "File:2019-04 Blue Mountains National Park 10.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:46:35Z",
+        "lastrevid": 357757936,
+        "length": 597,
+        "revisions": [
+          {
+            "revid": 357757936,
+            "parentid": 353125273,
+            "user": "Gnangarra",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "{{Location}}",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Landscape in the [[:en:Blue Mountains National Park|Blue Mountains National Park]], Australia.}}\n{{fr|1=Paysage dans le [[:fr:parc national des Blue Mountains|parc national des Blue Mountains]], Australie.}}\n|date=2019-04-08 20:34:40\n|source={{own}}\n|author=[[User:0x010C|0x010C]]\n|permission=\n|other versions=\n}}\n{{Location|-33.85673|150.48798}}\n\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|au}}\n\n[[Category:Images by 0x010C]]\n[[Category:Blue Mountains National Park]]\n[[Category:Uploaded via Campaign:wle-au]]"
+          }
+        ]
+      },
+      "79147005": {
+        "pageid": 79147005,
+        "ns": 6,
+        "title": "File:2019 - Nationalpark Jasmund - 03.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:40:06Z",
+        "lastrevid": 358976430,
+        "length": 1216,
+        "revisions": [
+          {
+            "revid": 358976430,
+            "parentid": 358924933,
+            "user": "Aristeas",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "group cats",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=Національний парк Ясмунд, о.Рюген, Мекленбург-Передня Померанія, Німеччина.}}\n{{de|1=Der Nationalpark Jasmund, Insel Rügen, Bundesland Mecklenburg-Vorpommern, Deutschland.}}\n{{en|1=The Jasmund national park WDPA-ID: 32667, Rügen island in Mecklenburg-Vorpommern, Germany.}}\n{{fr|1=Le parc national de Jasmund, l'île de Rügen dans le land allemand de Mecklembourg-Poméranie occidentale.}}\n{{es|1=El Parque Nacional de Jasmund, isla Rügen, Mecklemburgo-Pomerania Occidental, Alemania.}}\n{{ka|1=იასმუნდის ეროვნული პარკი.}}\n|date=2018-08-10 13:57:20\n|source={{own}}\n|author=[[User:Moahim|Moahim]]\n|permission=\n|other versions=\n}}\n{{Location|54.55723|13.67665}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|de}}\n{{WLE de Gewinnerbild|year=2019|place=3}}\n{{QualityImage}}\n\n[[Category:Images from Wiki Loves Earth 2019, DE-MV]]\n[[Category:Coast of Nationalpark Jasmund]]\n[[Category:Forest of Nationalpark Jasmund]]\n[[Category:Uploaded via Campaign:wle-de-mv]]\n[[Category:Quality images from Wiki Loves Earth 2019 in Germany]]"
+          }
+        ]
+      },
+      "79300402": {
+        "pageid": 79300402,
+        "ns": 6,
+        "title": "File:2019 - Parc national des Pyrenees - Vallée de Gavarnie.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:43:19Z",
+        "lastrevid": 362708447,
+        "length": 891,
+        "revisions": [
+          {
+            "revid": 362708447,
+            "parentid": 362177315,
+            "user": "Sarah Krichen WMFr",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* {{int:filedesc}} */",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=Національний парк Пірене, від на долину Гаварні, Верхні Піренеї, Франція.}}\n{{fr|1=Parc national des Pyrenees, vallée de Gavarnie, Hautes-Pyrénées, France.}}\n{{en|1=The Pyrénées National Park, view on the Gavarnie valley, Hautes-Pyrénées, France.}}\n|date=2017-10-24 16:43:22\n|source={{own}}\n|author=[[User:Moahim|Moahim]]\n|permission=\n|other versions=\n}}\n{{Location|42.711700|0.002859}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|fr}}\n{{QualityImage}}\n\n[[Category:Parc national des Pyrénées]]\n[[Category:Landscapes of Hautes-Pyrénées]]\n[[Category:Gave de Gavarnie]]\n[[Category:Eligible submissions for Wiki Loves Earth 2019 in France]]\n[[Category:Uploaded via Campaign:wle-fr]]\n[[Category:Winners of Wiki Loves Earth 2019 in France]]"
+          }
+        ]
+      },
+      "79684223": {
+        "pageid": 79684223,
+        "ns": 6,
+        "title": "File:2019 - Tusheti National Park - Morning in the Upper Omalo.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:48:35Z",
+        "lastrevid": 359145258,
+        "length": 859,
+        "revisions": [
+          {
+            "revid": 359145258,
+            "parentid": 359145113,
+            "user": "David1010",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{uk|1=Ранок у Верхньому Омало, націона́льний парк Туше́ті, Грузія.}}\n{{ru|1=Утро в Верхнем Омало, национальный парк Тушети, Грузия.}}\n{{en|1=Morning in the Upper Omalo, Tusheti National Park, Georgia.}}\n{{ka|1=ომალო, თუშეთის ეროვნული პარკი.}}\n|date=2018-06-29 04:23:13\n|source={{own}}\n|author=[[User:Moahim|Moahim]]\n|permission=\n|other versions=\n}}\n\n=={{Assessment}}==\n{{WLE finalist or winner image |year=2019 |country=Georgia |place=5}}\n{{Wiki Loves Earth 2019|ge}}\n{{QualityImage}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n[[Category:Tusheti National Park]]\n[[Category:Omalo]]\n[[Category:Mountains of Kakheti]]\n[[Category:Uploaded via Campaign:wle-ge]]"
+          }
+        ]
+      },
+      "78993959": {
+        "pageid": 78993959,
+        "ns": 6,
+        "title": "File:2 deers , parnitha.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:37:31Z",
+        "lastrevid": 362264186,
+        "length": 522,
+        "revisions": [
+          {
+            "revid": 362264186,
+            "parentid": 362264135,
+            "user": "Geraki",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* wbsetclaim-update:2||1 */ [[d:Special:EntityPage/P180]]: [[d:Special:EntityPage/Q29838690]]",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=2 deers, parnitha}}{{natura 2000|GR3000001}}\n|date=2017-03-16 16:04:30\n|source={{own}}\n|author=[[User:Stathis floros|Stathis floros]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|gr}}\n\n[[Category:Natura 2000 in Greece]]\n[[Category:Parnitha]]\n[[Category:WLE 2019 in Greece image uploaded on 05-16]]\n[[Category:Uploaded via Campaign:wle-gr]]\n[[Category:Best images from Wiki Loves Earth 2019 in Greece‎]]"
+          }
+        ]
+      },
+      "32228634": {
+        "pageid": 32228634,
+        "ns": 6,
+        "title": "File:2 green.svg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T10:53:26Z",
+        "lastrevid": 352609539,
+        "length": 384,
+        "revisions": [
+          {
+            "revid": 352609539,
+            "parentid": 213878777,
+            "user": "User123o987name",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=One of ten numbers on green background. The typeface is Linux Libertine.}}\n|date=2014-04-17 20:35:38\n|source={{own}}\n|author=[[User:Amakuha|Amakuha]]\n|permission=\n|other_versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-zero}}\n\n[[Category:Number 2 depicted by Western Arabic numerals]]\n[[Category:Numbers with green background]]"
+          }
+        ]
+      },
+      "32228636": {
+        "pageid": 32228636,
+        "ns": 6,
+        "title": "File:3 green.svg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T10:53:26Z",
+        "lastrevid": 214372776,
+        "length": 350,
+        "revisions": [
+          {
+            "revid": 214372776,
+            "parentid": 121585962,
+            "user": "SteinsplitterBot",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "Bot: Removing [[Special:Redirect/revision/209344599|phased-out category]].",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=One of ten numbers on green background. The typeface is Linux Libertine.}}\n|date=2014-04-17 20:35:39\n|source={{own}}\n|author=[[User:Amakuha|Amakuha]]\n|permission=\n|other_versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-zero}}\n\n[[Category:3 (number)]]\n[[Category:Numbers with green background]]"
+          }
+        ]
+      },
+      "32228635": {
+        "pageid": 32228635,
+        "ns": 6,
+        "title": "File:4 green.svg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T10:53:26Z",
+        "lastrevid": 277248158,
+        "length": 352,
+        "revisions": [
+          {
+            "revid": 277248158,
+            "parentid": 214363140,
+            "user": "W like wiki",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "Moving from [[Category:4 (number)]] to [[Category:4 (numeral)]] using [[c:Help:Cat-a-lot|Cat-a-lot]]",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=One of ten numbers on green background. The typeface is Linux Libertine.}}\n|date=2014-04-17 20:35:39\n|source={{own}}\n|author=[[User:Amakuha|Amakuha]]\n|permission=\n|other_versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-zero}}\n\n\n[[Category:4 (numeral)]]\n[[Category:Numbers with green background]]"
+          }
+        ]
+      },
+      "32228637": {
+        "pageid": 32228637,
+        "ns": 6,
+        "title": "File:5 green.svg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T10:53:26Z",
+        "lastrevid": 308676589,
+        "length": 391,
+        "revisions": [
+          {
+            "revid": 308676589,
+            "parentid": 292097384,
+            "user": "150.107.172.73",
+            "anon": "",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=One of ten numbers on green background. The typeface is Linux Libertine.}}\n|date=2014-04-17 20:35:40\n|source={{own}}\n|author=[[User:Amakuha|Amakuha]]\n|permission=\n|other_versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-zero}}\n\n[[Category:White number 5]]\n[[Category:Numbers with green background]]\n[[Category:White number 5 on discs]]"
+          }
+        ]
+      },
+      "32228639": {
+        "pageid": 32228639,
+        "ns": 6,
+        "title": "File:6 green.svg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T10:53:26Z",
+        "lastrevid": 332155701,
+        "length": 350,
+        "revisions": [
+          {
+            "revid": 332155701,
+            "parentid": 332155682,
+            "user": "Iluvatar",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "Reverted edits by [[Special:Contributions/82.137.243.105|82.137.243.105]] ([[User talk:82.137.243.105|talk]]) to last revision by SteinsplitterBot",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=One of ten numbers on green background. The typeface is Linux Libertine.}}\n|date=2014-04-17 20:35:41\n|source={{own}}\n|author=[[User:Amakuha|Amakuha]]\n|permission=\n|other_versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-zero}}\n\n[[Category:6 (number)]]\n[[Category:Numbers with green background]]"
+          }
+        ]
+      },
+      "32228638": {
+        "pageid": 32228638,
+        "ns": 6,
+        "title": "File:7 green.svg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T10:53:26Z",
+        "lastrevid": 214476300,
+        "length": 353,
+        "revisions": [
+          {
+            "revid": 214476300,
+            "parentid": 145065239,
+            "user": "SteinsplitterBot",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "Bot: Removing [[Special:Redirect/revision/209344599|phased-out category]].",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=One of ten numbers on green background. The typeface is Linux Libertine.}}\n|date=2014-04-17 20:35:40\n|source={{own}}\n|author=[[User:Amakuha|Amakuha]]\n|permission=\n|other_versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-zero}}\n\n[[Category:Round 7 icons]]\n[[Category:Numbers with green background]]"
+          }
+        ]
+      },
+      "32228640": {
+        "pageid": 32228640,
+        "ns": 6,
+        "title": "File:8 green.svg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T10:53:26Z",
+        "lastrevid": 353910288,
+        "length": 384,
+        "revisions": [
+          {
+            "revid": 353910288,
+            "parentid": 308682124,
+            "user": "DannyS712",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "Moving from [[Category:8 (number)]] to [[Category:8 icons]]",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=One of ten numbers on green background. The typeface is Linux Libertine.}}\n|date=2014-04-17 20:35:41\n|source={{own}}\n|author=[[User:Amakuha|Amakuha]]\n|permission=\n|other_versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-zero}}\n\n[[Category:8 icons]]\n[[Category:Numbers with green background]]\n[[Category:White number 8 on discs]]"
+          }
+        ]
+      },
+      "32228641": {
+        "pageid": 32228641,
+        "ns": 6,
+        "title": "File:9 green.svg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T10:53:26Z",
+        "lastrevid": 353910579,
+        "length": 384,
+        "revisions": [
+          {
+            "revid": 353910579,
+            "parentid": 308676558,
+            "user": "DannyS712",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "Moving from [[Category:9 (number)]] to [[Category:9 icons]]",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=One of ten numbers on green background. The typeface is Linux Libertine.}}\n|date=2014-04-17 20:35:42\n|source={{own}}\n|author=[[User:Amakuha|Amakuha]]\n|permission=\n|other_versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-zero}}\n\n[[Category:9 icons]]\n[[Category:Numbers with green background]]\n[[Category:White number 9 on discs]]"
+          }
+        ]
+      },
+      "79651238": {
+        "pageid": 79651238,
+        "ns": 6,
+        "title": "File:A7J03404A.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:48:17Z",
+        "lastrevid": 354698482,
+        "length": 453,
+        "revisions": [
+          {
+            "revid": 354698482,
+            "parentid": 354604003,
+            "user": "大诺史",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "Reverted edits by [[Special:Contributions/2001:44C8:4447:821E:D403:FE13:86FB:286B|2001:44C8:4447:821E:D403:FE13:86FB:286B]] ([[User talk:2001:44C8:4447:821E:D403:FE13:86FB:286B|talk]]) to last revision by SupawatR",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{th|1='''[[อุทยานแห่งชาติเขาสก]]'''}}{{ThaiNaturalHeritageSite|1022}}\n|date=2019-06-12\n|source={{own}}\n|author=[[User:SupawatR|SupawatR]]\n|permission=\n|other versions=\n}}\n{{Location|8.928667|98.526122}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|th}}\n\n[[Category:Protected areas of Thailand]]\n[[Category:Uploaded via Campaign:wle-th]]"
+          }
+        ]
+      },
+      "79541622": {
+        "pageid": 79541622,
+        "ns": 6,
+        "title": "File:A Colorful Bird Chirps at Yala National Park.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:47:11Z",
+        "lastrevid": 360355483,
+        "length": 534,
+        "revisions": [
+          {
+            "revid": 360355483,
+            "parentid": 360221936,
+            "user": "MPF",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "removed [[Category:Unidentified Meropidae]]; added [[Category:Merops orientalis ceylonicus]]",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=A colorful bird spotted at Yala National Park in Sri Lanka.}}\n|date=2019-04-17 09:59:36\n|source={{own}}\n|author=[[User:Elisolidum|Eli Solidum]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|lk}}\n\n[[Category:Yala National Park]]\n[[Category:Uploaded via Campaign:wle-lk]]\n[[Category:Images from Wiki Loves Earth 2019 in Sri Lanka (maintenance)]]\n[[Category:Merops orientalis ceylonicus]]\n[[Category:Birds of Sri Lanka]]"
+          }
+        ]
+      },
+      "80010390": {
+        "pageid": 80010390,
+        "ns": 6,
+        "title": "File:A Lagoon front in Festac, Lagos state, Nigeria.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:50:37Z",
+        "lastrevid": 356342731,
+        "length": 394,
+        "revisions": [
+          {
+            "revid": 356342731,
+            "parentid": 356342728,
+            "user": "Johnbrainyvisuals",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* wbsetclaim-create:2||1 */ [[d:Special:EntityPage/P180]]: [[d:Special:EntityPage/Q815913]]",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=A Lagoon front in Festac, Lagos state, Nigeria}}\n|date=2017-12-17 15:07:13\n|source={{own}}\n|author=[[User:Johnbrainyvisuals|Johnbrainyvisuals]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|ng}}\n\n[[Category:Protected areas of Nigeria]]\n[[Category:Uploaded via Campaign:wle-ng]]"
+          }
+        ]
+      },
+      "79423031": {
+        "pageid": 79423031,
+        "ns": 6,
+        "title": "File:A beach in the sunset in with alot of clouds and a montain.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:46:14Z",
+        "lastrevid": 360291387,
+        "length": 882,
+        "revisions": [
+          {
+            "revid": 360291387,
+            "parentid": 360291180,
+            "user": "Great11",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* {{int:filedesc}} */ add informaton",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1= El Marsa beach (Marsa Ben M'Hidi) is situated at Tlemcen in Algeria, a sea in the sunset with alot of orange clouds and a orange reflex of the sun on the see and a mountain on the side}} {{fr|1= Plage de la Mersa dite Ben M'hidi, dans la Wilaya de Tlemcen en Algérie}}\n|date=2018-08-07 19:57:01\n|source={{own}}\n|author=[[User:Mohcen CH|Mohcen CH]]\n|permission=\n|other versions=\n}}\n{{Location dec|35.1000|-2.1156}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|dz}}\n\n[[Category:Beaches of Algeria]]\n[[Category:Sunsets of Algeria]]\n[[Category:Orange]]\n[[Category:Golden hour (photography)]]\n[[Category:Uploaded via Campaign:wle-dz]]\n[[Category:Qualified images from Wiki Loves Earth 2019 in Algeria]]\n[[Category:Qualified images top lt 1 from Wiki Loves Earth 2019 in Algeria]]\n[[Category:Tlemcen]]"
+          }
+        ]
+      },
+      "79766002": {
+        "pageid": 79766002,
+        "ns": 6,
+        "title": "File:A pond heron in flight.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:49:18Z",
+        "lastrevid": 360266258,
+        "length": 355,
+        "revisions": [
+          {
+            "revid": 360266258,
+            "parentid": 360108272,
+            "user": "Nirmal Dulal",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "correcting",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description= A pond heron (Ardeola grayii) in flight.\n|date=2018-12-10 08:43:22\n|source={{own}}\n|author=[[User:Ummidnp|Ummidnp]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|np}}\n\n[[Category:Uploaded via Campaign:wle-np]]\n[[Category:Unidentified Ardeidae]]"
+          }
+        ]
+      },
+      "78976481": {
+        "pageid": 78976481,
+        "ns": 6,
+        "title": "File:A view of communities and landscapes from mounitain gemi in amedzope (1).jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:37:16Z",
+        "lastrevid": 360247855,
+        "length": 400,
+        "revisions": [
+          {
+            "revid": 360247855,
+            "parentid": 354825226,
+            "user": "Joy Agyepong",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* {{int:filedesc}} */",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description= A view of  communities and landscape of Amedzope mountain in the Volta region of Ghana\n|date=2018-11-09 11:54:07\n|source={{own}}\n|author=[[User:Jones Anlimah|Jones Anlimah]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|gh}}\n\n[[Category:Uploaded via Campaign:wle-gh]]\n[[Category:Amedzofe]]"
+          }
+        ]
+      },
+      "79938328": {
+        "pageid": 79938328,
+        "ns": 6,
+        "title": "File:Abudelauri lakes under Chaukhi pass, Georgia.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:50:12Z",
+        "lastrevid": 358848783,
+        "length": 731,
+        "revisions": [
+          {
+            "revid": 358848783,
+            "parentid": 358848763,
+            "user": "Mehman97",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Abudelauri colorful glacier lakes under Chaukhi pass.}}\n|date=2014-06-29 18:57:54\n|source={{own}}\n|author=[[User:Argenberg|Vyacheslav Argenberg]]\n|permission=\n|other versions=\n}}\n{{Location|42.544355|44.837203}}\n\n=={{Assessment}}==\n{{WLE finalist or winner image |year=2019 |country=Georgia |place=2}}\n{{Wiki Loves Earth 2019|ge}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n[[Category:Kazbegi National Park]]\n[[Category:Caucasus]]\n[[Category:Caucasus mountains]]\n[[Category:Mountains of Georgia]]\n[[Category:Geology of Georgia]]\n[[Category:Nature of Georgia]]\n[[Category:Chaukhi (mountain pass)]]\n[[Category:Lakes of Georgia]]\n[[Category:Uploaded via Campaign:wle-ge]]"
+          }
+        ]
+      },
+      "79166972": {
+        "pageid": 79166972,
+        "ns": 6,
+        "title": "File:Ahaus P1015314 Buchen am Karnickelberg.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:40:21Z",
+        "lastrevid": 360036315,
+        "length": 1240,
+        "revisions": [
+          {
+            "revid": 360036315,
+            "parentid": 360036132,
+            "user": "Blech",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{de|1=Die Buchen am \"Karnickelberg\" in Ahaus vermitteln mit ihren Stämmen und Wurzeln bizarre Eindrücke. Der Bereich des Karnickelberges gehörte 2012 zum Landschaftsschutzgebiet ''LSG-Grossflächiges LSG zwischen Epe, Heek, Ahaus'', LSG-3808-009. Nach einer Neugliederung der Landschaftsschutzgebiete in der Region gehört er heute zum ''LSG Ahauser Aa''.}}\n{{en|1=Beech trees at the \"Karnickelberg\" in Ahaus. The Karnickelberg area was in 2012 (when the picture was taken) part of the protected landscape area ''LSG-Grossflächiges LSG zwischen Epe, Heek, Ahaus'', LSG-3808-009. After the protected landscape areas in the region have been restructured, it is now part of ''LSG Ahauser Aa''.}}\n|date=2012-11-11 17:31:33\n|source={{own}}\n|author=[[User:Muehlenbernd|Muehlenbernd]]\n|permission=\n|other versions=\n}}\n{{Location|52.10042|7.00705}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|de}}\n{{WLE de Gewinnerbild|year=2019|place=6}}\n\n[[Category:Images from Wiki Loves Earth 2019, DE-NW]]\n\n[[Category:LSG Ahauser Aa]]\n[[Category:Uploaded via Campaign:wle-de-nw]]\n[[Category:Fagus sylvatica in North Rhine-Westphalia]]\n[[Category:Fagus sylvatica in November]]"
+          }
+        ]
+      },
+      "79631453": {
+        "pageid": 79631453,
+        "ns": 6,
+        "title": "File:Ain Rehana \"Annaba\".jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:48:05Z",
+        "lastrevid": 360817935,
+        "length": 683,
+        "revisions": [
+          {
+            "revid": 360817935,
+            "parentid": 360355938,
+            "user": "Great11",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "Great11 uploaded a new version of [[File:Ain Rehana \"Annaba\".jpg]]",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Milkey way from provence of Annaba, locality of Barbar, district of Seraïdi, province of Annaba, Idough mountain near Rihanna Beach }}{{Wiki Loves Earth Algeria|Annaba}}\n|date=2018-08-21 02:12:31\n|source={{own}}\n|author=[[User:Titoupa|Tabet]]\n|permission=\n|other versions=\n{{Location dec|37.0121|7.6023}}\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|dz}}\n\n[[Category:Landscape]]\n[[Category:Uploaded via Campaign:wle-dz]]\n[[Category:Qualified images from Wiki Loves Earth 2019 in Algeria]]\n[[Category:Qualified images top lt 1 from Wiki Loves Earth 2019 in Algeria]]\n[[Category:Annaba Province]]"
+          }
+        ]
+      },
+      "80036070": {
+        "pageid": 80036070,
+        "ns": 6,
+        "title": "File:Akhnak mayoune.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:51:04Z",
+        "lastrevid": 360709451,
+        "length": 775,
+        "revisions": [
+          {
+            "revid": 360709451,
+            "parentid": 360709295,
+            "user": "Chettouh Nabil",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* {{int:filedesc}} */",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{fr|1=Plage Mersa Zitoune (olive) à la commmune de Khenak Mayoune, Collo, wilaya de Skikda, Algérie}} {{en|1= Mersa Zitoune Beach in Khenak Mayoune district, near Collo Town,  wilaya of Skikda, Est of Algeria}}\n|date=2018-08-02 20:07:08\n|source={{own}}\n|author=[[User:Chettouh Nabil|Chettouh Nabil]]\n|permission=\n|other versions=\n}}\n{{Location dec|36.967167|6.258222}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|dz}}\n\n[[Category:Seascapes at sunset]]\n[[Category:Sunsets of Algeria]]\n[[Category:Rocks in Algeria]]\n[[Category:Uploaded via Campaign:wle-dz]]\n[[Category:Coasts of Algeria]]\n[[Category:Qualified images from Wiki Loves Earth 2019 in Algeria]]\n[[Category:Coasts of Skikda Province]]"
+          }
+        ]
+      },
+      "79130746": {
+        "pageid": 79130746,
+        "ns": 6,
+        "title": "File:Além Ria.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:39:48Z",
+        "lastrevid": 360042766,
+        "length": 475,
+        "revisions": [
+          {
+            "revid": 360042766,
+            "parentid": 353671186,
+            "user": "Millars",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* {{int:filedesc}} */",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{pt|1=Ria de Aveiro}}{{WDPA-PT|555540878}}{{en|1=[[:en:Aveiro Lagoon|Aveiro Lagoon]]}}\n|date=2009-10-18 14:35:06\n|source={{own}}\n|author=[[User:Joaomartinho63|Joaomartinho63]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|pt}}\n\n[[Category:Images from Wiki Loves Earth 2019 in Portugal to check]]\n[[Category:Uploaded via Campaign:wle-pt]]\n[[Category:Ria de Aveiro]]"
+          }
+        ]
+      },
+      "78777393": {
+        "pageid": 78777393,
+        "ns": 6,
+        "title": "File:Amatas upe.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:35:12Z",
+        "lastrevid": 359961832,
+        "length": 490,
+        "revisions": [
+          {
+            "revid": 359961832,
+            "parentid": 359940939,
+            "user": "SchlurcherBot",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "Grouping categories at the bottom",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{lv|1=Gaujas nacionālais parks}}{{LatvianNaturalHeritageSite|LV0200100}}\n|date=2019-05-04 08:43:14\n|source={{own}}\n|author=[[User:Laaciz|Laaciz]]\n|permission=\n|other versions=\n}}\n{{Location|57.416667|25.416667}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|lv}}\n{{QualityImage}}\n\n[[Category:Gauja National Park]]\n[[Category:Uploaded via Campaign:wle-lv]]\n[[Category:Winners of Wiki Loves Earth 2019 in Latvia]]"
+          }
+        ]
+      },
+      "78976020": {
+        "pageid": 78976020,
+        "ns": 6,
+        "title": "File:Amedzope mountain. fog formation in sequence (3).jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:37:14Z",
+        "lastrevid": 360066196,
+        "length": 395,
+        "revisions": [
+          {
+            "revid": 360066196,
+            "parentid": 350399869,
+            "user": "Joy Agyepong",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* {{int:filedesc}} */",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description= An image of Amedzope mountain in the Volta region of Ghana.\n|date=2018-11-09 06:21:35\n|source={{own}}\n|author=[[User:Jones Anlimah|Jones Anlimah]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|gh}}\n\n[[Category:Wiki Loves Earth 2019 in Ghana]]\n[[Category:Uploaded via Campaign:wle-gh]]"
+          }
+        ]
+      },
+      "79668055": {
+        "pageid": 79668055,
+        "ns": 6,
+        "title": "File:Among the red autumn forest.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:48:27Z",
+        "lastrevid": 354354942,
+        "length": 423,
+        "new": "",
+        "revisions": [
+          {
+            "revid": 354354942,
+            "parentid": 0,
+            "user": "Florencia Gehrung",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "User created page with UploadWizard",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=A long climb through the forest to see the sunrise among the colorful autumn}}\n|date=2019-05-05 08:32:37\n|source={{own}}\n|author=[[User:Florencia Gehrung|Florencia Gehrung]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|cl}}\n\n[[Category:Conguillío National Park]]\n[[Category:Uploaded via Campaign:wle-cl]]"
+          }
+        ]
+      },
+      "79758889": {
+        "pageid": 79758889,
+        "ns": 6,
+        "title": "File:An old Rihno taking sunbath during setset.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:49:18Z",
+        "lastrevid": 360111605,
+        "length": 580,
+        "revisions": [
+          {
+            "revid": 360111605,
+            "parentid": 360108533,
+            "user": "Nabin K. Sapkota",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* {{int:filedesc}} */",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=An Old Rihno taking a sunbath during sunset in summer heat at sauraha chitwan national park chitwan nepal by prasan shresha may 2019}}\n|date=2019-05-14 05:58:12\n|source={{own}}\n|author=[[User:Prasan Shrestha|Prasan Shrestha]]\n|permission=\n|other versions=\n}}\n{{Location|27.5341022|84.4502779}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|np}}\n\n[[Category:Nature]]\n[[Category:Animals of Nepal]]\n[[Category:Rhinoceros unicornis]]\n[[Category:Photography]]\n[[Category:Uploaded via Campaign:wle-np]]"
+          }
+        ]
+      },
+      "79605686": {
+        "pageid": 79605686,
+        "ns": 6,
+        "title": "File:Animaux de Natitingou.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:47:50Z",
+        "lastrevid": 359091935,
+        "length": 527,
+        "revisions": [
+          {
+            "revid": 359091935,
+            "parentid": 359091880,
+            "user": "Rachad sanoussi",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* wbsetlabel-set:1|fr */ Des bœufs, derrière, c'est une vallée de Natitingou",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{fr|1=Des bœufs, derrière, c'est une vallée de Natitingou}}\n{{en|1=Oxen, behind, it is a valley of Natitingou}}\n|date=2014-06-19 17:24:36\n|source={{own}}\n|author=[[User:Rachad sanoussi|Rachad sanoussi]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|bj}}\n\n[[Category:Cattle of Benin]]\n[[Category:Uploaded via Campaign:wle-bj]]\n[[Category:Natitingou]]\n[[Category:Quality Images from Wiki Loves Earth 2019 in Benin]]"
+          }
+        ]
+      },
+      "79177924": {
+        "pageid": 79177924,
+        "ns": 6,
+        "title": "File:Anonymous Paradise.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:40:33Z",
+        "lastrevid": 360041382,
+        "length": 548,
+        "revisions": [
+          {
+            "revid": 360041382,
+            "parentid": 353671188,
+            "user": "Millars",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* {{int:filedesc}} */",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{WDPA-PT|555545789}}{{en|1=[[:en:Cabras Islets|Cabras Islets]] from [[:en:Terceira Island|Terceira Island]], [[:en:Azores|Azores]]}}\n|date=2013-12-30 18:56:53\n|source={{own}}\n|author=[[User:AndreFarinha|André Farinha | Landscape Photography]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|pt}}\n\n[[Category:Images from Wiki Loves Earth 2019 in Portugal to check]]\n[[Category:Uploaded via Campaign:wle-pt]]\n[[Category:Ilhéus das Cabras]]"
+          }
+        ]
+      },
+      "79399253": {
+        "pageid": 79399253,
+        "ns": 6,
+        "title": "File:Ant Hill in Aburi Garden 02.jpg",
+        "contentmodel": "wikitext",
+        "pagelanguage": "en",
+        "pagelanguagehtmlcode": "en",
+        "pagelanguagedir": "ltr",
+        "touched": "2019-08-22T11:45:57Z",
+        "lastrevid": 352776167,
+        "length": 394,
+        "revisions": [
+          {
+            "revid": 352776167,
+            "parentid": 352776163,
+            "user": "Profike",
+            "contentformat": "text/x-wiki",
+            "contentmodel": "wikitext",
+            "comment": "/* wbsetlabel-add:1|en */ Anthills in Aburi Botanical Gardens in Eastern Region of Ghana",
+            "*": "=={{int:filedesc}}==\n{{Information\n|description={{en|1=Anthills in Aburi Botanical Gardens in Eastern Region of Ghana}}\n|date=2019-04-20 11:04:59\n|source={{own}}\n|author=[[User:Profike|Profike]]\n|permission=\n|other versions=\n}}\n\n=={{int:license-header}}==\n{{self|cc-by-sa-4.0}}\n\n{{Wiki Loves Earth 2019|gh}}\n\n[[Category:Wiki Loves Earth 2019 in Ghana]]\n[[Category:Uploaded via Campaign:wle-gh]]"
+          }
+        ]
+      }
+    }
+  }
+}
