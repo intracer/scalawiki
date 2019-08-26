@@ -3,7 +3,7 @@ package org.scalawiki.xml
 import java.io.{OutputStream, Writer}
 import javax.xml.stream.{XMLOutputFactory, XMLStreamWriter}
 
-import com.sun.xml.internal.txw2.output.IndentingXMLStreamWriter
+import com.sun.xml.txw2.output.IndentingXMLStreamWriter
 import org.codehaus.stax2.{XMLOutputFactory2, XMLStreamWriter2}
 import org.scalawiki.Timestamp
 import org.scalawiki.dto.{IpContributor, User, Page, Revision}
