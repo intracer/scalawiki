@@ -14,16 +14,16 @@ object SubsetCreator {
   def main(args: Array[String]) {
     val ukWiki = MwBot.fromHost("uk.wikipedia.org")
 
-    val specialNomination = "національного значення"
+    val specialNomination = "млини та вітряки"
 
-    val contest = Contest.WLMUkraine(2014)
+    val contest = Contest.WLMUkraine(2019)
     val query = MonumentQuery.create(contest)
     query.byMonumentTemplateAsync(contest.listTemplate.get).map {
       monuments =>
 
         val subset = monuments.filter { m =>
-          val typ = m.typ.getOrElse("").toLowerCase
-          Set("нац" ).exists(typ.contains)
+          val lowerCaseName = m.name.toLowerCase
+          Seq("млин", "вітряк").exists(lowerCaseName.contains) && !lowerCaseName.contains("сухомлинськ")
         }
 
         val byRegion = subset.groupBy(m => Monument.getRegionId(m.id))
@@ -56,7 +56,7 @@ object SubsetCreator {
       buf.append(s"\n== $regionTitle ==\n")
 
       buf.append("{{WLM-шапка}}")
-      val regionMonuments = byRegion(regionId)
+      val regionMonuments = byRegion(regionId).filterNot(_.page.contains(specialNomination))
 
       val byPage = regionMonuments.groupBy(_.page)
       val pages = SortedSet(byPage.keys.toSeq: _*)
@@ -66,8 +66,8 @@ object SubsetCreator {
         buf.append(s"|-\n|colspan=9 bgcolor=lightyellow|\n=== [[$page|$title]] ===\n|-\n")
         byPage(page).foreach {
           monument =>
-            val text = monument.asWiki().split("\\|\\}")(0)
-            buf.append(s"{{WLM-рядок$text")
+            val text = monument.asWiki().split("\\|\\}")(0).replace("{{ВЛП-рядок", "{{WLM-рядок")
+            buf.append(text)
         }
       }
       buf.append("\n|}")
@@ -87,7 +87,7 @@ object SubsetCreator {
       val regionTitle = contest.country.regionName(regionId)
       val regionLink = "Вікіпедія:Вікі любить пам'ятки/" + regionTitle
 
-      val regionMonuments = byRegion(regionId)
+      val regionMonuments = byRegion(regionId).filterNot(_.page.contains(specialNomination))
 
       val byPage = regionMonuments.groupBy(_.page)
       val pages = SortedSet(byPage.keys.toSeq: _*)
@@ -101,8 +101,8 @@ object SubsetCreator {
         buf.append(s"|-\n|colspan=9 bgcolor=lightyellow|\n=== [[$page|$title]] ===\n|-\n")
         byPage(page).foreach {
           monument =>
-            val text = monument.asWiki().split("\\|\\}")(0)
-            buf.append(s"{{WLM-рядок$text")
+            val text = monument.asWiki().split("\\|\\}")(0).replace("{{ВЛП-рядок", "{{WLM-рядок")
+            buf.append(text)
         }
       }
       buf.append("\n|}")
