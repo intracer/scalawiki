@@ -12,38 +12,40 @@ class CountryListParserSpec extends Specification {
 
     "parse WLE" in {
       CountryParser.fromCategoryName("Category:Images from Wiki Loves Earth 2015") === Some(
-        Contest(ContestType.WLE, NoAdmDivision(), 2015, uploadConfigs = Seq.empty)
+        Contest(ContestType.WLE, NoAdmDivision, 2015)
       )
     }
 
     "parse WLM" in {
       CountryParser.fromCategoryName("Category:Images from Wiki Loves Monuments 2015") === Some(
-        Contest(ContestType.WLM, NoAdmDivision(), 2015, uploadConfigs = Seq.empty)
+        Contest(ContestType.WLM, NoAdmDivision, 2015)
       )
     }
 
     "parse WLE country" in {
-      CountryParser.fromCategoryName("Category:Images from Wiki Loves Earth 2015 in Algeria") === Some(
-        Contest(ContestType.WLE, Country("DZ", "Algeria", Seq("ar")), 2015, uploadConfigs = Seq.empty)
+      CountryParser.fromCategoryName("Category:Images from Wiki Loves Earth 2015 in Algeria")
+        .map(c => c.copy(country = c.country.withoutLangCodes)) === Some(
+        Contest(ContestType.WLE, Country("DZ", "Algeria"), 2015)
       )
     }
 
     "parse WLM country" in {
-      CountryParser.fromCategoryName("Category:Images from Wiki Loves Monuments 2015 in Algeria") === Some(
-        Contest(ContestType.WLM, Country("DZ", "Algeria", Seq("ar")), 2015, uploadConfigs = Seq.empty)
+      CountryParser.fromCategoryName("Category:Images from Wiki Loves Monuments 2015 in Algeria")
+        .map(c => c.copy(country = c.country.withoutLangCodes)) === Some(
+        Contest(ContestType.WLM, Country("DZ", "Algeria"), 2015)
       )
     }
 
     "parse WLE UA" in {
       CountryParser.fromCategoryName("Category:Images from Wiki Loves Earth 2015 in Ukraine") === Some(
-          Contest(ContestType.WLE, Country.Ukraine, 2015,
-            uploadConfigs = Seq(
-              UploadConfig(
-                campaign = "wle-ua",
-                listTemplate = "ВЛЗ-рядок",
-                fileTemplate = "UkrainianNaturalHeritageSite",
-                listConfig = ListConfig.WleUa
-      )))
+        Contest(ContestType.WLE, Country.Ukraine, 2015,
+          uploadConfigs = Seq(
+            UploadConfig(
+              campaign = "wle-ua",
+              listTemplate = "ВЛЗ-рядок",
+              fileTemplate = "UkrainianNaturalHeritageSite",
+              listConfig = ListConfig.WleUa
+            )))
       )
     }
 
@@ -59,19 +61,17 @@ class CountryListParserSpec extends Specification {
             )))
       )
     }
-
-
   }
 
   "table parser" should {
 
     "not parse no table" in {
-      CountryParser.parse("nothing useful") === Seq.empty
+      CountryParser.parse("nothing useful") === Nil
     }
 
     "not parse bad table" in {
       val wiki = new Table(Seq("Pigs", "Dogs"), Seq(Seq("1", "2"))).asWiki
-      CountryParser.parse(wiki) === Seq.empty
+      CountryParser.parse(wiki) === Nil
     }
 
     "parse wle 2016" in {
