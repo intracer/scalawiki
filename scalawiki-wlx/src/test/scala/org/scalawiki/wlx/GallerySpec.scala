@@ -48,7 +48,7 @@ class GallerySpec extends Specification {
 
       val actual = Output.galleryByRegionAndId(monumentDb, imageDb, imageDb)
       // compare this way to work across different line endings
-      actual.lines.toBuffer === expected.lines.toBuffer
+      actual.linesIterator.toBuffer === expected.linesIterator.toBuffer
     }
   }
 
