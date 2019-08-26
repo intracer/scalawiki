@@ -16,8 +16,8 @@ scala:
    - 2.11.12
 
 jdk:
-  - oraclejdk8
   - openjdk8
+  - openjdk11
 
 script: "sbt ++$TRAVIS_SCALA_VERSION clean coverage 'testOnly -- xonly timefactor 5' coverageReport"
 after_success: 

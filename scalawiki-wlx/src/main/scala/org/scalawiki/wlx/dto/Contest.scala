@@ -20,12 +20,12 @@ import scala.util.Try
   */
 case class Contest(
                     contestType: ContestType,
-                    country: AdmRegion,
+                    country: Country,
                     year: Int,
                     startDate: String = "",
                     endDate: String = "",
-                    uploadConfigs: Seq[UploadConfig] = Seq.empty,
-                    specialNominations: Seq[SpecialNomination] = Seq.empty,
+                    uploadConfigs: Seq[UploadConfig] = Nil,
+                    specialNominations: Seq[SpecialNomination] = Nil,
                     rateConfig: RateConfig = RateConfig()
                   ) extends HasImagesCategory {
 
@@ -34,7 +34,7 @@ case class Contest(
   def name = s"${contestType.name} $year" + countryName.fold("")(" in " + _)
 
   def countryName: Option[String] =
-    if (country != NoAdmDivision())
+    if (country != NoAdmDivision)
       Some(country.name)
     else
       None
@@ -101,7 +101,7 @@ object Contest {
   }
 
   def ESPCUkraine(year: Int, startDate: String = "01-09", endDate: String = "30-09") =
-    new Contest(ContestType.ESPC, Country.Ukraine, year, startDate, endDate, Seq.empty)
+    new Contest(ContestType.ESPC, Country.Ukraine, year, startDate, endDate, Nil)
 
   def WLMUkraine(year: Int) =
     load("wlm_ua.conf").get.copy(year = year)

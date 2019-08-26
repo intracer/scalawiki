@@ -103,6 +103,6 @@ class RegexCampaignParser(r: Regex, typeIndex: Int = 1, yearIndex: Int = 2, coun
     val year = m.group(yearIndex).toInt
 
     for (typ <- ContestType.byName(typeStr)) yield
-      new Contest(typ, NoAdmDivision(), year, uploadConfigs = Seq.empty)
+      new Contest(typ, NoAdmDivision, year)
   }
 }
