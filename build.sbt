@@ -65,6 +65,7 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
       "jp.ne.opt" %% "chronoscala" % ChronoScalaV,
       "ch.qos.logback" % "logback-classic" % LogbackClassicV,
       "org.sweble.wikitext" % "swc-engine" % SwcEngineV exclude("org.jsoup", "jsoup"),
+      "javax.xml.bind" % "jaxb-api" % "2.3.0",
       "de.fau.cs.osr.ptk" % "ptk-common" % "3.0.8",
       Library.Commons.codec,
       "org.jsoup" % "jsoup" % JSoupV,
@@ -94,7 +95,8 @@ lazy val dumps = Project("scalawiki-dumps", file("scalawiki-dumps"))
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++=
     Seq("com.fasterxml" % "aalto-xml" % AaltoXmlV,
-      Library.Commons.compress
+      Library.Commons.compress,
+      "com.sun.xml.bind" % "jaxb-impl" % "2.2.5"
     )
   )
 
