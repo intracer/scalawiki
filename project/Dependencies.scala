@@ -55,7 +55,8 @@ object Dependencies {
     Library.Jackson.databind,
     "joda-time" % "joda-time" % JodaTimeV,
     "org.slf4j" % "slf4j-api" % Slf4jV,
-    "ch.qos.logback" % "logback-classic" % LogbackClassicV
+    "ch.qos.logback" % "logback-classic" % LogbackClassicV,
+    "javax.xml.bind" % "jaxb-api" % "2.3.1"
   )
 
   object Library {
