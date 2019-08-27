@@ -65,7 +65,7 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
       "jp.ne.opt" %% "chronoscala" % ChronoScalaV,
       "ch.qos.logback" % "logback-classic" % LogbackClassicV,
       "org.sweble.wikitext" % "swc-engine" % SwcEngineV exclude("org.jsoup", "jsoup"),
-      "javax.xml.bind" % "jaxb-api" % "2.3.0",
+      "javax.xml.bind" % "jaxb-api" % "2.3.1",
       "de.fau.cs.osr.ptk" % "ptk-common" % "3.0.8",
       Library.Commons.codec,
       "org.jsoup" % "jsoup" % JSoupV,
