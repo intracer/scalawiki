@@ -46,6 +46,7 @@ object Dependencies {
     "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsV,
     "com.google.guava" % "guava" % GuavaV,
     Library.Commons.codec,
+    Library.Commons.compress,
     Library.Commons.io,
     Library.Commons.lang,
     "com.typesafe" % "config" % TypesafeConfigV,
