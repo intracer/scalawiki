@@ -12,7 +12,7 @@ lazy val commonSettings = Seq(
   scalaVersion := crossScalaVersions.value.last,
   isScala213 := scalaVersion.value.startsWith("2.13."),
   scalacOptions := Seq("-target:jvm-1.8"),
-  conflictManager := ConflictManager.strict,
+//  conflictManager := ConflictManager.strict,
   licenses += ("Apache-2.0", url("http://opensource.org/licenses/Apache-2.0")),
 
   Keys.resolvers ++= Dependencies.resolvers,
