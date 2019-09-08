@@ -93,12 +93,12 @@ class MonumentsPicturedByRegionSpec extends Specification {
       )
 
       val images = Seq(
-        Image("File:Img1.jpg", monumentIds = List("01-xxx-0001")),
-        Image("File:Img2.jpg", monumentIds = List("05-xxx-0001"))
+        Seq(Image("File:Img1.jpg", monumentIds = List("01-xxx-0001"))),
+        Seq(Image("File:Img2.jpg", monumentIds = List("05-xxx-0001")), Image("File:Img3.jpg", monumentIds = List("07-xxx-0001")))
       )
 
-      val totalImageDb = new ImageDB(contest, images, monumentDb)
-      val imageDbs = images.zipWithIndex.map { case (img, i) => new ImageDB(Contest.WLMUkraine(2014 + i), Seq(img), monumentDb) }
+      val totalImageDb = new ImageDB(contest, images.flatten, monumentDb)
+      val imageDbs = images.zipWithIndex.map { case (img, i) => new ImageDB(Contest.WLMUkraine(2014 + i), img, monumentDb) }
 
       val table = new MonumentsPicturedByRegion(imageDbs, Some(totalImageDb), monumentDb).table
 
@@ -107,8 +107,8 @@ class MonumentsPicturedByRegionSpec extends Specification {
       table.data === Seq(
         Seq("Автономна Республіка Крим", "2", "1", "50") ++ Seq(Seq("1", "1"), Seq("0", "0")).reverse.flatten,
         Seq("Вінницька область", "5", "1", "20") ++ Seq(Seq("0", "0"), Seq("1", "1")).reverse.flatten,
-        Seq("Волинська область", "7", "0", "0") ++ Seq(Seq("0", "0"), Seq("0", "0")).reverse.flatten,
-        Seq("Total", "14", "2", "14") ++ Seq(Seq("1", "1"), Seq("1", "1")).reverse.flatten
+        Seq("Волинська область", "7", "1", "14") ++ Seq(Seq("0", "0"), Seq("1", "1")).reverse.flatten,
+        Seq("Total", "14", "3", "21") ++ Seq(Seq("1", "1"), Seq("2", "2")).reverse.flatten
       )
     }
 

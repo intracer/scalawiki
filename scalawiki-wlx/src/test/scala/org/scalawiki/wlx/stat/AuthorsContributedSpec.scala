@@ -113,6 +113,4 @@ class AuthorsContributedSpec extends Specification {
       )
     }
   }
-
-
 }

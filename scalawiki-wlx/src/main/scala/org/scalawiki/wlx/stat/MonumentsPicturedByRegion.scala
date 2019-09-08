@@ -71,9 +71,9 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
     val allMonuments = monumentDb.monuments.size
     val picturedMonuments = (totalImageDb.map(_.ids).getOrElse(Set.empty) ++ monumentDb.picturedIds).size
 
-    val ids = stat.mapYears(_.ids)
+    val ids = stat.mapYears(_.ids).reverse
 
-    val photoSize = stat.mapYears(_.images.size)
+    val photoSize = stat.mapYears(_.images.size).reverse
 
     val idsSize = ids.map(_.size)
 
