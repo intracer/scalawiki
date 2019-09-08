@@ -16,10 +16,12 @@ import scala.concurrent.Future
 
 trait QueryLibrary {
 
-  def imagesByGenerator(generator: Generator, withUrl: Boolean = false, rvSlots: Option[String] = None): Action = {
+  def imagesByGenerator(generator: Generator, withUrl: Boolean = false, withMetadata: Boolean = false, rvSlots: Option[String] = None): Action = {
     import org.scalawiki.dto.cmd.query.prop._
 
-    val iiProps = Seq(Timestamp, iiprop.User, iiprop.Size, iiprop.Metadata) ++ (if (withUrl) Seq(iiprop.Url) else Seq.empty)
+    val iiProps = Seq(Timestamp, iiprop.User, iiprop.Size) ++
+      (if (withUrl) Seq(iiprop.Url) else Seq.empty) ++
+      (if (withMetadata) Seq(iiprop.Metadata) else Seq.empty)
 
     Action(Query(
       Prop(
