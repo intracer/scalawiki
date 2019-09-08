@@ -104,12 +104,12 @@ class AuthorsContributedSpec extends Specification {
         Some(new ImageDB(contest, images1 ++ images2, monumentDb)),
         Some(monumentDb))
 
-      table.headers === Seq("Region", "2 years total", "2014", "2015")
+      table.headers === Seq("Region", "2 years total", "2015", "2014")
       table.data === Seq(
-        Seq("Автономна Республіка Крим", "3", "1", "2"),
-        Seq("Вінницька область", "2", "2", "2"),
-        Seq("Волинська область", "1", "1", "1"),
-        Seq("Total", "6", "4", "5")
+        Seq("Автономна Республіка Крим", "3") ++ Seq("1", "2").reverse,
+        Seq("Вінницька область", "2") ++ Seq( "2", "2").reverse,
+        Seq("Волинська область", "1") ++ Seq( "1", "1").reverse,
+        Seq("Total", "6") ++ Seq( "4", "5").reverse
       )
     }
   }
