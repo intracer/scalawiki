@@ -19,7 +19,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
 
   val name = "Monuments pictured by region"
 
-  val yearSeq = stat.yearSeq
+  val yearSeq = stat.yearSeq.reverse
 
   override def asText: String = {
 
@@ -53,7 +53,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
           db.idsByRegion(regionId).size,
           db.imagesByRegion(regionId).toSet.size
         )
-      }.flatten
+      }.reverse.flatten
 
       val regionName = contest.country.regionName(regionId)
       val columnData = (Seq(
