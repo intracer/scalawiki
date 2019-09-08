@@ -10,13 +10,15 @@ import org.scalawiki.wikitext.TemplateParser
 
 case class ImageMetadata(data: Map[String, String]) {
 
-  val pattern = "yyyy:MM:dd HH:mm:ss"
-  val df = DateTimeFormatter.ofPattern(pattern)
-
   def camera: Option[String] = data.get("Model")
 
   def date: Option[ZonedDateTime] = data.get("DateTime")
-    .map(s => LocalDateTime.parse(s, df).atZone(ZoneOffset.UTC))
+    .map(s => LocalDateTime.parse(s, ImageMetadata.df).atZone(ZoneOffset.UTC))
+}
+
+object ImageMetadata {
+  val pattern = "yyyy:MM:dd HH:mm:ss"
+  val df = DateTimeFormatter.ofPattern(pattern)
 }
 
 case class Image(title: String,
