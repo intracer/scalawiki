@@ -19,7 +19,7 @@ object Dependencies {
   val MockServerV = "5.3.0"
   val ReactiveStreamsV = "1.0.2"
   val RetryV = "0.3.3"
-  val Scala212V = "2.12.6"
+  val Scala212V = "2.12.10"
   val Scala211V = "2.11.12"
   val ScalaChartV = "0.7.1"
   val ScalaCheckV = "1.14.0"
@@ -32,8 +32,8 @@ object Dependencies {
   val TypesafeConfigV = "1.3.4"
 
   val resolvers = Seq(
-    "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
-    "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases",
+    "Typesafe Repo" at "https://repo.typesafe.com/typesafe/releases/",
+    "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases",
     Resolver.jcenterRepo,
     Resolver.bintrayRepo("rick-beton", "maven"),
     Resolver.bintrayRepo("softprops", "maven")
