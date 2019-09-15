@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
 
-  val AaltoXmlV = "1.2.1"
+  val AaltoXmlV = "1.2.2"
 
   def BetterFilesAkkaV(isScala213: Boolean) = if (isScala213) "3.8.0" else "3.6.0"
 
