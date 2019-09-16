@@ -125,7 +125,7 @@ object Dependencies {
     }
 
     object Specs2 {
-      val SpecsV = "4.7.0"
+      val SpecsV = "4.7.1"
 
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV
