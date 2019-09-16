@@ -25,6 +25,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
   val parentRegion = regionParam.getOrElse(stat.contest.country)
 
   def pageName(region: String) = s"Monuments pictured by region in ${region}"
+
   val name = pageName(parentRegion.name)
 
   override def asText: String = {
@@ -54,7 +55,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
       }) ++ yearsColumns
     }
 
-    def regionData(regionId: String) = {
+    def regionData(regionId: String, regionalDetails: Boolean = regionalDetails) = {
       val picturedMonumentsInRegionSet = totalImageDb.map(_.idsByRegion(regionId)).getOrElse(Set.empty) ++
         monumentDb.picturedInRegion(regionId)
       val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
@@ -67,8 +68,8 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
         )
       }.reverse.flatten
 
-      val regionName = parentRegion.regionName(regionId)
-      val percentage = if (allMonumentsInRegion != 0)  100 * picturedMonumentsInRegion / allMonumentsInRegion else 0
+      val regionName = if (parentRegion.code != regionId) parentRegion.regionName(regionId) else parentRegion.name
+      val percentage = if (allMonumentsInRegion != 0) 100 * picturedMonumentsInRegion / allMonumentsInRegion else 0
 
       val columnData = (Seq(
         if (regionalDetails && regionId.length == 2) s"[[Commons:$category/${pageName(regionName)}|$regionName ($regionId)]]"
@@ -78,7 +79,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
         picturedMonumentsInRegion,
         percentage) ++ pictured).map(_.toString)
 
-      if (regionId.length == 2  && stat.config.exists(_.regionalDetails)) {
+      if (regionId.length == 2 && regionalDetails) {
         val child = new MonumentsPicturedByRegion(stat, false, parentRegion.byId(regionId))
         child.updateWiki(bot)
       }
@@ -87,7 +88,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
     }
 
     val regionIds = parentRegion.regions.map(_.code)
-    val rows = regionIds.map(regionData)
+    val rows = regionIds.map(regionData(_, regionalDetails))
 
     val allMonuments = monumentDb.monuments.size
     val picturedMonuments = (totalImageDb.map(_.ids).getOrElse(Set.empty) ++ monumentDb.picturedIds).size
@@ -105,7 +106,9 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
       allMonuments.toString,
       picturedMonuments.toString,
       (if (allMonuments != 0) 100 * picturedMonuments / allMonuments else 0).toString) ++ totalByYear.map(_.toString)
-    ) else Nil
+    ) else Seq(
+      regionData(parentRegion.code, false)
+    )
 
     Table(columns, rows ++ totalData, "Objects pictured")
   }
