@@ -94,13 +94,14 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
 
     val totalByYear = idsSize.zip(photoSize).flatMap { case (ids, photos) => Seq(ids, photos) }
 
-    val totalData = Seq(
+    val totalData = if (parentRegion == contest.country) Seq(Seq(
       "Total",
       allMonuments.toString,
       picturedMonuments.toString,
       (if (allMonuments != 0) 100 * picturedMonuments / allMonuments else 0).toString) ++ totalByYear.map(_.toString)
+    ) else Nil
 
-    Table(columns, rows ++ Seq(totalData), "Objects pictured")
+    Table(columns, rows ++ totalData, "Objects pictured")
   }
 
   def regionalStatImages(): Option[String] = {
