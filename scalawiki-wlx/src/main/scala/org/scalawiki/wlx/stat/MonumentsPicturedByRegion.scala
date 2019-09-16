@@ -23,19 +23,21 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
   val yearSeq = stat.yearSeq.reverse
   val regionalDetails = stat.config.exists(_.regionalDetails)
   val parentRegion = regionParam.getOrElse(stat.contest.country)
+  private val monumentDb: MonumentDB = stat.monumentDb.get
 
   def pageName(region: String) = s"Monuments pictured by region in ${region}"
 
   val name = pageName(parentRegion.name)
 
+
   override def asText: String = {
 
     val header = s"\n==$name==\n"
 
-    header + table.asWiki + regionalStatImages().getOrElse("")
+    header + table.asWiki + regionalStatImages().getOrElse("") + wrongRegionIds
   }
 
-  def table = monumentsPicturedTable(stat.dbsByYear, stat.totalImageDb, stat.monumentDb.get)
+  def table = monumentsPicturedTable(stat.dbsByYear, stat.totalImageDb, monumentDb)
 
   private val bot: MwBot = MwBot.fromHost(MwBot.commons)
 
@@ -114,11 +116,20 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
     Table(columns, rows ++ totalData, "Objects pictured")
   }
 
+  def wrongRegionIds: String = {
+    val parentIds = monumentDb.byRegion(parentRegion.code).map(_.id).toSet
+    val regionIds = parentRegion.regions.map(_.code).flatMap(monumentDb.byRegion).map(_.id).toSet
+    val ids = (parentIds diff regionIds).toSeq.sorted
+    if (ids.nonEmpty) {
+      s"\n== Wrong region ids ==\n${ids.mkString(", ")}"
+    } else ""
+  }
+
   def regionalStatImages(): Option[String] = {
     if (parentRegion == contest.country) {
       val dataset = new DefaultCategoryDataset()
 
-      stat.monumentDb.get.regionIds.foreach { regionId =>
+      monumentDb.regionIds.foreach { regionId =>
         val picturedIds = stat.mapYears(_.idsByRegion(regionId).size)
         val regionName = contest.country.regionName(regionId)
 
