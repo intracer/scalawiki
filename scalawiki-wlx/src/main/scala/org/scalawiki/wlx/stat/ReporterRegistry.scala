@@ -76,7 +76,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
   def allYears() = {
     for (imageDb <- totalImageDb) {
       if (cfg.regionalStat) {
-        Output.regionalStat(contest, stat.dbsByYear, imageDb, stat)
+        Output.regionalStat(stat)
       }
 
       if (cfg.authorsStat) {

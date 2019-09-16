@@ -32,7 +32,6 @@ class MonumentsPicturedByRegionSpec extends Specification {
   }
 
   "monuments pictured" should {
-
     "no monuments" in {
       val stat = getStat(Seq.empty)
       val table = new MonumentsPicturedByRegion(stat).table

@@ -72,7 +72,7 @@ trait AdmRegion extends AdmDivision {
 
   lazy val regionById: Map[String, AdmDivision] = regions.groupBy(_.code).mapValues(_.head)
 
-  override def regionName(regId: String) = regionById.get(regId).map(_.name).getOrElse("")
+  override def regionName(regId: String) = byId(regId).map(_.name).getOrElse("")
 
   override def byId(monumentId: String): Option[AdmDivision] = {
     regionById.get(regionId(monumentId)).flatMap(region => region.byId(monumentId).orElse(Some(region)))

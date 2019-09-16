@@ -1,10 +1,12 @@
 package org.scalawiki.wlx.stat
+
 import org.jfree.data.category.DefaultCategoryDataset
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
+import org.scalawiki.wlx.dto.AdmDivision
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
-class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = false)  extends Reporter {
+class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = false, regionParam: Option[AdmDivision] = None) extends Reporter {
 
   def this(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: MonumentDB) = {
     this(ContestStat(
@@ -13,22 +15,31 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
       Some(monumentDb),
       imageDbs.lastOption.orElse(totalImageDb),
       totalImageDb,
-      imageDbs//.headOption.map(_ => imageDbs.init).getOrElse(Seq.empty)
+      imageDbs
     ))
   }
 
-  val name = "Monuments pictured by region"
 
   val yearSeq = stat.yearSeq.reverse
+  val regionalDetails = stat.config.exists(_.regionalDetails)
+  val parentRegion = regionParam.getOrElse(stat.contest.country)
+  private val monumentDb: MonumentDB = stat.monumentDb.get
+
+  def pageName(region: String) = s"Monuments pictured by region in ${region}"
+
+  val name = pageName(parentRegion.name)
+
 
   override def asText: String = {
 
     val header = s"\n==$name==\n"
 
-    header + table.asWiki + regionalStatImages().getOrElse("")
+    header + table.asWiki + regionalStatImages().getOrElse("") + wrongRegionIds
   }
 
-  def table = monumentsPicturedTable(stat.dbsByYear, stat.totalImageDb, stat.monumentDb.get)
+  def table = monumentsPicturedTable(stat.dbsByYear, stat.totalImageDb, monumentDb)
+
+  private val bot: MwBot = MwBot.fromHost(MwBot.commons)
 
   def monumentsPicturedTable(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: MonumentDB): Table = {
 
@@ -39,10 +50,14 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
         Seq(ys + " Objects", ys + " Pictures")
       }
 
-      Seq("Region", "Objects in lists", s"$numYears years total", s"$numYears years percentage") ++ yearsColumns
+      (if (parentRegion == contest.country) {
+        Seq("Region", "Objects in lists", s"$numYears years total", s"$numYears years percentage")
+      } else {
+        Seq("Region (KOATUU)", "Objects in lists", "Total", s"Total percentage")
+      }) ++ yearsColumns
     }
 
-    def regionData(regionId:String) = {
+    def regionData(regionId: String, regionalDetails: Boolean = regionalDetails) = {
       val picturedMonumentsInRegionSet = totalImageDb.map(_.idsByRegion(regionId)).getOrElse(Set.empty) ++
         monumentDb.picturedInRegion(regionId)
       val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
@@ -55,18 +70,27 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
         )
       }.reverse.flatten
 
-      val regionName = contest.country.regionName(regionId)
+      val regionName = if (parentRegion.code != regionId) parentRegion.regionName(regionId) else parentRegion.name
+      val percentage = if (allMonumentsInRegion != 0) 100 * picturedMonumentsInRegion / allMonumentsInRegion else 0
+
       val columnData = (Seq(
-        regionName,
+        if (regionalDetails && regionId.length == 2) s"[[Commons:$category/${pageName(regionName)}|$regionName ($regionId)]]"
+        else if (regionId.length != 2) s"$regionName ($regionId)"
+        else regionName,
         allMonumentsInRegion,
         picturedMonumentsInRegion,
-        100 * picturedMonumentsInRegion / allMonumentsInRegion) ++ pictured).map(_.toString)
+        percentage) ++ pictured).map(_.toString)
+
+      if (regionId.length == 2 && regionalDetails) {
+        val child = new MonumentsPicturedByRegion(stat, false, parentRegion.byId(regionId))
+        child.updateWiki(bot)
+      }
 
       columnData
     }
 
-    val regionIds = monumentDb.regionIds
-    val rows = regionIds.map(regionData)
+    val regionIds = parentRegion.regions.map(_.code)
+    val rows = regionIds.map(regionData(_, regionalDetails)).filter(row => regionalDetails || row(1) != "0" )
 
     val allMonuments = monumentDb.monuments.size
     val picturedMonuments = (totalImageDb.map(_.ids).getOrElse(Set.empty) ++ monumentDb.picturedIds).size
@@ -79,33 +103,48 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
 
     val totalByYear = idsSize.zip(photoSize).flatMap { case (ids, photos) => Seq(ids, photos) }
 
-    val totalData = Seq(
+    val totalData = if (parentRegion == contest.country) Seq(Seq(
       "Total",
       allMonuments.toString,
       picturedMonuments.toString,
       (if (allMonuments != 0) 100 * picturedMonuments / allMonuments else 0).toString) ++ totalByYear.map(_.toString)
+    ) else Seq(
+      Seq("Sum") ++ rows.head.indices.tail.map(i => rows.map(_(i).toInt).sum.toString),
+      regionData(parentRegion.code, false)
+    )
 
-    Table(columns, rows ++ Seq(totalData), "Objects pictured")
+    Table(columns, rows ++ totalData, "Objects pictured")
   }
 
-  def regionalStatImages(): Some[String] = {
-    val dataset = new DefaultCategoryDataset()
+  def wrongRegionIds: String = {
+    val parentIds = monumentDb.byRegion(parentRegion.code).map(_.id).toSet
+    val regionIds = parentRegion.regions.map(_.code).flatMap(monumentDb.byRegion).map(_.id).toSet
+    val ids = (parentIds diff regionIds).toSeq.sorted
+    if (ids.nonEmpty) {
+      s"\n== Wrong region ids ==\n${ids.mkString(", ")}"
+    } else ""
+  }
 
-    stat.monumentDb.get.regionIds.foreach { regionId =>
-      val picturedIds = stat.mapYears(_.idsByRegion(regionId).size)
-      val regionName = contest.country.regionName(regionId)
+  def regionalStatImages(): Option[String] = {
+    if (parentRegion == contest.country) {
+      val dataset = new DefaultCategoryDataset()
 
-      val shortRegionName = regionName.replaceAll("область", "").replaceAll("Автономна Республіка", "АР")
-      picturedIds.zipWithIndex.foreach { case (n, i) => dataset.addValue(n, yearSeq(i), shortRegionName) }
-    }
+      monumentDb.regionIds.foreach { regionId =>
+        val picturedIds = stat.mapYears(_.idsByRegion(regionId).size)
+        val regionName = contest.country.regionName(regionId)
 
-    val ids = stat.mapYears(_.ids)
-    val idsSize = ids.map(_.size)
+        val shortRegionName = regionName.replaceAll("область", "").replaceAll("Автономна Республіка", "АР")
+        picturedIds.zipWithIndex.foreach { case (n, i) => dataset.addValue(n, yearSeq(i), shortRegionName) }
+      }
 
-    val categoryName = contest.imagesCategory
-    val filenamePrefix = contest.name.replace("_", "")
+      val ids = stat.mapYears(_.ids)
+      val idsSize = ids.map(_.size)
 
-    Some(regionalStatImages(filenamePrefix, categoryName, yearSeq, dataset, ids, idsSize, uploadImages))
+      val categoryName = contest.imagesCategory
+      val filenamePrefix = contest.name.replace("_", "")
+
+      Some(regionalStatImages(filenamePrefix, categoryName, yearSeq, dataset, ids, idsSize, uploadImages))
+    } else None
   }
 
   def regionalStatImages(
@@ -128,17 +167,17 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
       val chart = charts.createChart(dataset, "Регіон")
       val byRegionFile = filenamePrefix + "PicturedByYear"
       charts.saveCharts(chart, byRegionFile, 900, 1200)
-      MwBot.fromHost(MwBot.commons).page(byRegionFile + ".png").upload(byRegionFile + ".png")
+      bot.page(byRegionFile + ".png").upload(byRegionFile + ".png")
 
       val chartTotal = charts.createChart(charts.createTotalDataset(yearSeq, idsSize), "")
 
       val chartTotalFile = filenamePrefix + "PicturedByYearTotal.png"
       charts.saveAsPNG(chartTotal, chartTotalFile, 900, 200)
-      MwBot.fromHost(MwBot.commons).page(chartTotalFile).upload(chartTotalFile)
+      bot.page(chartTotalFile).upload(chartTotalFile)
 
       val intersectionFile = filenamePrefix + "PicturedByYearPie"
       charts.intersectionDiagram("Унікальність фотографій пам'яток за роками", intersectionFile, yearSeq, ids, 900, 800)
-      MwBot.fromHost(MwBot.commons).page(intersectionFile + ".png").upload(intersectionFile + ".png")
+      bot.page(intersectionFile + ".png").upload(intersectionFile + ".png")
     }
     images
   }

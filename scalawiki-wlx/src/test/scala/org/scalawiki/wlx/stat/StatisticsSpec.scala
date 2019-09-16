@@ -44,7 +44,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     data.monumentDb.map(_.monuments) === Some(monuments)
     data.currentYearImageDb.get.images === images
     data.dbsByYear === data.currentYearImageDb.toSeq
-    data.totalImageDb.isEmpty === true
+    data.totalImageDb.isEmpty === false
   }
 
   "give some stat" in {
@@ -58,7 +58,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     data.monumentDb.map(_.monuments) === Some(monuments)
     data.currentYearImageDb.get.images === images
     data.dbsByYear === data.currentYearImageDb.toSeq
-    data.totalImageDb.isEmpty === true
+    data.totalImageDb.isEmpty === false
   }
 
   "handle image query error" in {

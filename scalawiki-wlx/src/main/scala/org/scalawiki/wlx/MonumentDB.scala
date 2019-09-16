@@ -26,7 +26,15 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
   def byId(id: String) = _byId.getOrElse(id, Seq.empty[Monument]).headOption
 
-  def byRegion(regId: String) = _byRegion.getOrElse(regId, Seq.empty[Monument])
+  def byRegion(regId: String) = {
+    if (regId.length == 2) {
+      _byRegion.getOrElse(regId, Seq.empty[Monument])
+    } else {
+      val parentId = regId.substring(0, 2)
+      val topMonuments = _byRegion.getOrElse(parentId, Seq.empty[Monument])
+      topMonuments.filter(_.id.replace("-", "").startsWith(regId))
+    }
+  }
 
   def regionIds = _byRegion.keySet.toSeq.filter(contest.country.regionIds.contains).sorted
 
