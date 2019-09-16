@@ -90,7 +90,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
     }
 
     val regionIds = parentRegion.regions.map(_.code)
-    val rows = regionIds.map(regionData(_, regionalDetails))
+    val rows = regionIds.map(regionData(_, regionalDetails)).filter(row => regionalDetails || row(1) != "0" )
 
     val allMonuments = monumentDb.monuments.size
     val picturedMonuments = (totalImageDb.map(_.ids).getOrElse(Set.empty) ++ monumentDb.picturedIds).size
