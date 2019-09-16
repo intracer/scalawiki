@@ -49,9 +49,24 @@ class ImageDB(val contest: Contest,
 
   def containsId(id: String) = _byId.contains(id)
 
-  def imagesByRegion(regId: String) = _byRegion.by(regId)
+  def imagesByRegion(regId: String): Seq[Image] =
+    if (regId.length == 2) {
+      _byRegion.by(regId)
+    } else {
+      val parentId = regId.substring(0, 2)
+      val topImages = _byRegion.by(parentId)
+      topImages.filter(_.monumentId.exists(_.replace("-", "").startsWith(regId)))
+    }
 
-  def idsByRegion(regId: String) = _byRegionAndId.by(regId).keys
+  def idsByRegion(regId: String): Set[String] = {
+    if (regId.length == 2) {
+      _byRegionAndId.by(regId).keys
+    } else {
+      val parentId = regId.substring(0, 2)
+      val topKeys = _byRegionAndId.by(parentId).keys
+      topKeys.filter(_.replace("-", "").startsWith(regId))
+    }
+  }
 
   def idByAuthor(author: String) = _byAuthorAndId.by(author).keys
 

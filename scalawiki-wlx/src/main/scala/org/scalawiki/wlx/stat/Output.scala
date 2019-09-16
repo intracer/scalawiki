@@ -295,21 +295,18 @@ object Output {
     bot.page(s"Commons:$contestPage/Images with multiple ids").edit(text, Some("updating"))
   }
 
-  def regionalStat(wlmContest: Contest,
-                   imageDbs: Seq[ImageDB],
-                   totalImageDb: ImageDB,
-                   stat: ContestStat) {
+  def regionalStat(stat: ContestStat) {
     val bot = MwBot.fromHost(MwBot.commons)
 
-    val contest = totalImageDb.contest
+    val contest = stat.contest
     val categoryName = contest.contestType.name + " in " + contest.country.name
-    val monumentDb = totalImageDb.monumentDb
+    val monumentDb = stat.monumentDb
 
     val authorsStat = new AuthorsStat()
 
     val idsStat = monumentDb.map(_ => new MonumentsPicturedByRegion(stat, uploadImages = true).asText).getOrElse("")
 
-    val authorsContributed = authorsStat.authorsContributed(imageDbs, Some(totalImageDb), monumentDb)
+    val authorsContributed = authorsStat.authorsContributed(stat.dbsByYear, stat.totalImageDb, monumentDb)
 
     val toc = "__TOC__"
     val category = s"\n[[Category:$categoryName]]"
