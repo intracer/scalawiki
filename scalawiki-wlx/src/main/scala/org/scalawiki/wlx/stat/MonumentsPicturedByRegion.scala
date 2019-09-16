@@ -47,7 +47,11 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
         Seq(ys + " Objects", ys + " Pictures")
       }
 
-      Seq("Region (KOATUU)", "Objects in lists", "Total", s"Total percentage") ++ yearsColumns
+      if (parentRegion == contest.country) {
+        Seq("Region", "Objects in lists", s"$numYears years total", s"$numYears years percentage")
+      } else {
+        Seq("Region (KOATUU)", "Objects in lists", "Total", s"Total percentage")
+      } ++ yearsColumns
     }
 
     def regionData(regionId: String) = {
@@ -67,7 +71,9 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
       val percentage = if (allMonumentsInRegion != 0)  100 * picturedMonumentsInRegion / allMonumentsInRegion else 0
 
       val columnData = (Seq(
-        if (regionalDetails && regionId.length == 2) s"[[Commons:$category/${pageName(regionName)}|$regionName ($regionId)]]" else s"$regionName ($regionId)",
+        if (regionalDetails && regionId.length == 2) s"[[Commons:$category/${pageName(regionName)}|$regionName ($regionId)]]"
+        else if (regionId.length != 2) s"$regionName ($regionId)"
+        else regionName,
         allMonumentsInRegion,
         picturedMonumentsInRegion,
         percentage) ++ pictured).map(_.toString)
