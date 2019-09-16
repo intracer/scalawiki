@@ -107,6 +107,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
       picturedMonuments.toString,
       (if (allMonuments != 0) 100 * picturedMonuments / allMonuments else 0).toString) ++ totalByYear.map(_.toString)
     ) else Seq(
+      Seq("Sum") ++ rows.head.indices.tail.map(i => rows.map(_(i).toInt).sum.toString),
       regionData(parentRegion.code, false)
     )
 
