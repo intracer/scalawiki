@@ -47,11 +47,11 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
         Seq(ys + " Objects", ys + " Pictures")
       }
 
-      if (parentRegion == contest.country) {
+      (if (parentRegion == contest.country) {
         Seq("Region", "Objects in lists", s"$numYears years total", s"$numYears years percentage")
       } else {
         Seq("Region (KOATUU)", "Objects in lists", "Total", s"Total percentage")
-      } ++ yearsColumns
+      }) ++ yearsColumns
     }
 
     def regionData(regionId: String) = {
