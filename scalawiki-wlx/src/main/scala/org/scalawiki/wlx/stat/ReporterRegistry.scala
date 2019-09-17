@@ -42,7 +42,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
     for (imageDb <- currentYearImageDb) {
 
       if (cfg.specialNominations) {
-        new SpecialNominations(contest, imageDb).specialNominations()
+        new SpecialNominations(contest, imageDb).statistics()
       }
 
       if (cfg.lowRes) {

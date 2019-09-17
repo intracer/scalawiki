@@ -31,7 +31,9 @@ class SpecialNominationsSpec extends Specification {
         new SpecialNomination("Українські пам'ятки Першої світової війни", "WLM-рядок",
           Seq("Вікіпедія:Вікі любить пам'ятки/Українські пам'ятки Першої світової війни")),
         new SpecialNomination("Цивільні споруди доби Гетьманщини", "WLM-рядок",
-          Seq("Template:WLM цивільні споруди доби Гетьманщини"))
+          Seq("Template:WLM цивільні споруди доби Гетьманщини")),
+          new SpecialNomination("Млини", "WLM-рядок",
+            Seq("Template:WLM млини та вітряки"), Seq(2019))
       )
 
       SpecialNomination.load("wlm_ua.conf") === expected
