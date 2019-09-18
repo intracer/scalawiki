@@ -30,7 +30,7 @@ case class Monument(page: String = "",
                     source: Option[String] = None,
                     otherParams: Map[String, String] = Map.empty,
                     listConfig: Option[ListConfig] = None
-                   ) {
+                   ) extends Ordered[Monument] {
 
   val cityName = AdmDivision.cleanName(city.getOrElse(""))
 
@@ -87,6 +87,7 @@ case class Monument(page: String = "",
     template.text + "\n"
   }
 
+  override def compare(that: Monument): Int = id.compare(that.id)
 }
 
 object Monument {
