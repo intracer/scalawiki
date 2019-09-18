@@ -37,7 +37,7 @@ abstract class OpTable() {
 
   def sumPlus = ops.map(opAmount).filter(_ > 0).sum
 
-  def sumByDate: Map[String, Double] = byDate.mapValues(_.map(opAmount).filter(_ > 0).sum)
+  def sumByDate: Map[String, Double] = byDate.view.mapValues(_.map(opAmount).filter(_ > 0).sum).toMap
 
   def diffByDate(that: OpTable) = {
     val thisMap = this.sumByDate

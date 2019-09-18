@@ -16,7 +16,7 @@ class RevisionAnnotation(val page: Page, revFilter: RevisionFilter = AllRevision
   val annotatedElements = pageAnnotatedElements
     .filter(element => revFilter.predicate(element.getRevision))
 
-  val byRevisionContent: Map[Revision, Seq[String]] = annotatedElements.groupBy(_.getRevision).mapValues(_.map(_.getElement))
-  val byUserContent: Map[String, Seq[String]] = annotatedElements.groupBy(_.getRevision.user.flatMap(_.name) getOrElse "").mapValues(_.map(_.getElement))
+  val byRevisionContent: Map[Revision, Seq[String]] = annotatedElements.groupBy(_.getRevision).view.mapValues(_.map(_.getElement)).toMap
+  val byUserContent: Map[String, Seq[String]] = annotatedElements.groupBy(_.getRevision.user.flatMap(_.name) getOrElse "").view.mapValues(_.map(_.getElement)).toMap
 
 }

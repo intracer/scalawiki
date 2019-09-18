@@ -126,7 +126,7 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
     val ukWiki = MwBot.fromHost(MwBot.ukWiki)
     val text = ukWiki.await(ukWiki.pageText(wlmPage))
 
-    Monument.monumentsFromText(text, wlmPage, WlmUa.templateName, WlmUa).toBuffer
+    Monument.monumentsFromText(text, wlmPage, WlmUa.templateName, WlmUa).toSeq
   }
 
   def stat(entries: Seq[Entry]) = {
@@ -174,7 +174,7 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
           //println(result)
       }
 
-    } onFailure { case e => println(e) }
+    }
   }
 
   def upload(entry: EntryImage, bot: MwBot): Future[String] = {
