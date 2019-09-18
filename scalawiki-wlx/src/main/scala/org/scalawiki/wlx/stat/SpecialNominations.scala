@@ -31,7 +31,7 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
     val monumentQuery = MonumentQuery.create(contest)
 
     val imageDbs = nominations.map { nomination =>
-      nomination -> imageDb.subSet(getMonumentsMap(monumentQuery)(nomination))
+      nomination -> imageDb.subSet(getMonumentsMap(monumentQuery)(nomination), withFalseIds = true)
     }.toMap
 
     val headers = Seq("Special nomination", "authors", "monuments", "photos")

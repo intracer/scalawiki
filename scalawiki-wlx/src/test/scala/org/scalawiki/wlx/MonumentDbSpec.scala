@@ -1,7 +1,7 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.wlx.dto.lists.ListConfig.WleUa
-import org.scalawiki.wlx.dto.{Contest, Country, Koatuu, Monument}
+import org.scalawiki.wlx.dto.lists.ListConfig
+import org.scalawiki.wlx.dto.{Contest, Country, Monument}
 import org.specs2.mutable.Specification
 
 class MonumentDbSpec extends Specification {
@@ -9,16 +9,24 @@ class MonumentDbSpec extends Specification {
   val Ukraine = Country.Ukraine
   val contest = Contest.WLMUkraine(2014)
 
-  val monuments = Ukraine.regionIds.flatMap {
-    regionId =>
+  val monuments = Ukraine.regionIds.flatMap { regionId =>
       (1 to regionId.toInt).map { i =>
         Monument(
-          page = "",
           id = regionId + "-001-" + f"$i%04d",
           name = "Monument in " + Ukraine.regionName(regionId),
-          listConfig = Some(WleUa)
+          listConfig = Some(ListConfig.WleUa)
         )
       }
+  }
+
+  val specialNominationMonuments = Ukraine.regionIds.flatMap { regionId =>
+    (1 to regionId.toInt).map { i =>
+      Monument(
+        id = "88-" + regionId + "1-" + f"$i%04d",
+        name = "Special Nomination Monument in " + Ukraine.regionName(regionId),
+        listConfig = Some(ListConfig.WlmUa)
+      )
+    }
   }
 
   "monument db" should {
@@ -27,6 +35,13 @@ class MonumentDbSpec extends Specification {
 
       db.ids.size === monuments.size
       db.ids === monuments.map(_.id)
+    }
+
+    "contain special nomination monuments ids" in {
+      val db = new MonumentDB(contest, specialNominationMonuments.toSeq)
+
+      db.ids.size === specialNominationMonuments.size
+      db.ids === specialNominationMonuments.map(_.id)
     }
 
     "group monuments by regions" in {
@@ -40,6 +55,19 @@ class MonumentDbSpec extends Specification {
 
       regions === Ukraine.regionIds
     }
+
+    "group special nomination monuments by regions" in {
+      val db = new MonumentDB(contest, specialNominationMonuments.toSeq)
+
+      val regions = db._byRegion.keySet
+
+      for (region <- regions) yield {
+        db._byRegion(region).size === region.toInt
+      }
+
+      regions === Ukraine.regionIds
+    }
+
 
     "get city for Kyiv" in {
       val regionId = "80-391"

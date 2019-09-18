@@ -1,11 +1,13 @@
 package org.scalawiki.wlx.dto
 
 import java.net.URLEncoder
+
 import org.scalawiki.dto.markup.Template
 import org.scalawiki.wlx.WlxTemplateParser
 import org.scalawiki.wlx.dto.lists.ListConfig
 
 import scala.collection.immutable.ListMap
+import scala.util.Try
 
 case class Monument(page: String = "",
                     id: String,
@@ -129,7 +131,14 @@ object Monument {
   def monumentsFromText(text: String, page: String, template: String, listConfig: ListConfig): Iterable[Monument] =
     init(text, page, listConfig) //.toSet
 
-  def getRegionId(monumentId: String): String = monumentId.split("\\-").headOption.getOrElse("")
+  def getRegionId(monumentId: String): String = {
+    val parts = monumentId.split("\\-")
+    parts.headOption
+      .filter(Country.Ukraine.regionIds.contains)
+      .orElse(Try(parts(1)).toOption.map(_.take(2)))
+      .filter(Country.Ukraine.regionIds.contains)
+      .getOrElse("")
+  }
 
   def getRegionId(monumentId: Option[String]): String = monumentId.fold("")(getRegionId)
 
