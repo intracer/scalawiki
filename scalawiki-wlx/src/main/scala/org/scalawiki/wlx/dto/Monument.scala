@@ -70,7 +70,7 @@ case class Monument(page: String = "",
       "gallery" -> gallery,
       "resolution" -> resolution)
 
-    val names = listConfig.fold(paramValues.filter(_._2.nonEmpty).keys)(_.namesMap.values)
+    val names = listConfig.fold(paramValues.filter(_._2.nonEmpty).keys)(_.namesMap.values.toSeq)
     val namesMap = listConfig.map(_.namesMap).getOrElse(names.map(name => name -> name).toMap)
     val longest = names.map(_.length).max
 

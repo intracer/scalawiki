@@ -92,7 +92,7 @@ class NewlyPicturedPerAuthorBonus(val stat: ContestStat,
 
   val oldMonumentIdsByAuthor: Map[String, Set[String]] = oldImages
     .groupBy(_.author.getOrElse(""))
-    .mapValues(_.flatMap(_.monumentId).toSet)
+    .view.mapValues(_.flatMap(_.monumentId).toSet).toMap
 
   override def rate(monumentId: String, author: String): Int = {
     monumentId match {
@@ -109,9 +109,9 @@ class NewlyPicturedPerAuthorBonus(val stat: ContestStat,
 class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
   val authorsByMonument: Map[String, Int] = oldImages
     .groupBy(_.monumentId.getOrElse(""))
-    .mapValues { images =>
+    .view.mapValues { images =>
       images.map(_.author.getOrElse("")).toSet.size
-    }
+    }.toMap
 
   override def rate(monumentId: String, author: String): Int = {
     authorsByMonument.getOrElse(monumentId, 0) match {

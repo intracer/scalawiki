@@ -25,15 +25,14 @@ object SpecialNomination {
 
     Try {
       config.getConfigList("nominations")
-    }.toOption.map(_.asScala.map { c =>
+    }.toOption.map(_.asScala.toSeq.map { c =>
         new SpecialNomination(
           c.getString("name"),
           c.getString("listTemplate"),
-          c.getStringList("pages").asScala,
-          if (c.hasPath("years")) c.getIntList("years").asScala.map(_.toInt) else Nil
+          c.getStringList("pages").asScala.toSeq,
+          if (c.hasPath("years")) c.getIntList("years").asScala.map(_.toInt).toSeq else Nil
         )
     }).getOrElse(Seq.empty)
-
   }
 
   lazy val nominations = load("wlm_ua.conf")

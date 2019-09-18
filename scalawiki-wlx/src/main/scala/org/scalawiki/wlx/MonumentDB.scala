@@ -17,10 +17,10 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
   val _byRegion: Map[String, Seq[Monument]] = monuments.groupBy(m => Monument.getRegionId(m.id))
 
   val _byType: Map[String, Seq[Monument]] = {
-    monuments.flatMap(m => m.types.map(t => (t, m))).groupBy(_._1).mapValues(seq => seq.map(_._2))
+    monuments.flatMap(m => m.types.map(t => (t, m))).groupBy(_._1).view.mapValues(seq => seq.map(_._2)).toMap
   }
 
-  val _byTypeAndRegion: Map[String, Map[String, Seq[Monument]]] = _byType.mapValues(_.groupBy(m => Monument.getRegionId(m.id)))
+  val _byTypeAndRegion: Map[String, Map[String, Seq[Monument]]] = _byType.view.mapValues(_.groupBy(m => Monument.getRegionId(m.id))).toMap
 
   def ids: Set[String] = _byId.keySet
 
