@@ -12,15 +12,14 @@ cache:
 language: scala
 
 scala:
-   - 2.13.0
-   - 2.12.6
+   - 2.13.1
+   - 2.12.10
    - 2.11.12
 
 jdk:
-  - oraclejdk8
   - openjdk8
+  - openjdk11
 
 script: "sbt ++$TRAVIS_SCALA_VERSION clean coverage 'testOnly -- xonly timefactor 5' coverageReport"
-after_success: 
-  - sbt coveralls
+after_success:
   - bash <(curl -s https://codecov.io/bash)

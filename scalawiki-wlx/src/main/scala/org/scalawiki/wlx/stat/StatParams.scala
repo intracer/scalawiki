@@ -16,9 +16,11 @@ case class StatConfig(campaign: String,
                       lowRes: Boolean = false,
                       specialNominations: Boolean = false,
                       regionalStat: Boolean = false,
+                      regionalDetails: Boolean = false,
                       authorsStat: Boolean = false,
                       regionalGallery: Boolean = false,
-                      missingGallery: Boolean = false)
+                      missingGallery: Boolean = false,
+                      placeDetection: Boolean = false)
 
 import org.rogach.scallop._
 
@@ -40,9 +42,11 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
   val lowRes = opt[Boolean](name = "low-res", descr = "report low resolution photos")
   val specialNominations = opt[Boolean](name = "special-nominations", descr = "report special nominations")
   val regionalStat = opt[Boolean](name = "regional-stat", descr = "report regional statistics")
+  val regionalDetails = opt[Boolean](name = "regional-details", descr = "report regional detailed statistics")
   val authorsStat = opt[Boolean](name = "authors-stat", descr = "report authors statistics")
   val regionalGallery = opt[Boolean](name = "regional-gallery", descr = "report regional gallery")
   val missingGallery = opt[Boolean](name = "missing-gallery", descr = "report missing galleries")
+  val placeDetection = opt[Boolean](name = "place-detection", descr = "report place detection")
   verify()
 }
 
@@ -71,9 +75,11 @@ object StatParams {
       lowRes = conf.lowRes.getOrElse(false),
       specialNominations = conf.specialNominations.getOrElse(false),
       regionalStat = conf.regionalStat.getOrElse(false),
+      regionalDetails = conf.regionalDetails.getOrElse(false),
       authorsStat = conf.authorsStat.getOrElse(false),
       regionalGallery = conf.regionalGallery.getOrElse(false),
-      missingGallery = conf.missingGallery.getOrElse(false)
+      missingGallery = conf.missingGallery.getOrElse(false),
+      placeDetection = conf.placeDetection.getOrElse(false)
     )
   }
 }

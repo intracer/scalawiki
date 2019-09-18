@@ -57,14 +57,16 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
     val pageId: Option[Long] = query.left.toOption.map(_.head)
     val title: Option[String] = query.right.toOption.map(_.head)
 
-    val action = Action(Query(
+    val generatorArg = ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit))
+    val queryParams = pagesParam(pageId, title, generatorArg) ++ Seq(
       Prop(
         Info(),
         Revisions(RvProp(RvPropArgs.byNames(props.toSeq): _*))
       ),
       Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)).get)
-    ))
+    )
 
+    val action = Action(Query(queryParams:_*))
     bot.run(action, context)
   }
 
@@ -81,26 +83,25 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
     val pageId: Option[Long] = query.left.toOption.map(_.head)
     val title: Option[String] = query.right.toOption.map(_.head)
 
-    val listArg = ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit))
-
-    val generatorArg = listArg.getOrElse(new Images(ImLimit(limit)))
-    val titlesParam = listArg match {
-      case None => title.map(t => TitlesParam(Seq(t)))
-      case _ => None
-    }
-
-    val queryParams = titlesParam.toSeq ++ Seq(
+    val generatorArg = ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit))
+    val queryParams = pagesParam(pageId, title, generatorArg) ++ Seq(
       Prop(
         ImageInfo(
           IiProp(IiPropArgs.byNames(props.toSeq): _*)
         )
       ),
-      Generator(generatorArg)
+      Generator(generatorArg.get)
     )
 
     val action = Action(Query(queryParams:_*))
-
     bot.run(action, context)
+  }
+
+  private def pagesParam(pageId: Option[Long], title: Option[String], generatorArg: Option[GeneratorArg]) = {
+    val pagesInGenerator = generatorArg.exists(_.pairs.map(_._1).exists(p => p.endsWith("title") || p.endsWith("pageid")))
+    if (pagesInGenerator) Seq.empty[QueryParam[String]] else {
+      title.map(t => TitlesParam(Seq(t))).toSeq ++ pageId.map(id => PageIdsParam(Seq(id))).toSeq
+    }
   }
 
   override def edit(text: String, summary: Option[String] = None, section: Option[String] = None, token: Option[String] = None, multi: Boolean = true) = {

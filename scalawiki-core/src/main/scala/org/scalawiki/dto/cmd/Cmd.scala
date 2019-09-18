@@ -100,7 +100,7 @@ trait EnumArg[+T <: EnumArg[T]] {
   def pairs: Seq[(String, String)] = Seq.empty
 }
 
-abstract class EnumArgument[T <: EnumArg[T]](val name: String, val summary: String) extends EnumArg[T]
+abstract class EnumArgument[T <: EnumArg[T]](val name: String, val summary: String = "") extends EnumArg[T]
 
 trait ActionArg extends EnumArg[ActionArg] {
   /*val param = ActionParam*/

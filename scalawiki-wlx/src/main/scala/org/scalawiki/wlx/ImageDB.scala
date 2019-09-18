@@ -15,28 +15,27 @@ class ImageDB(val contest: Contest,
 
   def this(contest: Contest, images: Seq[Image], monumentDb: MonumentDB) = this(contest, images, Some(monumentDb))
 
-  // images
-  val _byMegaPixels: Grouping[Int, Image] = new Grouping("mpx", ImageGrouping.byMpx, images)
+  lazy val _byMegaPixels: Grouping[Int, Image] = new Grouping("mpx", ImageGrouping.byMpx, images)
 
-  val withCorrectIds: Seq[Image] = monumentDb.fold(images) {
+  lazy val withCorrectIds: Seq[Image] = monumentDb.fold(images) {
     db => images.filter(_.monumentId.exists(db.ids.contains))
   }
 
-  val _byId: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byMonument, withCorrectIds)
+  lazy val _byId: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byMonument, withCorrectIds)
 
-  val _byRegion: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byRegion, withCorrectIds)
+  lazy val _byRegion: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byRegion, withCorrectIds)
 
-  val _byAuthor: Grouping[String, Image] = new Grouping("author", ImageGrouping.byAuthor, withCorrectIds)
+  lazy val _byAuthor: Grouping[String, Image] = new Grouping("author", ImageGrouping.byAuthor, withCorrectIds)
 
-  val _byRegionAndId: NestedGrouping[String, Image] = _byRegion.compose(ImageGrouping.byMonument)
+  lazy val _byRegionAndId: NestedGrouping[String, Image] = _byRegion.compose(ImageGrouping.byMonument)
 
-  val _byRegionAndAuthor: NestedGrouping[String, Image] = _byRegion.compose(ImageGrouping.byAuthor)
+  lazy val _byRegionAndAuthor: NestedGrouping[String, Image] = _byRegion.compose(ImageGrouping.byAuthor)
 
-  val _byAuthorAndId: NestedGrouping[String, Image] = _byAuthor.compose(ImageGrouping.byMonument)
+  lazy val _byAuthorAndId: NestedGrouping[String, Image] = _byAuthor.compose(ImageGrouping.byMonument)
 
-  val _byAuthorAndRegion: NestedGrouping[String, Image] = _byAuthor.compose(ImageGrouping.byRegion)
+  lazy val _byAuthorAndRegion: NestedGrouping[String, Image] = _byAuthor.compose(ImageGrouping.byRegion)
 
-  val _byMegaPixelsAndAuthor = _byMegaPixels.grouped.mapValues {
+  lazy val _byMegaPixelsAndAuthor = _byMegaPixels.grouped.mapValues {
     images => images.groupBy(_.author.getOrElse(""))
   }
 
@@ -50,9 +49,24 @@ class ImageDB(val contest: Contest,
 
   def containsId(id: String) = _byId.contains(id)
 
-  def imagesByRegion(regId: String) = _byRegion.by(regId)
+  def imagesByRegion(regId: String): Seq[Image] =
+    if (regId.length == 2) {
+      _byRegion.by(regId)
+    } else {
+      val parentId = regId.substring(0, 2)
+      val topImages = _byRegion.by(parentId)
+      topImages.filter(_.monumentId.exists(_.replace("-", "").startsWith(regId)))
+    }
 
-  def idsByRegion(regId: String) = _byRegionAndId.by(regId).keys
+  def idsByRegion(regId: String): Set[String] = {
+    if (regId.length == 2) {
+      _byRegionAndId.by(regId).keys
+    } else {
+      val parentId = regId.substring(0, 2)
+      val topKeys = _byRegionAndId.by(parentId).keys
+      topKeys.filter(_.replace("-", "").startsWith(regId))
+    }
+  }
 
   def idByAuthor(author: String) = _byAuthorAndId.by(author).keys
 

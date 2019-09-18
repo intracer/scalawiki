@@ -12,8 +12,12 @@ class CountrySpec extends Specification {
     }
 
     "contain Switzerland" in {
-      Country.byCode("CH") === Some(new Country("CH", "Switzerland", Seq("fr", "de", "it")))
-      Country.byCode("ch") === Some(new Country("CH", "Switzerland", Seq("fr", "de", "it")))
+      val Switzerland = Country.byCode("CH").get
+      Switzerland === Country.byCode("ch").get
+
+      Switzerland.code === "CH"
+      Switzerland.name === "Switzerland"
+      Switzerland.languageCodes.toSet.intersect( Set("fr", "de", "it")) === Set("fr", "de", "it")
     }
   }
 

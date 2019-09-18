@@ -8,7 +8,7 @@ import org.scalawiki.wlx.query.MonumentQuery
 
 class SpecialNominations(contest: Contest, imageDb: ImageDB) {
 
-  def specialNominations(): Unit = {
+  def statistics(): Unit = {
 
     val stat = specialNomination()
 
@@ -16,8 +16,12 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
     MwBot.fromHost(MwBot.commons).page(pageName).edit(stat, Some("updating"))
   }
 
+  def nominations: Seq[SpecialNomination] = {
+    SpecialNomination.nominations.filter(_.years.contains(contest.year)).sortBy(_.name)
+  }
+
   def getMonumentsMap(monumentQuery: MonumentQuery): Map[SpecialNomination, Seq[Monument]] = {
-    SpecialNomination.nominations.map { nomination =>
+    nominations.map { nomination =>
       val monuments = monumentQuery.byPage(nomination.pages.head, nomination.listTemplate)
       (nomination, monuments)
     }.toMap
@@ -26,10 +30,9 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
   def specialNomination(): String = {
     val monumentQuery = MonumentQuery.create(contest)
 
-    val imageDbs = SpecialNomination.nominations.map { nomination =>
+    val imageDbs = nominations.map { nomination =>
       nomination -> imageDb.subSet(getMonumentsMap(monumentQuery)(nomination))
     }.toMap
-    val nominations: Seq[SpecialNomination] = imageDbs.keySet.toSeq.sortBy(_.name)
 
     val headers = Seq("Special nomination", "authors", "monuments", "photos")
     val rows = for (nomination <- nominations) yield {

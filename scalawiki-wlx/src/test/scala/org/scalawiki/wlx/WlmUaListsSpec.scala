@@ -15,7 +15,7 @@ class WlmUaListsSpec extends Specification {
   val cacheName = s"$campaign-2019"
 
   val contest = Contest.byCampaign(campaign).get.copy(year = 2019)
-  val country = Country.Ukraine
+  val country = contest.country
 
   val bot = new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 100)
   val monumentQuery = MonumentQuery.create(contest)(bot)

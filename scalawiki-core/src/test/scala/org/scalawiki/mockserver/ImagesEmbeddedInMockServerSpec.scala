@@ -15,7 +15,7 @@ class ImagesEmbeddedInMockServerSpec extends BaseMockServerSpec with QueryLibrar
         "geititle" -> "Template:UkrainianNaturalHeritageSite",
         "prop" -> "info|revisions|imageinfo",
         "rvprop" -> "ids|content|timestamp|user|userid",
-        "iiprop" -> "timestamp|user|size|metadata",
+        "iiprop" -> "timestamp|user|size",
         "generator" -> "embeddedin",
         "geilimit" -> "500"
       )
@@ -39,7 +39,7 @@ class ImagesEmbeddedInMockServerSpec extends BaseMockServerSpec with QueryLibrar
         "geititle" -> "Template:UkrainianNaturalHeritageSite",
         "prop" -> "info|revisions|imageinfo",
         "rvprop" -> "ids|content|timestamp|user|userid",
-        "iiprop" -> "timestamp|user|size|metadata",
+        "iiprop" -> "timestamp|user|size",
         "generator" -> "embeddedin",
         "geilimit" -> "500",
         "rvslots" -> "main"

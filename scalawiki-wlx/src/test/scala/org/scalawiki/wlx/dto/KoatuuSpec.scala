@@ -97,7 +97,7 @@ class KoatuuSpec extends Specification {
         "80-385" -> "Подільський",
         "80-386" -> "Святошинський",
         "80-389" -> "Солом'янський",
-        "80-391" -> "Шевченківський",
+        "80-391" -> "Шевченківський"
       )
 
       val regionToIds = Ukraine.byRegion(idToName.keySet).mapValues(_.head)
@@ -138,7 +138,7 @@ class KoatuuSpec extends Specification {
     }
 
     "contain Vinnytsya oblast regions" in {
-      val crimea = regions.find(_.name == "Вінницька область").get
+      val vinnytsyaRegion = regions.find(_.name == "Вінницька область").get
       val regionNames = Seq(
         "Вінниця", "Жмеринка", "Могилів-Подільський", "Козятин", "Ладижин", "Хмільник",
         "Барський район", "Бершадський район", "Вінницький район", "Гайсинський район", "Жмеринський район",
@@ -147,9 +147,9 @@ class KoatuuSpec extends Specification {
         "Оратівський район", "Піщанський район", "Погребищенський район", "Теплицький район", "Томашпільський район",
         "Тростянецький район", "Тульчинський район", "Тиврівський район", "Хмільницький район", "Чернівецький район",
         "Чечельницький район", "Шаргородський район", "Ямпільський район")
-      crimea.regions.map(_.name) === regionNames
+      vinnytsyaRegion.regions.map(_.name) === regionNames
 
-      crimea.regions.flatMap(_.parent().map(_.name)) === List.fill(regionNames.size)("Вінницька область")
+      vinnytsyaRegion.regions.flatMap(_.parent().map(_.name)) === List.fill(regionNames.size)("Вінницька область")
     }
 
     "lookup regions by monumentId" in {

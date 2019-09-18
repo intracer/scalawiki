@@ -7,12 +7,12 @@ lazy val isScala213 = settingKey[Boolean]("Is the scala version 2.13.")
 
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
-  version := "0.6.1-SNAPSHOT",
+  version := "0.6.2-SNAPSHOT",
   crossScalaVersions := Seq(Scala211V, Scala212V, Scala213V),
   scalaVersion := crossScalaVersions.value.last,
   isScala213 := scalaVersion.value.startsWith("2.13."),
   scalacOptions := Seq("-target:jvm-1.8"),
-  conflictManager := ConflictManager.strict,
+//  conflictManager := ConflictManager.strict,
   licenses += ("Apache-2.0", url("http://opensource.org/licenses/Apache-2.0")),
 
   Keys.resolvers ++= Dependencies.resolvers,
@@ -65,6 +65,7 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
       "jp.ne.opt" %% "chronoscala" % ChronoScalaV,
       "ch.qos.logback" % "logback-classic" % LogbackClassicV,
       "org.sweble.wikitext" % "swc-engine" % SwcEngineV exclude("org.jsoup", "jsoup"),
+      "javax.xml.bind" % "jaxb-api" % "2.3.1",
       "de.fau.cs.osr.ptk" % "ptk-common" % "3.0.8",
       Library.Commons.codec,
       "org.jsoup" % "jsoup" % JSoupV,
@@ -94,7 +95,8 @@ lazy val dumps = Project("scalawiki-dumps", file("scalawiki-dumps"))
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++=
     Seq("com.fasterxml" % "aalto-xml" % AaltoXmlV,
-      Library.Commons.compress
+      Library.Commons.compress,
+      "org.glassfish.jaxb" % "txw2" % "2.3.2"
     )
   )
 

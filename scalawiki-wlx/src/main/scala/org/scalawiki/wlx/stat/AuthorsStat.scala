@@ -29,7 +29,7 @@ class AuthorsStat(val uploadImages: Boolean = false) {
     val categoryName = contest.imagesCategory
 
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
-    val yearSeq = imageDbsByYear.keys.toSeq.sorted
+    val yearSeq = imageDbsByYear.keys.toSeq.sorted.reverse
 
     val numYears = yearSeq.size
 

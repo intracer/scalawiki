@@ -17,10 +17,6 @@ trait AdmDivision {
 
   def parent: () => Option[AdmDivision]
 
-  def languageCodes: Seq[String] = Nil
-
-  def withoutLangCodes: AdmDivision = this
-
   def regionId(monumentId: String): String = monumentId.split("-").take(2).mkString
 
   def regionName(regId: String): String = if (regId == code) name else ""
@@ -76,7 +72,7 @@ trait AdmRegion extends AdmDivision {
 
   lazy val regionById: Map[String, AdmDivision] = regions.groupBy(_.code).mapValues(_.head)
 
-  override def regionName(regId: String) = regionById.get(regId).map(_.name).getOrElse("")
+  override def regionName(regId: String) = byId(regId).map(_.name).getOrElse("")
 
   override def byId(monumentId: String): Option[AdmDivision] = {
     regionById.get(regionId(monumentId)).flatMap(region => region.byId(monumentId).orElse(Some(region)))
@@ -84,25 +80,17 @@ trait AdmRegion extends AdmDivision {
 }
 
 
-case class NoAdmDivision(code: String = "", name: String = "") extends AdmRegion {
-  override val regions: Seq[AdmDivision] = Nil
-
-  override def withParents(parent: () => Option[AdmDivision]): AdmDivision = this
-
-  override val parent: () => Option[AdmDivision] = () => None
-
-  override def regionType: Option[RegionType] = None
-}
+object NoAdmDivision extends Country("", "")
 
 case class Country(code: String,
                    name: String,
-                   override val languageCodes: Seq[String] = Nil,
+                   val languageCodes: Seq[String] = Nil,
                    var regions: Seq[AdmDivision] = Nil
                   ) extends AdmRegion {
 
   val parent: () => Option[AdmDivision] = () => None
 
-  override def withoutLangCodes = copy(languageCodes = Nil)
+  def withoutLangCodes: Country = copy(languageCodes = Nil)
 
   override def regionId(monumentId: String): String = monumentId.split("-").head
 

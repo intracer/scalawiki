@@ -72,8 +72,6 @@ class PageQuerySpec extends Specification {
     val result = future.await
     result must have size 1
     result.head === Page(None, 0, "Absent", missing = true)
-
-
   }
 
   def getBot(commands: HttpStub*) = {

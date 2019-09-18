@@ -5,13 +5,13 @@ import com.typesafe.config.{Config, ConfigFactory}
 import scala.util.Try
 
 /**
-  * Describes monument lists for contest special nominations
-  *
-  * @param name         Name of the special nomination
-  * @param listTemplate name of template that monument lists consist of
-  * @param pages        pages that contain lists of monuments, ot templates that contains links to these pages
-  */
-case class SpecialNomination(name: String, listTemplate: String, pages: Seq[String])
+ * Describes monument lists for contest special nominations
+ *
+ * @param name         Name of the special nomination
+ * @param listTemplate name of template that monument lists consist of
+ * @param pages        pages that contain lists of monuments, ot templates that contains links to these pages
+ */
+case class SpecialNomination(name: String, listTemplate: String, pages: Seq[String], years: Seq[Int] = Nil)
 
 object SpecialNomination {
 
@@ -25,14 +25,13 @@ object SpecialNomination {
 
     Try {
       config.getConfigList("nominations")
-    }.toOption.map(_.asScala.map {
-      c =>
-        val (name, listTemplate, pages) = (
+    }.toOption.map(_.asScala.map { c =>
+        new SpecialNomination(
           c.getString("name"),
           c.getString("listTemplate"),
-          c.getStringList("pages"))
-
-        new SpecialNomination(name, listTemplate, pages.asScala)
+          c.getStringList("pages").asScala,
+          if (c.hasPath("years")) c.getIntList("years").asScala.map(_.toInt) else Nil
+        )
     }).getOrElse(Seq.empty)
 
   }

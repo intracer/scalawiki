@@ -2,6 +2,7 @@ package org.scalawiki.wlx
 
 import java.time.{ZoneOffset, ZonedDateTime}
 
+import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Monument}
 import org.scalawiki.wlx.query.MonumentQuery
 
@@ -25,7 +26,15 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
   def byId(id: String) = _byId.getOrElse(id, Seq.empty[Monument]).headOption
 
-  def byRegion(regId: String) = _byRegion.getOrElse(regId, Seq.empty[Monument])
+  def byRegion(regId: String) = {
+    if (regId.length == 2) {
+      _byRegion.getOrElse(regId, Seq.empty[Monument])
+    } else {
+      val parentId = regId.substring(0, 2)
+      val topMonuments = _byRegion.getOrElse(parentId, Seq.empty[Monument])
+      topMonuments.filter(_.id.replace("-", "").startsWith(regId))
+    }
+  }
 
   def regionIds = _byRegion.keySet.toSeq.filter(contest.country.regionIds.contains).sorted
 
@@ -43,7 +52,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
   def getAdmDivision(monumentId: String): Option[AdmDivision] = {
     for (monument <- byId(monumentId);
          division <- country.byIdAndName(monument.regionId, monument.cityName).headOption
-    ) yield division
+         ) yield division
   }
 
   def unknownPlaces(): Seq[UnknownPlace] = {
@@ -58,6 +67,20 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
     toFind.flatMap { p =>
       Some(p.copy(candidates = country.byIdAndName(p.regionId, p.name)))
         .filterNot(_.candidates.size == 1)
+    }
+  }
+
+  def unknownPlacesTables(places: Seq[UnknownPlace] = unknownPlaces()): Seq[Table] = {
+    val headers = Seq("name", "candidates", "monuments")
+    places.groupBy(_.page).toSeq.sortBy(_._1).map { case (page, places) =>
+      val data = places.sortBy(_.name).map { place =>
+        Seq(
+          place.name,
+          place.candidates.map(_.name).mkString(", "),
+          place.monuments.map(_.name).mkString(",")
+        )
+      }
+      Table(headers, data, page)
     }
   }
 }
