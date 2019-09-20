@@ -34,7 +34,7 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
       nomination -> imageDb.subSet(getMonumentsMap(monumentQuery)(nomination), withFalseIds = true)
     }.toMap
 
-    val headers = Seq("Special nomination", "authors", "monuments", "photos")
+    val headers = Seq("Special nomination", "authors", "all monuments", "special monuments", "photos")
     val rows = for (nomination <- nominations) yield {
 
       val imagesPage = s"Commons:Images from ${contest.name} special nomination ${nomination.name}"
@@ -46,6 +46,10 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
         nomination.name,
         imageDb.authors.size.toString,
         imageDb.ids.size.toString,
+        imageDb.ids.filterNot { id =>
+          val regionId = id.split("-").headOption.getOrElse("")
+          contest.country.regionIds.contains(regionId)
+        }.size.toString,
         s"[[$imagesPage|${imageDb.images.size}]]"
       )
     }
