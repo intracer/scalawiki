@@ -28,13 +28,13 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
   }
 
   def specialNomination(): String = {
-    val monumentQuery = MonumentQuery.create(contest)
-
+    val monumentsMap = getMonumentsMap(MonumentQuery.create(contest))
     val imageDbs = nominations.map { nomination =>
-      nomination -> imageDb.subSet(getMonumentsMap(monumentQuery)(nomination), withFalseIds = true)
+      nomination -> imageDb.subSet(monumentsMap(nomination), withFalseIds = true)
     }.toMap
 
-    val headers = Seq("Special nomination", "authors", "all monuments", "special monuments", "photos")
+    val headers = Seq("Special nomination", "authors",
+      "all monuments", "special nomination monuments", "photographed monuments", "photographed special monuments", "photos")
     val rows = for (nomination <- nominations) yield {
 
       val imagesPage = s"Commons:Images from ${contest.name} special nomination ${nomination.name}"
@@ -45,11 +45,10 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
       Seq(
         nomination.name,
         imageDb.authors.size.toString,
+        monumentsMap(nomination).size.toString,
+        monumentsMap(nomination).map(_.id).count(isSpecialNominationMonument).toString,
         imageDb.ids.size.toString,
-        imageDb.ids.filterNot { id =>
-          val regionId = id.split("-").headOption.getOrElse("")
-          contest.country.regionIds.contains(regionId)
-        }.size.toString,
+        imageDb.ids.count(isSpecialNominationMonument).toString,
         s"[[$imagesPage|${imageDb.images.size}]]"
       )
     }
@@ -57,6 +56,11 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
     val table = new Table(headers, rows)
 
     table.asWiki + s"\n[[Category:${contest.name}]]"
+  }
+
+  private def isSpecialNominationMonument(id: String) = {
+    val regionId = id.split("-").headOption.getOrElse("")
+    !contest.country.regionIds.contains(regionId)
   }
 
   def makeSpecNominationGallery(imagesPage: String, imageDb: ImageDB): Unit = {
