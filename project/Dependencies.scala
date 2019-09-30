@@ -6,7 +6,7 @@ object Dependencies {
 
   def BetterFilesAkkaV(isScala213: Boolean) = if (isScala213) "3.8.0" else "3.6.0"
 
-  val BlameApiV = "11.7"
+  val BlameApiV = "11.8"
   val ChronicleMapV = "3.17.5"
   val ChronoScalaV = "0.3.2"
   val FicusV = "1.4.7"
