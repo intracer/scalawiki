@@ -22,7 +22,9 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
 
   def getMonumentsMap(monumentQuery: MonumentQuery): Map[SpecialNomination, Seq[Monument]] = {
     nominations.map { nomination =>
-      val monuments = monumentQuery.byPage(nomination.pages.head, nomination.listTemplate)
+      val monuments = nomination.pages.flatMap { page =>
+        monumentQuery.byPage(page, nomination.listTemplate)
+      }
       (nomination, monuments)
     }.toMap
   }

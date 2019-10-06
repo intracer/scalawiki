@@ -35,7 +35,7 @@ class SpecialNominationsSpec extends Specification {
           new SpecialNomination("Млини", "WLM-рядок",
             Seq("Template:WLM млини та вітряки"), Seq(2019)),
           new SpecialNomination("Єврейська спадщина", "WLM-рядок",
-          Seq("Вікіпедія:Вікі любить пам'ятки/Єврейська спадщина"), Seq(2019))
+          Seq("Вікіпедія:Вікі любить пам'ятки/Єврейська спадщина", "Вікіпедія:Вікі любить пам'ятки/Єврейська спадщина/Спецномінація"), Seq(2019))
       )
 
       SpecialNomination.load("wlm_ua.conf") === expected
