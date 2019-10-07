@@ -20,17 +20,8 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
     SpecialNomination.nominations.filter(_.years.contains(contest.year)).sortBy(_.name)
   }
 
-  def getMonumentsMap(nominations: Seq[SpecialNomination], monumentQuery: MonumentQuery): Map[SpecialNomination, Seq[Monument]] = {
-    nominations.map { nomination =>
-      val monuments = nomination.pages.flatMap { page =>
-        monumentQuery.byPage(page, nomination.listTemplate)
-      }
-      (nomination, monuments)
-    }.toMap
-  }
-
   def specialNomination(): String = {
-    val monumentsMap = getMonumentsMap(nominations, MonumentQuery.create(contest))
+    val monumentsMap = SpecialNomination.getMonumentsMap(nominations, MonumentQuery.create(contest))
     val imageDbs = nominations.map { nomination =>
       nomination -> imageDb.subSet(monumentsMap(nomination), withFalseIds = true)
     }.toMap
@@ -77,14 +68,5 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
     }
 
     MwBot.fromHost(MwBot.commons).page(imagesPage).edit(imagesText, Some("updating"))
-  }
-}
-
-object SpecialNominations {
-  def main(args: Array[String]) {
-    val contest = Contest.WLMUkraine(2015)
-    val query = MonumentQuery.create(contest)
-    val map = new SpecialNominations(contest, new ImageDB(contest, Seq.empty)).getMonumentsMap(Nil, query)
-    println(map.values.map(_.size).mkString(", "))
   }
 }
