@@ -16,7 +16,7 @@ class RegionFixerSpec extends Specification {
       val parser = new WlxTemplateParser(listConfig, "Вікіпедія:Вікі любить пам'ятки/Житомирська область/Новоград-Волинський район")
       val monuments = parser.parse(wiki).toSeq
 
-      val updater = new RegionFixerUpdater(country)
+      val updater = new RegionFixerUpdater(contest)
       updater.raions.size === 490
 
       val canBeFixed = monuments.filter(updater.needsUpdate)

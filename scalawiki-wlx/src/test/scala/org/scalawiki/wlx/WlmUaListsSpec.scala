@@ -42,7 +42,7 @@ class WlmUaListsSpec extends Specification {
     }
 
     "not be just high level region" in {
-      val updater = new RegionFixerUpdater(country)
+      val updater = new RegionFixerUpdater(contest)
       updater.raions.size === 490
 
       val highLevel = all.filter(m => updater.raionNames.contains(m.cityName) && m.place.exists(_.trim.nonEmpty))
