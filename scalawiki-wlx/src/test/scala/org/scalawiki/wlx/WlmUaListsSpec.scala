@@ -2,7 +2,7 @@ package org.scalawiki.wlx
 
 import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.Site
-import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Monument}
+import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.MonumentQuery
 import org.specs2.mutable.Specification
 
