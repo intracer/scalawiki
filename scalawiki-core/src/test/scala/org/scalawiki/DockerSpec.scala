@@ -12,6 +12,8 @@ trait WithDocker extends BeforeAfterAll {
 
   val win = Properties.isWin
 
+  val dockerTestEnabled = false
+
   val install = "docker exec scalawiki_mediawiki_1 " +
     "php maintenance/install.php SomeWiki admin --pass 123 " +
     "--dbserver database --dbuser wikiuser --dbpass example --installdbpass root_pass --installdbuser root " +
@@ -23,7 +25,7 @@ trait WithDocker extends BeforeAfterAll {
   }
 
   override def beforeAll: Unit = {
-    if (!win) {
+    if (dockerTestEnabled) {
       s"docker-compose rm -fsv" !
 
       s"docker-compose up -d" !
@@ -38,7 +40,7 @@ trait WithDocker extends BeforeAfterAll {
   }
 
   override def afterAll: Unit = {
-    if (!win) {
+    if (dockerTestEnabled) {
       s"docker-compose down" !
     }
   }
@@ -47,7 +49,7 @@ trait WithDocker extends BeforeAfterAll {
 class DockerSpec extends Specification with WithDocker {
   "docker" should {
     "check mediawiki version" in {
-      if ( false /*!win*/) {
+      if (dockerTestEnabled) {
         val bot = MwBot.create(Site.localhost.copy(scriptPath = ""), None)
         bot.mediaWikiVersion.version.toDouble must be >= 1.31
       } else {
