@@ -42,19 +42,13 @@ class WlmUaListsSpec extends Specification {
     }
 
     "not be just high level region" in {
-      val oblasts = country.regions.filter(adm => !Set("Київ", "Севастополь").contains(adm.name))
-      val raions = oblasts.flatMap(_.regions).filter(_.name.endsWith("район"))
-      raions.size === 490
-      val raionNames = raions.map(_.name).toSet
+      val updater = new RegionFixerUpdater(country)
+      updater.raions.size === 490
 
-      val highLevel = all.filter(m => raionNames.contains(m.cityName) && m.place.exists(_.trim.nonEmpty))
+      val highLevel = all.filter(m => updater.raionNames.contains(m.cityName) && m.place.exists(_.trim.nonEmpty))
       println(s"highLevel size: ${highLevel.size}")
 
-      val canBeFixed = highLevel.filter { m =>
-        m.place.exists { p =>
-          country.byIdAndName(m.regionId, p.split(",").head).size == 1
-        }
-      }
+      val canBeFixed = all.filter(updater.needsUpdate)
 
       println(s"canBeFixed: ${canBeFixed.size}")
 

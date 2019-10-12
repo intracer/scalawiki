@@ -16,19 +16,10 @@ class RegionFixerSpec extends Specification {
       val parser = new WlxTemplateParser(listConfig, "Вікіпедія:Вікі любить пам'ятки/Житомирська область/Новоград-Волинський район")
       val monuments = parser.parse(wiki).toSeq
 
-      val oblasts = country.regions.filter(adm => !Set("Київ", "Севастополь").contains(adm.name))
-      val raions = oblasts.flatMap(_.regions).filter(_.name.endsWith("район"))
-      raions.size === 490
-      val raionNames = raions.map(_.name).toSet
+      val updater = new RegionFixerUpdater(country)
+      updater.raions.size === 490
 
-      val highLevel = monuments.filter(m => raionNames.contains(m.cityName) && m.place.exists(_.trim.nonEmpty))
-      println(s"highLevel size: ${highLevel.size}")
-
-      val canBeFixed = highLevel.filter { m =>
-        m.place.exists { p =>
-          country.byIdAndName(m.regionId, p.split(",").head).size == 1
-        }
-      }
+      val canBeFixed = monuments.filter(updater.needsUpdate)
 
       canBeFixed.size === 95
     }
