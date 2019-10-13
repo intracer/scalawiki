@@ -17,9 +17,10 @@ class RegionFixerUpdater(contest: Contest) extends MonumentUpdater {
   val raionNames = raions.map(_.name).toSet
 
   val nameParam = contest.uploadConfigs.head.listConfig.namesMap("city")
+  val index = 0
 
   def updatedParams(m: Monument): Map[String, String] = {
-    val fixedPlace = m.place.flatMap(_.split(",").headOption)
+    val fixedPlace = m.place.flatMap(_.split(",").toList.lift(index))
     fixedPlace.map { place =>
       Map(nameParam -> place)
     }.getOrElse(Map.empty)
@@ -28,7 +29,7 @@ class RegionFixerUpdater(contest: Contest) extends MonumentUpdater {
   def needsUpdate(m: Monument): Boolean = {
     raionNames.contains(m.cityName) && m.place.exists { p =>
       p.trim.nonEmpty &&
-        country.byIdAndName(m.regionId, p.split(",").head).size == 1
+        p.split(",").toList.lift(index).exists(c => country.byIdAndName(m.regionId, c).size == 1)
     }
   }
 }
