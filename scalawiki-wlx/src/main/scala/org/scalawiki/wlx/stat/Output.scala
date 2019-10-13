@@ -279,7 +279,7 @@ object Output {
     println(s"notFound size: ${unknownPlaces.size}")
 
     val text = unknownPlaces
-      .sortBy(p => p.monuments.size -> p.page)
+      .sortBy(p => -p.monuments.size)
       .mkString("\n")
 
     val ukWiki = MwBot.fromHost(MwBot.ukWiki)

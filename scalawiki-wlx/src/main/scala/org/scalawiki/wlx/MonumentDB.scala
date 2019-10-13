@@ -93,7 +93,7 @@ case class UnknownPlace(page: String, regionId: String, name: String, candidates
     val candidatesStr = candidates.map { c =>
       c.parent().map(p => s"${p.name}(${p.code})/").getOrElse("") + s"${c.name}(${c.code})"
     }.mkString(", ")
-    s"* [[$page]]/$regionId/$name. \n**monuments: ${monuments.size}, ${monuments.map(_.id).mkString(", ")}" + (if (candidates.nonEmpty) s"\n Candidates: $candidatesStr" else "")
+    s"* [[$page]]/$regionId/$name. \n** ${monuments.size} monument(s): ${monuments.map(_.id).mkString(", ")}" + (if (candidates.nonEmpty) s"\n**Candidates: $candidatesStr" else "")
   }
 }
 
