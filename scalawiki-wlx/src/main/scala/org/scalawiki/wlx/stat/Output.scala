@@ -270,6 +270,7 @@ object Output {
   }
 
   def unknownPlaces(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
+
     val picturedIds = imageDb.ids
     val picturedMonuments = monumentDb.allMonuments.filter(m => picturedIds.contains(m.id))
     val picturedMonumentDb = new MonumentDB(monumentDb.contest, picturedMonuments)
@@ -277,9 +278,12 @@ object Output {
 
     println(s"notFound size: ${unknownPlaces.size}")
 
-    unknownPlaces
+    val text = unknownPlaces
       .sortBy(p => p.monuments.size -> p.page)
-      .foreach(println)
+      .mkString("\n")
+
+    val ukWiki = MwBot.fromHost(MwBot.ukWiki)
+    ukWiki.page(s"Вікіпедія:Вікі любить пам'ятки/notFoundPlaces-${monumentDb.contest.year}").edit(text, Some("updating"))
   }
 
   def wrongIds(imageDb: ImageDB, monumentDb: MonumentDB) {
