@@ -11,7 +11,7 @@ object Dependencies {
   val ChronoScalaV = "0.3.2"
   val FicusV = "1.4.7"
   val GuavaV = "20.0"
-  val H2V = "1.4.199"
+  val H2V = "1.4.200"
   val JimFsV = "1.1"
   val JodaTimeV = "2.9.9"
   val JSoupV = "1.12.1"
