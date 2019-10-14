@@ -24,7 +24,7 @@ trait AdmDivision {
   def byId(monumentId: String): Option[AdmDivision] = if (regionId(monumentId) == code) Some(this) else None
 
   def byName(name: String): Seq[AdmDivision] = {
-    Seq(this).filter(_.name == name) ++ regions.flatMap(_.byName(name))
+    Seq(this).filter(_.name.toLowerCase == name.toLowerCase) ++ regions.flatMap(_.byName(name))
   }
 
   def byRegion(monumentIds: Set[String]): Map[AdmDivision, Set[String]] = {
