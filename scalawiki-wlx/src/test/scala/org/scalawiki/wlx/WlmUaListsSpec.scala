@@ -45,14 +45,8 @@ class WlmUaListsSpec extends Specification {
       val updater = new RegionFixerUpdater(monumentDb)
       updater.raions.size === 490
 
-//      RegionFixer.fixLists(new MonumentDB(contest, all))
-
       val highLevel = all.filter(m => updater.raionNames.contains(m.cityName) && m.place.exists(_.trim.nonEmpty))
       println(s"highLevel size: ${highLevel.size}")
-
-      val canBeFixed = all.filter(updater.needsUpdate)
-
-      println(s"canBeFixed: ${canBeFixed.size}")
 
       highLevel.groupBy(_.page).toSeq.sortBy(-_._2.size).foreach { case (page, monuments) =>
         println(s"$page ${monuments.size} (${monuments.head.city.getOrElse("")})")

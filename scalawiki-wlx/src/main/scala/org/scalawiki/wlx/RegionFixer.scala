@@ -18,7 +18,7 @@ class RegionFixerUpdater(monumentDb: MonumentDB) extends MonumentUpdater {
   val raionNames = raions.map(_.name).toSet
 
   val nameParam = contest.uploadConfigs.head.listConfig.namesMap("city")
-  val maxIndex = 1
+  val maxIndex = 2
 
   def updatedParams(m: Monument): Map[String, String] = {
     getIndex(m).flatMap { index =>
