@@ -42,10 +42,10 @@ class WlmUaListsSpec extends Specification {
     }
 
     "not be just high level region" in {
-      val updater = new RegionFixerUpdater(contest)
+      val updater = new RegionFixerUpdater(monumentDb)
       updater.raions.size === 490
 
-      //RegionFixer.fixLists(new MonumentDB(contest, all))
+//      RegionFixer.fixLists(new MonumentDB(contest, all))
 
       val highLevel = all.filter(m => updater.raionNames.contains(m.cityName) && m.place.exists(_.trim.nonEmpty))
       println(s"highLevel size: ${highLevel.size}")

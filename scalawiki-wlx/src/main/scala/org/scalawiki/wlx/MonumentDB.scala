@@ -56,7 +56,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
   }
 
   def unknownPlaces(): Seq[UnknownPlace] = {
-    val regionNames = new RegionFixerUpdater(contest).raionNames
+    val regionNames = new RegionFixerUpdater(this).raionNames
     val toFind = allMonuments.map(m => UnknownPlace(m.page,
       m.id.split("-").take(2).mkString("-"),
       m.city.getOrElse(""), Nil, Seq(m))
