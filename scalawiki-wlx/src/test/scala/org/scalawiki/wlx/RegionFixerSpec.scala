@@ -40,5 +40,16 @@ class RegionFixerSpec extends Specification {
 
       canBeFixed.size === 6
     }
+
+    "fix region 3" in {
+      val wiki = resourceAsString("/org/scalawiki/wlx/region_to_fix_3.wiki")
+
+      val parser = new WlxTemplateParser(listConfig, "Вікіпедія:Вікі любить пам'ятки/Сумська область/Білопільський район")
+      val monuments = parser.parse(wiki).toSeq
+      val updater = new RegionFixerUpdater(new MonumentDB(contest, monuments))
+
+      val canBeFixed = monuments.filter(updater.needsUpdate)
+      canBeFixed.size === 4
+    }
   }
 }
