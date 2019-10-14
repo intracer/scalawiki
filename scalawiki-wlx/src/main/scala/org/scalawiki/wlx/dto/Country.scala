@@ -149,6 +149,7 @@ object AdmDivision {
       .replace("[[", "")
       .replace("]]", "")
       .replace("&nbsp;", "")
+      .replace('\u00A0',' ')
       .replace("м.", "")
       .replace("с.", "")
       .replace("С.", "")
