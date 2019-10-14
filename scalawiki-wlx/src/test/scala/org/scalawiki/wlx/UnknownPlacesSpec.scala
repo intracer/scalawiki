@@ -51,6 +51,24 @@ class UnknownPlacesSpec extends Specification {
     db.unknownPlaces() === Nil
   }
 
+  "Микільське-на-Дніпрі" in {
+    val wiki = """{{ВЛП-рядок
+    | ID = 12-250-0138
+    | назва = Кромлех
+    | рік = кінець III тис. до н. е.
+    | нас_пункт = [[Микільське-на-Дніпрі]]
+    | адреса = на південь від села
+    | широта =
+    | довгота =
+    | охоронний номер = 1064
+    | тип = Х-місц
+    | фото =
+    | галерея =
+  }}"""
+    val db = monumentDb(wiki)
+    db.unknownPlaces() === Nil
+  }
+
   "report group by page" in {
     val monument1 = new Monument("page1", "regionId1-1", "monument1")
     val monument2 = new Monument("page1", "regionId1-2", "monument2")
