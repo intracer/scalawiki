@@ -4,19 +4,21 @@ import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 
-case class RegionType(code: String, name: String, abbreviation: String)
+case class RegionType(code: String, names: Seq[String])
 
 object RegionTypes {
 
   val types = Seq(
-    RegionType("Р", "Район", "район"),
-    RegionType("Т", "Селище міського типу", "смт"),
-    RegionType("С", "Село", "село"),
-    RegionType("Щ", "Селище", "селище")
+    RegionType("Р", Seq("Район")),
+    RegionType("Т", Seq("Селище міського типу", "смт")),
+    RegionType("С", Seq("Село", "c.")),
+    RegionType("Щ", Seq("селище", "с-ще")),
+    RegionType("М", Seq("місто", "м."))
+
   )
 
   val codeToType = types.groupBy(_.code).mapValues(_.head)
-  val abbreviationToType = types.groupBy(_.abbreviation).mapValues(_.head)
+  def nameToType(name: String) = types.filter(t => t.names.map(_.toLowerCase).toSet.exists(name.toLowerCase.contains))
 }
 
 object Koatuu {

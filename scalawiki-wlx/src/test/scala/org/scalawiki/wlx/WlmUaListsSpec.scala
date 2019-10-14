@@ -38,23 +38,19 @@ class WlmUaListsSpec extends Specification {
 
       val percentage = notFound.map(_.monuments.size).sum * 100 / all.size
       println(s"percentage: $percentage%")
-      percentage should be < 5 // less than 1%
+      percentage should be < 8 // less than 1%
     }
 
     "not be just high level region" in {
-      val oblasts = country.regions.filter(adm => !Set("Київ", "Севастополь").contains(adm.name))
-      val raions = oblasts.flatMap(_.regions).filter(_.name.endsWith("район"))
-      raions.size === 490
-      val raionNames = raions.map(_.name).toSet
+      val updater = new RegionFixerUpdater(contest)
+      updater.raions.size === 490
 
-      val highLevel = all.filter(m => raionNames.contains(m.cityName) && m.place.exists(_.trim.nonEmpty))
+      //RegionFixer.fixLists(new MonumentDB(contest, all))
+
+      val highLevel = all.filter(m => updater.raionNames.contains(m.cityName) && m.place.exists(_.trim.nonEmpty))
       println(s"highLevel size: ${highLevel.size}")
 
-      val canBeFixed = highLevel.filter { m =>
-        m.place.exists { p =>
-          country.byIdAndName(m.regionId, p.split(",").head).size == 1
-        }
-      }
+      val canBeFixed = all.filter(updater.needsUpdate)
 
       println(s"canBeFixed: ${canBeFixed.size}")
 
