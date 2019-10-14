@@ -56,6 +56,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
   }
 
   def unknownPlaces(): Seq[UnknownPlace] = {
+    val regionNames = new RegionFixerUpdater(contest).raionNames
     val toFind = allMonuments.map(m => UnknownPlace(m.page,
       m.id.split("-").take(2).mkString("-"),
       m.city.getOrElse(""), Nil, Seq(m))
@@ -66,7 +67,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
     toFind.flatMap { p =>
       Some(p.copy(candidates = country.byIdAndName(p.regionId, p.name)))
-        .filterNot(_.candidates.size == 1)
+        .filterNot(p => p.candidates.size == 1 && !regionNames.contains(p.candidates.head.name))
     }
   }
 
@@ -92,7 +93,7 @@ case class UnknownPlace(page: String, regionId: String, name: String, candidates
     val candidatesStr = candidates.map { c =>
       c.parent().map(p => s"${p.name}(${p.code})/").getOrElse("") + s"${c.name}(${c.code})"
     }.mkString(", ")
-    s"$page/$regionId/$name. monuments: ${monuments.size}" + (if (candidates.nonEmpty) s", Candidates: $candidatesStr" else "")
+    s"* [[$page]]/$regionId/$name. \n** ${monuments.size} monument(s): ${monuments.map(_.id).mkString(", ")}" + (if (candidates.nonEmpty) s"\n**Candidates: $candidatesStr" else "")
   }
 }
 

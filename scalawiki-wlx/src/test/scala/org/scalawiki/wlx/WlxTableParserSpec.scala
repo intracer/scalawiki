@@ -56,7 +56,7 @@ class WlxTableParserSpec extends Specification {
         Seq("id2", "name2", "d21", "d22")
       )
 
-      val table = new Table(headers, data)
+      val table = Table(headers, data)
       val parser = new WlxTableParser(IdNameConfig)
       val monuments = parser.parse(table.asWiki)
 
@@ -66,13 +66,10 @@ class WlxTableParserSpec extends Specification {
 
     "parse thailand" in {
       val wiki = resourceAsString("/org/scalawiki/wlx/thailand_wle_table.wiki")
-
       val parser = new WlxTableParser(WleTh)
-
       val monuments = parser.parse(wiki)
 
       monuments.size === 148
-
       monuments.map(_.id) === (1 to 148).map(_.toString)
     }
   }

@@ -45,8 +45,7 @@ class MonumentQueryApi(val contest: Contest)(implicit val bot: MwBot) extends Mo
 
       bot.page("Template:" + template).revisionsByGenerator("embeddedin", "ei",
         Set(Namespace.PROJECT, Namespace.MAIN),
-        Set("ids", "content", "timestamp", "user", "userid", "comment"), None, "100") map {
-        pages =>
+        Set("ids", "content", "timestamp", "user", "userid", "comment"), None, "100") map { pages =>
           pages.flatMap(page =>
             Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig))
       }
