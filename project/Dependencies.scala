@@ -29,7 +29,7 @@ object Dependencies {
   val ScallopV = "3.3.1"
   val Slf4jV = "1.7.25"
   val SwcEngineV = "3.1.9"
-  val TypesafeConfigV = "1.3.4"
+  val TypesafeConfigV = "1.4.0"
 
   val resolvers = Seq(
     "Typesafe Repo" at "https://repo.typesafe.com/typesafe/releases/",
@@ -63,7 +63,7 @@ object Dependencies {
   object Library {
 
     object Akka {
-      val AkkaV = "2.5.25"
+      val AkkaV = "2.5.26"
       val AkkaHttpV = "10.1.10"
 
       val actor = "com.typesafe.akka" %% "akka-actor" % AkkaV
@@ -77,7 +77,7 @@ object Dependencies {
         if (isScala213) {
           "2.7.4"
         } else {
-          "2.6.13" // scala-steward:off
+          "2.6.14" // scala-steward:off
         }
       }
 
@@ -89,7 +89,7 @@ object Dependencies {
     }
 
     object Poi {
-      val PoiV = "4.1.0"
+      val PoiV = "4.1.1"
       val PoiXwpfV = "1.0.6"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
@@ -125,7 +125,7 @@ object Dependencies {
     }
 
     object Specs2 {
-      val SpecsV = "4.7.1"
+      val SpecsV = "4.8.0"
 
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV
