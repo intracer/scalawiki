@@ -77,7 +77,7 @@ object Dependencies {
         if (isScala213) {
           "2.7.4"
         } else {
-          "2.6.13" // scala-steward:off
+          "2.6.14" // scala-steward:off
         }
       }
 
