@@ -57,9 +57,14 @@ trait AdmDivision {
       }
 
       if (byType.size > 1) {
-        byType.filter { c =>
+        val byParent = byType.filter { c =>
           val parentName = c.parent().map(_.name).getOrElse("").toLowerCase()
           rawName.toLowerCase().contains(parentName)
+        }
+        if (byParent.size == 1) {
+          byParent
+        } else {
+          byType
         }
       } else {
         byType

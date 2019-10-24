@@ -34,44 +34,52 @@ class UnknownPlacesSpec extends Specification {
   }
 
   "Сичівка" in {
-    val wiki = """{{ВЛП-рядок
+    val wiki =
+      """{{ВЛП-рядок
       | ID = 71-246-0026
       | назва = Церква Іоанна Предтечі (мур.)
       | рік = 1896 р.
       | нас_пункт = с. [[Сичівка (Христинівський район)|Сичівка]]
     }}"""
-    val db = monumentDb(wiki)
-    db.unknownPlaces() === Nil
+    monumentDb(wiki).unknownPlaces() === Nil
   }
 
   "Микільське-на-Дніпрі" in {
-    val wiki = """{{ВЛП-рядок
+    val wiki =
+      """{{ВЛП-рядок
     | ID = 12-250-0138
     | назва = Кромлех
     | рік = кінець III тис. до н. е.
     | нас_пункт = [[Микільське-на-Дніпрі]]
     | адреса = на південь від села
   }}"""
-    val db = monumentDb(wiki)
-    db.unknownPlaces() === Nil
+    monumentDb(wiki).unknownPlaces() === Nil
   }
 
-  "same name in region" in {
-    val wiki = """{{ВЛП-рядок
+  "same name in region not detected" in {
+    val wiki =
+      """{{ВЛП-рядок
+        | ID = 14-227-0018
+| назва = Братська могила радянських військовополонених
+| рік =  1960 р.
+| нас_пункт = с. Михайлівка
+| адреса = вул. Шкільна,біля будівлі № 47
+}}"""
+    val db = monumentDb(wiki)
+    db.unknownPlaces().size === 1
+    db.unknownPlaces().head.candidates.size === 2
+  }
+
+  "same name in region detected" in {
+    val wiki =
+      """{{ВЛП-рядок
 | ID = 14-227-0018
 | назва = Братська могила радянських військовополонених
 | рік =  1960 р.
 | нас_пункт = [[Михайлівка (Покровський район, Михайлівська сільська рада)|Михайлівка (Михайлівська сільська рада)]]
 | адреса = вул. Шкільна,біля будівлі № 47
-| широта =
-| довгота =
-| охоронний номер =1074-Дн
-| тип = І-місц.
-| фото = Братська могила радянських військовополонених, с. Михайлівка.jpg
-|галерея =
 }}"""
-    val db = monumentDb(wiki)
-    db.unknownPlaces() === Nil
+    monumentDb(wiki).unknownPlaces() === Nil
   }
 
   "report group by page" in {
