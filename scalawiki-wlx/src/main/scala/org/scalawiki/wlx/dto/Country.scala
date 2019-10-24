@@ -47,10 +47,23 @@ trait AdmDivision {
       }
     }.getOrElse(Nil)
 
-    val types = RegionTypes.nameToType(rawName).toSet
+    val types = RegionTypes.nameToType(rawName).toSet.filterNot(_.code == "Р")
 
-    if (candidates.size > 1 && types.nonEmpty) {
-      candidates.filter(c => c.regionType.exists(types.contains))
+    if (candidates.size > 1) {
+      val byType = if (types.nonEmpty) {
+        candidates.filter(c => c.regionType.exists(types.contains))
+      } else {
+        candidates
+      }
+
+      if (byType.size > 1) {
+        byType.filter { c =>
+          val parentName = c.parent().map(_.name).getOrElse("").toLowerCase()
+          rawName.toLowerCase().contains(parentName)
+        }
+      } else {
+        byType
+      }
     } else {
       candidates
     }
@@ -147,7 +160,7 @@ object AdmDivision {
       .replace("[[", "")
       .replace("]]", "")
       .replace("&nbsp;", " ")
-      .replace('\u00A0',' ')
+      .replace('\u00A0', ' ')
       .replace("м.", "")
       .replace("місто", "")
       .replace("с.", "")
