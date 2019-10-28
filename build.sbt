@@ -79,7 +79,7 @@ lazy val bots = Project("scalawiki-bots", file("scalawiki-bots"))
   .dependsOn(core % "compile->compile;test->test", wlx)
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= Seq(
-    "com.github.pathikrit" %% "better-files-akka" % BetterFilesAkkaV(isScala213.value),
+    "com.github.pathikrit" %% "better-files" % BetterFilesV,
     "org.rogach" %% "scallop" % ScallopV,
     "org.xwiki.commons" % "xwiki-commons-blame-api" % BlameApiV,
     Library.Poi.scratchpad,

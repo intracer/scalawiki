@@ -3,9 +3,7 @@ import sbt._
 object Dependencies {
 
   val AaltoXmlV = "1.2.2"
-
-  def BetterFilesAkkaV(isScala213: Boolean) = if (isScala213) "3.8.0" else "3.6.0"
-
+  val BetterFilesV = "3.8.0"
   val BlameApiV = "11.8.1"
   val ChronicleMapV = "3.17.6"
   val ChronoScalaV = "0.3.2"
