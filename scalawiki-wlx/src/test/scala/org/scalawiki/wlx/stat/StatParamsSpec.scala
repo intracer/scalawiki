@@ -8,14 +8,24 @@ class StatParamsSpec extends Specification {
 
   "statistics" should {
     val thisYear = ZonedDateTime.now.getYear
-    "parse campaign" in {
 
+    "parse campaign" in {
       val cfg = StatParams.parse(Seq("--campaign", "wlm-ua"))
+      cfg === StatConfig("wlm-ua", Seq(thisYear))
+    }
+
+    "parse short campaign" in {
+      val cfg = StatParams.parse(Seq("-c", "wlm-ua"))
       cfg === StatConfig("wlm-ua", Seq(thisYear))
     }
 
     "parse campaign with years" in {
       val cfg = StatParams.parse(Seq("--campaign", "wle-ua", "--year", "2015", "2016"))
+      cfg === StatConfig("wle-ua", Seq(2015, 2016))
+    }
+
+    "parse short campaign with years" in {
+      val cfg = StatParams.parse(Seq("-c", "wle-ua", "-y", "2015", "2016"))
       cfg === StatConfig("wle-ua", Seq(2015, 2016))
     }
 
