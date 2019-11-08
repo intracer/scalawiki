@@ -33,7 +33,8 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
       val imagesPage = s"Commons:Images from ${contest.name} special nomination ${nomination.name}"
       val imageDb = imageDbs(nomination)
 
-      makeSpecNominationGallery(imagesPage, imageDb)
+      galleryByRegion(imagesPage + " by region", imageDb)
+      galleryByAuthor(imagesPage + " by author", imageDb)
 
       Seq(
         nomination.name,
@@ -42,7 +43,7 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
         monumentsMap(nomination).map(_.id).count(isSpecialNominationMonument).toString,
         imageDb.ids.size.toString,
         imageDb.ids.count(isSpecialNominationMonument).toString,
-        s"[[$imagesPage|${imageDb.images.size}]]"
+        s"${imageDb.images.size} [[$imagesPage by region|by region]], [[$imagesPage by author|by author]]"
       )
     }
 
@@ -56,13 +57,28 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
     !contest.country.regionIds.contains(regionId)
   }
 
-  def makeSpecNominationGallery(imagesPage: String, imageDb: ImageDB): Unit = {
+  def galleryByRegion(imagesPage: String, imageDb: ImageDB): Unit = {
     var imagesText = "__TOC__"
 
     for (region <- Country.Ukraine.regions) {
       val images = imageDb.imagesByRegion(region.code)
       if (images.nonEmpty) {
         imagesText += s"\n== ${region.name} ${images.size} images ==\n"
+        imagesText += images.map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
+      }
+    }
+
+    MwBot.fromHost(MwBot.commons).page(imagesPage).edit(imagesText, Some("updating"))
+  }
+
+  def galleryByAuthor(imagesPage: String, imageDb: ImageDB): Unit = {
+    var imagesText = "__TOC__"
+
+    val authors = imageDb._byAuthorAndId.grouped.toSeq.sortBy(-_._2.keys.size)
+    for ((author, byId) <- authors) {
+      val images = imageDb._byAuthor.by(author)
+      if (images.nonEmpty) {
+        imagesText += s"\n== $author, ${byId.keys.size} monuments ==\n"
         imagesText += images.map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
       }
     }
