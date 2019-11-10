@@ -33,7 +33,10 @@ class AuthorMonuments(val stat: ContestStat,
 
     val objects = optionalUserGalleryLink(ids.size, userOpt)
 
-    val ratingColumns = if (contest.rateConfig.newObjectRating.isDefined) {
+    val ratingColumns = if (contest.rateConfig.newObjectRating.isDefined ||
+      contest.rateConfig.newAuthorObjectRating.isDefined ||
+      contest.rateConfig.numberOfImagesBonus ||
+      contest.rateConfig.numberOfAuthorsBonus) {
       val oldAuthorIds = userOpt.map(oldImageDb.idByAuthor).getOrElse(Set.empty)
       Seq(
         (ids intersect oldIds intersect oldAuthorIds).size, // existing
