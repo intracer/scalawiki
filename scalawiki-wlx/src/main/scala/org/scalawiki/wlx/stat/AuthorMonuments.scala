@@ -29,14 +29,18 @@ class AuthorMonuments(val stat: ContestStat,
 
   val monumentDb = stat.monumentDb.get
 
+  def withRating: Boolean = {
+    contest.rateConfig.newObjectRating.isDefined ||
+      contest.rateConfig.newAuthorObjectRating.isDefined ||
+      contest.rateConfig.numberOfImagesBonus ||
+      contest.rateConfig.numberOfAuthorsBonus
+  }
+
   def rowData(ids: Set[String], images: Int, userOpt: Option[String] = None): Seq[String] = {
 
     val objects = optionalUserGalleryLink(ids.size, userOpt)
 
-    val ratingColumns = if (contest.rateConfig.newObjectRating.isDefined ||
-      contest.rateConfig.newAuthorObjectRating.isDefined ||
-      contest.rateConfig.numberOfImagesBonus ||
-      contest.rateConfig.numberOfAuthorsBonus) {
+    val ratingColumns = if (withRating) {
       val oldAuthorIds = userOpt.map(oldImageDb.idByAuthor).getOrElse(Set.empty)
       Seq(
         (ids intersect oldIds intersect oldAuthorIds).size, // existing
@@ -61,7 +65,7 @@ class AuthorMonuments(val stat: ContestStat,
   override def table: Table = {
 
     val columns = Seq("User", "Objects pictured") ++
-      (if (contest.rateConfig.newObjectRating.isDefined) Seq("Existing", "New for author", "New", "Rating") else Seq.empty) ++
+      (if (withRating) Seq("Existing", "New for author", "New", "Rating") else Seq.empty) ++
       Seq("Photos uploaded") ++
       country.regionNames
 
