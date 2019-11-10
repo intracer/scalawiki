@@ -116,7 +116,7 @@ class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
     authorsByMonument.getOrElse(monumentId, 0) match {
       case 0 =>
-        5
+        6
       case x if (1 to 3) contains x =>
         2
       case x if (4 to 9) contains x =>
@@ -133,7 +133,7 @@ class NumberOfImagesInPlaceBonus(val stat: ContestStat, imagesPerPlace: Map[Stri
     placeByMonument.get(monumentId).map { place =>
       imagesPerPlace.getOrElse(place, 0) match {
         case 0 =>
-          4
+          6
         case x if (1 to 9) contains x =>
           2
         case x if (10 to 49) contains x =>
