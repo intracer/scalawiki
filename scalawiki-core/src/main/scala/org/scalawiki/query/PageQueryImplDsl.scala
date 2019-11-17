@@ -104,7 +104,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
     }
   }
 
-  override def edit(text: String, summary: Option[String] = None, section: Option[String] = None, token: Option[String] = None, multi: Boolean = true) = {
+  override def edit(text: String, summary: Option[String] = None, section: Option[String] = None, token: Option[String] = None, multi: Boolean = false) = {
 
     val page = query.fold(
       ids => PageId(ids.head),
