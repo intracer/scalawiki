@@ -152,7 +152,7 @@ object PerPlaceStat {
                                place <- placeByMonument.get(id))
       yield (place -> imageDB.byId(id).size)).groupBy(_._1).mapValues(_.map(_._2).sum)
 
-    PerPlaceStat(imagesPerPlace, placeByMonument)
+    PerPlaceStat(imagesPerPlace.toMap, placeByMonument)
   }
 }
 
