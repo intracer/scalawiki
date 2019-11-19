@@ -12,7 +12,7 @@ import scala.concurrent.Future
 
 class ArticleStatBot(implicit val bot: MwBot = MwBot.fromHost(MwBot.ukWiki)) extends QueryLibrary {
 
-  def pagesRevisions(ids: Seq[Long]): Future[TraversableOnce[Option[Page]]] = {
+  def pagesRevisions(ids: Seq[Long]): Future[Iterable[Option[Page]]] = {
     Future.traverse(ids)(pageRevisions)
   }
 
@@ -42,16 +42,16 @@ class ArticleStatBot(implicit val bot: MwBot = MwBot.fromHost(MwBot.ukWiki)) ext
 
         pagesRevisions(allIds.toSeq).map { allPages =>
 
-          val revStats = allPages.flatten.zipWithIndex.flatMap {
+          val revStats = allPages.iterator.flatten.toIndexedSeq.zipWithIndex.flatMap {
             case (page, index) if page.history.editedIn(revisionFilter) =>
               bot.log.info(s"$index/${allIds.size} making revision stat for ${page.title}")
               Some(RevisionStat.fromPage(page, revisionFilter))
             case (page, index) =>
               bot.log.info(s"$index/${allIds.size} skipping ${page.title} because it's rejected by revision filter")
               None
-          }.toSeq.sortBy(-_.addedOrRewritten)
+          }.sortBy(-_.addedOrRewritten)
 
-          new EventStat(event, revStats)
+          EventStat(event, revStats)
         }
     }
   }

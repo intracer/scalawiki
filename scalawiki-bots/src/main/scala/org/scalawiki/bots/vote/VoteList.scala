@@ -42,7 +42,7 @@ object VoteList {
         } else None
       }
 
-      names.flatten.distinct
+      names.flatten.distinct.toSeq
 
     } recover {
       case t: Throwable => println(t)

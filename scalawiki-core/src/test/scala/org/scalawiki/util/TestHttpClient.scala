@@ -9,6 +9,7 @@ import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 
 import scala.collection.mutable
+import scala.collection.mutable.Buffer
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 import scala.concurrent.duration._
@@ -19,9 +20,9 @@ class TestHttpClient(val host: String, commandsParam: Seq[HttpStub]) extends Mat
 
   implicit val materializer = ActorMaterializer()
 
-  val commands = mutable.Queue(commandsParam: _*)
+  val commands = mutable.Queue(commandsParam.toSeq: _*)
 
-  override def getResponse(url: String) = getResponse(Uri(url))
+  override def getResponse(url: String): Future[HttpResponse] = getResponse(Uri(url))
 
   override def getResponse(url: Uri): Future[HttpResponse] = getResponse(url, url.query().toMap)
 

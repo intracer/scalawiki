@@ -32,7 +32,7 @@ case class Monument(page: String = "",
                     source: Option[String] = None,
                     otherParams: Map[String, String] = Map.empty,
                     listConfig: Option[ListConfig] = None
-                   ) {
+                   ) extends Ordered[Monument] {
 
   val cityName = AdmDivision.cleanName(city.getOrElse(""))
 
@@ -72,7 +72,7 @@ case class Monument(page: String = "",
       "gallery" -> gallery,
       "resolution" -> resolution)
 
-    val names = listConfig.fold(paramValues.filter(_._2.nonEmpty).keys)(_.namesMap.values)
+    val names = listConfig.fold(paramValues.filter(_._2.nonEmpty).keys)(_.namesMap.values.toSeq)
     val namesMap = listConfig.map(_.namesMap).getOrElse(names.map(name => name -> name).toMap)
     val longest = names.map(_.length).max
 
@@ -89,6 +89,7 @@ case class Monument(page: String = "",
     template.text + "\n"
   }
 
+  override def compare(that: Monument): Int = id.compare(that.id)
 }
 
 object Monument {
