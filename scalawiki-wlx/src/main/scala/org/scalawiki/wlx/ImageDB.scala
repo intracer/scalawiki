@@ -76,21 +76,21 @@ class ImageDB(val contest: Contest,
     _byMegaPixels.grouped.filterKeys(mpx => mpx >= 0 && predicate(mpx)).values.flatten.toSeq.groupBy(_.author.getOrElse(""))
   }
 
-  def authorsCountById: Map[String, Int] = _byId.grouped.view.mapValues(_.flatMap(_.author).toSet.size).toMap
+  def authorsCountById: Map[String, Int] = _byId.grouped.mapValues(_.flatMap(_.author).toSet.size).toMap
 
-  def imageCountById: Map[String, Int] = _byId.grouped.view.mapValues(_.size).toMap
+  def imageCountById: Map[String, Int] = _byId.grouped.mapValues(_.size).toMap
 
   def byNumberOfAuthors: Map[Int, Map[String, Seq[Image]]] = {
     _byId.grouped.groupBy {
       case (id, photos) =>
         photos.flatMap(_.author).toSet.size
-    }.view.mapValues(_.toMap).toMap
+    }.mapValues(_.toMap).toMap
   }
 
   def byNumberOfPhotos: Map[Int, Map[String, Seq[Image]]] = {
     _byId.grouped.groupBy {
       case (id, photos) => photos.size
-    }.view.mapValues(_.toMap).toMap
+    }.mapValues(_.toMap).toMap
   }
 
   def subSet(monuments: Seq[Monument], withFalseIds: Boolean = false): ImageDB = {

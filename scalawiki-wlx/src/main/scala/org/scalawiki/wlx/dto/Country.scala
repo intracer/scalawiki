@@ -32,7 +32,7 @@ trait AdmDivision {
 
     entries
       .groupBy { case (id, adm) => adm }
-      .view.mapValues(_.toMap.keySet).toMap
+      .mapValues(_.toMap.keySet).toMap
   }
 
   def byIdAndName(regionId: String, rawName: String): Seq[AdmDivision] = {
@@ -86,7 +86,7 @@ trait AdmRegion extends AdmDivision {
 
   lazy val regionNames: Seq[String] = regions.sortBy(_.code).map(_.name)
 
-  lazy val regionById: Map[String, AdmDivision] = regions.groupBy(_.code).view.mapValues(_.head).toMap
+  lazy val regionById: Map[String, AdmDivision] = regions.groupBy(_.code).mapValues(_.head).toMap
 
   override def regionName(regId: String) = byId(regId).map(_.name).getOrElse("")
 
@@ -235,7 +235,7 @@ object Country {
   }
 
   lazy val countryMap: Map[String, Country] =
-    (fromJavaLocales ++ customCountries).groupBy(_.code.toLowerCase).view.mapValues(_.head).toMap
+    (fromJavaLocales ++ customCountries).groupBy(_.code.toLowerCase).mapValues(_.head).toMap
 
   def byCode(code: String): Option[Country] = countryMap.get(code.toLowerCase)
 }

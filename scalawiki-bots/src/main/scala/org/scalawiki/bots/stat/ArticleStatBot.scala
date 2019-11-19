@@ -12,7 +12,7 @@ import scala.concurrent.Future
 
 class ArticleStatBot(implicit val bot: MwBot = MwBot.fromHost(MwBot.ukWiki)) extends QueryLibrary {
 
-  def pagesRevisions(ids: Seq[Long]): Future[IterableOnce[Option[Page]]] = {
+  def pagesRevisions(ids: Seq[Long]): Future[Iterable[Option[Page]]] = {
     Future.traverse(ids)(pageRevisions)
   }
 

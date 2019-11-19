@@ -100,7 +100,7 @@ class KoatuuSpec extends Specification {
         "80-391" -> "Шевченківський"
       )
 
-      val regionToIds = Ukraine.byRegion(idToName.keySet).view.mapValues(_.head).toMap
+      val regionToIds = Ukraine.byRegion(idToName.keySet).mapValues(_.head).toMap
       regionToIds.keySet.flatMap(_.parent().map(_.name)) === Set("Київ")
 
       regionToIds.map(_.swap).mapValues(_.name).toMap === idToName

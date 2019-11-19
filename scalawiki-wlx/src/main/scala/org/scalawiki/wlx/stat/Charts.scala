@@ -181,7 +181,7 @@ class Charts extends WithBot {
         }
     }.toMap
 
-    val yearsMap = idsMap.view.mapValues(_.mkString(" & ")).groupBy(_._2).view.mapValues(_.map(_._1))
+    val yearsMap = idsMap.mapValues(_.mkString(" & ")).groupBy(_._2).mapValues(_.map(_._1))
 
     val pieDataset = new DefaultPieDataset()
 
