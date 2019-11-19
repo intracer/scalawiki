@@ -1,6 +1,7 @@
 package org.scalawiki.wlx.dto
 
 import com.typesafe.config.{Config, ConfigFactory}
+import org.scalawiki.wlx.query.MonumentQuery
 
 import scala.util.Try
 
@@ -36,4 +37,14 @@ object SpecialNomination {
   }
 
   lazy val nominations = load("wlm_ua.conf")
+
+  def getMonumentsMap(nominations: Seq[SpecialNomination], monumentQuery: MonumentQuery): Map[SpecialNomination, Seq[Monument]] = {
+    nominations.map { nomination =>
+      val monuments = nomination.pages.flatMap { page =>
+        monumentQuery.byPage(page, nomination.listTemplate)
+      }
+      (nomination, monuments)
+    }.toMap
+  }
+
 }

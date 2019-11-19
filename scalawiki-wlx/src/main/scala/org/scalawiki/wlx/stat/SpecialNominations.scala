@@ -20,33 +20,30 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
     SpecialNomination.nominations.filter(_.years.contains(contest.year)).sortBy(_.name)
   }
 
-  def getMonumentsMap(monumentQuery: MonumentQuery): Map[SpecialNomination, Seq[Monument]] = {
-    nominations.map { nomination =>
-      val monuments = monumentQuery.byPage(nomination.pages.head, nomination.listTemplate)
-      (nomination, monuments)
-    }.toMap
-  }
-
   def specialNomination(): String = {
-    val monumentQuery = MonumentQuery.create(contest)
-
+    val monumentsMap = SpecialNomination.getMonumentsMap(nominations, MonumentQuery.create(contest))
     val imageDbs = nominations.map { nomination =>
-      nomination -> imageDb.subSet(getMonumentsMap(monumentQuery)(nomination))
+      nomination -> imageDb.subSet(monumentsMap(nomination), withFalseIds = true)
     }.toMap
 
-    val headers = Seq("Special nomination", "authors", "monuments", "photos")
+    val headers = Seq("Special nomination", "authors",
+      "all monuments", "special nomination monuments", "photographed monuments", "photographed special monuments", "photos")
     val rows = for (nomination <- nominations) yield {
 
       val imagesPage = s"Commons:Images from ${contest.name} special nomination ${nomination.name}"
       val imageDb = imageDbs(nomination)
 
-      makeSpecNominationGallery(imagesPage, imageDb)
+      galleryByRegion(imagesPage + " by region", imageDb)
+      galleryByAuthor(imagesPage + " by author", imageDb)
 
       Seq(
         nomination.name,
         imageDb.authors.size.toString,
+        monumentsMap(nomination).size.toString,
+        monumentsMap(nomination).map(_.id).count(isSpecialNominationMonument).toString,
         imageDb.ids.size.toString,
-        s"[[$imagesPage|${imageDb.images.size}]]"
+        imageDb.ids.count(isSpecialNominationMonument).toString,
+        s"${imageDb.images.size} [[$imagesPage by region|by region]], [[$imagesPage by author|by author]]"
       )
     }
 
@@ -55,7 +52,12 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
     table.asWiki + s"\n[[Category:${contest.name}]]"
   }
 
-  def makeSpecNominationGallery(imagesPage: String, imageDb: ImageDB): Unit = {
+  private def isSpecialNominationMonument(id: String) = {
+    val regionId = id.split("-").headOption.getOrElse("")
+    !contest.country.regionIds.contains(regionId)
+  }
+
+  def galleryByRegion(imagesPage: String, imageDb: ImageDB): Unit = {
     var imagesText = "__TOC__"
 
     for (region <- Country.Ukraine.regions) {
@@ -68,13 +70,19 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
 
     MwBot.fromHost(MwBot.commons).page(imagesPage).edit(imagesText, Some("updating"))
   }
-}
 
-object SpecialNominations {
-  def main(args: Array[String]) {
-    val contest = Contest.WLMUkraine(2015)
-    val query = MonumentQuery.create(contest)
-    val map = new SpecialNominations(contest, new ImageDB(contest, Seq.empty)).getMonumentsMap(query)
-    println(map.values.map(_.size).mkString(", "))
+  def galleryByAuthor(imagesPage: String, imageDb: ImageDB): Unit = {
+    var imagesText = "__TOC__"
+
+    val authors = imageDb._byAuthorAndId.grouped.toSeq.sortBy(-_._2.keys.size)
+    for ((author, byId) <- authors) {
+      val images = imageDb._byAuthor.by(author)
+      if (images.nonEmpty) {
+        imagesText += s"\n== $author, ${byId.keys.size} monuments ==\n"
+        imagesText += images.map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
+      }
+    }
+
+    MwBot.fromHost(MwBot.commons).page(imagesPage).edit(imagesText, Some("updating"))
   }
 }

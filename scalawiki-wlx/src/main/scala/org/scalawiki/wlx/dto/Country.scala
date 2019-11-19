@@ -24,7 +24,7 @@ trait AdmDivision {
   def byId(monumentId: String): Option[AdmDivision] = if (regionId(monumentId) == code) Some(this) else None
 
   def byName(name: String): Seq[AdmDivision] = {
-    Seq(this).filter(_.name == name) ++ regions.flatMap(_.byName(name))
+    Seq(this).filter(_.name.toLowerCase == name.toLowerCase) ++ regions.flatMap(_.byName(name))
   }
 
   def byRegion(monumentIds: Set[String]): Map[AdmDivision, Set[String]] = {
@@ -47,12 +47,28 @@ trait AdmDivision {
       }
     }.getOrElse(Nil)
 
-    val types = RegionTypes.abbreviationToType.filter { case (abbreviation, _) =>
-      rawName.contains(abbreviation)
-    }.values.toSet
+    val types = RegionTypes.nameToType(rawName).toSet.filterNot(_.code == "Р")
 
-    if (candidates.size > 1 && types.nonEmpty) {
-      candidates.filter(c => c.regionType.exists(types.contains))
+    if (candidates.size > 1) {
+      val byType = if (types.nonEmpty) {
+        candidates.filter(c => c.regionType.exists(types.contains))
+      } else {
+        candidates
+      }
+
+      if (byType.size > 1) {
+        val byParent = byType.filter { c =>
+          val parentName = c.parent().map(_.name).getOrElse("").toLowerCase()
+          rawName.toLowerCase().contains(parentName)
+        }
+        if (byParent.size == 1) {
+          byParent
+        } else {
+          byType
+        }
+      } else {
+        byType
+      }
     } else {
       candidates
     }
@@ -148,8 +164,10 @@ object AdmDivision {
       .replace("селищна рада", "")
       .replace("[[", "")
       .replace("]]", "")
-      .replace("&nbsp;", "")
+      .replace("&nbsp;", " ")
+      .replace('\u00A0', ' ')
       .replace("м.", "")
+      .replace("місто", "")
       .replace("с.", "")
       .replace("С.", "")
       .replace(".", "")
@@ -160,6 +178,7 @@ object AdmDivision {
       .replace("с-ще", "")
       .replace("'''", "")
       .replace("''", "")
+      .replace(",", "")
       .replace("’", "'")
       .replace("”", "'")
       .split("\\(").head

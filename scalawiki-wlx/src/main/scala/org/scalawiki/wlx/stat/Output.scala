@@ -269,11 +269,30 @@ object Output {
     bot.page(s"Commons:$contestPage/Less than 2Mp").edit(gallery, Some("updating"))
   }
 
+  def unknownPlaces(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
+
+    val picturedIds = imageDb.ids
+    val picturedMonuments = monumentDb.allMonuments.filter(m => picturedIds.contains(m.id))
+    val picturedMonumentDb = new MonumentDB(monumentDb.contest, picturedMonuments)
+    val unknownPlaces = picturedMonumentDb.unknownPlaces()
+
+    println(s"notFound size: ${unknownPlaces.size}")
+
+    val text = unknownPlaces
+      .sortBy(p => -p.monuments.size)
+      .mkString("\n")
+
+    val ukWiki = MwBot.fromHost(MwBot.ukWiki)
+    ukWiki.page(s"Вікіпедія:Вікі любить пам'ятки/notFoundPlaces-${monumentDb.contest.year}").edit(text, Some("updating"))
+  }
+
   def wrongIds(imageDb: ImageDB, monumentDb: MonumentDB) {
     val bot = MwBot.fromHost(MwBot.commons)
 
     val wrongIdImages = imageDb.images
-      .filterNot(image => image.monumentId.fold(false)(id => monumentDb.ids.contains(id) || id.startsWith("99")))
+      .filterNot(image => image.monumentId.fold(false)(id => monumentDb.ids.contains(id)
+        || id.startsWith("99")
+        || id.startsWith("88")))
 
     val notObvious = wrongIdImages.filterNot(_.categories.exists(_.startsWith("Obviously ineligible")))
 
@@ -282,6 +301,20 @@ object Output {
 
     val text = notObvious.map(_.title).mkString("<gallery>", "\n", "</gallery>")
     bot.page(s"Commons:$contestPage/Images with bad ids").edit(text, Some("updating"))
+  }
+
+  def missingIds(imageDb: ImageDB, monumentDb: MonumentDB) {
+    val bot = MwBot.fromHost(MwBot.commons)
+
+    val images = imageDb.images.filter(_.monumentIds.isEmpty)
+
+    val notObvious = images.filterNot(_.categories.exists(_.startsWith("Obviously ineligible")))
+
+    val contest = imageDb.contest
+    val contestPage = contest.name
+
+    val text = notObvious.map(_.title).mkString("<gallery>", "\n", "</gallery>")
+    bot.page(s"Commons:$contestPage/Images with missing ids").edit(text, Some("updating"))
   }
 
   def multipleIds(imageDb: ImageDB, monumentDb: MonumentDB) {

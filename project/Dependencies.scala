@@ -3,34 +3,32 @@ import sbt._
 object Dependencies {
 
   val AaltoXmlV = "1.2.2"
-
-  def BetterFilesAkkaV(isScala213: Boolean) = if (isScala213) "3.8.0" else "3.6.0"
-
-  val BlameApiV = "11.7"
-  val ChronicleMapV = "3.17.4"
+  val BetterFilesV = "3.8.0"
+  val BlameApiV = "11.9"
+  val ChronicleMapV = "3.17.7"
   val ChronoScalaV = "0.3.2"
   val FicusV = "1.4.7"
   val GuavaV = "20.0"
-  val H2V = "1.4.199"
+  val H2V = "1.4.200"
   val JimFsV = "1.1"
   val JodaTimeV = "2.9.9"
   val JSoupV = "1.12.1"
   val LogbackClassicV = "1.2.3"
-  val MockServerV = "5.3.0"
+  val MockServerV = "5.7.0"
   val ReactiveStreamsV = "1.0.2"
   val RetryV = "0.3.3"
   val Scala213V = "2.13.1"
   val Scala212V = "2.12.10"
   val Scala211V = "2.11.12"
   val ScalaChartV = "0.7.1"
-  val ScalaCheckV = "1.14.0"
+  val ScalaCheckV = "1.14.2"
   val ScalaCsvV = "1.3.6"
   val ScalaParserCombinatorsV = "1.1.2"
   val ScalaXmlV = "1.2.0"
   val ScallopV = "3.3.1"
   val Slf4jV = "1.7.25"
   val SwcEngineV = "3.1.9"
-  val TypesafeConfigV = "1.3.4"
+  val TypesafeConfigV = "1.4.0"
 
   val resolvers = Seq(
     "Typesafe Repo" at "https://repo.typesafe.com/typesafe/releases/",
@@ -64,8 +62,8 @@ object Dependencies {
   object Library {
 
     object Akka {
-      val AkkaV = "2.5.25"
-      val AkkaHttpV = "10.1.9"
+      val AkkaV = "2.5.26"
+      val AkkaHttpV = "10.1.10"
 
       val actor = "com.typesafe.akka" %% "akka-actor" % AkkaV
       val stream = "com.typesafe.akka" %% "akka-stream" % AkkaV
@@ -78,7 +76,7 @@ object Dependencies {
         if (isScala213) {
           "2.7.4"
         } else {
-          "2.6.13" // scala-steward:off
+          "2.6.14" // scala-steward:off
         }
       }
 
@@ -90,7 +88,7 @@ object Dependencies {
     }
 
     object Poi {
-      val PoiV = "4.1.0"
+      val PoiV = "4.1.1"
       val PoiXwpfV = "1.0.6"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
@@ -126,7 +124,7 @@ object Dependencies {
     }
 
     object Specs2 {
-      val SpecsV = "4.7.1"
+      val SpecsV = "4.8.1"
 
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV

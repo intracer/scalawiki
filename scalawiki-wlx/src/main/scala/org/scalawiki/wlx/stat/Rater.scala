@@ -51,12 +51,14 @@ object Rater {
     val config = stat.contest.rateConfig
 
     val raters = Seq(new NumberOfMonuments(stat)) ++
-      config.newAuthorObjectRating.map { r =>
+      config.newAuthorObjectRating.map(r =>
         new NewlyPicturedPerAuthorBonus(stat, config.newObjectRating.getOrElse(1), r)
-      }.orElse {
+      ).orElse(
         config.newObjectRating.map(new NewlyPicturedBonus(stat, _))
-      } ++ (if (config.numberOfAuthorsBonus) {
+      ) ++ (if (config.numberOfAuthorsBonus) {
       Seq(new NumberOfAuthorsBonus(stat))
+    } else Nil) ++ (if (config.numberOfImagesBonus) {
+      Seq(new NumberOfImagesInPlaceBonus(stat, PerPlaceStat(stat.totalImageDb.get)))
     } else Nil)
 
     if (raters.tail.isEmpty) {
@@ -116,7 +118,7 @@ class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
     authorsByMonument.getOrElse(monumentId, 0) match {
       case 0 =>
-        5
+        6
       case x if (1 to 3) contains x =>
         2
       case x if (4 to 9) contains x =>
@@ -127,13 +129,39 @@ class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
   }
 }
 
-class NumberOfImagesInPlaceBonus(val stat: ContestStat, imagesPerPlace: Map[String, Int],
-                                 placeByMonument: Map[String, String]) extends Rater {
+case class PerPlaceStat(imagesPerPlace: Map[String, Int], placeByMonument: Map[String, String])
+
+object PerPlaceStat {
+  def apply(imageDB: ImageDB): PerPlaceStat = {
+    val country = imageDB.contest.country
+    val monumentDb = imageDB.monumentDb.get
+
+    val placeByMonument = (for (id <- imageDB.ids;
+                                monument <- monumentDb.byId(id))
+      yield {
+        val regionId = id.split("-").take(2).mkString("-")
+        val city = monument.city.getOrElse("")
+        val candidates = country.byIdAndName(regionId, city)
+        if (candidates.size == 1) {
+          Some(id -> candidates.head.code)
+        } else
+          None
+      }).flatten.toMap
+
+    val imagesPerPlace = (for (id <- imageDB.ids.toSeq;
+                               place <- placeByMonument.get(id))
+      yield (place -> imageDB.byId(id).size)).groupBy(_._1).mapValues(_.map(_._2).sum)
+
+    PerPlaceStat(imagesPerPlace, placeByMonument)
+  }
+}
+
+class NumberOfImagesInPlaceBonus(val stat: ContestStat, perPlaceStat: PerPlaceStat) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
-    placeByMonument.get(monumentId).map { place =>
-      imagesPerPlace.getOrElse(place, 0) match {
+    perPlaceStat.placeByMonument.get(monumentId).map { place =>
+      perPlaceStat.imagesPerPlace.getOrElse(place, 0) match {
         case 0 =>
-          4
+          6
         case x if (1 to 9) contains x =>
           2
         case x if (10 to 49) contains x =>

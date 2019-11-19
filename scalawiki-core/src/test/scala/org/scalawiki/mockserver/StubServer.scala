@@ -1,6 +1,5 @@
 package org.scalawiki.mockserver
 
-import org.mockserver.integration.ClientAndProxy.startClientAndProxy
 import org.mockserver.integration.ClientAndServer.startClientAndServer
 import org.specs2.specification.BeforeAfterEach
 
@@ -9,18 +8,15 @@ trait StubServer extends BeforeAfterEach  {
   val Host = "localhost"
   val Protocol = "http"
 
-  import org.mockserver.integration.{ClientAndProxy, ClientAndServer}
+  import org.mockserver.integration.ClientAndServer
 
   var mockServer: ClientAndServer = _
-  var proxy: ClientAndProxy = _
 
   override def before = {
     mockServer = startClientAndServer(Port)
-    proxy = startClientAndProxy(Port + 10)
   }
 
   override def after = {
-    proxy.stop()
     mockServer.stop()
   }
 

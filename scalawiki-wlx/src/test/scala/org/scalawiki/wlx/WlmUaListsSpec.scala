@@ -2,7 +2,7 @@ package org.scalawiki.wlx
 
 import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.Site
-import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Monument}
+import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.MonumentQuery
 import org.specs2.mutable.Specification
 
@@ -17,7 +17,7 @@ class WlmUaListsSpec extends Specification {
   val contest = Contest.byCampaign(campaign).get.copy(year = 2019)
   val country = contest.country
 
-  val bot = new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 100)
+  val bot = new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 1000)
   val monumentQuery = MonumentQuery.create(contest)(bot)
   val monumentDb = MonumentDB.getMonumentDb(contest, monumentQuery)
   val all = monumentDb.allMonuments
@@ -38,25 +38,15 @@ class WlmUaListsSpec extends Specification {
 
       val percentage = notFound.map(_.monuments.size).sum * 100 / all.size
       println(s"percentage: $percentage%")
-      percentage should be < 5 // less than 1%
+      percentage should be < 8 // less than 1%
     }
 
     "not be just high level region" in {
-      val oblasts = country.regions.filter(adm => !Set("Київ", "Севастополь").contains(adm.name))
-      val raions = oblasts.flatMap(_.regions).filter(_.name.endsWith("район"))
-      raions.size === 490
-      val raionNames = raions.map(_.name).toSet
+      val updater = new RegionFixerUpdater(monumentDb)
+      updater.raions.size === 490
 
-      val highLevel = all.filter(m => raionNames.contains(m.cityName) && m.place.exists(_.trim.nonEmpty))
+      val highLevel = all.filter(m => updater.raionNames.contains(m.cityName) && m.place.exists(_.trim.nonEmpty))
       println(s"highLevel size: ${highLevel.size}")
-
-      val canBeFixed = highLevel.filter { m =>
-        m.place.exists { p =>
-          country.byIdAndName(m.regionId, p.split(",").head).size == 1
-        }
-      }
-
-      println(s"canBeFixed: ${canBeFixed.size}")
 
       highLevel.groupBy(_.page).toSeq.sortBy(-_._2.size).foreach { case (page, monuments) =>
         println(s"$page ${monuments.size} (${monuments.head.city.getOrElse("")})")
