@@ -3,6 +3,8 @@ package org.scalawiki.wlx.stat
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.ImageDB
 
+import scala.collection.mutable
+
 case class RateConfig(newObjectRating: Option[Int] = None,
                       newAuthorObjectRating: Option[Int] = None,
                       numberOfAuthorsBonus: Boolean = false,
@@ -160,9 +162,11 @@ class NumberOfImagesInPlaceBonus(val stat: ContestStat) extends Rater {
 
   val oldImagesDb = new ImageDB(stat.contest, oldImages, stat.monumentDb)
   val perPlaceStat = PerPlaceStat(oldImagesDb)
+  val unknownPlaceMonumentsByAuthor = mutable.Map[String, Set[String]]()
 
   override def rate(monumentId: String, author: String): Int = {
-    perPlaceStat.placeByMonument.get(monumentId).map { place =>
+
+    perPlaceStat.placeByMonument.get(monumentId).map{ place =>
       perPlaceStat.imagesPerPlace.getOrElse(place, 0) match {
         case 0 =>
           6
@@ -173,11 +177,17 @@ class NumberOfImagesInPlaceBonus(val stat: ContestStat) extends Rater {
         case _ =>
           0
       }
-    }.getOrElse(0)
+    }.getOrElse {
+      val monumentIds = unknownPlaceMonumentsByAuthor.getOrElse(author, Set.empty[String])
+      if (!monumentIds.contains(monumentId)) {
+        unknownPlaceMonumentsByAuthor(author) = monumentIds + monumentId
+      }
+      0
+    }
   }
 }
 
-class RateSum(val stat: ContestStat, raters: Seq[Rater]) extends Rater {
+class RateSum(val stat: ContestStat, val raters: Seq[Rater]) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
     raters.map(_.rate(monumentId, author)).sum
   }

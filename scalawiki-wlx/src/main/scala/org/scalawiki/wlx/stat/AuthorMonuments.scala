@@ -87,7 +87,25 @@ class AuthorMonuments(val stat: ContestStat,
         rowData(imageDb._byAuthorAndId.by(user).keys, imageDb._byAuthor.by(user).size, Some(user))
     }
 
+    reportUnknownPlaces()
+
     Table(columns, totalData +: authorsData, name)
+  }
+
+  def reportUnknownPlaces() = {
+    (rater match {
+      case sum: RateSum => sum.raters.collectFirst { case r: NumberOfImagesInPlaceBonus => r }
+      case r: NumberOfImagesInPlaceBonus => Some(r)
+      case _ => None
+    }).map { reportRater =>
+      reportRater.unknownPlaceMonumentsByAuthor.toSeq.sortBy(-_._2.size).map{ case (author, monuments) =>
+          s"# $author, ${monuments.size} unknown place ids: ${monuments.toSeq.sorted.mkString(", ")}"
+      }.mkString("\n")
+    }.map { text =>
+      for (bot <- commons) {
+        bot.page(page + " unknown places").edit(text)
+      }
+    }
   }
 
   private def optionalUserGalleryLink(number: Int, userOpt: Option[String], regionOpt: Option[String] = None) = {
