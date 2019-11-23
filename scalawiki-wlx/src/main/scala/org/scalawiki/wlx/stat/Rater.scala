@@ -58,7 +58,7 @@ object Rater {
       ) ++ (if (config.numberOfAuthorsBonus) {
       Seq(new NumberOfAuthorsBonus(stat))
     } else Nil) ++ (if (config.numberOfImagesBonus) {
-      Seq(new NumberOfImagesInPlaceBonus(stat, PerPlaceStat(stat.totalImageDb.get)))
+      Seq(new NumberOfImagesInPlaceBonus(stat))
     } else Nil)
 
     if (raters.tail.isEmpty) {
@@ -136,7 +136,7 @@ object PerPlaceStat {
     val country = imageDB.contest.country
     val monumentDb = imageDB.monumentDb.get
 
-    val placeByMonument = (for (id <- imageDB.ids;
+    val placeByMonument = (for (id <- monumentDb.ids;
                                 monument <- monumentDb.byId(id))
       yield {
         val regionId = id.split("-").take(2).mkString("-")
@@ -156,7 +156,11 @@ object PerPlaceStat {
   }
 }
 
-class NumberOfImagesInPlaceBonus(val stat: ContestStat, perPlaceStat: PerPlaceStat) extends Rater {
+class NumberOfImagesInPlaceBonus(val stat: ContestStat) extends Rater {
+
+  val oldImagesDb = new ImageDB(stat.contest, oldImages, stat.monumentDb)
+  val perPlaceStat = PerPlaceStat(oldImagesDb)
+
   override def rate(monumentId: String, author: String): Int = {
     perPlaceStat.placeByMonument.get(monumentId).map { place =>
       perPlaceStat.imagesPerPlace.getOrElse(place, 0) match {
