@@ -134,6 +134,16 @@ class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
 case class PerPlaceStat(imagesPerPlace: Map[String, Int], placeByMonument: Map[String, String])
 
 object PerPlaceStat {
+
+  val fallbackMapInverse = Map(
+    "5121085201" -> Set("51-210-0002", "51-210-0011", "51-210-0080"), // Усатове
+    "7125785201" -> Set("71-257-0008"), // Матусів
+    "5322610199" -> Set("53-226-0068", "53-226-0069", "53-226-0070", "53-226-0071", "53-226-0072", "53-226-0073", "53-226-9001"), // урочище Шумейкове
+    "2611040399" -> Set("26-110-0006"), // Говерла
+    "0120481999" -> Set("01-204-0065") // Голубинська сільська рада (Бахчисарайський район)
+  )
+  val fallbackMap = for ((koatuu, ids) <- fallbackMapInverse; id <- ids) yield id -> koatuu
+
   def apply(imageDB: ImageDB): PerPlaceStat = {
     val country = imageDB.contest.country
     val monumentDb = imageDB.monumentDb.get
@@ -146,8 +156,9 @@ object PerPlaceStat {
         val candidates = country.byIdAndName(regionId, city)
         if (candidates.size == 1) {
           Some(id -> candidates.head.code)
-        } else
-          None
+        } else {
+          fallbackMap.get(id).map(id -> _)
+        }
       }).flatten.toMap
 
     val imagesPerPlace = (for (id <- imageDB.ids.toSeq;
@@ -166,7 +177,7 @@ class NumberOfImagesInPlaceBonus(val stat: ContestStat) extends Rater {
 
   override def rate(monumentId: String, author: String): Int = {
 
-    perPlaceStat.placeByMonument.get(monumentId).map{ place =>
+    perPlaceStat.placeByMonument.get(monumentId).map { place =>
       perPlaceStat.imagesPerPlace.getOrElse(place, 0) match {
         case 0 =>
           6
