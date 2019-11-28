@@ -51,7 +51,7 @@ object Output {
     val tableTotal = "\n== Summary ==\n{| class=\"wikitable\"\n! rate !! base !! authors <br> bonus !! images <br> bonus !! objects !! ids \n|-\n" +
       groupedTotal.map {
         case ((rate, rateId), ids) =>
-          s"| $rateId || ${ids.size} || ${ids.mkString(", ")}"
+          s"| $rateId || ${ids.size} || ${ids.toSeq.sorted.mkString(", ")}"
       }.mkString("\n|-\n") + "\n|}\n"
 
     tableTotal + regionIds.map {
@@ -71,7 +71,7 @@ object Output {
         val table1 = "\n{| class=\"wikitable\"\n! rate !! base !! authors <br> bonus !! images <br> bonus !! objects !! ids \n|-\n" +
           grouped.map {
             case ((rate, rateId), ids) =>
-              s"| $rateId || ${ids.size} || ${ids.mkString(", ")}"
+              s"| $rateId || ${ids.size} || ${ids.toSeq.sorted.mkString(", ")}"
           }.mkString("\n|-\n") + "\n|}\n"
 
         val rating = rater.rateMonumentIds(ids, author)
