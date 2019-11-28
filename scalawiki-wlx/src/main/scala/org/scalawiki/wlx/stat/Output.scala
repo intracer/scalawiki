@@ -34,7 +34,7 @@ object Output {
     }
   }
 
-  def galleryByRegionAndId(monumentDb: MonumentDB, authorImageDb: ImageDB, oldImageDb: ImageDB): String = {
+  def galleryByRegionAndId(monumentDb: MonumentDB, authorImageDb: ImageDB, oldImageDb: ImageDB, rater: Rater): String = {
     val contest = monumentDb.contest
     val country = contest.country
     val regionIds = country.regionIds.filter(id => authorImageDb.idsByRegion(id).nonEmpty)
@@ -42,43 +42,31 @@ object Output {
     regionIds.map {
       regionId =>
         val regionName = country.regionById(regionId).name
-        val regionHeader = s"== [[:uk:Вікіпедія:Вікі любить Землю/$regionName|$regionName]] =="
+        val regionHeader = s"== [[:uk:Вікіпедія:Вікі любить пам'ятки/$regionName|$regionName]] =="
         val ids = authorImageDb.idsByRegion(regionId)
         val author = authorImageDb.authors.head
 
-        val newIds = ids -- oldImageDb.ids
-        val oldIds = ids -- newIds
-        val newForAuthorIds = oldIds -- oldImageDb.idByAuthor(author)
-        val oldForAuthorIds = oldIds -- newForAuthorIds
+        val rating = rater.rateMonumentIds(ids, author)
 
-        val rating = oldForAuthorIds.size +
-          newForAuthorIds.size * contest.rateConfig.newAuthorObjectRating.getOrElse(1) +
-          newIds.size * contest.rateConfig.newObjectRating.getOrElse(1)
-
-        val ratingStr = s"\nRating: '''$rating''' = " +
-          Seq(
-            if (newIds.nonEmpty) s"'''${newIds.size}''' new ids '''* ${contest.rateConfig.newObjectRating.getOrElse(1)}''' " else "",
-            if (newForAuthorIds.nonEmpty) s"'''${newForAuthorIds.size}''' new for author ids '''* ${contest.rateConfig.newAuthorObjectRating.getOrElse(1)}''' " else "",
-            if (oldForAuthorIds.nonEmpty) s"'''${oldForAuthorIds.size}''' old for author ids" else ""
-          ).filter(_.nonEmpty)
-            .mkString(" + ")
+        val ratingStr = s"\nRating: '''$rating''' "
 
         regionHeader + ratingStr +
-          gallery(s"$regionName new ids", newIds, authorImageDb, monumentDb) +
-          gallery(s"$regionName new for author ids", newForAuthorIds, authorImageDb, monumentDb) +
-          gallery(s"$regionName old ids", oldForAuthorIds, authorImageDb, monumentDb)
+          gallery("", ids, authorImageDb, monumentDb, Some(rater))
 
     }.mkString("\n")
   }
 
-  private def gallery(header: String, ids: Set[String], imageDb: ImageDB, monumentDb: MonumentDB) = {
+  private def gallery(header: String, ids: Set[String], imageDb: ImageDB, monumentDb: MonumentDB,
+                      rater: Option[Rater] = None, author: Option[String] = None) = {
     if (ids.nonEmpty) {
-      s"\n=== $header: ${ids.size} ===\n" +
+      (if (header.nonEmpty) s"\n=== $header: ${ids.size} ===\n" else "") +
         ids.map {
           id =>
             val images = imageDb.byId(id).map(_.title).sorted
+            val rating = rater.map(_.rate(id, author.getOrElse("")))
             s"==== $id ====\n" +
               s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n" +
+              s"Rating: $rating \n" +
               Image.gallery(images)
         }.mkString("\n")
     } else ""
