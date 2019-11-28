@@ -74,18 +74,10 @@ object Output {
               s"| $rate || $rateId || ${ids.size} || ${ids.mkString(", ")}"
           }.mkString("\n|-\n") + "\n|}\n"
 
-        val table2 = "\n{|  class=\"wikitable\"\n! id !! rate !! base !! authors <br> bonus !! images <br> bonus \n|-\n" +
-          ids.map {
-            id =>
-              val rate = rater.rate(id, author)
-              val rateParts = rater.asInstanceOf[RateSum].raters.map(_.rate(id, author))
-              s"| $id || $rate || " + rateParts.mkString(" || ")
-          }.mkString("\n|-\n") + "\n|}\n"
-
         val rating = rater.rateMonumentIds(ids, author)
         val ratingStr = s"\nRating: '''$rating''' \n "
 
-        regionHeader + ratingStr + table1 + table2 +
+        regionHeader + ratingStr + table1 +
           gallery("", ids, authorImageDb, monumentDb, Some(rater))
 
     }.mkString("\n")
