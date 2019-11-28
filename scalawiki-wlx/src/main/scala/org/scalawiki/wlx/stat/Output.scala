@@ -38,19 +38,54 @@ object Output {
     val contest = monumentDb.contest
     val country = contest.country
     val regionIds = country.regionIds.filter(id => authorImageDb.idsByRegion(id).nonEmpty)
+    val author = authorImageDb.authors.head
 
-    regionIds.map {
+    val groupedTotal = authorImageDb.ids.map { id =>
+      val rateParts = rater.asInstanceOf[RateSum].raters.map(_.rate(id, author))
+      val rateId = s"${rater.rate(id, author)} || " + rateParts.mkString(" || ")
+      (id, rater.rate(id, author), rateId)
+    }.groupBy { case (_, rate, rateId) =>
+      (rate, rateId)
+    }.mapValues(_.map(_._1)).toSeq.sortBy(-_._1._1)
+
+    val tableTotal = "\n== Summary ==\n{| class=\"wikitable\"\n! rate !! base !! authors <br> bonus !! images <br> bonus !! objects !! ids \n|-\n" +
+      groupedTotal.map {
+        case ((rate, rateId), ids) =>
+          s"| $rate || $rateId || ${ids.size} || ${ids.mkString(", ")}"
+      }.mkString("\n|-\n") + "\n|}\n"
+
+    tableTotal + regionIds.map {
       regionId =>
         val regionName = country.regionById(regionId).name
         val regionHeader = s"== [[:uk:Вікіпедія:Вікі любить пам'ятки/$regionName|$regionName]] =="
         val ids = authorImageDb.idsByRegion(regionId)
-        val author = authorImageDb.authors.head
+
+        val grouped = ids.map { id =>
+          val rateParts = rater.asInstanceOf[RateSum].raters.map(_.rate(id, author))
+          val rateId = s"${rater.rate(id, author)} || " + rateParts.mkString(" || ")
+          (id, rater.rate(id, author), rateId)
+        }.groupBy { case (_, rate, rateId) =>
+          (rate, rateId)
+        }.mapValues(_.map(_._1)).toSeq.sortBy(-_._1._1)
+
+        val table1 = "\n{| class=\"wikitable\"\n! rate !! base !! authors <br> bonus !! images <br> bonus !! objects !! ids \n|-\n" +
+          grouped.map {
+            case ((rate, rateId), ids) =>
+              s"| $rate || $rateId || ${ids.size} || ${ids.mkString(", ")}"
+          }.mkString("\n|-\n") + "\n|}\n"
+
+        val table2 = "\n{|  class=\"wikitable\"\n! id !! rate !! base !! authors <br> bonus !! images <br> bonus \n|-\n" +
+          ids.map {
+            id =>
+              val rate = rater.rate(id, author)
+              val rateParts = rater.asInstanceOf[RateSum].raters.map(_.rate(id, author))
+              s"| $id || $rate || " + rateParts.mkString(" || ")
+          }.mkString("\n|-\n") + "\n|}\n"
 
         val rating = rater.rateMonumentIds(ids, author)
+        val ratingStr = s"\nRating: '''$rating''' \n "
 
-        val ratingStr = s"\nRating: '''$rating''' "
-
-        regionHeader + ratingStr +
+        regionHeader + ratingStr + table1 + table2 +
           gallery("", ids, authorImageDb, monumentDb, Some(rater))
 
     }.mkString("\n")
@@ -63,10 +98,10 @@ object Output {
         ids.map {
           id =>
             val images = imageDb.byId(id).map(_.title).sorted
-            val rating = rater.map(_.rate(id, author.getOrElse("")))
-            s"==== $id ====\n" +
-              s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n" +
-              s"Rating: $rating \n" +
+            val rating = rater.map(_.explainRate(id, author.getOrElse(""))).getOrElse("")
+            s"\n==== $id ====\n" +
+              s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n\n" +
+              s"$rating \n" +
               Image.gallery(images)
         }.mkString("\n")
     } else ""
@@ -358,7 +393,7 @@ object Output {
     val text = s"Overall unknown places: ${places.size}, monuments: ${places.map(_.monuments.size).sum}" + tables.map { table =>
       s"\n=== [[${table.title}]] - ${table.data.size} ===\n" +
         table.asWiki
-      }.mkString
+    }.mkString
 
     val pageName = s"Вікіпедія:${monumentDB.contest.contestType.name}/unknownPlaces"
 

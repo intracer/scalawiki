@@ -117,7 +117,7 @@ class AuthorMonuments(val stat: ContestStat,
   }
 
   private def userGalleryLink(number: Int, userOpt: Option[String], regionOpt: Option[String] = None) = {
-    val noTemplateUser = userOpt.get.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
+    val noTemplateUser = userOpt.get.split("\\|").last.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
 
     val galleryPage = "Commons:" + contest.name + "/" + noTemplateUser + regionOpt.fold("") { region =>
       "#" + region.replaceAll(" ", "_")

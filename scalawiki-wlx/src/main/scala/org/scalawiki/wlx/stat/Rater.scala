@@ -288,6 +288,6 @@ class RateSum(val stat: ContestStat, val raters: Seq[Rater]) extends Rater {
   }
 
   override def explainRate(monumentId: String, author: String): String = {
-    s"Rate = ${raters.map(_.rate(monumentId, author)).sum}, is a sum of: " + raters.map(_.explainRate(monumentId, author)).mkString(", ")
+    s"Rating = ${raters.map(_.rate(monumentId, author)).sum}, is a sum of: " + raters.map(_.explainRate(monumentId, author)).mkString(", ")
   }
 }
