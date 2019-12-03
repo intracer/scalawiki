@@ -63,7 +63,7 @@ object Dependencies {
 
     object Akka {
       val AkkaV = "2.5.26"
-      val AkkaHttpV = "10.1.10"
+      val AkkaHttpV = "10.1.11"
 
       val actor = "com.typesafe.akka" %% "akka-actor" % AkkaV
       val stream = "com.typesafe.akka" %% "akka-stream" % AkkaV
