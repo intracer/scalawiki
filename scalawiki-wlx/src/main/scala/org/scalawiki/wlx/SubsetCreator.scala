@@ -10,36 +10,40 @@ object SubsetCreator {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-
   def main(args: Array[String]) {
-    val ukWiki = MwBot.fromHost("uk.wikipedia.org")
 
-    val specialNomination = "млини та вітряки"
+    val specialNomination = "конкурс статей"
 
     val contest = Contest.WLMUkraine(2019)
     val query = MonumentQuery.create(contest)
     query.byMonumentTemplateAsync(contest.listTemplate.get).map {
       monuments =>
-
-        val subset = monuments.filter { m =>
+        createSubset(monuments, contest, specialNomination, m => {
           val lowerCaseName = m.name.toLowerCase
-          Seq("млин", "вітряк").exists(lowerCaseName.contains) && !lowerCaseName.contains("сухомлинськ")
+          Seq("голод", "1933", "1932").exists(lowerCaseName.contains)
         }
+        )
+    }
+  }
 
-        val byRegion = subset.groupBy(m => Monument.getRegionId(m.id))
+  def createSubset(monuments: Seq[Monument], contest: Contest, specialNomination: String, monumentFilter: Monument => Boolean) = {
+    val ukWiki = MwBot.fromHost("uk.wikipedia.org")
 
-        val regionIds = SortedSet(byRegion.keys.toSeq: _*)
+    val subset = monuments.filter(monumentFilter)
 
-        val regionOnPage = false
+    val byRegion = subset.groupBy(m => Monument.getRegionId(m.id))
 
-        try {
-          regionPerPage(ukWiki, specialNomination, contest, byRegion, regionIds)
-//          regionsOnPage(ukWiki, specialNomination, contest, byRegion, regionIds)
-        } catch {
-          case t:Throwable =>
-            println(t)
-            throw t
-        }
+    val regionIds = SortedSet(byRegion.keys.toSeq: _*)
+
+    val regionOnPage = false
+
+    try {
+      regionPerPage(ukWiki, specialNomination, contest, byRegion, regionIds)
+      //          regionsOnPage(ukWiki, specialNomination, contest, byRegion, regionIds)
+    } catch {
+      case t: Throwable =>
+        println(t)
+        throw t
     }
 
   }
