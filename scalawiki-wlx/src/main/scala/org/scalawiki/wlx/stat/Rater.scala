@@ -29,6 +29,8 @@ trait Rater {
 
   def rate(monumentId: String, author: String): Int
 
+  def explainRate(monumentId: String, author: String): String
+
   def rateMonumentIds(monumentIds: Set[String], author: String): Int = {
     monumentIds.toSeq.map(rate(_, author)).sum
   }
@@ -78,6 +80,10 @@ class NumberOfMonuments(val stat: ContestStat) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
     if (monumentIds.contains(monumentId)) 1 else 0
   }
+
+  override def explainRate(monumentId: String, author: String): String = {
+    if (monumentIds.contains(monumentId)) "Base rate = 1" else "Not a known monument = 0"
+  }
 }
 
 class NewlyPicturedBonus(val stat: ContestStat, newlyPicturedRate: Int) extends Rater {
@@ -87,6 +93,13 @@ class NewlyPicturedBonus(val stat: ContestStat, newlyPicturedRate: Int) extends 
       newlyPicturedRate - 1
     else
       0
+  }
+
+  override def explainRate(monumentId: String, author: String): String = {
+    if (!oldMonumentIds.contains(monumentId))
+      s"Newly pictured rate bonus = ${newlyPicturedRate - 1}"
+    else
+      "Not newly pictured = 0"
   }
 }
 
@@ -108,6 +121,17 @@ class NewlyPicturedPerAuthorBonus(val stat: ContestStat,
         0
     }
   }
+
+  override def explainRate(monumentId: String, author: String): String = {
+    monumentId match {
+      case id if !oldMonumentIds.contains(id) =>
+        s"Newly pictured bonus = ${newlyPicturedRate - 1}"
+      case id if !oldMonumentIdsByAuthor.getOrElse(author, Set.empty).contains(id) =>
+        s"Newly pictured per author bonus = ${newlyPicturedPerAuthorRate - 1}"
+      case _ =>
+        s"Not newly pictured = 0"
+    }
+  }
 }
 
 class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
@@ -127,6 +151,19 @@ class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
         1
       case _ =>
         0
+    }
+  }
+
+  override def explainRate(monumentId: String, author: String): String = {
+    authorsByMonument.getOrElse(monumentId, 0) match {
+      case 0 =>
+        "Not pictured before = 6"
+      case x if (1 to 3) contains x =>
+        s"Pictured before by $x (1 to 3) authors = 2"
+      case x if (4 to 9) contains x =>
+        s"Pictured before by $x (4 to 9) authors = 1"
+      case _ =>
+        "Pictured by more than 9 authors = 0"
     }
   }
 }
@@ -221,10 +258,36 @@ class NumberOfImagesInPlaceBonus(val stat: ContestStat) extends Rater {
       0
     }
   }
+
+  override def explainRate(monumentId: String, author: String): String = {
+    perPlaceStat.placeByMonument.get(monumentId).map { place =>
+      perPlaceStat.imagesPerPlace.getOrElse(place, 0) match {
+        case 0 =>
+          s"No images were of $place, bonus = 6"
+        case x if (1 to 9) contains x =>
+          s"$x (1 to 9) images were of $place, bonus = 2"
+        case x if (10 to 49) contains x =>
+          s"$x (10 to 49) images were of $place, bonus = 1"
+        case x =>
+          s"$x (>=50) images were of $place, bonus = 0"
+      }
+    }.getOrElse {
+      val monumentIds = unknownPlaceMonumentsByAuthor.getOrElse(author, Set.empty[String])
+      if (!monumentIds.contains(monumentId)) {
+        unknownPlaceMonumentsByAuthor(author) = monumentIds + monumentId
+      }
+      s"unknown place of monument $monumentId, bonus = 0"
+    }
+
+  }
 }
 
 class RateSum(val stat: ContestStat, val raters: Seq[Rater]) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
     raters.map(_.rate(monumentId, author)).sum
+  }
+
+  override def explainRate(monumentId: String, author: String): String = {
+    s"Rating = ${raters.map(_.rate(monumentId, author)).sum}, is a sum of: " + raters.map(_.explainRate(monumentId, author)).mkString(", ")
   }
 }

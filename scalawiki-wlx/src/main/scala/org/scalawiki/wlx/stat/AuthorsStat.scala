@@ -47,10 +47,12 @@ class AuthorsStat(val uploadImages: Boolean = false) {
         db.regionIds.map { regionId =>
             val regionName = country.regionName(regionId)
 
-            val shortRegionName = regionName.replaceAll("область", "").replaceAll("Автономна Республіка", "АР")
+            val shortRegionName = regionName
+              .replaceAll("область", "")
+              .replaceAll("Автономна Республіка", "АР")
 
-            yearDbs.zipWithIndex.foreach {
-              case (yearDb, i) => dataset.addValue(yearDb.authorsByRegion(regionId).size, yearSeq(i), shortRegionName)
+            yearDbs.zipWithIndex.foreach { case (yearDb, i) =>
+              dataset.addValue(yearDb.authorsByRegion(regionId).size, yearSeq(i), shortRegionName)
             }
 
             Seq(regionName) ++ dbs.map(_.authorsByRegion(regionId).size.toString)
@@ -95,7 +97,6 @@ class AuthorsStat(val uploadImages: Boolean = false) {
                          ids: Seq[Set[String]],
                          idsSize: Seq[Int],
                          uploadImages: Boolean = true
-
                        ) = {
 
     val images =
