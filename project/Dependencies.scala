@@ -4,7 +4,7 @@ object Dependencies {
 
   val AaltoXmlV = "1.2.2"
   val BetterFilesV = "3.8.0"
-  val BlameApiV = "11.10.1"
+  val BlameApiV = "11.10.3"
   val ChronicleMapV = "3.17.8"
   val ChronoScalaV = "0.3.2"
   val FicusV = "1.4.7"
@@ -62,7 +62,7 @@ object Dependencies {
   object Library {
 
     object Akka {
-      val AkkaV = "2.5.27"
+      val AkkaV = "2.5.29"
       val AkkaHttpV = "10.1.11"
 
       val actor = "com.typesafe.akka" %% "akka-actor" % AkkaV
@@ -98,7 +98,7 @@ object Dependencies {
 
     object Commons {
       val CommonsCodecV = "1.14"
-      val CommonsCompressV = "1.19"
+      val CommonsCompressV = "1.20"
       val CommonsLang3V = "3.7"
       val CommonsIoV = "2.6"
 
@@ -124,7 +124,7 @@ object Dependencies {
     }
 
     object Specs2 {
-      val SpecsV = "4.8.1"
+      val SpecsV = "4.8.3"
 
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV
