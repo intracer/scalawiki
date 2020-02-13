@@ -40,19 +40,23 @@ object Output {
     val regionIds = country.regionIds.filter(id => authorImageDb.idsByRegion(id).nonEmpty)
     val author = authorImageDb.authors.head
 
-    val groupedTotal = authorImageDb.ids.map { id =>
-      val rateParts = rater.asInstanceOf[RateSum].raters.map(_.rate(id, author))
-      val rateId = s"${rater.rate(id, author)} || " + rateParts.mkString(" || ")
-      (id, rater.rate(id, author), rateId)
-    }.groupBy { case (_, rate, rateId) =>
-      (rate, rateId)
-    }.mapValues(_.map(_._1)).toSeq.sortBy(-_._1._1)
+    val tableTotal = rater match {
+      case rateSum: RateSum =>
+        val groupedTotal = authorImageDb.ids.map { id =>
+          val rateParts = rateSum.raters.map(_.rate(id, author))
+          val rateId = s"${rater.rate(id, author)} || " + rateParts.mkString(" || ")
+          (id, rater.rate(id, author), rateId)
+        }.groupBy { case (_, rate, rateId) =>
+          (rate, rateId)
+        }.mapValues(_.map(_._1)).toSeq.sortBy(-_._1._1)
 
-    val tableTotal = "\n== Summary ==\n{| class=\"wikitable\"\n! rate !! base !! authors <br> bonus !! images <br> bonus !! objects !! ids \n|-\n" +
-      groupedTotal.map {
-        case ((rate, rateId), ids) =>
-          s"| $rateId || ${ids.size} || ${ids.toSeq.sorted.mkString(", ")}"
-      }.mkString("\n|-\n") + "\n|}\n"
+        "\n== Summary ==\n{| class=\"wikitable\"\n! rate !! base !! authors <br> bonus !! images <br> bonus !! objects !! ids \n|-\n" +
+          groupedTotal.map {
+            case ((rate, rateId), ids) =>
+              s"| $rateId || ${ids.size} || ${ids.toSeq.sorted.mkString(", ")}"
+          }.mkString("\n|-\n") + "\n|}\n"
+      case _ => ""
+    }
 
     tableTotal + regionIds.map {
       regionId =>
