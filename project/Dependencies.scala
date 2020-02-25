@@ -25,7 +25,7 @@ object Dependencies {
   val ScalaCsvV = "1.3.6"
   val ScalaParserCombinatorsV = "1.1.2"
   val ScalaXmlV = "1.2.0"
-  val ScallopV = "3.3.2"
+  val ScallopV = "3.4.0"
   val Slf4jV = "1.7.25"
   val SwcEngineV = "3.1.9"
   val TypesafeConfigV = "1.4.0"
