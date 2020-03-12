@@ -62,7 +62,7 @@ object Dependencies {
   object Library {
 
     object Akka {
-      val AkkaV = "2.5.29"
+      val AkkaV = "2.5.30"
       val AkkaHttpV = "10.1.11"
 
       val actor = "com.typesafe.akka" %% "akka-actor" % AkkaV
