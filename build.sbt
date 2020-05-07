@@ -18,6 +18,7 @@ lazy val commonSettings = Seq(
   Keys.resolvers ++= Dependencies.resolvers,
 
   libraryDependencies ++= Seq(
+    "io.kamon" %% "kamon-bundle" % "2.1.0",
     Library.Specs2.core % Test,
     Library.Specs2.matcherExtra % Test,
     Library.Specs2.mock % Test,
