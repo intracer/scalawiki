@@ -2,6 +2,7 @@ package org.scalawiki.wlx.stat
 
 import java.time.{ZoneOffset, ZonedDateTime}
 
+import kamon.Kamon
 import org.scalawiki.MwBot
 import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.Site
@@ -158,6 +159,8 @@ object Statistics {
   }
 
   def main(args: Array[String]) {
+    Kamon.init()
+
     val cfg = StatParams.parse(args)
     val contest = getContest(cfg)
 
