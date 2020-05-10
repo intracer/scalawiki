@@ -308,7 +308,7 @@ object Output {
 
   def byRegion(monumentDb: MonumentDB) = {
     val byRegion = monumentDb._byRegion.mapValues(_.groupBy(_.id.take(6).replace("-", ""))).toMap
-    val types = monumentDb.allMonuments.flatMap(_.types.map(_.split("\\-").head)).distinct.sorted
+    val types = monumentDb.allMonuments.flatMap(_.types.map(_.split("\\-").head)).distinct.sorted.filterNot(_.isBlank)
 
     val topRegions = Country.Ukraine.regions.sortBy(_.name)
     val rows = topRegions.flatMap { region =>
@@ -322,10 +322,15 @@ object Output {
         val subRegionText = monumentsInSubRegion.sortBy(_.id).headOption
           .map(monument => s"[[${monument.page}|${subRegion.name}]]").getOrElse(subRegion.name)
         val subRegionType = if (subRegion.name.contains("район")) "р" else "м"
-        Seq(region.name, subRegionText, subRegionType, monumentsInSubRegion.size.toString) ++ byTypes
+        Seq(
+          region.name.replace("область", ""),
+          subRegionText,
+          subRegionType,
+          monumentsInSubRegion.size.toString
+        ) ++ byTypes
       }
     }
-    val text = Table(Seq("Регіон 1", "Регіон 2", "р/м", "Пам'яток") ++ types, rows).asWiki
+    val text = Table(Seq("Регіон 1", "Регіон 2", "р/м", "Всі") ++ types, rows).asWiki
     val ukWiki = MwBot.fromHost(MwBot.ukWiki)
     ukWiki.page(s"Вікіпедія:Вікі любить пам'ятки/byRegion").edit(text, Some("updating"))
   }

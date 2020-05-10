@@ -49,8 +49,8 @@ case class Monument(page: String = "",
     if (str.toLowerCase.contains("комплекс"))
       Set("комплекс")
     else str.split(",").map(_.trim.split("<").head).filter{ monumentType =>
-      monumentType.contains("-")
-    }.toSet
+      true // monumentType.contains("-")
+    }.toSet.filterNot(_.isBlank)
   }
 
   def asWiki(templateName: Option[String] = None, pad: Boolean = true) = {
