@@ -316,8 +316,12 @@ object Output {
       val subRegions = region.regions.sortBy(_.name)
       subRegions.map { subRegion =>
         val monumentsInSubRegion = monumentsInRegion.getOrElse(subRegion.code, Nil)
+        val byTypesDebug =  types.map{ monumentType =>
+          monumentType -> monumentsInSubRegion.filter(_.types.exists(_.split("\\-").head == monumentType))
+        }.toMap
+
         val byTypes = types.map { monumentType =>
-          monumentsInSubRegion.count(_.types.exists(_.split("\\-").head.contains(monumentType))).toString
+          monumentsInSubRegion.count(_.types.exists(_.split("\\-").head == monumentType)).toString
         }
         val subRegionText = monumentsInSubRegion.sortBy(_.id).headOption
           .map(monument => s"[[${monument.page}|${subRegion.name}]]").getOrElse(subRegion.name)
