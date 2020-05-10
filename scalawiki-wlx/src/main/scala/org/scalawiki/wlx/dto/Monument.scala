@@ -45,10 +45,12 @@ case class Monument(page: String = "",
   val types = initTypes
 
   def initTypes: Set[String] = {
-    val str = typ.getOrElse("").replaceAll("\\.", "")
+    val str = typ.getOrElse("").replaceAll("\\.", "").replace("'", "")
     if (str.toLowerCase.contains("комплекс"))
       Set("комплекс")
-    else str.split(",").map(_.trim).toSet
+    else str.split(",").map(_.trim.split("<").head).filter{ monumentType =>
+      monumentType.contains("-")
+    }.toSet
   }
 
   def asWiki(templateName: Option[String] = None, pad: Boolean = true) = {

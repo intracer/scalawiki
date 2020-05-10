@@ -2,7 +2,8 @@ package org.scalawiki.wlx.stat
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
-import org.scalawiki.wlx.dto.Contest
+import org.scalawiki.dto.markup.Table
+import org.scalawiki.wlx.dto.{Contest, Country, Koatuu}
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 import scala.concurrent.ExecutionContext
@@ -303,6 +304,30 @@ object Output {
 
     val ukWiki = MwBot.fromHost(MwBot.ukWiki)
     ukWiki.page(s"Вікіпедія:Вікі любить пам'ятки/notFoundPlaces-${monumentDb.contest.year}").edit(text, Some("updating"))
+  }
+
+  def byRegion(monumentDb: MonumentDB) = {
+    val byRegion = monumentDb._byRegion.mapValues(_.groupBy(_.id.take(6).replace("-", ""))).toMap
+    val types = monumentDb.allMonuments.flatMap(_.types.map(_.split("\\-").head)).distinct.sorted
+
+    val topRegions = Country.Ukraine.regions.sortBy(_.name)
+    val rows = topRegions.flatMap { region =>
+      val monumentsInRegion = byRegion.getOrElse(region.code, Map.empty)
+      val subRegions = region.regions.sortBy(_.name)
+      subRegions.map { subRegion =>
+        val monumentsInSubRegion = monumentsInRegion.getOrElse(subRegion.code, Nil)
+        val byTypes = types.map { monumentType =>
+          monumentsInSubRegion.count(_.types.exists(_.split("\\-").head.contains(monumentType))).toString
+        }
+        val subRegionText = monumentsInSubRegion.sortBy(_.id).headOption
+          .map(monument => s"[[${monument.page}|${subRegion.name}]]").getOrElse(subRegion.name)
+        val subRegionType = if (subRegion.name.contains("район")) "р" else "м"
+        Seq(region.name, subRegionText, subRegionType, monumentsInSubRegion.size.toString) ++ byTypes
+      }
+    }
+    val text = Table(Seq("Регіон 1", "Регіон 2", "р/м", "Пам'яток") ++ types, rows).asWiki
+    val ukWiki = MwBot.fromHost(MwBot.ukWiki)
+    ukWiki.page(s"Вікіпедія:Вікі любить пам'ятки/byRegion").edit(text, Some("updating"))
   }
 
   def wrongIds(imageDb: ImageDB, monumentDb: MonumentDB) {

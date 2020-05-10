@@ -165,15 +165,20 @@ object Statistics {
     val imageQuery = ImageQuery.create()(new CachedBot(Site.commons, cacheName, true))
     val imageQueryWiki = ImageQuery.create()(new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 100))
 
-    val stat = new Statistics(
-      contest,
-      startYear = Some(cfg.years.head),
-      monumentQuery = MonumentQuery.create(contest),
-      config = Some(cfg),
-      imageQuery = imageQuery,
-      imageQueryWiki = Some(imageQueryWiki)
-    )
+    if (true) {
+      val monumentDB = MonumentDB.getMonumentDb(contest, MonumentQuery.create(contest))
+      Output.byRegion(monumentDB)
+    } else {
+      val stat = new Statistics(
+        contest,
+        startYear = Some(cfg.years.head),
+        monumentQuery = MonumentQuery.create(contest),
+        config = Some(cfg),
+        imageQuery = imageQuery,
+        imageQueryWiki = Some(imageQueryWiki)
+      )
 
-    stat.init(total = cfg.years.size > 1)
+      stat.init(total = cfg.years.size > 1)
+    }
   }
 }
