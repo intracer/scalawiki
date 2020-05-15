@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 
   val AaltoXmlV = "1.2.2"
-  val BetterFilesV = "3.8.0"
+  val BetterFilesV = "3.9.0"
   val BlameApiV = "12.3"
   val ChronicleMapV = "3.19.4"
   val ChronoScalaV = "0.3.2"
