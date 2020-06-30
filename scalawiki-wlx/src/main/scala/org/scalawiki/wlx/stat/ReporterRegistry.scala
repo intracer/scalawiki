@@ -48,8 +48,6 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
       }
 
       monumentDb.foreach { mDb =>
-        Output.unknownPlaces(mDb, imageDb)
-
         if (cfg.wrongIds) {
           Output.wrongIds(imageDb, mDb)
         }
@@ -71,6 +69,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
         }
 
         if (cfg.placeDetection) {
+          Output.unknownPlaces(mDb, imageDb)
           Output.unknownPlaces(mDb)
         }
       }
