@@ -4,8 +4,8 @@ object Dependencies {
 
   val AaltoXmlV = "1.2.2"
   val BetterFilesV = "3.9.1"
-  val BlameApiV = "12.5.1"
-  val ChronicleMapV = "3.19.42"
+  val BlameApiV = "12.6"
+  val ChronicleMapV = "3.19.40"
   val ChronoScalaV = "0.3.2"
   val FicusV = "1.4.7"
   val GuavaV = "20.0"
@@ -25,7 +25,7 @@ object Dependencies {
   val ScalaCsvV = "1.3.6"
   val ScalaParserCombinatorsV = "1.1.2"
   val ScalaXmlV = "1.2.0"
-  val ScallopV = "3.4.0"
+  val ScallopV = "3.5.0"
   val Slf4jV = "1.7.25"
   val SwcEngineV = "3.1.9"
   val TypesafeConfigV = "1.4.0"
@@ -124,7 +124,7 @@ object Dependencies {
     }
 
     object Specs2 {
-      val SpecsV = "4.10.0"
+      val SpecsV = "4.10.1"
 
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV
