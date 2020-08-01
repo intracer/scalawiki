@@ -83,13 +83,9 @@ class Charts extends WithBot {
    * @return The dataset.
    */
   def createTotalDataset(years: Seq[Int], values: Seq[Int]) = {
-
     val category1 = "Всього"
-
     val dataset = new DefaultCategoryDataset()
-
     years.zip(values).foreach { case (year, value) => dataset.addValue(value, year, category1) }
-
     dataset
   }
 

@@ -19,27 +19,21 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
     ))
   }
 
-
-  val yearSeq = stat.yearSeq.reverse
-  val regionalDetails = stat.config.exists(_.regionalDetails)
-  val parentRegion = regionParam.getOrElse(stat.contest.country)
-  private val monumentDb: MonumentDB = stat.monumentDb.get
+  val yearSeq: Seq[Int] = stat.yearSeq.reverse
+  val regionalDetails: Boolean = stat.config.exists(_.regionalDetails)
+  val parentRegion: AdmDivision = regionParam.getOrElse(stat.contest.country)
+  val monumentDb: MonumentDB = stat.monumentDb.get
+  val bot: MwBot = MwBot.fromHost(MwBot.commons)
+  val name: String = pageName(parentRegion.name)
 
   def pageName(region: String) = s"Monuments pictured by region in ${region}"
 
-  val name = pageName(parentRegion.name)
-
-
   override def asText: String = {
-
     val header = s"\n==$name==\n"
-
     header + table.asWiki + regionalStatImages().getOrElse("") + wrongRegionIds
   }
 
-  def table = monumentsPicturedTable(stat.dbsByYear, stat.totalImageDb, monumentDb)
-
-  private val bot: MwBot = MwBot.fromHost(MwBot.commons)
+  def table: Table = monumentsPicturedTable(stat.dbsByYear, stat.totalImageDb, monumentDb)
 
   def monumentsPicturedTable(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: MonumentDB): Table = {
 
@@ -96,10 +90,8 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
     val picturedMonuments = (totalImageDb.map(_.ids).getOrElse(Set.empty) ++ monumentDb.picturedIds).size
 
     val ids = stat.mapYears(_.ids).reverse
-
-    val photoSize = stat.mapYears(_.images.size).reverse
-
     val idsSize = ids.map(_.size)
+    val photoSize = stat.mapYears(_.images.size).reverse
 
     val totalByYear = idsSize.zip(photoSize).flatMap { case (ids, photos) => Seq(ids, photos) }
 

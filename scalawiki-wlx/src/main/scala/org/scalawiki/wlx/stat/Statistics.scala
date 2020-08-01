@@ -140,9 +140,7 @@ class Statistics(contest: Contest,
   def message(bot: MwBot, user: String, msg: String => String): Unit = {
     bot.page("User_talk:" + user).edit(msg(user), section = Some("new"))
   }
-
 }
-
 
 object Statistics {
 
