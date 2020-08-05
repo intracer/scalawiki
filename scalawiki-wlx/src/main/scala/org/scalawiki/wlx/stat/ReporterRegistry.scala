@@ -82,6 +82,10 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
         Output.regionalStat(stat)
       }
 
+      if (cfg.newMonuments) {
+        Output.newMonuments(stat)
+      }
+
       if (cfg.authorsStat) {
         new AuthorsStat().authorsStat(stat, commons, cfg.gallery)
       }

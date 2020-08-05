@@ -369,6 +369,11 @@ object Output {
     monumentDb.map(_ => new MostPopularMonuments(stat).updateWiki(bot))
   }
 
+  def newMonuments(stat: ContestStat) = {
+    val bot = MwBot.fromHost(MwBot.commons)
+    new NewMonuments(stat).updateWiki(bot)
+  }
+
   def missingGallery(monumentDB: MonumentDB) = {
     val allMissing = monumentDB.allMonuments.filter(m => m.gallery.isEmpty && m.photo.nonEmpty)
     val grouped = allMissing.groupBy(_.page).toSeq.sortBy(_._1)
