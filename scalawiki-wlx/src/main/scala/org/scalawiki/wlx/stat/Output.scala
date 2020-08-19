@@ -39,6 +39,7 @@ object Output {
     val country = contest.country
     val regionIds = country.regionIds.filter(id => authorImageDb.idsByRegion(id).nonEmpty)
     val author = authorImageDb.authors.head
+    val rateConfig = contest.rateConfig
 
     val tableTotal = rater match {
       case rateSum: RateSum =>
@@ -50,7 +51,10 @@ object Output {
           (rate, rateId)
         }.mapValues(_.map(_._1)).toSeq.sortBy(-_._1._1)
 
-        "\n== Summary ==\n{| class=\"wikitable\"\n! rate !! base !! authors <br> bonus !! images <br> bonus !! objects !! ids \n|-\n" +
+        "\n== Summary ==\n{| class=\"wikitable\"\n! rate !! base " +
+          (if (rateConfig.numberOfAuthorsBonus) "!! authors <br> bonus " else "") +
+          (if (rateConfig.numberOfImagesBonus) "!! images <br> bonus " else "") +
+          "!! objects !! ids \n|-\n" +
           groupedTotal.map {
             case ((rate, rateId), ids) =>
               s"| $rateId || ${ids.size} || ${ids.toSeq.sorted.mkString(", ")}"
