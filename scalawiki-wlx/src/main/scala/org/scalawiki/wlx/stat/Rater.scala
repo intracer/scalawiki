@@ -144,9 +144,9 @@ class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
   override def rate(monumentId: String, author: String): Int = {
     authorsByMonument.getOrElse(monumentId, 0) match {
       case 0 =>
-        6
+        9
       case x if (1 to 3) contains x =>
-        2
+        3
       case x if (4 to 9) contains x =>
         1
       case _ =>
@@ -155,15 +155,16 @@ class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
   }
 
   override def explainRate(monumentId: String, author: String): String = {
+    val number = rate(monumentId, author)
     authorsByMonument.getOrElse(monumentId, 0) match {
       case 0 =>
-        "Not pictured before = 6"
+        s"Not pictured before = $number"
       case x if (1 to 3) contains x =>
-        s"Pictured before by $x (1 to 3) authors = 2"
+        s"Pictured before by $x (1 to 3) authors = $number"
       case x if (4 to 9) contains x =>
-        s"Pictured before by $x (4 to 9) authors = 1"
+        s"Pictured before by $x (4 to 9) authors = $number"
       case _ =>
-        "Pictured by more than 9 authors = 0"
+        s"Pictured by more than 9 authors = $number"
     }
   }
 }
