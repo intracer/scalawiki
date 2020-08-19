@@ -7,7 +7,7 @@ object Dependencies {
   val BlameApiV = "12.6.1"
   val ChronicleMapV = "3.19.40"
   val ChronoScalaV = "0.3.2"
-  val FicusV = "1.4.7"
+  val FicusV = "1.5.0"
   val GuavaV = "20.0"
   val H2V = "1.4.200"
   val JimFsV = "1.1"
