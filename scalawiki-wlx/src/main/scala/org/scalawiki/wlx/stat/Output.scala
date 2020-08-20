@@ -375,8 +375,7 @@ object Output {
   }
 
   def newMonuments(stat: ContestStat) = {
-    val bot = MwBot.fromHost(MwBot.commons)
-    new NewMonuments(stat).updateWiki(bot)
+    new NewMonuments(stat).updateWiki(MwBot.fromHost(MwBot.commons))
   }
 
   def missingGallery(monumentDB: MonumentDB) = {

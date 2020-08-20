@@ -1,5 +1,6 @@
 package org.scalawiki.wlx.stat
 
+import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.ImageDB
 
@@ -141,6 +142,14 @@ class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
       images.map(_.author.getOrElse("")).toSet.size
     }.toMap
 
+  val distribution: Map[Int, Int] = authorsByMonument.values.groupBy(identity).mapValues(_.size).toMap
+
+  if (stat.config.exists(_.rateInputDistribution)) {
+    new RateInputDistribution(stat, distribution,"Number of authors distribution",
+    Seq("Number of authors", "Number of monuments")
+    ).updateWiki(MwBot.fromHost(MwBot.commons))
+  }
+
   override def rate(monumentId: String, author: String): Int = {
     authorsByMonument.getOrElse(monumentId, 0) match {
       case 0 =>
@@ -169,7 +178,9 @@ class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
   }
 }
 
-case class PerPlaceStat(imagesPerPlace: Map[String, Int], placeByMonument: Map[String, String])
+case class PerPlaceStat(imagesPerPlace: Map[String, Int], placeByMonument: Map[String, String]) {
+  val distribution = placeByMonument.values.map(imagesPerPlace).groupBy(identity).mapValues(_.size).toMap
+}
 
 object PerPlaceStat {
 
@@ -237,6 +248,14 @@ class NumberOfImagesInPlaceBonus(val stat: ContestStat) extends Rater {
   val oldImagesDb = new ImageDB(stat.contest, oldImages, stat.monumentDb)
   val perPlaceStat = PerPlaceStat(oldImagesDb)
   val unknownPlaceMonumentsByAuthor = mutable.Map[String, Set[String]]()
+
+  val distribution: Map[Int, Int] = perPlaceStat.distribution
+
+  if (stat.config.exists(_.rateInputDistribution)) {
+    new RateInputDistribution(stat, distribution,"Number of images in place distribution",
+      Seq("Number of images in place", "Number of monuments")
+    ).updateWiki(MwBot.fromHost(MwBot.commons))
+  }
 
   override def rate(monumentId: String, author: String): Int = {
 

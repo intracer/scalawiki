@@ -22,7 +22,8 @@ case class StatConfig(campaign: String,
                       regionalGallery: Boolean = false,
                       missingGallery: Boolean = false,
                       placeDetection: Boolean = false,
-                      newMonuments: Boolean = false)
+                      newMonuments: Boolean = false,
+                      rateInputDistribution: Boolean = false)
 
 import org.rogach.scallop._
 
@@ -51,6 +52,7 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
   val missingGallery = opt[Boolean](name = "missing-gallery", descr = "report missing galleries")
   val placeDetection = opt[Boolean](name = "place-detection", descr = "report place detection")
   val newMonuments = opt[Boolean](name = "new-monuments", descr = "new monuments")
+  val rateInputDistribution = opt[Boolean](name = "rate-input-distribution", descr = "rate input distribution")
   verify()
 }
 
@@ -85,7 +87,8 @@ object StatParams {
       regionalGallery = conf.regionalGallery.getOrElse(false),
       missingGallery = conf.missingGallery.getOrElse(false),
       placeDetection = conf.placeDetection.getOrElse(false),
-      newMonuments = conf.newMonuments.getOrElse(false)
+      newMonuments = conf.newMonuments.getOrElse(false),
+      rateInputDistribution = conf.rateInputDistribution.getOrElse(false)
     )
   }
 }
