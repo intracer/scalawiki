@@ -145,8 +145,8 @@ class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
   val distribution: Map[Int, Int] = authorsByMonument.values.groupBy(identity).mapValues(_.size).toMap
 
   if (stat.config.exists(_.rateInputDistribution)) {
-    new RateInputDistribution(stat, distribution,"Number of authors distribution",
-    Seq("Number of authors", "Number of monuments")
+    new RateInputDistribution(stat, distribution, "Number of authors distribution",
+      Seq("Number of authors", "Number of monuments")
     ).updateWiki(MwBot.fromHost(MwBot.commons))
   }
 
@@ -179,7 +179,9 @@ class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
 }
 
 case class PerPlaceStat(imagesPerPlace: Map[String, Int], placeByMonument: Map[String, String]) {
-  val distribution = placeByMonument.values.map(imagesPerPlace).groupBy(identity).mapValues(_.size).toMap
+  val distribution = placeByMonument.values
+    .map(place => imagesPerPlace.getOrElse(place, 0))
+    .groupBy(identity).mapValues(_.size).toMap
 }
 
 object PerPlaceStat {
@@ -252,7 +254,7 @@ class NumberOfImagesInPlaceBonus(val stat: ContestStat) extends Rater {
   val distribution: Map[Int, Int] = perPlaceStat.distribution
 
   if (stat.config.exists(_.rateInputDistribution)) {
-    new RateInputDistribution(stat, distribution,"Number of images in place distribution",
+    new RateInputDistribution(stat, distribution, "Number of images in place distribution",
       Seq("Number of images in place", "Number of monuments")
     ).updateWiki(MwBot.fromHost(MwBot.commons))
   }
