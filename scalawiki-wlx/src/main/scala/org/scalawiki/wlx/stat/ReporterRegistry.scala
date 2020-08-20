@@ -88,6 +88,8 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
 
       if (cfg.authorsStat) {
         new AuthorsStat().authorsStat(stat, commons, cfg.gallery)
+      } else if (cfg.rateInputDistribution) {
+        Rater.create(stat)
       }
 
       if (cfg.regionalGallery) {
