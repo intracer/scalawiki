@@ -72,6 +72,10 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
           Output.unknownPlaces(mDb, imageDb)
           Output.unknownPlaces(mDb)
         }
+
+        if (cfg.mostPopularMonuments) {
+          new MostPopularMonuments(stat).updateWiki(MwBot.fromHost(MwBot.commons))
+        }
       }
     }
   }

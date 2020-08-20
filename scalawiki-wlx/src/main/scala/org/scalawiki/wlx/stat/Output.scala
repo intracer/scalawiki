@@ -370,8 +370,6 @@ object Output {
     val regionalStat = toc + idsStat + authorsContributed + category
 
     bot.page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, Some("updating"))
-
-    monumentDb.map(_ => new MostPopularMonuments(stat).updateWiki(bot))
   }
 
   def newMonuments(stat: ContestStat) = {
