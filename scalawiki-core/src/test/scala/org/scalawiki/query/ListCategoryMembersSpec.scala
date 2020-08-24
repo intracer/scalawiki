@@ -103,7 +103,7 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
       result(2) === Page(50177636, Some(14), "Category:Foo").copy(
         categoryInfo = Some(org.scalawiki.dto.CategoryInfo(5, 3, 2, 0))
       )
-      result(3) === Page(3108204, Some(914), "Category:Infobox templates").copy(
+      result(3) === Page(3108204, Some(14), "Category:Infobox templates").copy(
         categoryInfo = Some(org.scalawiki.dto.CategoryInfo(29, 15, 0, 14))
       )
     }
