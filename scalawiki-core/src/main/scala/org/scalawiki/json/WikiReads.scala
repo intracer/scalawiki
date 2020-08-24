@@ -51,11 +51,12 @@ case class PageReads() extends WikiResponseReads with WikiReads[Page] {
 
   private val pageRead: Reads[Page] = (
     (__ \ "pageid").readNullable[Long] ~
-      (__ \ "ns").read[Int] ~
+      (__ \ "ns").readNullable[Int] ~
       (__ \ "title").read[String] ~
       (__ \ "missing").readNullable[String] ~
       (__ \ "subjectid").readNullable[Long] ~
-      (__ \ "talkid").readNullable[Long]
+      (__ \ "talkid").readNullable[Long] ~
+      (__ \ "invalidreason").readNullable[String]
     ) (Page.full _)
 
   override def reads(json: JsValue): JsResult[Page] = pageRead.reads(json)
@@ -204,7 +205,7 @@ case class UserContributorReads() extends WikiResponseReads with WikiReads[UserC
       (__ \ "pageid").read[Long] ~
       (__ \ "revid").read[Long] ~
       (__ \ "parentid").read[Long] ~
-      (__ \ "ns").read[Int] ~
+      (__ \ "ns").readNullable[Int] ~
       (__ \ "title").read[String] ~
       (__ \ "timestamp").read[ZonedDateTime](zonedDateTimeReads) ~
       //      (__ \ "new").read[String] ~
