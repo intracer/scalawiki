@@ -102,7 +102,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
       val pages = titles.zip(texts).zip(pageIds).zip(revIds) map {
         case (((title, text), pageId), revId) =>
           val revision: Revision = new Revision(revId = Some(revId), pageId = Some(pageId), content = Some(text))
-          Page(Some(pageId), 0, title, Seq(revision))
+          Page(Some(pageId), Some(0), title, Seq(revision))
       }
 
       cache.toDb(pages, Set.empty)
@@ -145,7 +145,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
       val pages = titles.zip(texts).zip(pageIds).zip(revIds) map {
         case (((title, text), pageId), revId) =>
           val revision: Revision = new Revision(revId = Some(revId), pageId = Some(pageId), content = Some(text))
-          Page(Some(pageId), 0, title, Seq(revision))
+          Page(Some(pageId), Some(0), title, Seq(revision))
       }
 
       pageDao.insertAll(pages)
@@ -194,7 +194,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
       val dbPages = titles.zip(texts).zip(pageIds).zip(revIds) map {
         case (((title, text), pageId), revId) =>
           val revision: Revision = new Revision(revId = Some(revId), pageId = Some(pageId), content = Some(text))
-          Page(Some(pageId), 0, title, Seq(revision))
+          Page(Some(pageId), Some(0), title, Seq(revision))
       }
 
       val query = Query()
@@ -243,7 +243,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
             pageId = Some(pageId),
             content = Some(text),
             user = someUser1)
-          Page(Some(pageId), 0, title, Seq(revision))
+          Page(Some(pageId), Some(0), title, Seq(revision))
       }
 
       val slice = dbPages.take(5) ++ dbPages.drop(5).map(_.copy(revisions = Seq.empty))
@@ -291,7 +291,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
             pageId = Some(pageId),
             content = Some(text),
             user = someUser1)
-          Page(Some(pageId), 0, title, Seq(revision))
+          Page(Some(pageId), Some(0), title, Seq(revision))
       }
 
       val notInDb = cache.notInDb(query, pageIds.toSet, Seq.empty).await
@@ -345,7 +345,7 @@ class DslQueryDbCacheModularSpec extends Specification with MockBotSpec with Bef
             pageId = Some(pageId),
             content = Some(text),
             user = someUser1)
-          Page(Some(pageId), 0, title, Seq(revision))
+          Page(Some(pageId), Some(0), title, Seq(revision))
       }
 
       val slice = dbPages.take(5) ++

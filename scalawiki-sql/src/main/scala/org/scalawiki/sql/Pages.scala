@@ -33,7 +33,7 @@ class Pages(tag: Tag, tableName: String, val dbPrefix: Option[String]) extends T
    * and from 100 to 2147483647 for [[https://www.mediawiki.org/wiki/Manual:Using_custom_namespaces custom namespaces]].
    * @return
    */
-  def namespace = column[Int]("page_namespace")
+  def namespace = column[Option[Int]]("page_namespace")
 
   /**
    * The sanitized [[https://www.mediawiki.org/wiki/Manual:Page_title page title]], without the title of its namespace
@@ -92,7 +92,7 @@ class Pages(tag: Tag, tableName: String, val dbPrefix: Option[String]) extends T
 
   def * = (id, namespace, title, pageLatest) <> (fromDb, toDb)
 
-  def fromDb(t: (Option[Long], Int, String, Long)) = {
+  def fromDb(t: (Option[Long], Option[Int], String, Long)) = {
     val pageId = t._1
     val pageLatest = t._4
     val revisions = if (pageLatest != 0)

@@ -92,7 +92,7 @@ class XmlParser(
       ) yield {
         val revisions = readRevisions(id)
         val images = readImageInfo()
-        new Page(Some(id), ns, title, revisions.toSeq)
+        new Page(Some(id), Some(ns), title, revisions.toSeq)
       }
     }
     else
