@@ -91,7 +91,10 @@ object Image {
   def fromPage(page: Page, monumentIdTemplate: Option[String]): Option[Image] = {
     for (fromImage <- Image.fromPageImages(page);
          fromRev <- Image.fromPageRevision(page, monumentIdTemplate))
-      yield fromImage.copy(monumentIds = fromRev.monumentIds, author = fromRev.author, categories = fromRev.categories)
+      yield {
+        val renamedAuthor = fromRev.author.map(author => AuthorsMap.renames.getOrElse(author, author))
+        fromImage.copy(monumentIds = fromRev.monumentIds, author = renamedAuthor, categories = fromRev.categories)
+      }
   }
 
   def getAuthorFromPage(content: String): String = {
@@ -151,4 +154,8 @@ object Image {
     val width = Math.min(resizeToX, w / yRatio)
     width.toInt
   }
+}
+
+object AuthorsMap {
+  val renames = Map("ЯдвигаВереск" -> "Wereskowa")
 }
