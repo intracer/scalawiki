@@ -16,6 +16,7 @@ class NumberOfAuthorsBonusSpec extends Specification {
   val imageDbStub = new ImageDB(contest, Nil, monumentDbStub)
 
   "rater" should {
+
     "rate non-pictured first year" in {
       val imageDb = imageDbStub.copy(images = Seq(image1))
       val rater = new NumberOfAuthorsBonus(contestStatStub.copy(currentYearImageDb = Some(imageDb), totalImageDb = Some(imageDb)))

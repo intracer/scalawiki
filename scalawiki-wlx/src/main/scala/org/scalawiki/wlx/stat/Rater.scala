@@ -1,10 +1,12 @@
 package org.scalawiki.wlx.stat
 
+import com.typesafe.config.Config
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.ImageDB
 
 import scala.collection.mutable
+import com.typesafe.config.impl.ConfigNumber
 
 case class RateConfig(newObjectRating: Option[Int] = None,
                       newAuthorObjectRating: Option[Int] = None,
@@ -73,6 +75,23 @@ object Rater {
     }
   }
 
+  def fromConfig(stat: ContestStat, config: Config): Rater = {
+    val rateCfg = config.getConfig(s"rates.${stat.contest.year}")
+    val raters = Seq(new NumberOfMonuments(stat)) ++
+      (if (rateCfg.hasPath("number-of-authors-bonus")) {
+        Seq(new NumberOfAuthorsBonus(stat))
+      } else Nil) ++
+      (if (rateCfg.hasPath("number-of-images-bonus")) {
+        Seq(new NumberOfImagesInPlaceBonus(stat))
+      } else Nil)
+
+    if (raters.tail.isEmpty) {
+      raters.head
+    } else {
+      new RateSum(stat, raters)
+    }
+
+  }
 }
 
 class NumberOfMonuments(val stat: ContestStat) extends Rater {
