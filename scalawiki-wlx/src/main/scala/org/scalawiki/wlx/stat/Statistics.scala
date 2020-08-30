@@ -25,9 +25,9 @@ import scala.concurrent.Future
   */
 case class ContestStat(contest: Contest,
                        startYear: Int,
-                       monumentDb: Option[MonumentDB],
-                       currentYearImageDb: Option[ImageDB],
-                       totalImageDb: Option[ImageDB],
+                       monumentDb: Option[MonumentDB] = None,
+                       currentYearImageDb: Option[ImageDB] = None,
+                       totalImageDb: Option[ImageDB] = None,
                        dbsByYear: Seq[ImageDB] = Seq.empty,
                        monumentDbOld: Option[MonumentDB] = None,
                        config: Option[StatConfig] = None) {

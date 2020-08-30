@@ -99,7 +99,7 @@ object Output {
         ids.map {
           id =>
             val images = imageDb.byId(id).map(_.title).sorted
-            val rating = rater.map(_.explainRate(id, author.getOrElse(""))).getOrElse("")
+            val rating = rater.map(_.explain(id, author.getOrElse(""))).getOrElse("")
             s"\n==== $id ====\n" +
               s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n\n" +
               s"$rating \n" +

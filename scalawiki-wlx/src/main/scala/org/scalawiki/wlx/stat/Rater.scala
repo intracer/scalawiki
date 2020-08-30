@@ -30,7 +30,7 @@ trait Rater {
 
   def rate(monumentId: String, author: String): Int
 
-  def explainRate(monumentId: String, author: String): String
+  def explain(monumentId: String, author: String): String
 
   def rateMonumentIds(monumentIds: Set[String], author: String): Int = {
     monumentIds.toSeq.map(rate(_, author)).sum
@@ -82,7 +82,7 @@ class NumberOfMonuments(val stat: ContestStat) extends Rater {
     if (monumentIds.contains(monumentId)) 1 else 0
   }
 
-  override def explainRate(monumentId: String, author: String): String = {
+  override def explain(monumentId: String, author: String): String = {
     if (monumentIds.contains(monumentId)) "Base rate = 1" else "Not a known monument = 0"
   }
 }
@@ -96,7 +96,7 @@ class NewlyPicturedBonus(val stat: ContestStat, newlyPicturedRate: Int) extends 
       0
   }
 
-  override def explainRate(monumentId: String, author: String): String = {
+  override def explain(monumentId: String, author: String): String = {
     if (!oldMonumentIds.contains(monumentId))
       s"Newly pictured rate bonus = ${newlyPicturedRate - 1}"
     else
@@ -123,7 +123,7 @@ class NewlyPicturedPerAuthorBonus(val stat: ContestStat,
     }
   }
 
-  override def explainRate(monumentId: String, author: String): String = {
+  override def explain(monumentId: String, author: String): String = {
     monumentId match {
       case id if !oldMonumentIds.contains(id) =>
         s"Newly pictured bonus = ${newlyPicturedRate - 1}"
@@ -168,7 +168,7 @@ class NumberOfAuthorsBonus(val stat: ContestStat) extends Rater {
     }
   }
 
-  override def explainRate(monumentId: String, author: String): String = {
+  override def explain(monumentId: String, author: String): String = {
     val number = rate(monumentId, author)
     if (authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
       s"Pictured by same author before = $number"
@@ -297,7 +297,7 @@ class NumberOfImagesInPlaceBonus(val stat: ContestStat) extends Rater {
     }
   }
 
-  override def explainRate(monumentId: String, author: String): String = {
+  override def explain(monumentId: String, author: String): String = {
     if (authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
       s"Pictured by same author before = 0"
     } else {
@@ -328,7 +328,7 @@ class RateSum(val stat: ContestStat, val raters: Seq[Rater]) extends Rater {
     raters.map(_.rate(monumentId, author)).sum
   }
 
-  override def explainRate(monumentId: String, author: String): String = {
-    s"Rating = ${raters.map(_.rate(monumentId, author)).sum}, is a sum of: " + raters.map(_.explainRate(monumentId, author)).mkString(", ")
+  override def explain(monumentId: String, author: String): String = {
+    s"Rating = ${raters.map(_.rate(monumentId, author)).sum}, is a sum of: " + raters.map(_.explain(monumentId, author)).mkString(", ")
   }
 }

@@ -58,6 +58,9 @@ case class Image(title: String,
   def resizeTo(resizeToX: Int, resizeToY: Int): Int =
     Image.resizedWidth(width.get, height.get, resizeToX, resizeToY)
 
+  def withAuthor(newAuthor: String): Image = this.copy(author = Some(newAuthor))
+
+  def withMonument(monumentId: String): Image = this.copy(monumentIds = Seq(monumentId))
 }
 
 object Image {

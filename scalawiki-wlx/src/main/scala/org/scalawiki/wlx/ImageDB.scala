@@ -7,7 +7,7 @@ import org.scalawiki.wlx.query.ImageQuery
 import scala.concurrent.Future
 
 
-class ImageDB(val contest: Contest,
+case class ImageDB(val contest: Contest,
               val images: Seq[Image],
               val monumentDb: Option[MonumentDB]) {
 
