@@ -6,8 +6,8 @@ class RateRanges(val rangeMap: Map[(Int, Int), Int]) {
   verify()
 
   private def verify(): Unit = {
-    rangeMap.keys.foreach { r1 =>
-      rangeMap.keys.foreach { r2 =>
+    rangeMap.keys.toBuffer.sorted.foreach { r1 =>
+      rangeMap.keys.toBuffer.sorted.foreach { r2 =>
         if ((r1 ne r2) &&
           r1._1 <= r2._2 &&
           r2._1 <= r1._2) {

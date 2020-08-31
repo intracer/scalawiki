@@ -19,7 +19,7 @@ class RateRangesSpec extends Specification {
       RateRanges(ConfigFactory.parseString("""{"0-0": 9, "1-3": 3, "4-9": 1}""")).rangeMap === Map(
         ((0, 0), 9),
         ((1, 3), 3),
-        ((4, 9), 1),
+        ((4, 9), 1)
       )
     }
 
