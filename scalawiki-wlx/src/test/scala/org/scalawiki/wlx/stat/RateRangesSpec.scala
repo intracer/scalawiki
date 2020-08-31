@@ -38,7 +38,13 @@ class RateRangesSpec extends Specification {
 
     "parse wlm 2020" in {
       val rater = Rater.fromConfig(contestStat, ConfigFactory.load("wlm_ua.conf"))
-      rater.asInstanceOf[RateSum].raters.size === 3
+      rater must beAnInstanceOf[RateSum]
+      val rateSum = rater.asInstanceOf[RateSum]
+      val raters = rateSum.raters
+      raters.size === 3
+      raters.find(_.isInstanceOf[NumberOfMonuments]) must beSome
+      raters.find(_.isInstanceOf[NumberOfAuthorsBonus]) must beSome
+      raters.find(_.isInstanceOf[NumberOfImagesInPlaceBonus]) must beSome
     }
   }
 }

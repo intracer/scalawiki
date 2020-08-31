@@ -6,7 +6,6 @@ import org.scalawiki.dto.Image
 import org.scalawiki.wlx.ImageDB
 
 import scala.collection.mutable
-import com.typesafe.config.impl.ConfigNumber
 
 case class RateConfig(newObjectRating: Option[Int] = None,
                       newAuthorObjectRating: Option[Int] = None,
