@@ -6,7 +6,9 @@ import org.scalawiki.wlx.ImageDB
 import org.scalawiki.wlx.dto.{Contest, Country, Monument, SpecialNomination}
 import org.scalawiki.wlx.query.MonumentQuery
 
-class SpecialNominations(contest: Contest, imageDb: ImageDB) {
+class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
+
+  val contest = stat.contest
 
   def statistics(): Unit = {
 
@@ -27,7 +29,14 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
     }.toMap
 
     val headers = Seq("Special nomination", "authors",
-      "all monuments", "special nomination monuments", "photographed monuments", "photographed special monuments", "photos")
+      "all monuments", "special nomination monuments", "photographed monuments", "photographed special monuments",
+      "newly pictured monuments", "photos")
+
+    val newImageNames = imageDb.images.map(_.title).toSet
+    val oldMonumentIds = stat.totalImageDb.get.images
+      .filterNot(image => newImageNames.contains(image.title))
+      .flatMap(_.monumentIds).toSet
+
     val rows = for (nomination <- nominations) yield {
 
       val imagesPage = s"Commons:Images from ${contest.name} special nomination ${nomination.name}"
@@ -43,6 +52,7 @@ class SpecialNominations(contest: Contest, imageDb: ImageDB) {
         monumentsMap(nomination).map(_.id).count(isSpecialNominationMonument).toString,
         imageDb.ids.size.toString,
         imageDb.ids.count(isSpecialNominationMonument).toString,
+        monumentsMap(nomination).map(_.id).filterNot(oldMonumentIds.contains).size,
         s"${imageDb.images.size} [[$imagesPage by region|by region]], [[$imagesPage by author|by author]]"
       )
     }

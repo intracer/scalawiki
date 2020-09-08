@@ -24,7 +24,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
 
   def authorsContributed: String = RR.authorsContributed(stat.dbsByYear, totalImageDb, monumentDb)
 
-  def specialNominations(): String = RR.specialNominations(currentYearImageDb.get)
+  def specialNominations(): String = RR.specialNominations(stat)
 
   def mostPopularMonuments: String = new MostPopularMonuments(stat).asText
 
@@ -40,7 +40,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
     for (imageDb <- currentYearImageDb) {
 
       if (cfg.specialNominations) {
-        new SpecialNominations(contest, imageDb).statistics()
+        new SpecialNominations(stat, imageDb).statistics()
       }
 
       if (cfg.lowRes) {
@@ -123,8 +123,8 @@ object ReporterRegistry {
   def authorsContributed(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: Option[MonumentDB]): String =
     new AuthorsStat().authorsContributed(imageDbs, totalImageDb, monumentDb)
 
-  def specialNominations(imageDB: ImageDB): String =
-    new SpecialNominations(imageDB.contest, imageDB).specialNomination()
+  def specialNominations(stat: ContestStat): String =
+    new SpecialNominations(stat, stat.currentYearImageDb.get).specialNomination()
 
   def withArticles(monumentDb: Option[MonumentDB]): Option[String] =
     monumentDb.map(db => Stats.withArticles(db).asWiki("").asWiki)
