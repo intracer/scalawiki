@@ -52,7 +52,7 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
         monumentsMap(nomination).map(_.id).count(isSpecialNominationMonument).toString,
         imageDb.ids.size.toString,
         imageDb.ids.count(isSpecialNominationMonument).toString,
-        monumentsMap(nomination).map(_.id).filterNot(oldMonumentIds.contains).size.toString,
+        imageDb.ids.diff(oldMonumentIds).size.toString,
         s"${imageDb.images.size} [[$imagesPage by region|by region]], [[$imagesPage by author|by author]]"
       )
     }
