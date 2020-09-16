@@ -2,10 +2,15 @@ package org.scalawiki.wlx.stat
 
 import com.typesafe.config.Config
 
-class RateRanges(val rangeMap: Map[(Int, Int), Int]) {
+class RateRanges(val rangeMap: Map[(Int, Int), Int], default: Int = 0) {
   verify()
+  val max = rangeMap.keys.map(_._2).max
 
   private def verify(): Unit = {
+    rangeMap.keys.foreach { case (x1, x2) =>
+      if (x1 > x2) throw new IllegalArgumentException(s"Invalid ends order in range $x1-$x2: $x1 > $x2")
+    }
+
     rangeMap.keys.toBuffer.sorted.foreach { r1 =>
       rangeMap.keys.toBuffer.sorted.foreach { r2 =>
         if ((r1 ne r2) &&
@@ -17,9 +22,19 @@ class RateRanges(val rangeMap: Map[(Int, Int), Int]) {
     }
   }
 
-  def rate(param: Int): Option[Int] = {
-    rangeMap.collectFirst { case ((start, end), rate) if start <= param && param <= end => rate }
+  def rate(param: Int): Int = {
+    rangeMap.collectFirst { case ((start, end), rate)
+      if start <= param && param <= end => rate
+    }.getOrElse(0)
   }
+
+  def rateWithRange(param: Int): (Int, Int, Option[Int]) = {
+    rangeMap.collectFirst { case ((start, end), rate)
+      if start <= param && param <= end =>
+      (rate, start, Some(end))
+    }.getOrElse((default, max, None))
+  }
+
 }
 
 object RateRanges {

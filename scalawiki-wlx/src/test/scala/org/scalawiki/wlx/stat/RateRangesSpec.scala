@@ -23,6 +23,11 @@ class RateRangesSpec extends Specification {
       )
     }
 
+    "do not allow reversed range" in {
+      val exception = new IllegalArgumentException("Invalid ends order in range 1-0: 1 > 0")
+      RateRanges(ConfigFactory.parseString("""{"0-0": 9, "2-1": 3}""")) must throwA(exception)
+    }
+
     "do not allow overlaps" in {
       val exception = new IllegalArgumentException("Ranges (0,0) and (0,1) overlap")
       RateRanges(ConfigFactory.parseString("""{"0-0": 9, "0-1": 3}""")) must throwA(exception)
