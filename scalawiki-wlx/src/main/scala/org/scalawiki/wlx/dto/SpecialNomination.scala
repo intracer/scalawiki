@@ -64,7 +64,7 @@ object SpecialNomination {
   def monumentsInCitites(cities: Seq[String], monumentDb: MonumentDB): Seq[Monument] = {
     val placeIds = placesByCities(cities).flatten.map(_.code).toSet
     monumentDb.allMonuments.filter { monument =>
-      placeIds.contains(monumentDb.placeByMonumentId(monument.id))
+      monumentDb.placeByMonumentId.get(monument.id).exists(placeIds.contains)
     }
   }
 
