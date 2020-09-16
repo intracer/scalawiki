@@ -17,8 +17,8 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
 
   def monumentDbStat: Option[String] = stat.monumentDb.map(RR.monumentDbStat)
 
-//  def authorsMonuments: String =
-//    RR.authorsMonuments(stat.currentYearImageDb.get)
+  //  def authorsMonuments: String =
+  //    RR.authorsMonuments(stat.currentYearImageDb.get)
 
   def authorsImages: String = RR.authorsImages(currentYearImageDb.get, monumentDb)
 
@@ -33,11 +33,15 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
   def withArticles: Option[String] = RR.withArticles(monumentDb)
 
   /**
-    * Outputs current year reports.
-    *
-    */
+   * Outputs current year reports.
+   *
+   */
   def currentYear() = {
     for (imageDb <- currentYearImageDb) {
+
+      if (cfg.regionalGallery && stat.totalImageDb.isEmpty) {
+        Output.byRegion(monumentDb.get, imageDb)
+      }
 
       if (cfg.specialNominations) {
         new SpecialNominations(stat, imageDb).statistics()
@@ -114,8 +118,8 @@ object ReporterRegistry {
   def monumentDbStat(db: MonumentDB): String =
     new MonumentDbStat().getStat(Seq(db))
 
-//  def authorsMonuments(imageDb: ImageDB, newObjectRating: Option[Int] = None): String =
-//    new AuthorMonuments(imageDb, newObjectRating).asText
+  //  def authorsMonuments(imageDb: ImageDB, newObjectRating: Option[Int] = None): String =
+  //    new AuthorMonuments(imageDb, newObjectRating).asText
 
   def authorsImages(imageDb: ImageDB, monumentDb: Option[MonumentDB]): String =
     new AuthorsStat().authorsImages(imageDb._byAuthor.grouped, monumentDb)

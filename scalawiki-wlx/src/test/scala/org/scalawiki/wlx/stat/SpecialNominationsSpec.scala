@@ -1,6 +1,6 @@
 package org.scalawiki.wlx.stat
 
-import org.scalawiki.wlx.dto.SpecialNomination
+import org.scalawiki.wlx.dto.{Country, RegionType, SpecialNomination}
 import org.specs2.mutable.Specification
 
 class SpecialNominationsSpec extends Specification {
@@ -32,13 +32,19 @@ class SpecialNominationsSpec extends Specification {
           Seq("Вікіпедія:Вікі любить пам'ятки/Українські пам'ятки Першої світової війни")),
         new SpecialNomination("Цивільні споруди доби Гетьманщини", "WLM-рядок",
           Seq("Template:WLM цивільні споруди доби Гетьманщини")),
-          new SpecialNomination("Млини", "WLM-рядок",
-            Seq("Template:WLM млини та вітряки"), Seq(2019, 2020)),
-          new SpecialNomination("Єврейська спадщина", "WLM-рядок",
-          Seq("Template:WLM єврейська спадщина"), Seq(2019, 2020))
+        new SpecialNomination("Млини", "WLM-рядок",
+          Seq("Template:WLM млини та вітряки"), Seq(2019, 2020)),
+        new SpecialNomination("Єврейська спадщина", "WLM-рядок",
+          Seq("Template:WLM єврейська спадщина"), Seq(2019, 2020)),
+        new SpecialNomination("Віа Регіа", "ВЛП-рядок", Nil, Seq(2020),
+          Seq("Дубно", "Рівне", "Острог", "Львів", "Броди", "Городок 46", "Луцьк", "Володимир-Волинський",
+            "Радомишль", "Житомир", "Київ"))
       )
 
       SpecialNomination.load("wlm_ua.conf") === expected
+
+      val places = SpecialNomination.placesByCities(expected.last.cities)
+      places.map(_.size).distinct === Seq(1)
     }
   }
 }

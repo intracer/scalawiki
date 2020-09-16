@@ -3,8 +3,9 @@ package org.scalawiki.wlx
 import java.time.{ZoneOffset, ZonedDateTime}
 
 import org.scalawiki.dto.markup.Table
-import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Monument}
+import org.scalawiki.wlx.dto.{AdmDivision, Contest, Monument}
 import org.scalawiki.wlx.query.MonumentQuery
+import org.scalawiki.wlx.stat.PerPlaceStat
 
 class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFalseIds: Boolean = true) {
 
@@ -84,6 +85,20 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
       Table(headers, data, page)
     }
   }
+
+  lazy val placeByMonumentId: Map[String, String] = (for (id <- ids;
+                                                          monument <- byId(id))
+    yield {
+      val regionId = id.split("-").take(2).mkString("-")
+      val city = monument.city.getOrElse("")
+      val candidates = country.byIdAndName(regionId, city)
+      if (candidates.size == 1) {
+        Some(id -> candidates.head.code)
+      } else {
+        PerPlaceStat.fallbackMap.get(id).map(id -> _)
+      }
+    }).flatten.toMap
+
 }
 
 case class UnknownPlace(page: String, regionId: String, name: String, candidates: Seq[AdmDivision], monuments: Seq[Monument]) {

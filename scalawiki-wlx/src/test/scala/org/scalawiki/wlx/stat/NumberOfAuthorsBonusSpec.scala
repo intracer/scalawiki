@@ -1,5 +1,6 @@
 package org.scalawiki.wlx.stat
 
+import com.typesafe.config.ConfigFactory
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 import org.scalawiki.wlx.dto.{Contest, ContestType, Country, Monument}
@@ -16,18 +17,19 @@ class NumberOfAuthorsBonusSpec extends Specification {
   val imageDbStub = new ImageDB(contest, Nil, monumentDbStub)
 
   "rater" should {
+    val ranges = RateRanges(ConfigFactory.parseString("""{"0-0": 9, "1-3": 3}"""))
+    val imageDb = imageDbStub.copy(images = Seq(image1))
+    val currentYearStat = contestStatStub.copy(currentYearImageDb = Some(imageDb))
 
     "rate non-pictured first year" in {
-      val imageDb = imageDbStub.copy(images = Seq(image1))
-      val rater = new NumberOfAuthorsBonus(contestStatStub.copy(currentYearImageDb = Some(imageDb), totalImageDb = Some(imageDb)))
+      val rater = new NumberOfAuthorsBonus(currentYearStat.copy(totalImageDb = Some(imageDb)), ranges)
       rater.rate("01-123-0001", "author 1") === 9
       rater.explain("01-123-0001", "author 1") === "Not pictured before = 9"
     }
 
     "rate pictured twice by same author" in {
-      val imageDb = imageDbStub.copy(images = Seq(image1))
       val totalImageDb = imageDbStub.copy(images = Seq(image1, image2))
-      val rater = new NumberOfAuthorsBonus(contestStatStub.copy(currentYearImageDb = Some(imageDb), totalImageDb = Some(totalImageDb)))
+      val rater = new NumberOfAuthorsBonus(currentYearStat.copy(totalImageDb = Some(totalImageDb)), ranges)
       rater.rate("01-123-0001", "author 1") === 0
       rater.explain("01-123-0001", "author 1") === "Pictured by same author before = 0"
     }
