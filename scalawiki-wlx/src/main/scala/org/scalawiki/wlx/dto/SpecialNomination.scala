@@ -39,7 +39,7 @@ object SpecialNomination {
         c.getString("listTemplate"),
         c.as[Option[Seq[String]]]("pages").getOrElse(Nil),
         c.as[Option[Seq[Int]]]("years").getOrElse(Nil),
-        c.as[Option[Seq[String]]]("cities").getOrElse(Nil),
+        c.as[Option[Seq[String]]]("cities").getOrElse(Nil)
       )
     }).getOrElse(Seq.empty)
   }
