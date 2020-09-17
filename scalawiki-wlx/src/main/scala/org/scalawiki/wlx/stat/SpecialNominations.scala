@@ -3,7 +3,7 @@ package org.scalawiki.wlx.stat
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.ImageDB
-import org.scalawiki.wlx.dto.{Contest, Country, Monument, SpecialNomination}
+import org.scalawiki.wlx.dto.{Contest, Country, Koatuu, Monument, SpecialNomination}
 import org.scalawiki.wlx.query.MonumentQuery
 
 class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
@@ -69,12 +69,25 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
 
   def galleryByRegion(imagesPage: String, imageDb: ImageDB): Unit = {
     var imagesText = "__TOC__"
+    val monumentDb = imageDb.monumentDb.get
 
     for (region <- Country.Ukraine.regions) {
       val images = imageDb.imagesByRegion(region.code)
+
       if (images.nonEmpty) {
+        val monumentIds = images.flatMap(_.monumentIds)
+        val byPlace = monumentIds.groupBy { id =>
+          monumentDb.placeByMonumentId.getOrElse(id, "Unknown")
+        }.mapValues(_.toSet).toMap
+
         imagesText += s"\n== ${region.name} ${images.size} images ==\n"
-        imagesText += images.map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
+
+        imagesText += byPlace.map { case (code, monumentIds) =>
+          val place = Country.Ukraine.byId(monumentIds.head).map(_.name).getOrElse("Unknown")
+          val placeImages = images.filter(_.monumentIds.toSet.intersect(monumentIds).nonEmpty)
+          s"\n=== $place ${placeImages.size} images ===\n" ++
+            placeImages.map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
+        }.mkString("\n")
       }
     }
 
