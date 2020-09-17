@@ -2,9 +2,11 @@ package org.scalawiki.wlx.stat
 
 import com.typesafe.config.Config
 
+import scala.util.Try
+
 class RateRanges(val rangeMap: Map[(Int, Int), Int], default: Int = 0) {
   verify()
-  val max = rangeMap.keys.map(_._2).max
+  val max = Try(rangeMap.keys.map(_._2).max).toOption.getOrElse(0)
 
   private def verify(): Unit = {
     rangeMap.keys.foreach { case (x1, x2) =>

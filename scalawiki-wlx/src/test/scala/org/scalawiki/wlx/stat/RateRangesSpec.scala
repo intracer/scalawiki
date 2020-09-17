@@ -24,7 +24,7 @@ class RateRangesSpec extends Specification {
     }
 
     "do not allow reversed range" in {
-      val exception = new IllegalArgumentException("Invalid ends order in range 1-0: 1 > 0")
+      val exception = new IllegalArgumentException("Invalid ends order in range 2-1: 2 > 1")
       RateRanges(ConfigFactory.parseString("""{"0-0": 9, "2-1": 3}""")) must throwA(exception)
     }
 

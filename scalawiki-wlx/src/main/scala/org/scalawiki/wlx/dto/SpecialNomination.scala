@@ -32,7 +32,7 @@ object SpecialNomination {
       config.getConfigList("nominations")
     }.recover { case x: Throwable =>
       println(x)
-      java.util.List.of()
+      new java.util.ArrayList()
     }.toOption.map(_.asScala.toSeq.map { c =>
       new SpecialNomination(
         c.getString("name"),
