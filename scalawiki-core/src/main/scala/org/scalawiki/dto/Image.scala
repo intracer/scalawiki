@@ -5,8 +5,15 @@ import java.time.{LocalDateTime, ZoneOffset, ZonedDateTime}
 import java.time.format.DateTimeFormatter
 
 import org.scalawiki.MwBot
+import org.scalawiki.dto.cmd.Action
+import org.scalawiki.dto.cmd.query.{Query, TitlesParam}
+import org.scalawiki.dto.cmd.query.prop.iiprop.{IiProp, Url}
+import org.scalawiki.dto.cmd.query.prop.{ImageInfo, Prop}
 import org.scalawiki.dto.markup.Gallery
 import org.scalawiki.wikitext.TemplateParser
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 case class ImageMetadata(data: Map[String, String]) {
 
@@ -41,10 +48,18 @@ case class Image(title: String,
 
   def monumentId: Option[String] = monumentIds.headOption
 
-  def download(filename: String) {
+  def download(filename: String = title.replace("File:", "")) {
     import scala.concurrent.ExecutionContext.Implicits.global
-    for (bytes <- MwBot.fromSite(Site.commons).getByteArray(url.get))
+    for (maybeUrl <- url.fold(fetchUrl())(u => Future.successful(Option(u)));
+         url <- maybeUrl;
+         bytes <- MwBot.fromSite(Site.commons).getByteArray(url)) {
       Files.write(Paths.get(filename), bytes)
+    }
+  }
+
+  def fetchUrl() = {
+    val action = Action(Query(TitlesParam(List(title)), Prop(ImageInfo(IiProp(Url)))))
+    MwBot.fromSite(Site.commons).run(action).map(_.headOption.flatMap(_.images.headOption.flatMap(_.url)))
   }
 
   def pixels: Option[Long] = for (w <- width; h <- height) yield w * h
