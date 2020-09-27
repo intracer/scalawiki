@@ -87,7 +87,7 @@ object Output {
         val ratingStr = s"\nRating: '''$rating''' \n "
 
         regionHeader + ratingStr + table1 +
-          gallery("", ids, authorImageDb, monumentDb, Some(rater))
+          gallery("", ids, authorImageDb, monumentDb, Some(rater), author = Some(author))
 
     }.mkString("\n")
   }
