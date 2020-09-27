@@ -41,7 +41,7 @@ object Output {
     val author = authorImageDb.authors.head
     val rateConfig = contest.rateConfig
     val tableHeader = "{| class=\"wikitable\"\n! rate !! base " +
-      (if (rateConfig.numberOfAuthorsBonus) "!! authors <br> bonus " else "") +
+      (if (rateConfig.numberOfAuthorsBonus || rater.withRating) "!! authors <br> bonus " else "") +
       (if (rateConfig.numberOfImagesBonus) "!! images <br> bonus " else "") +
       "!! objects !! ids \n|-\n"
 
