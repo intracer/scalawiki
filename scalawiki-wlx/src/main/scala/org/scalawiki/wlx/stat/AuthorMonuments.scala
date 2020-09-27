@@ -29,12 +29,7 @@ class AuthorMonuments(val stat: ContestStat,
 
   val monumentDb = stat.monumentDb.get
 
-  def withRating: Boolean = {
-    contest.rateConfig.newObjectRating.isDefined ||
-      contest.rateConfig.newAuthorObjectRating.isDefined ||
-      contest.rateConfig.numberOfImagesBonus ||
-      contest.rateConfig.numberOfAuthorsBonus
-  }
+  def withRating: Boolean = rater.withRating
 
   def rowData(ids: Set[String], images: Int, userOpt: Option[String] = None): Seq[String] = {
 

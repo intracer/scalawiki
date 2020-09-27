@@ -1,8 +1,8 @@
 package org.scalawiki.wlx.stat
 
-import com.typesafe.config.{Config, ConfigFactory}
-import org.scalawiki.wlx.{ImageDB, MonumentDB}
+import com.typesafe.config.ConfigFactory
 import org.scalawiki.wlx.dto.{Contest, ContestType, Country}
+import org.scalawiki.wlx.{ImageDB, MonumentDB}
 import org.specs2.mutable.Specification
 
 class RateRangesSpec extends Specification {
@@ -51,5 +51,22 @@ class RateRangesSpec extends Specification {
       raters.find(_.isInstanceOf[NumberOfAuthorsBonus]) must beSome
       raters.find(_.isInstanceOf[NumberOfImagesInPlaceBonus]) must beSome
     }
+
+    "parse wle 2020" in {
+      val rater = Rater.fromConfig(contestStat, ConfigFactory.load("wle_ua.conf"))
+      rater must beAnInstanceOf[RateSum]
+      val rateSum = rater.asInstanceOf[RateSum]
+      val raters = rateSum.raters
+      raters.size === 2
+      raters.find(_.isInstanceOf[NumberOfMonuments]) must beSome
+      raters.find(_.isInstanceOf[NumberOfAuthorsBonus]) must beSome
+      val bonusRater = raters.collect{case x:NumberOfAuthorsBonus  => x}.head
+      bonusRater.rateRanges.rangeMap === Map(
+        ((0, 0), 9),
+        ((1, 3), 3),
+        ((4, 9), 1)
+      )
+    }
+
   }
 }

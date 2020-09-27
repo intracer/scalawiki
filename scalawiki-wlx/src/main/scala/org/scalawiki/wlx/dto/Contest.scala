@@ -26,7 +26,8 @@ case class Contest(
                     endDate: String = "",
                     uploadConfigs: Seq[UploadConfig] = Nil,
                     specialNominations: Seq[SpecialNomination] = Nil,
-                    rateConfig: RateConfig = RateConfig()
+                    rateConfig: RateConfig = RateConfig(),
+                    config: Option[Config] = None
                   ) extends HasImagesCategory {
 
   def campaign = contestType.code + "-" + country.code
@@ -97,7 +98,7 @@ object Contest {
 
     for (contestType <- ContestType.byCode(typeStr.toLowerCase);
          country <- Country.fromJavaLocales.find(country => country.name == countryStr || country.code == countryStr))
-      yield new Contest(contestType, country, year, uploadConfigs = Seq(uploadConfig))
+      yield new Contest(contestType, country, year, uploadConfigs = Seq(uploadConfig), config = Some(config))
   }
 
   def ESPCUkraine(year: Int, startDate: String = "01-09", endDate: String = "30-09") =

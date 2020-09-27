@@ -49,30 +49,34 @@ trait Rater {
 
   lazy val oldMonumentIds: Set[String] = oldImages.flatMap(_.monumentId).toSet
 
+  def withRating: Boolean = true
+
 }
 
 object Rater {
 
   def create(stat: ContestStat): Rater = {
-    val config = stat.contest.rateConfig
+    stat.contest.config.map(fromConfig(stat, _)).getOrElse {
+      val config = stat.contest.rateConfig
 
-    val raters = Seq(new NumberOfMonuments(stat)) ++
-      config.newAuthorObjectRating.map(r =>
-        new NewlyPicturedPerAuthorBonus(stat, config.newObjectRating.getOrElse(1), r)
-      ).orElse(
-        config.newObjectRating.map(new NewlyPicturedBonus(stat, _))
-      ) ++
-//      (if (config.numberOfAuthorsBonus) {
-//      Seq(new NumberOfAuthorsBonus(stat))
-//    } else Nil) ++
-      (if (config.numberOfImagesBonus) {
-      Seq(new NumberOfImagesInPlaceBonus(stat))
-    } else Nil)
+      val raters = Seq(new NumberOfMonuments(stat)) ++
+        config.newAuthorObjectRating.map(r =>
+          new NewlyPicturedPerAuthorBonus(stat, config.newObjectRating.getOrElse(1), r)
+        ).orElse(
+          config.newObjectRating.map(new NewlyPicturedBonus(stat, _))
+        ) ++
+        //      (if (config.numberOfAuthorsBonus) {
+        //      Seq(new NumberOfAuthorsBonus(stat))
+        //    } else Nil) ++
+        (if (config.numberOfImagesBonus) {
+          Seq(new NumberOfImagesInPlaceBonus(stat))
+        } else Nil)
 
-    if (raters.tail.isEmpty) {
-      raters.head
-    } else {
-      new RateSum(stat, raters)
+      if (raters.tail.isEmpty) {
+        raters.head
+      } else {
+        new RateSum(stat, raters)
+      }
     }
   }
 
@@ -105,6 +109,8 @@ class NumberOfMonuments(val stat: ContestStat) extends Rater {
   override def explain(monumentId: String, author: String): String = {
     if (monumentIds.contains(monumentId)) "Base rate = 1" else "Not a known monument = 0"
   }
+
+  override def withRating: Boolean = false
 }
 
 class NewlyPicturedBonus(val stat: ContestStat, newlyPicturedRate: Int) extends Rater {
