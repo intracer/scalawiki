@@ -38,5 +38,12 @@ trait SinglePageQuery {
              comment: Option[String] = None,
              ignoreWarnings: Boolean = true): Future[String]
 
+  def upload(title: String,
+             fileContents: Array[Byte],
+             text: Option[String] = None,
+             comment: Option[String] = None,
+             ignoreWarnings: Boolean = true,
+             ): Future[String]
+
   def withContext(context: Map[String, String]): SinglePageQuery
 }
