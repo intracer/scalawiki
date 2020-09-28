@@ -33,10 +33,10 @@ trait SinglePageQuery {
            token: Option[String] = None,
            multi: Boolean = true): Future[Any] // TODO specific result
 
-  def upload(filename: String,
-             text: Option[String] = None,
-             comment: Option[String] = None,
-             ignoreWarnings: Boolean = true): Future[String]
+  def uploadFromFile(filename: String,
+                     text: Option[String] = None,
+                     comment: Option[String] = None,
+                     ignoreWarnings: Boolean = true): Future[String]
 
   def upload(title: String,
              fileContents: Array[Byte],

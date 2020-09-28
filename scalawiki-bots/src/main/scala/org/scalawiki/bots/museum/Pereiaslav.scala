@@ -182,7 +182,7 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
     val file = SFile(entry.filePath)
     val fileTitle = entry.uploadTitle.get + file.extension.getOrElse("")
 
-    bot.page("File:" + fileTitle).upload(entry.filePath, Some(page), ignoreWarnings = true)
+    bot.page("File:" + fileTitle).uploadFromFile(entry.filePath, Some(page), ignoreWarnings = true)
   }
 
 

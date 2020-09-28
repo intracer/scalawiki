@@ -142,10 +142,10 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
     retry.Backoff()(odelay.Timer.default)(() => performEdit())
   }
 
-  override def upload(filename: String,
-                      text: Option[String] = None,
-                      comment: Option[String] = None,
-                      ignoreWarnings: Boolean = false): Future[String] = {
+  override def uploadFromFile(filename: String,
+                              text: Option[String] = None,
+                              comment: Option[String] = None,
+                              ignoreWarnings: Boolean = false): Future[String] = {
     val fileContents = Files.readAllBytes(Paths.get(filename))
     upload(filename, fileContents,text, comment, ignoreWarnings)
   }

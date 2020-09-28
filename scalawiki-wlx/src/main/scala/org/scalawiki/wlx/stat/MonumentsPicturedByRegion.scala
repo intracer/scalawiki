@@ -159,17 +159,17 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
       val chart = charts.createChart(dataset, "Регіон")
       val byRegionFile = filenamePrefix + "PicturedByYear"
       charts.saveCharts(chart, byRegionFile, 900, 1200)
-      bot.page(byRegionFile + ".png").upload(byRegionFile + ".png")
+      bot.page(byRegionFile + ".png").uploadFromFile(byRegionFile + ".png")
 
       val chartTotal = charts.createChart(charts.createTotalDataset(yearSeq, idsSize), "")
 
       val chartTotalFile = filenamePrefix + "PicturedByYearTotal.png"
       charts.saveAsPNG(chartTotal, chartTotalFile, 900, 200)
-      bot.page(chartTotalFile).upload(chartTotalFile)
+      bot.page(chartTotalFile).uploadFromFile(chartTotalFile)
 
       val intersectionFile = filenamePrefix + "PicturedByYearPie"
       charts.intersectionDiagram("Унікальність фотографій пам'яток за роками", intersectionFile, yearSeq, ids, 900, 800)
-      bot.page(intersectionFile + ".png").upload(intersectionFile + ".png")
+      bot.page(intersectionFile + ".png").uploadFromFile(intersectionFile + ".png")
     }
     images
   }
