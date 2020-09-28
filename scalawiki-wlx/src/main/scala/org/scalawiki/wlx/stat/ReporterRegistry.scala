@@ -103,6 +103,10 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
       if (cfg.regionalGallery) {
         Output.byRegion(monumentDb.get, imageDb)
       }
+
+      if (cfg.nominatedForDeletion) {
+        NominatedForDeletion.report(stat)
+      }
     }
   }
 
