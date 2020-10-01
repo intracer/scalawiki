@@ -44,6 +44,7 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
   val fillLists = opt[Boolean](name = "fill-lists", descr = "fill lists")
   val wrongIds = opt[Boolean](name = "wrong-ids", descr = "report wrong ids")
   val missingIds = opt[Boolean](name = "missing-ids", descr = "report missing ids")
+  val multipleIds = opt[Boolean](name = "multiple-ids", descr = "report multiple ids")
   val lowRes = opt[Boolean](name = "low-res", descr = "report low resolution photos")
   val specialNominations = opt[Boolean](name = "special-nominations", descr = "report special nominations")
   val regionalStat = opt[Boolean](name = "regional-stat", descr = "report regional statistics")
@@ -81,6 +82,7 @@ object StatParams {
       fillLists = conf.fillLists.getOrElse(false),
       wrongIds = conf.wrongIds.getOrElse(false),
       missingIds = conf.missingIds.getOrElse(false),
+      multipleIds = conf.multipleIds.getOrElse(false),
       lowRes = conf.lowRes.getOrElse(false),
       specialNominations = conf.specialNominations.getOrElse(false),
       regionalStat = conf.regionalStat.getOrElse(false),
