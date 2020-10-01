@@ -31,7 +31,7 @@ object NominatedForDeletion extends QueryLibrary {
 
         makeGallery(db, wlmNominatedIds)
 
-        copyToWikipedia(wlmNominatedIds)
+//        copyToWikipedia(wlmNominatedIds)
       }
     }
   }
