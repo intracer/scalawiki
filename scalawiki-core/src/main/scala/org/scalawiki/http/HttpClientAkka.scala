@@ -91,7 +91,10 @@ class HttpClientAkka(val system: ActorSystem = MwBot.system) extends HttpClient 
     val bodyParts = params.map { case (key, value) =>
       BodyPart(key, HttpEntity(value))
     } ++ Seq(
-      BodyPart(fileParam, HttpEntity(MediaTypes.`image/jpeg`, fileContents), Map("filename" -> filename))
+      Multipart.FormData.BodyPart.Strict("file",
+        HttpEntity(MediaTypes.`image/jpeg`, fileContents),
+        Map("filename" -> filename)
+      )
     )
     submit(Post(Uri(url), Multipart.FormData(bodyParts.toList: _*)))
   }
