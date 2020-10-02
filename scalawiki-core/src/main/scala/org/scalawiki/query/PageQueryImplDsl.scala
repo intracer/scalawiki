@@ -147,14 +147,14 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
                               comment: Option[String] = None,
                               ignoreWarnings: Boolean = false): Future[String] = {
     val fileContents = Files.readAllBytes(Paths.get(filename))
-    upload(filename, fileContents,text, comment, ignoreWarnings)
+    upload(filename, fileContents, text, comment, ignoreWarnings)
   }
 
   override def upload(title: String, fileContents: Array[Byte],
                       text: Option[String] = None,
                       comment: Option[String] = None,
                       ignoreWarnings: Boolean = false): Future[String] = {
-    val page = query.right.toOption.fold(title)(_.head)
+    val page = query.right.toOption.fold(title)(_.head).replace("File:", "")
     val token = bot.token
     val params = Map(
       "action" -> "upload",
@@ -168,7 +168,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
       text.map("text" -> _) ++
       (if (ignoreWarnings) Seq("ignorewarnings" -> "true") else Seq.empty)
 
-    bot.postFile(uploadResponseReads, params, "file", title)
+    bot.postFile(uploadResponseReads, params, "file", title, fileContents)
   }
 
   override def whatTranscludesHere(namespaces: Set[Int], continueParam: Option[(String, String)]): Future[Seq[Page]] = {

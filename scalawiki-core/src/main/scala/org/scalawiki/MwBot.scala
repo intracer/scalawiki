@@ -47,7 +47,7 @@ trait MwBot extends ActionBot {
 
   def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T]
 
-  def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String): Future[T]
+  def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String, fileContents: Array[Byte]): Future[T]
 
   def page(title: String): SinglePageQuery
 
@@ -189,13 +189,22 @@ class MwBotImpl(val site: Site,
     Json.parse(body).validate(reads)
 
   def parseResponse[T](reads: Reads[T], response: Future[HttpResponse]): Future[T] =
-    response flatMap http.getBody map {
-      body =>
+    response.flatMap { response =>
+      http.getBody(response).map { body =>
         parseJson(reads, body).getOrElse {
           val exception = parseJson(errorReads, body).getOrElse(MwException("", body))
           log.error(exception, "mediawiki error")
           throw exception
         }
+      }.recover {
+        case t: Throwable =>
+          log.error(t, "Error uploading")
+          throw t
+      }
+    }.recover {
+      case t: Throwable =>
+        log.error(t, "Error uploading")
+        throw t
     }
 
   override def getByteArray(url: String): Future[Array[Byte]] =
@@ -212,8 +221,8 @@ class MwBotImpl(val site: Site,
   override def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T] =
     parseResponse(reads, http.postMultiPart(apiUrl, params))
 
-  override def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String): Future[T] =
-    parseResponse(reads, http.postFile(apiUrl, params, fileParam, filename))
+  override def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String, fileContents: Array[Byte]): Future[T] =
+    parseResponse(reads, http.postFile(apiUrl, params, fileParam, filename, fileContents))
 
   def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)
 

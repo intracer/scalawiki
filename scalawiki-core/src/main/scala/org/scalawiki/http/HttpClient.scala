@@ -26,7 +26,7 @@ trait HttpClient {
   def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse]
   def postMultiPart(url: Uri, params: Map[String, String]): Future[HttpResponse]
 
-  def postFile(url: String, params: Map[String, String], fileParam: String, filename: String): Future[HttpResponse]
+  def postFile(url: String, params: Map[String, String], fileParam: String, filename: String, fileContents: Array[Byte]): Future[HttpResponse]
 
   def getBody(response: HttpResponse): Future[String]
 
