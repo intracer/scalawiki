@@ -14,6 +14,7 @@ import akka.util.Timeout
 import net.spraycookies.tldlist.DefaultEffectiveTldList
 import net.spraycookies.{CookieHandling, CookieJar}
 import org.scalawiki.MwBot
+import sttp.client.akkahttp.AkkaHttpBackend
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{Duration, _}
@@ -23,8 +24,8 @@ class HttpClientAkka(val system: ActorSystem = MwBot.system) extends HttpClient 
 
   implicit val sys = system
   implicit val materializer = ActorMaterializer()
-
-  val userAgent = "ScalaWiki/0.5"
+  implicit val sttpBackend = AkkaHttpBackend.usingActorSystem(system)
+  val userAgent = "ScalaWiki/0.6"
 
   import system.dispatcher
 

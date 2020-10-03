@@ -1,8 +1,9 @@
 package org.scalawiki.http
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model._
 import org.scalawiki.MwBot
+import sttp.client.Response
+import sttp.model.Uri
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -14,21 +15,21 @@ trait HttpClient {
 
   def get(url: Uri): Future[String]
 
-  def getResponse(url: Uri): Future[HttpResponse]
-  def getResponse(url: String): Future[HttpResponse]
+  def getResponse[T](url: Uri): Future[Response[T]]
+  def getResponse[T](url: String): Future[Response[T]]
 
-  def post(url: String, params: (String, String)*): Future[HttpResponse] = post(url, params.toMap)
+  def post[T](url: String, params: (String, String)*): Future[Response[T]] = post(url, params.toMap)
 
-  def post(url: String, params: Map[String, String]): Future[HttpResponse]
+  def post[T](url: String, params: Map[String, String]): Future[Response[T]]
 
-  def postUri(url: Uri, params: Map[String, String]): Future[HttpResponse]
+  def postUri[T](url: Uri, params: Map[String, String]): Future[Response[T]]
 
-  def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse]
-  def postMultiPart(url: Uri, params: Map[String, String]): Future[HttpResponse]
+  def postMultiPart[T](url: String, params: Map[String, String]): Future[Response[T]]
+  def postMultiPart[T](url: Uri, params: Map[String, String]): Future[Response[T]]
 
-  def postFile(url: String, params: Map[String, String], fileParam: String, filename: String, fileContents: Array[Byte]): Future[HttpResponse]
+  def postFile[T](url: String, params: Map[String, String], fileParam: String, filename: String, fileContents: Array[Byte]): Future[Response[T]]
 
-  def getBody(response: HttpResponse): Future[String]
+  def getBody[T](response: Response[T]): Future[String]
 
 }
 
