@@ -109,7 +109,7 @@ object Output {
   }
 
   def galleryByMonumentId(imageDb: ImageDB, monumentDb: MonumentDB): String = {
-    val ids = imageDb.ids
+    val ids = imageDb.ids.toSeq.sorted
     ids.map {
       id =>
         val images = imageDb.byId(id).map(_.title).sorted
