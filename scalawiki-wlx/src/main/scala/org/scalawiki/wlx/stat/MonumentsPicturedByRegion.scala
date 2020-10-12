@@ -31,7 +31,10 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
     .filter(image => !currentYearPageIds.contains(image.pageId.get))
     .flatMap(_.monumentIds).toSet
 
-  def pageName(region: String) = s"Monuments pictured by region in ${region}"
+  def pageName(region: String, newly: Boolean = false): String = {
+    if (newly) s"Monuments newly pictured by region in ${region}"
+    else s"Monuments pictured by region in ${region}"
+  }
 
   override def asText: String = {
     val header = s"\n==$name==\n"
@@ -55,24 +58,35 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
     }) ++ yearsColumns
   }
 
-  def regionData(regionId: String, regionalDetails: Boolean = regionalDetails, totalImageDb: Option[ImageDB], monumentDb: MonumentDB): Seq[String] = {
+  def regionData(regionId: String, regionalDetails: Boolean = regionalDetails,
+                 totalImageDb: Option[ImageDB], monumentDb: MonumentDB): Seq[String] = {
     val picturedMonumentsInRegionSet = totalImageDb.map(_.idsByRegion(regionId)).getOrElse(Set.empty) ++
       monumentDb.picturedInRegion(regionId)
     val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
     val allMonumentsInRegion = monumentDb.byRegion(regionId).size
+
+    val regionName = if (parentRegion.code != regionId) parentRegion.regionName(regionId) else parentRegion.name
+    val percentage = if (allMonumentsInRegion != 0) 100 * picturedMonumentsInRegion / allMonumentsInRegion else 0
+
+    val newIds = stat.currentYearImageDb.get.idsByRegion(regionId) -- oldImagesMonumentIds
+    val newlyPicturedPage = s"Commons:$category/${pageName(regionName, true)}"
 
     val pictured = stat.mapYears { db =>
       Seq(
         db.idsByRegion(regionId).size,
         db.imagesByRegion(regionId).toSet.size
       ) ++
-        (if (db.contest.year == yearSeq.head) Seq(
-          (db.idsByRegion(regionId) -- oldImagesMonumentIds).size
-        ) else Nil)
+        (if (db.contest.year == yearSeq.head) {
+          Seq(
+            s"[[$newlyPicturedPage|${newIds.size}]]"
+          )
+        } else Nil)
     }.reverse.flatten
 
-    val regionName = if (parentRegion.code != regionId) parentRegion.regionName(regionId) else parentRegion.name
-    val percentage = if (allMonumentsInRegion != 0) 100 * picturedMonumentsInRegion / allMonumentsInRegion else 0
+    val newImagesDb = stat.currentYearImageDb.get.subSet(i => i.monumentIds.exists(newIds.contains))
+    val galleryText = Output.galleryByMonumentId(newImagesDb, monumentDb)
+
+    MwBot.fromHost(MwBot.commons).page(newlyPicturedPage).edit(galleryText)
 
     val columnData = (Seq(
       if (regionalDetails && regionId.length == 2) s"[[Commons:$category/${pageName(regionName)}|$regionName ($regionId)]]"
@@ -101,7 +115,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
     val photoSize = stat.mapYears(_.images.size).reverse
 
     val totalByYear = ids.zip(photoSize).zipWithIndex.flatMap { case ((ids, photos), index) =>
-      Seq(ids.size, photos) ++  (if (index == 0) Seq(
+      Seq(ids.size, photos) ++ (if (index == 0) Seq(
         (ids -- oldImagesMonumentIds).size
       ) else Nil)
     }

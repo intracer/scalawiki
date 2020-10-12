@@ -108,6 +108,17 @@ object Output {
     } else ""
   }
 
+  def galleryByMonumentId(imageDb: ImageDB, monumentDb: MonumentDB): String = {
+    val ids = imageDb.ids
+    ids.map {
+      id =>
+        val images = imageDb.byId(id).map(_.title).sorted
+        s"\n== $id ==\n" +
+          s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n\n" +
+          Image.gallery(images)
+    }.mkString("\n")
+  }
+
   def photoWithoutArticle(imageDb: ImageDB): String = {
 
     val monumentDb = imageDb.monumentDb.get
