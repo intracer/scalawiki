@@ -47,7 +47,7 @@ trait MwBot extends ActionBot {
 
   def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T]
 
-  def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String, fileContents: Array[Byte]): Future[T]
+  def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String): Future[T]
 
   def page(title: String): SinglePageQuery
 
@@ -221,8 +221,8 @@ class MwBotImpl(val site: Site,
   override def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T] =
     parseResponse(reads, http.postMultiPart(apiUrl, params))
 
-  override def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String, fileContents: Array[Byte]): Future[T] =
-    parseResponse(reads, http.postFile(apiUrl, params, fileParam, filename, fileContents))
+  override def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String): Future[T] =
+    parseResponse(reads, http.postFile(apiUrl, params, fileParam, filename))
 
   def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)
 

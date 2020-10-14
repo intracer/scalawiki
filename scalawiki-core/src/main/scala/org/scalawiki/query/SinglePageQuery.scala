@@ -33,17 +33,10 @@ trait SinglePageQuery {
            token: Option[String] = None,
            multi: Boolean = true): Future[Any] // TODO specific result
 
-  def uploadFromFile(filename: String,
-                     text: Option[String] = None,
-                     comment: Option[String] = None,
-                     ignoreWarnings: Boolean = true): Future[String]
-
-  def upload(title: String,
-             fileContents: Array[Byte],
+  def upload(filename: String,
              text: Option[String] = None,
              comment: Option[String] = None,
-             ignoreWarnings: Boolean = true
-             ): Future[String]
+             ignoreWarnings: Boolean = true): Future[String]
 
   def withContext(context: Map[String, String]): SinglePageQuery
 }

@@ -61,40 +61,37 @@ object NominatedForDeletion extends QueryLibrary {
 
   private def copyImage(page: Page) = {
     val image = page.images.head
-    for (text <- page.text;
-         url <- image.url) {
-      commons.getByteArray(url).map { bytes =>
-        val title = page.title
-        ukWiki.page(title).upload(title, bytes, page.text, Some("moving from commons"))
-      }
-    }
+    image.download()
+    val filename = Image.withoutNs(page.title)
+    ukWiki.page(page.title).upload(filename, page.text, Some("moving from commons"))
   }
 
   def main(args: Array[String]): Unit = {
     val url = "https://upload.wikimedia.org/wikipedia/commons/c/c3/10._%D0%A2%D0%B5%D1%80%D0%BD%D0%BE%D0%BF%D1%96%D0%BB%D1%8C_%D0%9F%D0%B0%D0%BC%27%D1%8F%D1%82%D0%BD%D0%B8%D0%BA_%D0%BF%D0%BE%D0%B5%D1%82%D1%83%2C_%D0%BF%D0%B8%D1%81%D1%8C%D0%BC%D0%B5%D0%BD%D0%BD%D0%B8%D0%BA%D1%83_%D0%9F%D1%83%D1%88%D0%BA%D1%96%D0%BD_%D0%9E%D0%BB%D0%B5%D0%BA%D1%81%D0%B0%D0%BD%D0%B4%D1%80.JPG"
     val title = "File:10. Тернопіль Пам'ятник поету, письменнику Пушкін Олександр.JPG"
-    val text = """{{delete|reason=There is [[Commons:Freedom of panorama#Ukraine|no freedom of panorama in Ukraine]] and the photos violate sculptors' and architects' copyright. Created 1959. No Permission from the sculptors Макар Вронський, Олексій Олійник, Олександр Скобліков.|subpage=File:Тернопіль, вул. Чорновола (сквер), Пам'ятник поету, письменнику Олександрові Пушкіну.jpg|year=2020|month=July|day=31}}
-                 |=={{int:filedesc}}==
-                 |{{Information
-                 ||description={{uk|1=Пам'ятник поету, письменнику [[:uk:Пушкін Олександр Сергійович|Олександрові Пушкіну]], [[:uk:Тернопіль|Тернопіль]], [[:uk:Вулиця В'ячеслава Чорновола (Тернопіль)|вул. Чорновола]] (сквер)}}{{Monument Ukraine|61-101-0237}}
-                 ||date=2015-05-03 07:10:52
-                 ||source={{own}}
-                 ||author=[[User:Neovitaha777|Neovitaha777]]
-                 ||permission=
-                 ||other versions=
-                 |}}
-                 |{{Location dec|49.5532373|25.5958934}}
-                 |
-                 |=={{int:license-header}}==
-                 |{{self|cc-by-sa-4.0}}
-                 |
-                 |
-                 |{{Wiki Loves Monuments 2015|ua}}
-                 |[[Category:Statue of Oleksandr Pushkin in Ternopil]]
-                 |
-                 |[[Category:Uploaded via Campaign:wlm-ua]]
-                 |[[Category:Ukraine photographs taken on 2015-05-03]]
-                 |""".stripMargin
+    val text =
+      """{{delete|reason=There is [[Commons:Freedom of panorama#Ukraine|no freedom of panorama in Ukraine]] and the photos violate sculptors' and architects' copyright. Created 1959. No Permission from the sculptors Макар Вронський, Олексій Олійник, Олександр Скобліков.|subpage=File:Тернопіль, вул. Чорновола (сквер), Пам'ятник поету, письменнику Олександрові Пушкіну.jpg|year=2020|month=July|day=31}}
+        |=={{int:filedesc}}==
+        |{{Information
+        ||description={{uk|1=Пам'ятник поету, письменнику [[:uk:Пушкін Олександр Сергійович|Олександрові Пушкіну]], [[:uk:Тернопіль|Тернопіль]], [[:uk:Вулиця В'ячеслава Чорновола (Тернопіль)|вул. Чорновола]] (сквер)}}{{Monument Ukraine|61-101-0237}}
+        ||date=2015-05-03 07:10:52
+        ||source={{own}}
+        ||author=[[User:Neovitaha777|Neovitaha777]]
+        ||permission=
+        ||other versions=
+        |}}
+        |{{Location dec|49.5532373|25.5958934}}
+        |
+        |=={{int:license-header}}==
+        |{{self|cc-by-sa-4.0}}
+        |
+        |
+        |{{Wiki Loves Monuments 2015|ua}}
+        |[[Category:Statue of Oleksandr Pushkin in Ternopil]]
+        |
+        |[[Category:Uploaded via Campaign:wlm-ua]]
+        |[[Category:Ukraine photographs taken on 2015-05-03]]
+        |""".stripMargin
     val page = new Page(
       id = None, ns = Some(Namespace.FILE), title = title, revisions = Seq(Revision(content = Some(text))),
       images = Seq(Image(title, url = Some(url)))

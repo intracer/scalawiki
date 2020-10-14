@@ -86,16 +86,11 @@ class HttpClientAkka(val system: ActorSystem = MwBot.system) extends HttpClient 
     submit(Post(url, Multipart.FormData(bodyParts: _*)))
   }
 
-  override def postFile(url: String, params: Map[String, String], fileParam: String, filename: String, fileContents: Array[Byte]): Future[HttpResponse] = {
+  override def postFile(url: String, params: Map[String, String], fileParam: String, filename: String): Future[HttpResponse] = {
 
     val bodyParts = params.map { case (key, value) =>
       BodyPart(key, HttpEntity(value))
-    } ++ Seq(
-      Multipart.FormData.BodyPart.Strict("file",
-        HttpEntity(MediaTypes.`image/jpeg`, fileContents),
-        Map("filename" -> filename)
-      )
-    )
+    } ++ Seq(BodyPart.fromPath(fileParam, MediaTypes.`image/jpeg`, Paths.get(filename)))
     submit(Post(Uri(url), Multipart.FormData(bodyParts.toList: _*)))
   }
 

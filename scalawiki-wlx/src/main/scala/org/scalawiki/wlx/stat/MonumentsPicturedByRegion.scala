@@ -159,18 +159,26 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
       val chart = charts.createChart(dataset, "Регіон")
       val byRegionFile = filenamePrefix + "PicturedByYear"
       charts.saveCharts(chart, byRegionFile, 900, 1200)
-      bot.page(byRegionFile + ".png").uploadFromFile(byRegionFile + ".png")
+      bot.page(byRegionFile + ".png").upload(byRegionFile + ".png")
 
       val chartTotal = charts.createChart(charts.createTotalDataset(yearSeq, idsSize), "")
 
       val chartTotalFile = filenamePrefix + "PicturedByYearTotal.png"
       charts.saveAsPNG(chartTotal, chartTotalFile, 900, 200)
-      bot.page(chartTotalFile).uploadFromFile(chartTotalFile)
+      bot.page(chartTotalFile).upload(chartTotalFile)
 
       val intersectionFile = filenamePrefix + "PicturedByYearPie"
       charts.intersectionDiagram("Унікальність фотографій пам'яток за роками", intersectionFile, yearSeq, ids, 900, 800)
-      bot.page(intersectionFile + ".png").uploadFromFile(intersectionFile + ".png")
+      bot.page(intersectionFile + ".png").upload(intersectionFile + ".png")
     }
     images
+  }
+
+}
+
+object MonumentsPicturedByRegion {
+  def main(args: Array[String]): Unit = {
+    val page = "Wiki Loves Earth 2020 in UkrainePicturedByYearTotal.png"
+    MwBot.fromHost(MwBot.commons).page(page).upload(page)
   }
 }

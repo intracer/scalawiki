@@ -48,7 +48,7 @@ case class Image(title: String,
 
   def monumentId: Option[String] = monumentIds.headOption
 
-  def download(filename: String = title.replace("File:", "")) {
+  def download(filename: String = Image.withoutNs(title)) {
     import scala.concurrent.ExecutionContext.Implicits.global
     for (maybeUrl <- url.fold(fetchUrl())(u => Future.successful(Option(u)));
          url <- maybeUrl;
@@ -81,6 +81,8 @@ case class Image(title: String,
 object Image {
 
   val categoryRegex = "\\[\\[Category:([^]]+)\\]\\]".r
+
+  def withoutNs(title: String): String = title.replace("File:", "")
 
   def fromPageImages(page: Page): Option[Image] =
     page.images.headOption

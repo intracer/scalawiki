@@ -110,17 +110,17 @@ class AuthorsStat(val uploadImages: Boolean = false) {
       val chart = charts.createChart(dataset, "Регіон")
       val byRegionFile = filenamePrefix + "AuthorsByYear"
       charts.saveCharts(chart, byRegionFile, 900, 1200)
-      MwBot.fromHost(MwBot.commons).page(byRegionFile + ".png").uploadFromFile(byRegionFile + ".png")
+      MwBot.fromHost(MwBot.commons).page(byRegionFile + ".png").upload(byRegionFile + ".png")
 
       val chartTotal = charts.createChart(charts.createTotalDataset(yearSeq, idsSize), "")
 
       val chartTotalFile = filenamePrefix + "AuthorsByYearTotal.png"
       charts.saveAsPNG(chartTotal, chartTotalFile, 900, 200)
-      MwBot.fromHost(MwBot.commons).page(chartTotalFile).uploadFromFile(chartTotalFile)
+      MwBot.fromHost(MwBot.commons).page(chartTotalFile).upload(chartTotalFile)
 
       val intersectionFile = filenamePrefix + "AuthorsByYearPie"
       charts.intersectionDiagram("Унікальність авторів за роками", intersectionFile, yearSeq, ids, 900, 800)
-      MwBot.fromHost(MwBot.commons).page(intersectionFile + ".png").uploadFromFile(intersectionFile + ".png")
+      MwBot.fromHost(MwBot.commons).page(intersectionFile + ".png").upload(intersectionFile + ".png")
     }
     images
   }

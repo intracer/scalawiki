@@ -142,33 +142,27 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
     retry.Backoff()(odelay.Timer.default)(() => performEdit())
   }
 
-  override def uploadFromFile(filename: String,
-                              text: Option[String] = None,
-                              comment: Option[String] = None,
-                              ignoreWarnings: Boolean = false): Future[String] = {
-    val fileContents = Files.readAllBytes(Paths.get(filename))
-    upload(filename, fileContents, text, comment, ignoreWarnings)
-  }
-
-  override def upload(title: String, fileContents: Array[Byte],
+  override def upload(filename: String,
                       text: Option[String] = None,
                       comment: Option[String] = None,
                       ignoreWarnings: Boolean = false): Future[String] = {
-    val page = query.right.toOption.fold(title)(_.head).replace("File:", "")
+    val page = query.right.toOption.fold(filename)(_.head)
     val token = bot.token
+    val fileContents = Files.readAllBytes(Paths.get(filename))
     val params = Map(
       "action" -> "upload",
       "filename" -> page,
       "token" -> token,
       "format" -> "json",
-      "comment" -> comment.getOrElse("update"),
-      "filesize" -> fileContents.length.toString,
+      "comment" -> "update",
+      "filesize" -> fileContents.size.toString,
       "assert" -> "user",
       "assert" -> "bot") ++
       text.map("text" -> _) ++
+      comment.map("comment" -> _) ++
       (if (ignoreWarnings) Seq("ignorewarnings" -> "true") else Seq.empty)
 
-    bot.postFile(uploadResponseReads, params, "file", title, fileContents)
+    bot.postFile(uploadResponseReads, params, "file", filename)
   }
 
   override def whatTranscludesHere(namespaces: Set[Int], continueParam: Option[(String, String)]): Future[Seq[Page]] = {
