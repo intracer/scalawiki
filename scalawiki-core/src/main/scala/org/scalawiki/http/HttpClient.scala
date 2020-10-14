@@ -34,7 +34,7 @@ trait HttpClient {
 }
 
 object HttpClient {
-  val JSON_UTF8 = ContentType(MediaTypes.`application/json`)
+  val JSON_UTF8 = "application/json"
 
   def get(system: ActorSystem = MwBot.system): HttpClient = new HttpClientAkka(system)
 }
