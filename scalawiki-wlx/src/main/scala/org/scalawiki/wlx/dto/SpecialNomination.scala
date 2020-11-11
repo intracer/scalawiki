@@ -55,13 +55,13 @@ object SpecialNomination {
           monumentQuery.byPage(page, nomination.listTemplate)
         }
       } else {
-        monumentsInCitites(nomination.cities, stat.monumentDb.get)
+        monumentsInCities(nomination.cities, stat.monumentDb.get)
       }
       (nomination, monuments)
     }.toMap
   }
 
-  def monumentsInCitites(cities: Seq[String], monumentDb: MonumentDB): Seq[Monument] = {
+  def monumentsInCities(cities: Seq[String], monumentDb: MonumentDB): Seq[Monument] = {
     val placeIds = placesByCities(cities).flatten.map(_.code).toSet
     monumentDb.allMonuments.filter { monument =>
       monumentDb.placeByMonumentId.get(monument.id).exists(placeIds.contains)

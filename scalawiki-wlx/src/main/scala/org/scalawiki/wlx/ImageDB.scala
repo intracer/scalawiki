@@ -8,8 +8,8 @@ import scala.concurrent.Future
 
 
 case class ImageDB(val contest: Contest,
-              val images: Seq[Image],
-              val monumentDb: Option[MonumentDB]) {
+                   val images: Seq[Image],
+                   val monumentDb: Option[MonumentDB]) {
 
   def this(contest: Contest, images: Seq[Image]) = this(contest, images, None)
 
@@ -158,9 +158,10 @@ object ImageDB {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def create(contest: Contest, imageQuery: ImageQuery, monumentDb: Option[MonumentDB]): Future[ImageDB] = {
-    imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest).map {
-      images => new ImageDB(contest, images, monumentDb)
+  def create(contest: Contest, imageQuery: ImageQuery, monumentDb: Option[MonumentDB], minMpx: Float = 0): Future[ImageDB] = {
+    imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest).map { images =>
+      val mpxFiltered = images.filter(_.mpx.exists(_ >= minMpx))
+      new ImageDB(contest, mpxFiltered, monumentDb)
     }
   }
 }

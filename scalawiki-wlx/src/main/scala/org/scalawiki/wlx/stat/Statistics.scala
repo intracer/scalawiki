@@ -102,7 +102,7 @@ class Statistics(contest: Contest,
   }
 
   private def contestImages(monumentDb: Some[MonumentDB])(contest: Contest) =
-    ImageDB.create(contest, imageQuery, monumentDb)
+    ImageDB.create(contest, imageQuery, monumentDb, config.minMpx)
 
   private def imagesByTemplate(monumentDb: Some[MonumentDB], imageQuery: ImageQuery = imageQuery) =
     for (commons <- imageQuery.imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest);
