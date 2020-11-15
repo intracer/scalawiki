@@ -178,7 +178,7 @@ class NumberOfAuthorsBonus(val stat: ContestStat, val rateRanges: RateRanges) ex
   }
 
   override def rate(monumentId: String, author: String): Int = {
-    if (authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
+    if (rateRanges.sameAuthorZeroBonus && authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
       0
     } else {
       rateRanges.rate(authorsNumberByMonument.getOrElse(monumentId, 0))
@@ -187,19 +187,12 @@ class NumberOfAuthorsBonus(val stat: ContestStat, val rateRanges: RateRanges) ex
 
   override def explain(monumentId: String, author: String): String = {
     val number = rate(monumentId, author)
-    if (authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
+    if (rateRanges.sameAuthorZeroBonus && authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
       s"Pictured by same author before = $number"
     } else {
-      authorsNumberByMonument.getOrElse(monumentId, 0) match {
-        case 0 =>
-          s"Not pictured before = $number"
-        case x if (1 to 3) contains x =>
-          s"Pictured before by $x (1 to 3) authors = $number"
-        case x if (4 to 9) contains x =>
-          s"Pictured before by $x (4 to 9) authors = $number"
-        case _ =>
-          s"Pictured by more than 9 authors = $number"
-      }
+      val picturedBy = authorsNumberByMonument.getOrElse(monumentId, 0)
+      val (rate, start, end) = rateRanges.rateWithRange(picturedBy)
+      s"Pictured before by $picturedBy ($start-${end.getOrElse("")}) authors = $rate"
     }
   }
 }
