@@ -53,6 +53,9 @@ class RateRangesSpec extends Specification {
 
       val numberOfAuthorsBonus = raters.collect { case r: NumberOfAuthorsBonus => r }.head
       numberOfAuthorsBonus.rateRanges.sameAuthorZeroBonus === false
+
+      val numberOfImagesInPlaceBonus = raters.collect { case r: NumberOfImagesInPlaceBonus => r }.head
+      numberOfImagesInPlaceBonus.rateRanges.sameAuthorZeroBonus === false
     }
 
     "parse wle 2020" in {
@@ -69,7 +72,7 @@ class RateRangesSpec extends Specification {
         ((1, 3), 3),
         ((4, 9), 1)
       )
+      bonusRater.rateRanges.sameAuthorZeroBonus === true
     }
-
   }
 }

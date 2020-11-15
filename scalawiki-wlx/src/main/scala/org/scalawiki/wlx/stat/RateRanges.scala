@@ -44,12 +44,15 @@ object RateRanges {
   import scala.collection.JavaConverters._
 
   def apply(config: Config): RateRanges = {
-    val map = config.entrySet().asScala.map { entry =>
+    val sameAuthorZeroBonus = Try(config.getBoolean("same-author-zero-bonus")).toOption.getOrElse(false)
+    val map = config.entrySet().asScala
+      .filterNot(_.getKey == "same-author-zero-bonus")
+      .map { entry =>
       val key = entry.getKey
       val rangeSeq = key.split("-").map(_.toInt).take(2)
       val rate = entry.getValue.unwrapped().asInstanceOf[Number].longValue().toInt
       ((rangeSeq.head, rangeSeq.last), rate)
     }.toMap
-    new RateRanges(map)
+    new RateRanges(map, sameAuthorZeroBonus = sameAuthorZeroBonus)
   }
 }
