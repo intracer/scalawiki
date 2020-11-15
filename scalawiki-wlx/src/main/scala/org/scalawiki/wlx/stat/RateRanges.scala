@@ -4,7 +4,7 @@ import com.typesafe.config.Config
 
 import scala.util.Try
 
-class RateRanges(val rangeMap: Map[(Int, Int), Int], default: Int = 0, val sameAuthorZeroBonus: Boolean = false) {
+case class RateRanges(rangeMap: Map[(Int, Int), Int], default: Int = 0, sameAuthorZeroBonus: Boolean = false) {
   verify()
   val max = Try(rangeMap.keys.map(_._2).max).toOption.getOrElse(0)
 
