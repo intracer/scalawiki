@@ -97,20 +97,26 @@ object Output {
 
   private def gallery(header: String, ids: Set[String], imageDb: ImageDB, monumentDb: MonumentDB,
                       rater: Option[Rater] = None, author: Option[String] = None, prevImages: Option[ImageDB] = None) = {
+    def sizes(images: Seq[Image]): Seq[String] = {
+      images.map { img =>
+        (for (w <- img.width; h <- img.height) yield s"$w x $h").getOrElse("")
+      }
+    }
+
     if (ids.nonEmpty) {
       (if (header.nonEmpty) s"\n=== $header: ${ids.size} ===\n" else "") +
         ids.map {
           id =>
-            val images = imageDb.byId(id).map(_.title).sorted
+            val images = imageDb.byId(id).sortBy(_.title)
             val rating = rater.map(_.explain(id, author.getOrElse(""))).getOrElse("")
             s"\n==== $id ====\n" +
               s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n\n" +
               s"$rating \n" +
-              Image.gallery(images) +
+              Image.gallery(images.map(_.title), sizes(images)) +
               prevImages.fold("") { prevImagesDb =>
-                val prevImagesById = prevImagesDb.byId(id).map(_.title).sorted
+                val prevImagesById = prevImagesDb.byId(id).sortBy(_.title)
                 if (prevImagesById.nonEmpty) {
-                  s"\n===== $id previous =====\n" + Image.gallery(prevImagesById)
+                  s"\n===== $id previous =====\n" + Image.gallery(prevImagesById.map(_.title), sizes(prevImagesById))
                 } else ""
               }
         }.mkString("\n")
