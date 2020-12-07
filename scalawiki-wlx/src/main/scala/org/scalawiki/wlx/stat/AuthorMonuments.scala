@@ -117,8 +117,7 @@ class AuthorMonuments(val stat: ContestStat,
     val galleryPage = "Commons:" + contest.name + "/" + noTemplateUser + regionOpt.fold("") { region =>
       "#" + region.replaceAll(" ", "_")
     }
-
-    val galleryText = Output.galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt), oldImageDb, rater)
+    val galleryText = Output.galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt), oldImageDb, rater, stat.config.exists(_.previousYearsGallery))
 
     for (bot <- commons if regionOpt.isEmpty) {
       bot.page(galleryPage).edit(galleryText)

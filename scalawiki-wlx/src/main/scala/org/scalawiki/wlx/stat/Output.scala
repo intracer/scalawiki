@@ -34,11 +34,14 @@ object Output {
     }
   }
 
-  def galleryByRegionAndId(monumentDb: MonumentDB, authorImageDb: ImageDB, oldImageDb: ImageDB, rater: Rater): String = {
+  def galleryByRegionAndId(monumentDb: MonumentDB, authorImageDb: ImageDB, oldImageDb: ImageDB, rater: Rater, previousImageGallery: Boolean): String = {
     val contest = monumentDb.contest
     val country = contest.country
     val regionIds = country.regionIds.filter(id => authorImageDb.idsByRegion(id).nonEmpty)
     val author = authorImageDb.authors.head
+
+    val previousImageDb = if (previousImageGallery) Some(oldImageDb.subSet(_.author.contains(author))) else None
+
     val rateConfig = contest.rateConfig
     val tableHeader = "{| class=\"wikitable\"\n! rate !! base " +
       (if (rateConfig.numberOfAuthorsBonus || rater.withRating) "!! authors <br> bonus " else "") +
@@ -87,13 +90,13 @@ object Output {
         val ratingStr = s"\nRating: '''$rating''' \n "
 
         regionHeader + ratingStr + table1 +
-          gallery("", ids, authorImageDb, monumentDb, Some(rater), author = Some(author))
+          gallery("", ids, authorImageDb, monumentDb, Some(rater), author = Some(author), previousImageDb)
 
     }.mkString("\n")
   }
 
   private def gallery(header: String, ids: Set[String], imageDb: ImageDB, monumentDb: MonumentDB,
-                      rater: Option[Rater] = None, author: Option[String] = None) = {
+                      rater: Option[Rater] = None, author: Option[String] = None, prevImages: Option[ImageDB]) = {
     if (ids.nonEmpty) {
       (if (header.nonEmpty) s"\n=== $header: ${ids.size} ===\n" else "") +
         ids.map {
@@ -103,7 +106,11 @@ object Output {
             s"\n==== $id ====\n" +
               s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n\n" +
               s"$rating \n" +
-              Image.gallery(images)
+              Image.gallery(images) +
+              prevImages.fold("") { prevImagesDb =>
+                val prevImagesById = prevImagesDb.byId(id).map(_.title).sorted
+                s"\n===== $id previous =====\n" + Image.gallery(prevImagesById)
+              }
         }.mkString("\n")
     } else ""
   }
