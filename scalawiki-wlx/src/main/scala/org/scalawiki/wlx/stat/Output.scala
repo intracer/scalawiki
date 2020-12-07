@@ -96,7 +96,7 @@ object Output {
   }
 
   private def gallery(header: String, ids: Set[String], imageDb: ImageDB, monumentDb: MonumentDB,
-                      rater: Option[Rater] = None, author: Option[String] = None, prevImages: Option[ImageDB]) = {
+                      rater: Option[Rater] = None, author: Option[String] = None, prevImages: Option[ImageDB] = None) = {
     if (ids.nonEmpty) {
       (if (header.nonEmpty) s"\n=== $header: ${ids.size} ===\n" else "") +
         ids.map {
