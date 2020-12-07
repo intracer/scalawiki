@@ -109,7 +109,9 @@ object Output {
               Image.gallery(images) +
               prevImages.fold("") { prevImagesDb =>
                 val prevImagesById = prevImagesDb.byId(id).map(_.title).sorted
-                s"\n===== $id previous =====\n" + Image.gallery(prevImagesById)
+                if (prevImagesById.nonEmpty) {
+                  s"\n===== $id previous =====\n" + Image.gallery(prevImagesById)
+                } else ""
               }
         }.mkString("\n")
     } else ""
