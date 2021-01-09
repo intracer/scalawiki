@@ -47,7 +47,11 @@ trait AdmDivision {
       }
     }.getOrElse(Nil)
 
-    val types = cityType.fold(RegionTypes.nameToType(rawName).toSet.filterNot(_.code == "Р"))(x => Set(RegionTypes.codeToType(x)))
+    val types = cityType.fold(RegionTypes.nameToType(rawName).toSet.filterNot(_.code == "Р")) { code =>
+      RegionTypes.codeToType.get(code)
+        .map(Set(_))
+        .getOrElse(RegionTypes.nameToType(code).toSet.filterNot(_.code == "Р"))
+    }
 
     if (candidates.size > 1) {
       val byType = if (types.nonEmpty) {
