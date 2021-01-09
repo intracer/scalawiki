@@ -4,6 +4,8 @@ import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 
+import scala.collection.MapView
+
 case class RegionType(code: String, names: Seq[String])
 
 object RegionTypes {
@@ -17,7 +19,7 @@ object RegionTypes {
 
   )
 
-  val codeToType = types.groupBy(_.code).mapValues(_.head)
+  val codeToType: MapView[String, RegionType] = types.groupBy(_.code).mapValues(_.head)
   def nameToType(name: String) = types.filter(t => t.names.map(_.toLowerCase).toSet.exists(name.toLowerCase.contains))
 }
 

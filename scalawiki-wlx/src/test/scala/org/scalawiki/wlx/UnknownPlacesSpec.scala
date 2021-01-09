@@ -82,6 +82,18 @@ class UnknownPlacesSpec extends Specification {
     monumentDb(wiki).unknownPlaces() === Nil
   }
 
+  "Bar" in {
+    val wiki =
+
+      """{{ВЛП-рядок
+| ID = 05-202-0002
+| назва = [[Будинок Коцюбинського (Бар)|Житловий будинок, в якому жив видатний український письменник М. М. Коцюбинський]]
+| тип-нп = М
+| нас_пункт = [[Бар (Україна)|Бар]]
+  }}"""
+    monumentDb(wiki).unknownPlaces() === Nil
+  }
+
   "report group by page" in {
     val monument1 = new Monument("page1", "regionId1-1", "monument1")
     val monument2 = new Monument("page1", "regionId1-2", "monument2")

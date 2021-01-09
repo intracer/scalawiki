@@ -19,6 +19,7 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
   val year = getMappedName("year")
   val description = getMappedName("description")
   val city = getMappedName("city")
+  val cityType = getMappedName("cityType")
   val place = getMappedName("place")
   val user = getMappedName("user")
   val area = getMappedName("area")
@@ -49,6 +50,7 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
       year = byName(year),
       description = byName(description),
       city = byName(city),
+      cityType = byName(cityType),
       place = byName(place),
       user = byName(user),
       area = byName(area),
