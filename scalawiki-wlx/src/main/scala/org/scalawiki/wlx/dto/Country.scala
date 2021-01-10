@@ -180,6 +180,7 @@ object AdmDivision {
       .replace("смт", "")
       .replace("Смт", "")
       .replace("с-ще", "")
+      .replace("с-щ", "")
       .replace("'''", "")
       .replace("''", "")
       .replace(",", "")
