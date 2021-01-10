@@ -92,7 +92,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
     yield {
       val regionId = id.split("-").take(2).mkString("-")
       val city = monument.city.getOrElse("")
-      val candidates = country.byIdAndName(regionId, city)
+      val candidates = country.byIdAndName(regionId, city, monument.cityType)
       if (candidates.size == 1) {
         Some(id -> candidates.head.code)
       } else {
