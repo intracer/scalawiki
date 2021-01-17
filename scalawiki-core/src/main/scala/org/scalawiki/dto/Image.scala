@@ -120,9 +120,14 @@ object Image {
         pipe
       else authorValue.length
       authorValue.substring(start + "user:".length, end)
-    }
-    else
+    } else if (authorValue.contains('[')){
+      val linkStart = authorValue.indexOf('[')
+      val linkEnd = authorValue.indexOf(' ', linkStart)
+      val authorEnd = authorValue.indexOf(']', linkEnd)
+      authorValue.substring(linkEnd, authorEnd).trim
+    } else {
       authorValue
+    }
   }
 
   def basic(title: String,
