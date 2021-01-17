@@ -120,11 +120,16 @@ object Image {
         pipe
       else authorValue.length
       authorValue.substring(start + "user:".length, end)
-    } else if (authorValue.contains('[')){
-      val linkStart = authorValue.indexOf('[')
-      val linkEnd = authorValue.indexOf(' ', linkStart)
-      val authorEnd = authorValue.indexOf(']', linkEnd)
-      authorValue.substring(linkEnd, authorEnd).trim
+    } else if (authorValue.contains('[')) {
+      val extLinkStart = authorValue.indexOf('[')
+      val wikiLinkStart = authorValue.indexOf("[[")
+      val linkSpace = authorValue.indexOf(' ', extLinkStart)
+      val extLinkEnd = authorValue.indexOf(']', linkSpace)
+      if (extLinkStart != wikiLinkStart && linkSpace >= 0 && extLinkEnd >= 0) {
+        authorValue.substring(linkSpace, extLinkEnd).trim
+      } else {
+        authorValue
+      }
     } else {
       authorValue
     }
