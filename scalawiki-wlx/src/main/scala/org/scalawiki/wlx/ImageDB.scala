@@ -23,6 +23,8 @@ case class ImageDB(contest: Contest,
 
   lazy val sansIneligible: Seq[Image] = withCorrectIds.filterNot(_.categories.contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
 
+  lazy val ineligible: Seq[Image] = withCorrectIds.filter(_.categories.contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
+
   lazy val _byId: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byMonument, withCorrectIds)
 
   lazy val _byRegion: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byRegion, withCorrectIds)

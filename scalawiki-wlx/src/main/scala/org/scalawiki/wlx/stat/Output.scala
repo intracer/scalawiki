@@ -40,6 +40,9 @@ object Output {
     val regionIds = country.regionIds.filter(id => authorImageDb.idsByRegion(id).nonEmpty)
     val author = authorImageDb.authors.head
 
+    val sansIneligible = authorImageDb.copy(images = authorImageDb.sansIneligible)
+    val ineligible = authorImageDb.copy(images = authorImageDb.ineligible)
+
     val previousImageDb = if (previousImageGallery) Some(oldImageDb.subSet(_.author.contains(author))) else None
 
     val rateConfig = contest.rateConfig
@@ -50,7 +53,7 @@ object Output {
 
     val tableTotal = rater match {
       case rateSum: RateSum =>
-        val groupedTotal = authorImageDb.ids.map { id =>
+        val groupedTotal = sansIneligible.ids.map { id =>
           val rateParts = rateSum.raters.map(_.rate(id, author))
           val rateId = s"${rater.rate(id, author)} || " + rateParts.mkString(" || ")
           (id, rater.rate(id, author), rateId)
@@ -70,7 +73,7 @@ object Output {
       regionId =>
         val regionName = country.regionById(regionId).name
         val regionHeader = s"== [[:uk:Вікіпедія:Вікі любить пам'ятки/$regionName|$regionName]] =="
-        val ids = authorImageDb.idsByRegion(regionId)
+        val ids = sansIneligible.idsByRegion(regionId)
 
         val grouped = ids.map { id =>
           val rateParts = rater.asInstanceOf[RateSum].raters.map(_.rate(id, author))
@@ -90,8 +93,12 @@ object Output {
         val ratingStr = s"\nRating: '''$rating''' \n "
 
         regionHeader + ratingStr + table1 +
-          gallery("", ids, authorImageDb, monumentDb, Some(rater), author = Some(author), previousImageDb)
-
+          gallery("", ids, sansIneligible, monumentDb, Some(rater), author = Some(author), previousImageDb) +
+          (if (ineligible.idsByRegion(regionId).nonEmpty) {
+            gallery("ineligible", ineligible.idsByRegion(regionId), ineligible, monumentDb, Some(rater), author = Some(author), previousImageDb)
+          } else {
+            ""
+          })
     }.mkString("\n")
   }
 
