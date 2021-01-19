@@ -7,9 +7,9 @@ import org.scalawiki.wlx.query.ImageQuery
 import scala.concurrent.Future
 
 
-case class ImageDB(val contest: Contest,
-                   val images: Seq[Image],
-                   val monumentDb: Option[MonumentDB]) {
+case class ImageDB(contest: Contest,
+                   images: Seq[Image],
+                   monumentDb: Option[MonumentDB]) {
 
   def this(contest: Contest, images: Seq[Image]) = this(contest, images, None)
 
@@ -21,11 +21,13 @@ case class ImageDB(val contest: Contest,
     db => images.filter(_.monumentId.exists(db.ids.contains))
   }
 
+  lazy val sansIneligible: Seq[Image] = withCorrectIds.filterNot(_.categories.contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
+
   lazy val _byId: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byMonument, withCorrectIds)
 
   lazy val _byRegion: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byRegion, withCorrectIds)
 
-  lazy val _byAuthor: Grouping[String, Image] = new Grouping("author", ImageGrouping.byAuthor, withCorrectIds)
+  lazy val _byAuthor: Grouping[String, Image] = new Grouping("author", ImageGrouping.byAuthor, sansIneligible)
 
   lazy val _byRegionAndId: NestedGrouping[String, Image] = _byRegion.compose(ImageGrouping.byMonument)
 
