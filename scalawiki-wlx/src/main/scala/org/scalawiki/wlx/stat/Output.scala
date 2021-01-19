@@ -95,7 +95,8 @@ object Output {
         regionHeader + ratingStr + table1 +
           gallery("", ids, sansIneligible, monumentDb, Some(rater), author = Some(author), previousImageDb) +
           (if (ineligible.idsByRegion(regionId).nonEmpty) {
-            gallery("ineligible", ineligible.idsByRegion(regionId), ineligible, monumentDb, Some(rater), author = Some(author), previousImageDb)
+            gallery(s"$regionName ineligible", ineligible.idsByRegion(regionId), ineligible, monumentDb, None,
+              author = Some(author), None, Some("ineligible"))
           } else {
             ""
           })
@@ -103,7 +104,8 @@ object Output {
   }
 
   private def gallery(header: String, ids: Set[String], imageDb: ImageDB, monumentDb: MonumentDB,
-                      rater: Option[Rater] = None, author: Option[String] = None, prevImages: Option[ImageDB] = None) = {
+                      rater: Option[Rater] = None, author: Option[String] = None, prevImages: Option[ImageDB] = None,
+                      subHeader: Option[String] = None) = {
     def sizes(images: Seq[Image]): Seq[String] = {
       images.map { img =>
         (for (w <- img.width; h <- img.height) yield s"$w x $h").getOrElse("")
@@ -116,7 +118,7 @@ object Output {
           id =>
             val images = imageDb.byId(id).sortBy(_.title)
             val rating = rater.map(_.explain(id, author.getOrElse(""))).getOrElse("")
-            s"\n==== $id ====\n" +
+            s"\n==== ${subHeader.getOrElse("")} $id ====\n" +
               s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n\n" +
               s"$rating \n" +
               Image.gallery(images.map(_.title), sizes(images)) +
