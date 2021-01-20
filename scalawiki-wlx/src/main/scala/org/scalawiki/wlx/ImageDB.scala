@@ -9,7 +9,8 @@ import scala.concurrent.Future
 
 case class ImageDB(contest: Contest,
                    images: Seq[Image],
-                   monumentDb: Option[MonumentDB]) {
+                   monumentDb: Option[MonumentDB],
+                   minMpx: Float = 0) {
 
   def this(contest: Contest, images: Seq[Image]) = this(contest, images, None)
 
@@ -21,9 +22,13 @@ case class ImageDB(contest: Contest,
     db => images.filter(_.monumentId.exists(db.ids.contains))
   }
 
-  lazy val sansIneligible: Seq[Image] = withCorrectIds.filterNot(_.categories.contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
+  lazy val sansIneligible: Seq[Image] = withCorrectIds
+    .filterNot(_.categories.contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
+    .filter(_.mpx.exists(_ >= minMpx))
 
-  lazy val ineligible: Seq[Image] = withCorrectIds.filter(_.categories.contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
+  lazy val ineligible: Seq[Image] = withCorrectIds
+    .filter(_.categories.contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
+    .filter(_.mpx.exists(_ < minMpx))
 
   lazy val _byId: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byMonument, withCorrectIds)
 
@@ -164,8 +169,7 @@ object ImageDB {
 
   def create(contest: Contest, imageQuery: ImageQuery, monumentDb: Option[MonumentDB], minMpx: Float = 0): Future[ImageDB] = {
     imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest).map { images =>
-      val mpxFiltered = images.filter(_.mpx.exists(_ >= minMpx))
-      new ImageDB(contest, mpxFiltered, monumentDb)
+      new ImageDB(contest, images, monumentDb, minMpx)
     }
   }
 }
