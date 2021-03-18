@@ -45,7 +45,7 @@ class AuthorMonuments(val stat: ContestStat,
           rater.rateMonumentIds(ids, user).toString
         }.getOrElse(ids.size)
       )
-    } else Seq.empty[String]
+    } else Nil
 
     val byRegion = country.regionIds.toSeq.map { regionId =>
       val regionIds = monumentDb.byRegion(regionId).map(_.id).toSet

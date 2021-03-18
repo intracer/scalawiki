@@ -134,7 +134,7 @@ class MonumentSpec extends Specification {
           ""
         )
     }
-    
+
     "output WLE fields" in {
       val m = new Monument("page1", "id1", "name1", photo = Some("Image.jpg"), gallery = Some("category1"), listConfig = Some(WleUa))
 
@@ -179,6 +179,7 @@ class MonumentSpec extends Specification {
         s"|${names("name")} = name1",
         s"|${names("year")} = ",
         s"|${names("city")} = ",
+        s"|${names("cityType")} = ",
         s"|${names("place")} = ",
         s"|${names("lat")} = ",
         s"|${names("lon")} = ",

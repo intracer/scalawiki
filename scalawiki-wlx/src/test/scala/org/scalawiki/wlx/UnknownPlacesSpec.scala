@@ -78,6 +78,25 @@ class UnknownPlacesSpec extends Specification {
     monumentDb(wiki).unknownPlaces() === Nil
   }
 
+   "Рахни-Лісові" in {
+     val wiki =
+       """{{ВЛП-рядок
+       || ID = 05-253-0039
+       || назва = Пам'ятник 308 воїнам-односельчанам, загиблим на фронтах Великої Вітчизняної війни
+       || рік = 1970
+       || тип-нп = село
+       || нас_пункт = [[Рахни-Лісові]]
+       || адреса = біля Будинку культури
+       || широта =
+       || довгота =
+       || охоронний номер = 480
+       || тип = І-місц
+       || фото = Рахни-Лісові P1760582.jpg
+       || галерея = World War II memorial in Rakhny-Lisovi
+       |}}
+       |""".stripMargin
+     monumentDb(wiki).unknownPlaces() === Nil
+   }
 
   "same name in region not detected" in {
     val wiki =

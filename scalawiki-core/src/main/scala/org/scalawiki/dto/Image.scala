@@ -49,7 +49,9 @@ case class Image(title: String,
 
   def pixels: Option[Long] = for (w <- width; h <- height) yield w * h
 
-  def mpx: Option[Double] = pixels.map(_ / Math.pow(10, 6))
+  def mpx: Option[Float] = pixels.map(_ / Math.pow(10, 6)).map(_.toFloat)
+
+  def atLeastMpx(minMpxOpt: Option[Float]): Boolean = minMpxOpt.fold(true)(minMpx => mpx.exists(_ >= minMpx))
 
   def mpxStr: String = mpx.fold("")(v => f"$v%1.2f Mpx ")
 
@@ -120,9 +122,19 @@ object Image {
         pipe
       else authorValue.length
       authorValue.substring(start + "user:".length, end)
-    }
-    else
+    } else if (authorValue.contains('[')) {
+      val extLinkStart = authorValue.indexOf('[')
+      val wikiLinkStart = authorValue.indexOf("[[")
+      val linkSpace = authorValue.indexOf(' ', extLinkStart)
+      val extLinkEnd = authorValue.indexOf(']', linkSpace)
+      if (extLinkStart != wikiLinkStart && linkSpace >= 0 && extLinkEnd >= 0) {
+        authorValue.substring(linkSpace, extLinkEnd).trim
+      } else {
+        authorValue
+      }
+    } else {
       authorValue
+    }
   }
 
   def basic(title: String,
