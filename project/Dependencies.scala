@@ -6,7 +6,7 @@ object Dependencies {
   val BetterFilesV = "3.9.1"
   val BlameApiV = "12.8"
   val ChronicleMapV = "3.19.40"
-  val ChronoScalaV = "0.3.2"
+  val ChronoScalaV = "1.0.0"
   val FicusV = "1.5.0"
   val GuavaV = "20.0"
   val H2V = "1.4.200"
@@ -28,7 +28,7 @@ object Dependencies {
   val ScallopV = "3.5.1"
   val Slf4jV = "1.7.25"
   val SwcEngineV = "3.1.9"
-  val TypesafeConfigV = "1.4.0"
+  val TypesafeConfigV = "1.4.1"
 
   val resolvers = Seq(
     "Typesafe Repo" at "https://repo.typesafe.com/typesafe/releases/",
@@ -62,8 +62,8 @@ object Dependencies {
   object Library {
 
     object Akka {
-      val AkkaV = "2.5.31"
-      val AkkaHttpV = "10.1.12"
+      val AkkaV = "2.5.32"
+      val AkkaHttpV = "10.1.13"
 
       val actor = "com.typesafe.akka" %% "akka-actor" % AkkaV
       val stream = "com.typesafe.akka" %% "akka-stream" % AkkaV
