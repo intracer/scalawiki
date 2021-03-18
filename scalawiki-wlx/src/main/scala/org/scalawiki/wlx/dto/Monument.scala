@@ -16,6 +16,7 @@ case class Monument(page: String = "",
                     description: Option[String] = None,
                     article: Option[String] = None,
                     city: Option[String] = None,
+                    cityType: Option[String] = None,
                     place: Option[String] = None,
                     user: Option[String] = None,
                     area: Option[String] = None,
@@ -61,6 +62,7 @@ case class Monument(page: String = "",
       "description" -> description,
       "article" -> article,
       "city" -> city,
+      "city-type" -> cityType,
       "place" -> place,
       "user" -> user,
       "area" -> area,
@@ -80,7 +82,7 @@ case class Monument(page: String = "",
 
     val params =
       namesMapPadded.toSeq.map {
-        case (englName, mappedName) => mappedName -> paramValues(englName).getOrElse("")
+        case (englName, mappedName) => mappedName -> paramValues.get(englName).flatten.getOrElse("")
       } ++
         otherParams.toSeq
 

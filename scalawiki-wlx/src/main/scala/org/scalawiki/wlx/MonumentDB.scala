@@ -52,7 +52,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
   def getAdmDivision(monumentId: String): Option[AdmDivision] = {
     for (monument <- byId(monumentId);
-         division <- country.byIdAndName(monument.regionId, monument.cityName).headOption
+         division <- country.byIdAndName(monument.regionId, monument.cityName, monument.cityType).headOption
          ) yield division
   }
 
@@ -60,14 +60,15 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
     val regionNames = new RegionFixerUpdater(this).raionNames
     val toFind = allMonuments.map(m => UnknownPlace(m.page,
       m.id.split("-").take(2).mkString("-"),
-      m.city.getOrElse(""), Nil, Seq(m))
+      m.city.getOrElse(""),
+      Nil, Seq(m), m.cityType)
     ).groupBy(u => s"${u.page}/${u.regionId}/${u.name}")
       .mapValues { places =>
         places.head.copy(monuments = places.flatMap(_.monuments))
       }.values.toSeq
 
     toFind.flatMap { p =>
-      Some(p.copy(candidates = country.byIdAndName(p.regionId, p.name)))
+      Some(p.copy(candidates = country.byIdAndName(p.regionId, p.name, p.cityType)))
         .filterNot(p => p.candidates.size == 1 && !regionNames.contains(p.candidates.head.name))
     }
   }
@@ -91,7 +92,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
     yield {
       val regionId = id.split("-").take(2).mkString("-")
       val city = monument.city.getOrElse("")
-      val candidates = country.byIdAndName(regionId, city)
+      val candidates = country.byIdAndName(regionId, city, monument.cityType)
       if (candidates.size == 1) {
         Some(id -> candidates.head.code)
       } else {
@@ -101,7 +102,8 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
 }
 
-case class UnknownPlace(page: String, regionId: String, name: String, candidates: Seq[AdmDivision], monuments: Seq[Monument]) {
+case class UnknownPlace(page: String, regionId: String, name: String, candidates: Seq[AdmDivision], monuments: Seq[Monument],
+                        cityType: Option[String] = None) {
   def parents: Set[String] = candidates.map(_.parent().map(_.name).getOrElse("")).toSet
 
   override def toString = {

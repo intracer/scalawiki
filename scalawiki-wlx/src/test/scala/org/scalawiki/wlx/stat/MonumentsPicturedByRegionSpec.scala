@@ -68,7 +68,7 @@ class MonumentsPicturedByRegionSpec extends Specification {
           monuments(7, "07", "Volyn")
       )
 
-      val image = Image("File:Img3.jpg", monumentIds = List("01-xxx-0001"))
+      val image = Image("File:Img3.jpg", monumentIds = List("01-xxx-0001"), pageId = Some(1L))
 
       val totalImageDb = new ImageDB(contest, Seq(image), monumentDb)
       val imageDbs = Seq.empty
@@ -92,8 +92,9 @@ class MonumentsPicturedByRegionSpec extends Specification {
       )
 
       val images = Seq(
-        Seq(Image("File:Img1.jpg", monumentIds = List("01-xxx-0001"))),
-        Seq(Image("File:Img2.jpg", monumentIds = List("05-xxx-0001")), Image("File:Img3.jpg", monumentIds = List("07-xxx-0001")))
+        Seq(Image("File:Img1.jpg", monumentIds = List("01-xxx-0001"), pageId = Some(1L))),
+        Seq(Image("File:Img2.jpg", monumentIds = List("05-xxx-0001"), pageId = Some(2L)),
+          Image("File:Img3.jpg", monumentIds = List("07-xxx-0001"), pageId = Some(3L)))
       )
 
       val totalImageDb = new ImageDB(contest, images.flatten, monumentDb)
@@ -102,12 +103,19 @@ class MonumentsPicturedByRegionSpec extends Specification {
       val table = new MonumentsPicturedByRegion(imageDbs, Some(totalImageDb), monumentDb).table
 
       table.headers === Seq("Region", "Objects in lists", "2 years total", "2 years percentage",
-        "2015 Objects", "2015 Pictures", "2014 Objects", "2014 Pictures")
+        "2015 Objects", "2015 Pictures", "2015 newly pictured",
+        "2014 Objects", "2014 Pictures")
       table.data === Seq(
         Seq("Автономна Республіка Крим", "2", "1", "50") ++ Seq(Seq("1", "1"), Seq("0", "0")).reverse.flatten,
-        Seq("Вінницька область", "5", "1", "20") ++ Seq(Seq("0", "0"), Seq("1", "1")).reverse.flatten,
-        Seq("Волинська область", "7", "1", "14") ++ Seq(Seq("0", "0"), Seq("1", "1")).reverse.flatten,
-        Seq("Total", "14", "3", "21") ++ Seq(Seq("1", "1"), Seq("2", "2")).reverse.flatten
+        Seq("Вінницька область", "5", "1", "20") ++ Seq(
+          Seq("0", "0"),
+          Seq("1", "1", "[[Commons:Wiki Loves Monuments 2015 in Ukraine/Monuments newly pictured by region in Вінницька область|1]]")
+        ).reverse.flatten,
+        Seq("Волинська область", "7", "1", "14") ++ Seq(
+          Seq("0", "0"),
+          Seq("1", "1", "[[Commons:Wiki Loves Monuments 2015 in Ukraine/Monuments newly pictured by region in Волинська область|1]]")
+        ).reverse.flatten,
+        Seq("Total", "14", "3", "21") ++ Seq(Seq("1", "1"), Seq("2", "2", "2")).reverse.flatten
       )
     }
 
@@ -119,10 +127,10 @@ class MonumentsPicturedByRegionSpec extends Specification {
       )
 
       val images = Seq(
-        Image("File:Img1.jpg", monumentIds = List("01-xxx-0001")),
-        Image("File:Img2.jpg", monumentIds = List("05-xxx-0001")),
-        Image("File:Img3.jpg", monumentIds = List("07-xxx-0001")),
-        Image("File:Img4.jpg", monumentIds = List("01-xxx-0002"))
+        Image("File:Img1.jpg", monumentIds = List("01-xxx-0001"), pageId = Some(1L)),
+        Image("File:Img2.jpg", monumentIds = List("05-xxx-0001"), pageId = Some(2L)),
+        Image("File:Img3.jpg", monumentIds = List("07-xxx-0001"), pageId = Some(3L)),
+        Image("File:Img4.jpg", monumentIds = List("01-xxx-0002"), pageId = Some(4L))
       )
 
       val totalImageDb = new ImageDB(contest, images, monumentDb)
@@ -131,7 +139,7 @@ class MonumentsPicturedByRegionSpec extends Specification {
       val table = new MonumentsPicturedByRegion(imageDbs, Some(totalImageDb), monumentDb).table
 
       table.headers === Seq("Region", "Objects in lists", "4 years total", "4 years percentage",
-        "2015 Objects", "2015 Pictures",
+        "2015 Objects", "2015 Pictures", "2015 newly pictured",
         "2014 Objects", "2014 Pictures",
         "2013 Objects", "2013 Pictures",
         "2012 Objects", "2012 Pictures"
@@ -140,13 +148,14 @@ class MonumentsPicturedByRegionSpec extends Specification {
       data.size === 4
 
       data(0) === Seq("Автономна Республіка Крим", "2", "2", "100") ++ Seq(
-        Seq("1", "1"), Seq("0", "0"), Seq("0", "0"), Seq("1", "1")).reverse.flatten
+        Seq("1", "1"), Seq("0", "0"), Seq("0", "0"), Seq("1", "1", "[[Commons:Wiki Loves Monuments 2015 in Ukraine/Monuments newly pictured by region in Автономна Республіка Крим|1]]")
+      ).reverse.flatten
       data(1) === Seq("Вінницька область", "5", "1", "20") ++ Seq(
         Seq("0", "0"), Seq("1", "1"), Seq("0", "0"), Seq("0", "0")).reverse.flatten
       data(2) === Seq("Волинська область", "7", "1", "14") ++ Seq(
         Seq("0", "0"), Seq("0", "0"), Seq("1", "1"), Seq("0", "0")).reverse.flatten
       data(3) === Seq("Total", "14", "4", "28") ++ Seq(
-        Seq("1", "1"), Seq("1", "1"), Seq("1", "1"), Seq("1", "1")).reverse.flatten
+        Seq("1", "1"), Seq("1", "1"), Seq("1", "1"), Seq("1", "1", "1")).reverse.flatten
     }
   }
 }
