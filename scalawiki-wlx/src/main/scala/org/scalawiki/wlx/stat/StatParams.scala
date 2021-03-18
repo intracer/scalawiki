@@ -25,7 +25,7 @@ case class StatConfig(campaign: String,
                       newMonuments: Boolean = false,
                       rateInputDistribution: Boolean = false,
                       mostPopularMonuments: Boolean = false,
-                      minMpx: Float = 0,
+                      minMpx: Option[Float] = None,
                       previousYearsGallery: Boolean = false)
 
 import org.rogach.scallop._
@@ -98,7 +98,7 @@ object StatParams {
       newMonuments = conf.newMonuments.getOrElse(false),
       rateInputDistribution = conf.rateInputDistribution.getOrElse(false),
       mostPopularMonuments = conf.mostPopularMonuments.getOrElse(false),
-      minMpx = conf.minMpx.getOrElse(0),
+      minMpx = conf.minMpx.toOption,
       previousYearsGallery = conf.previousYearsGallery.getOrElse(false)
     )
   }
