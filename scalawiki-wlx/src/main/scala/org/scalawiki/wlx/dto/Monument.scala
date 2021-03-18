@@ -82,7 +82,7 @@ case class Monument(page: String = "",
 
     val params =
       namesMapPadded.toSeq.map {
-        case (englName, mappedName) => mappedName -> paramValues(englName).getOrElse("")
+        case (englName, mappedName) => mappedName -> paramValues.get(englName).flatten.getOrElse("")
       } ++
         otherParams.toSeq
 
