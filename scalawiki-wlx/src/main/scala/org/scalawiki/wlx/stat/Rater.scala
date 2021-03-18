@@ -64,13 +64,7 @@ object Rater {
           new NewlyPicturedPerAuthorBonus(stat, config.newObjectRating.getOrElse(1), r)
         ).orElse(
           config.newObjectRating.map(new NewlyPicturedBonus(stat, _))
-        ) ++
-        //      (if (config.numberOfAuthorsBonus) {
-        //      Seq(new NumberOfAuthorsBonus(stat))
-        //    } else Nil) ++
-        (if (config.numberOfImagesBonus) {
-          Seq(new NumberOfImagesInPlaceBonus(stat))
-        } else Nil)
+        )
 
       if (raters.tail.isEmpty) {
         raters.head
@@ -87,7 +81,7 @@ object Rater {
         Seq(new NumberOfAuthorsBonus(stat, RateRanges(rateCfg.getConfig("number-of-authors-bonus"))))
       } else Nil) ++
       (if (rateCfg.hasPath("number-of-images-bonus")) {
-        Seq(new NumberOfImagesInPlaceBonus(stat))
+        Seq(new NumberOfImagesInPlaceBonus(stat, RateRanges(rateCfg.getConfig("number-of-images-bonus"))))
       } else Nil)
 
     if (raters.tail.isEmpty) {
@@ -178,7 +172,7 @@ class NumberOfAuthorsBonus(val stat: ContestStat, val rateRanges: RateRanges) ex
   }
 
   override def rate(monumentId: String, author: String): Int = {
-    if (authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
+    if (rateRanges.sameAuthorZeroBonus && authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
       0
     } else {
       rateRanges.rate(authorsNumberByMonument.getOrElse(monumentId, 0))
@@ -187,19 +181,12 @@ class NumberOfAuthorsBonus(val stat: ContestStat, val rateRanges: RateRanges) ex
 
   override def explain(monumentId: String, author: String): String = {
     val number = rate(monumentId, author)
-    if (authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
+    if (rateRanges.sameAuthorZeroBonus && authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
       s"Pictured by same author before = $number"
     } else {
-      authorsNumberByMonument.getOrElse(monumentId, 0) match {
-        case 0 =>
-          s"Not pictured before = $number"
-        case x if (1 to 3) contains x =>
-          s"Pictured before by $x (1 to 3) authors = $number"
-        case x if (4 to 9) contains x =>
-          s"Pictured before by $x (4 to 9) authors = $number"
-        case _ =>
-          s"Pictured by more than 9 authors = $number"
-      }
+      val picturedBy = authorsNumberByMonument.getOrElse(monumentId, 0)
+      val (rate, start, end) = rateRanges.rateWithRange(picturedBy)
+      s"Pictured before by $picturedBy ($start-${end.getOrElse("")}) authors = $rate"
     }
   }
 }
@@ -242,7 +229,17 @@ object PerPlaceStat {
     "3220490019" -> Set("32-204-9001"), //між селами Городище-Пустоварівське Володарського і Щербаки Білоцерківського районів
     "5322610600" -> Set("53-226-0062"), //uk:Заводське
     "5324000829" -> Set("53-240-0082"), //ур. Ступки
-    "4624801019" -> Set("46-248-0101") //Городиловичі (село більше не існує)  )
+    "4624801019" -> Set("46-248-0101"), //Городиловичі (село більше не існує)  )
+    "5322681102" -> Set("53-226-0041"),  // Забодаква — колишнє село
+    "5322688402" -> Set("53-226-0110"), //
+    "5322681910" -> Set("53-226-0117"),  // Перевалівка
+    "0111948301" -> Set("01-119-0349"),
+    "0111949300" -> Set("01-119-0370"),
+    "0111949702" -> Set("01-119-9002"),
+    "5121085201" -> Set("51-210-0074", "51-210-0075", "51-210-0082", "51-210-0002", "51-210-0011", "51-210-0080"),
+    "6524710101" -> Set("65-247-1251"),
+    "4810800001" -> Set("48-108-0004"),
+    "3222055103" -> Set("32-220-0060")
   )
   val fallbackMap = for ((koatuu, ids) <- fallbackMapInverse; id <- ids) yield id -> koatuu
 
@@ -258,7 +255,7 @@ object PerPlaceStat {
   }
 }
 
-class NumberOfImagesInPlaceBonus(val stat: ContestStat) extends Rater {
+class NumberOfImagesInPlaceBonus(val stat: ContestStat, val rateRanges: RateRanges) extends Rater {
 
   val oldImagesDb = new ImageDB(stat.contest, oldImages, stat.monumentDb)
   val perPlaceStat = PerPlaceStat(oldImagesDb)
@@ -277,20 +274,11 @@ class NumberOfImagesInPlaceBonus(val stat: ContestStat) extends Rater {
   }
 
   override def rate(monumentId: String, author: String): Int = {
-    if (authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
+    if (rateRanges.sameAuthorZeroBonus && authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
       0
     } else {
       perPlaceStat.placeByMonument.get(monumentId).map { place =>
-        perPlaceStat.imagesPerPlace.getOrElse(place, 0) match {
-          case 0 =>
-            6
-          case x if (1 to 9) contains x =>
-            2
-          case x if (10 to 49) contains x =>
-            1
-          case _ =>
-            0
-        }
+        rateRanges.rate(perPlaceStat.imagesPerPlace.getOrElse(place, 0))
       }.getOrElse {
         val monumentIds = unknownPlaceMonumentsByAuthor.getOrElse(author, Set.empty[String])
         if (!monumentIds.contains(monumentId)) {
@@ -302,20 +290,13 @@ class NumberOfImagesInPlaceBonus(val stat: ContestStat) extends Rater {
   }
 
   override def explain(monumentId: String, author: String): String = {
-    if (authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
+    if (rateRanges.sameAuthorZeroBonus && authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
       s"Pictured by same author before = 0"
     } else {
       perPlaceStat.placeByMonument.get(monumentId).map { place =>
-        perPlaceStat.imagesPerPlace.getOrElse(place, 0) match {
-          case 0 =>
-            s"No images were of $place, bonus = 6"
-          case x if (1 to 9) contains x =>
-            s"$x (1 to 9) images were of $place, bonus = 2"
-          case x if (10 to 49) contains x =>
-            s"$x (10 to 49) images were of $place, bonus = 1"
-          case x =>
-            s"$x (>=50) images were of $place, bonus = 0"
-        }
+        val perPlace = perPlaceStat.imagesPerPlace.getOrElse(place, 0)
+        val (rate, start, end) = rateRanges.rateWithRange(perPlace)
+        s"$perPlace ($start-${end.getOrElse("")}) images were of $place, bonus = $rate"
       }.getOrElse {
         val monumentIds = unknownPlaceMonumentsByAuthor.getOrElse(author, Set.empty[String])
         if (!monumentIds.contains(monumentId)) {

@@ -37,6 +37,7 @@ class ContestSpec extends Specification {
         "name",
         "year",
         "city",
+        "cityType",
         "place",
         "lat",
         "lon",

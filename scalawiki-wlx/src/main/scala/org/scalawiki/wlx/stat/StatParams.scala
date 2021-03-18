@@ -24,7 +24,9 @@ case class StatConfig(campaign: String,
                       placeDetection: Boolean = false,
                       newMonuments: Boolean = false,
                       rateInputDistribution: Boolean = false,
-                      mostPopularMonuments: Boolean = false)
+                      mostPopularMonuments: Boolean = false,
+                      minMpx: Option[Float] = None,
+                      previousYearsGallery: Boolean = false)
 
 import org.rogach.scallop._
 
@@ -56,6 +58,8 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
   val newMonuments = opt[Boolean](name = "new-monuments", descr = "new monuments")
   val rateInputDistribution = opt[Boolean](name = "rate-input-distribution", descr = "rate input distribution")
   val mostPopularMonuments = opt[Boolean](name = "most-popular-monuments", descr = "most popular monuments")
+  val minMpx = opt[Float](name = "min-mpx", descr = "minimum megapixels")
+  val previousYearsGallery = opt[Boolean](name = "prev-years-gallery", descr = "previous years gallery")
   verify()
 }
 
@@ -93,7 +97,9 @@ object StatParams {
       placeDetection = conf.placeDetection.getOrElse(false),
       newMonuments = conf.newMonuments.getOrElse(false),
       rateInputDistribution = conf.rateInputDistribution.getOrElse(false),
-      mostPopularMonuments = conf.mostPopularMonuments.getOrElse(false)
+      mostPopularMonuments = conf.mostPopularMonuments.getOrElse(false),
+      minMpx = conf.minMpx.toOption,
+      previousYearsGallery = conf.previousYearsGallery.getOrElse(false)
     )
   }
 }
