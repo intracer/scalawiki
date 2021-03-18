@@ -28,7 +28,7 @@ object Dependencies {
   val ScallopV = "3.5.1"
   val Slf4jV = "1.7.25"
   val SwcEngineV = "3.1.9"
-  val TypesafeConfigV = "1.4.0"
+  val TypesafeConfigV = "1.4.1"
 
   val resolvers = Seq(
     "Typesafe Repo" at "https://repo.typesafe.com/typesafe/releases/",
@@ -62,7 +62,7 @@ object Dependencies {
   object Library {
 
     object Akka {
-      val AkkaV = "2.5.31"
+      val AkkaV = "2.5.32"
       val AkkaHttpV = "10.1.13"
 
       val actor = "com.typesafe.akka" %% "akka-actor" % AkkaV

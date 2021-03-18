@@ -38,7 +38,7 @@ class RegionFixerUpdater(monumentDb: MonumentDB) extends MonumentUpdater {
       val namesList = p.split(",").toBuffer
       (0 to maxIndex).find { index =>
         namesList.lift(index).exists { c =>
-          country.byIdAndName(m.id.take(6), c).size == 1
+          country.byIdAndName(m.id.take(6), c, m.cityType).size == 1
         }
       }
     }
