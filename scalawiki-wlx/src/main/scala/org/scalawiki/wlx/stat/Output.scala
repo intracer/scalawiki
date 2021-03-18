@@ -34,11 +34,17 @@ object Output {
     }
   }
 
-  def galleryByRegionAndId(monumentDb: MonumentDB, authorImageDb: ImageDB, oldImageDb: ImageDB, rater: Rater): String = {
+  def galleryByRegionAndId(monumentDb: MonumentDB, authorImageDb: ImageDB, oldImageDb: ImageDB, rater: Rater, previousImageGallery: Boolean): String = {
     val contest = monumentDb.contest
     val country = contest.country
     val regionIds = country.regionIds.filter(id => authorImageDb.idsByRegion(id).nonEmpty)
     val author = authorImageDb.authors.head
+
+    val sansIneligible = authorImageDb.copy(images = authorImageDb.sansIneligible)
+    val ineligible = authorImageDb.copy(images = authorImageDb.ineligible)
+
+    val previousImageDb = if (previousImageGallery) Some(oldImageDb.subSet(_.author.contains(author))) else None
+
     val rateConfig = contest.rateConfig
     val tableHeader = "{| class=\"wikitable\"\n! rate !! base " +
       (if (rateConfig.numberOfAuthorsBonus || rater.withRating) "!! authors <br> bonus " else "") +
@@ -47,7 +53,7 @@ object Output {
 
     val tableTotal = rater match {
       case rateSum: RateSum =>
-        val groupedTotal = authorImageDb.ids.map { id =>
+        val groupedTotal = sansIneligible.ids.map { id =>
           val rateParts = rateSum.raters.map(_.rate(id, author))
           val rateId = s"${rater.rate(id, author)} || " + rateParts.mkString(" || ")
           (id, rater.rate(id, author), rateId)
@@ -67,7 +73,7 @@ object Output {
       regionId =>
         val regionName = country.regionById(regionId).name
         val regionHeader = s"== [[:uk:Вікіпедія:Вікі любить пам'ятки/$regionName|$regionName]] =="
-        val ids = authorImageDb.idsByRegion(regionId)
+        val ids = sansIneligible.idsByRegion(regionId)
 
         val grouped = ids.map { id =>
           val rateParts = rater.asInstanceOf[RateSum].raters.map(_.rate(id, author))
@@ -87,23 +93,41 @@ object Output {
         val ratingStr = s"\nRating: '''$rating''' \n "
 
         regionHeader + ratingStr + table1 +
-          gallery("", ids, authorImageDb, monumentDb, Some(rater), author = Some(author))
-
+          gallery("", ids, sansIneligible, monumentDb, Some(rater), author = Some(author), previousImageDb) +
+          (if (ineligible.idsByRegion(regionId).nonEmpty) {
+            gallery(s"$regionName ineligible", ineligible.idsByRegion(regionId), ineligible, monumentDb, None,
+              author = Some(author), None, Some("ineligible"))
+          } else {
+            ""
+          })
     }.mkString("\n")
   }
 
   private def gallery(header: String, ids: Set[String], imageDb: ImageDB, monumentDb: MonumentDB,
-                      rater: Option[Rater] = None, author: Option[String] = None) = {
+                      rater: Option[Rater] = None, author: Option[String] = None, prevImages: Option[ImageDB] = None,
+                      subHeader: Option[String] = None) = {
+    def sizes(images: Seq[Image]): Seq[String] = {
+      images.map { img =>
+        (for (w <- img.width; h <- img.height) yield s"$w x $h").getOrElse("")
+      }
+    }
+
     if (ids.nonEmpty) {
       (if (header.nonEmpty) s"\n=== $header: ${ids.size} ===\n" else "") +
         ids.map {
           id =>
-            val images = imageDb.byId(id).map(_.title).sorted
+            val images = imageDb.byId(id).sortBy(_.title)
             val rating = rater.map(_.explain(id, author.getOrElse(""))).getOrElse("")
-            s"\n==== $id ====\n" +
+            s"\n==== ${subHeader.getOrElse("")} $id ====\n" +
               s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n\n" +
               s"$rating \n" +
-              Image.gallery(images)
+              Image.gallery(images.map(_.title), sizes(images)) +
+              prevImages.fold("") { prevImagesDb =>
+                val prevImagesById = prevImagesDb.byId(id).sortBy(_.title)
+                if (prevImagesById.nonEmpty) {
+                  s"\n===== $id previous =====\n" + Image.gallery(prevImagesById.map(_.title), sizes(prevImagesById))
+                } else ""
+              }
         }.mkString("\n")
     } else ""
   }

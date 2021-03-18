@@ -18,7 +18,7 @@ class AuthorsMonumentsSpec extends Specification {
     val mdb = Some(new MonumentDB(contest, monuments))
 
     val db = new ImageDB(contest, images, mdb)
-    val contestStat = new ContestStat(contest, 2013, mdb, Some(db), Some(db))
+    val contestStat = ContestStat(contest, 2013, mdb, Some(db), Some(db))
     new AuthorMonuments(contestStat, gallery = gallery).table
   }
 
@@ -27,6 +27,11 @@ class AuthorsMonumentsSpec extends Specification {
 
   def monuments(n: Int, regionId: String, namePrefix: String, startId: Int = 1): Seq[Monument] =
     (startId until startId + n).map(i => monument(s"$regionId-xxx-000$i", namePrefix + i))
+
+  def image(i: Int, author: Option[String] = None, monumentId: Option[String] = None): Image = {
+    Image(s"Image$i.jpg", author = author, monumentIds = monumentId.toList, pageId = Some(i),
+      width = Some(800), height = Some(600))
+  }
 
   "authorsMonumentsTable" should {
     "be empty without regions" in {
@@ -81,15 +86,14 @@ class AuthorsMonumentsSpec extends Specification {
       )
     }
 
-    "have 1 image with author" in {
+    "have 1 image with author and no monument" in {
       val user = "user"
-      val images = Seq(Image("image1.jpg", author = Some(user), pageId = Some(1)))
+      val images = Seq(image(1, Some(user), None))
       val monuments = Seq.empty[Monument]
       val table: Table = getTable(images, monuments)
 
       table.headers === Seq("User", "Objects pictured", "Photos uploaded") ++ contest.country.regionNames
 
-      // TODO why no author???
       table.data === Seq(
         Seq("Total", "0", "1") ++ Seq.fill(contest.country.regions.size)("0")
       )
@@ -97,17 +101,17 @@ class AuthorsMonumentsSpec extends Specification {
 
     "have 1 image with author and monument with undefined regions" in {
       val user = "user"
-      val images = Seq(Image("image1.jpg", author = Some(user), monumentIds = List("123"), pageId = Some(1)))
+      val images = Seq(image(1,  Some(user), Some("123")))
       val monuments = Seq(new Monument(id = "123", name = "123 monument"))
 
       val table = getTable(images, monuments)
 
       table.headers === Seq("User", "Objects pictured", "Photos uploaded") ++ contest.country.regionNames
 
-      table.data === Seq(
-        Seq("Total", "1", "1") ++ Seq.fill(contest.country.regions.size)("0"),
-        Seq("[[User:user|user]]", "1", "1") ++ Seq.fill(contest.country.regions.size)("0")
-      )
+      val data = table.data
+      data.head === Seq("Total", "1", "1") ++ Seq.fill(contest.country.regions.size)("0")
+      data.size === 2
+      data.last === Seq("[[User:user|user]]", "1", "1") ++ Seq.fill(contest.country.regions.size)("0")
     }
 
     "have 1 image with author and monument no regions" in {

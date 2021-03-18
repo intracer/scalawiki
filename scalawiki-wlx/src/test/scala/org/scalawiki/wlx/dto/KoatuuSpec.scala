@@ -115,11 +115,11 @@ class KoatuuSpec extends Specification {
         "Ставищенський", "Таращанський", "Тетіївський", "Фастівський", "Яготинський"
       ).map(_ + " район")
 
-      val koCities = Seq("Біла Церква", "Березань", "Бориспіль", "Бровари", "Буча", "Васильків", "Ірпінь", "Обухів", "Переяслав-Хмельницький",
+      val koCities = Seq("Біла Церква", "Березань", "Бориспіль", "Бровари", "Буча", "Васильків", "Ірпінь", "Обухів", "Переяслав",
         "Прип'ять", "Ржищів", "Славутич", "Фастів")
 
       val names = Seq() ++ koCities ++ koRegions
-      ko.regions.map(_.name).toSet === names.toSet
+      ko.regions.map(_.name).sorted === names.sorted
 
       ko.regions.flatMap(_.parent().map(_.name)) === List.fill(names.size)("Київська область")
     }
