@@ -50,6 +50,12 @@ class RateRangesSpec extends Specification {
       raters.find(_.isInstanceOf[NumberOfMonuments]) must beSome
       raters.find(_.isInstanceOf[NumberOfAuthorsBonus]) must beSome
       raters.find(_.isInstanceOf[NumberOfImagesInPlaceBonus]) must beSome
+
+      val numberOfAuthorsBonus = raters.collect { case r: NumberOfAuthorsBonus => r }.head
+      numberOfAuthorsBonus.rateRanges.sameAuthorZeroBonus === false
+
+      val numberOfImagesInPlaceBonus = raters.collect { case r: NumberOfImagesInPlaceBonus => r }.head
+      numberOfImagesInPlaceBonus.rateRanges.sameAuthorZeroBonus === false
     }
 
     "parse wle 2020" in {
@@ -60,13 +66,13 @@ class RateRangesSpec extends Specification {
       raters.size === 2
       raters.find(_.isInstanceOf[NumberOfMonuments]) must beSome
       raters.find(_.isInstanceOf[NumberOfAuthorsBonus]) must beSome
-      val bonusRater = raters.collect{case x:NumberOfAuthorsBonus  => x}.head
+      val bonusRater = raters.collect { case x: NumberOfAuthorsBonus => x }.head
       bonusRater.rateRanges.rangeMap === Map(
         ((0, 0), 9),
         ((1, 3), 3),
         ((4, 9), 1)
       )
+      bonusRater.rateRanges.sameAuthorZeroBonus === true
     }
-
   }
 }

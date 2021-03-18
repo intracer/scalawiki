@@ -45,7 +45,7 @@ class AuthorMonuments(val stat: ContestStat,
           rater.rateMonumentIds(ids, user).toString
         }.getOrElse(ids.size)
       )
-    } else Seq.empty[String]
+    } else Nil
 
     val byRegion = country.regionIds.toSeq.map { regionId =>
       val regionIds = monumentDb.byRegion(regionId).map(_.id).toSet
@@ -117,8 +117,7 @@ class AuthorMonuments(val stat: ContestStat,
     val galleryPage = "Commons:" + contest.name + "/" + noTemplateUser + regionOpt.fold("") { region =>
       "#" + region.replaceAll(" ", "_")
     }
-
-    val galleryText = Output.galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt), oldImageDb, rater)
+    val galleryText = Output.galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt), oldImageDb, rater, stat.config.exists(_.previousYearsGallery))
 
     for (bot <- commons if regionOpt.isEmpty) {
       bot.page(galleryPage).edit(galleryText)

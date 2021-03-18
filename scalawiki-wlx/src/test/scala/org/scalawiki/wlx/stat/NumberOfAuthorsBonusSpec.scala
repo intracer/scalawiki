@@ -24,14 +24,21 @@ class NumberOfAuthorsBonusSpec extends Specification {
     "rate non-pictured first year" in {
       val rater = new NumberOfAuthorsBonus(currentYearStat.copy(totalImageDb = Some(imageDb)), ranges)
       rater.rate("01-123-0001", "author 1") === 9
-      rater.explain("01-123-0001", "author 1") === "Not pictured before = 9"
+      rater.explain("01-123-0001", "author 1") === "Pictured before by 0 (0-0) authors = 9"
     }
 
-    "rate pictured twice by same author" in {
+    "rate pictured twice by same author with sameAuthorZeroBonus" in {
       val totalImageDb = imageDbStub.copy(images = Seq(image1, image2))
-      val rater = new NumberOfAuthorsBonus(currentYearStat.copy(totalImageDb = Some(totalImageDb)), ranges)
+      val rater = new NumberOfAuthorsBonus(currentYearStat.copy(totalImageDb = Some(totalImageDb)), ranges.copy(sameAuthorZeroBonus = true))
       rater.rate("01-123-0001", "author 1") === 0
       rater.explain("01-123-0001", "author 1") === "Pictured by same author before = 0"
+    }
+
+    "rate pictured twice by same author without sameAuthorZeroBonus" in {
+      val totalImageDb = imageDbStub.copy(images = Seq(image1, image2))
+      val rater = new NumberOfAuthorsBonus(currentYearStat.copy(totalImageDb = Some(totalImageDb)), ranges.copy(sameAuthorZeroBonus = false))
+      rater.rate("01-123-0001", "author 1") === 3
+      rater.explain("01-123-0001", "author 1") === "Pictured before by 1 (1-3) authors = 3"
     }
   }
 }
