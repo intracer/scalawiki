@@ -6,11 +6,11 @@ object Dependencies {
   val BetterFilesV = "3.9.1"
   val BlameApiV = "12.10.5"
   val ChronicleMapV = "3.19.40"
-  val ChronoScalaV = "0.3.2"
+  val ChronoScalaV = "1.0.0"
   val FicusV = "1.5.0"
   val GuavaV = "20.0"
   val H2V = "1.4.200"
-  val JimFsV = "1.1"
+  val JimFsV = "1.2"
   val JodaTimeV = "2.9.9"
   val JSoupV = "1.13.1"
   val LogbackClassicV = "1.2.3"
@@ -21,14 +21,14 @@ object Dependencies {
   val Scala212V = "2.12.10"
   val Scala211V = "2.11.12"
   val ScalaChartV = "0.7.1"
-  val ScalaCheckV = "1.14.3"
-  val ScalaCsvV = "1.3.6"
+  val ScalaCheckV = "1.15.2"
+  val ScalaCsvV = "1.3.7"
   val ScalaParserCombinatorsV = "1.1.2"
   val ScalaXmlV = "1.2.0"
-  val ScallopV = "3.5.1"
+  val ScallopV = "4.0.2"
   val Slf4jV = "1.7.25"
   val SwcEngineV = "3.1.9"
-  val TypesafeConfigV = "1.4.0"
+  val TypesafeConfigV = "1.4.1"
 
   val resolvers = Seq(
     "Typesafe Repo" at "https://repo.typesafe.com/typesafe/releases/",
@@ -62,8 +62,8 @@ object Dependencies {
   object Library {
 
     object Akka {
-      val AkkaV = "2.5.31"
-      val AkkaHttpV = "10.1.12"
+      val AkkaV = "2.5.32"
+      val AkkaHttpV = "10.1.14"
 
       val actor = "com.typesafe.akka" %% "akka-actor" % AkkaV
       val stream = "com.typesafe.akka" %% "akka-stream" % AkkaV
@@ -88,7 +88,7 @@ object Dependencies {
     }
 
     object Poi {
-      val PoiV = "4.1.2"
+      val PoiV = "5.0.0"
       val PoiXwpfV = "1.0.6"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
@@ -124,7 +124,7 @@ object Dependencies {
     }
 
     object Specs2 {
-      val SpecsV = "4.10.3"
+      val SpecsV = "4.10.6"
 
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV
