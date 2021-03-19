@@ -49,7 +49,9 @@ case class Image(title: String,
 
   def pixels: Option[Long] = for (w <- width; h <- height) yield w * h
 
-  def mpx: Option[Double] = pixels.map(_ / Math.pow(10, 6))
+  def mpx: Option[Float] = pixels.map(_ / Math.pow(10, 6)).map(_.toFloat)
+
+  def atLeastMpx(minMpxOpt: Option[Float]): Boolean = minMpxOpt.fold(true)(minMpx => mpx.exists(_ >= minMpx))
 
   def mpxStr: String = mpx.fold("")(v => f"$v%1.2f Mpx ")
 
