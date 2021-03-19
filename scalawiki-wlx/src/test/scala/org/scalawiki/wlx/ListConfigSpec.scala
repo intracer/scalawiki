@@ -16,6 +16,7 @@ class ListConfigSpec extends Specification {
         "name" -> "назва",
         "year" -> "рік",
         "city" -> "нас_пункт",
+        "cityType" -> "тип-нп",
         "place" -> "адреса",
         "lat" -> "широта",
         "lon" -> "довгота",
