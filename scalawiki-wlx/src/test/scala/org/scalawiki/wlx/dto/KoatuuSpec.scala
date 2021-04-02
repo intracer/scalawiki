@@ -212,14 +212,14 @@ class KoatuuSpec extends Specification {
 
     "differentiate types" in {
       val smt = Ukraine.byIdAndName("14-215", "смт Андріївка")
-      val selo1 = Ukraine.byIdAndName("14-215", "село Андріївка")
-      val selo2 = Ukraine.byIdAndName("14-215", "[[Андріївка (Волноваський район, село)|Андріївка (село)]]")
+      val village1 = Ukraine.byIdAndName("14-215", "село Андріївка")
+      val village2 = Ukraine.byIdAndName("14-215", "[[Андріївка (Волноваський район, село)|Андріївка (село)]]")
       smt.size === 1
       smt.head.regionType === Some(RegionTypes.codeToType("Т"))
-      selo1.size === 1
-      selo1.head.regionType === Some(RegionTypes.codeToType("С"))
-      selo2.size === 1
-      selo2.head.regionType === Some(RegionTypes.codeToType("С"))
+      village1.size === 1
+      village1.head.regionType === Some(RegionTypes.codeToType("С"))
+      village2.size === 1
+      village2.head.regionType === Some(RegionTypes.codeToType("С"))
     }
 
     "contain lesser regions" in {

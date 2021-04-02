@@ -17,7 +17,7 @@ class ImageSpec extends Specification {
       )
     ).text
 
-  "get Author" should {
+  "get author" should {
     "get author from wiki link" in {
       val wiki = makeTemplate("[[User:Qammer Wazir|Qammer Wazir]]")
       Image.getAuthorFromPage(wiki) === "Qammer Wazir"

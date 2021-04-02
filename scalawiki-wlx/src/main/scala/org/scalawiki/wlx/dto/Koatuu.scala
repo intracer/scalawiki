@@ -9,16 +9,15 @@ case class RegionType(code: String, names: Seq[String])
 object RegionTypes {
 
   val types = Seq(
-    RegionType("Р", Seq("Район")),
-    RegionType("Т", Seq("Селище міського типу", "смт")),
-    RegionType("С", Seq("Село", "c.")),
+    RegionType("Р", Seq("район")),
+    RegionType("Т", Seq("селище міського типу", "смт")),
+    RegionType("С", Seq("село", "c.")),
     RegionType("Щ", Seq("селище", "с-ще")),
     RegionType("М", Seq("місто", "м."))
-
   )
 
   val codeToType = types.groupBy(_.code).mapValues(_.head)
-  def nameToType(name: String) = types.filter(t => t.names.map(_.toLowerCase).toSet.exists(name.toLowerCase.contains))
+  def nameToType(name: String) = types.filter(_.names.exists(name.toLowerCase.contains))
 }
 
 object Koatuu {
@@ -29,6 +28,11 @@ object Koatuu {
 
     implicit val level2Reads: Reads[AdmDivision] = regionReads(2, parent)
     (json \ "level1").as[Seq[AdmDivision]].map(_.withParents(parent))
+  }
+
+  def regionsNew = {
+    val stream = getClass.getResourceAsStream("/koatuu_new.json")
+    val json = Json.parse(stream)
   }
 
   def regionReads(level: Int, parent: () => Option[AdmDivision] = () => None): Reads[AdmDivision] = (
