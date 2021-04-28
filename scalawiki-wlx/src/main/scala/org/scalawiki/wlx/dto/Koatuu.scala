@@ -17,7 +17,7 @@ object RegionTypes {
   )
 
   val codeToType = types.groupBy(_.code).mapValues(_.head)
-  def nameToType(name: String) = types.filter(_.names.exists(name.toLowerCase.contains))
+  def nameToType(name: String): Seq[RegionType] = types.filter(_.names.exists(name.toLowerCase.contains))
 }
 
 object Koatuu {
