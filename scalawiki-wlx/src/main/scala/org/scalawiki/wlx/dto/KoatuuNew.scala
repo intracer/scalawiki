@@ -23,18 +23,18 @@ object AdmDivisionFlat {
 
 object KoatuuNew {
 
-  val readStringFromInt: Reads[String] = implicitly[Reads[Int]].map(x => x.toString)
+  val readStringFromLong: Reads[String] = implicitly[Reads[Long]].map(x => x.toString)
 
-  def stringOrInt(name: String): Reads[String] = {
+  def stringOrLong(name: String): Reads[String] = {
     (__ \ name).read[String] or
-      (__ \ name).read[String](readStringFromInt)
+      (__ \ name).read[String](readStringFromLong)
   }
 
   implicit val regionReads: Reads[AdmDivisionFlat] = (
-    stringOrInt("Перший рівень") and
-      stringOrInt("Другий рівень") and
-      stringOrInt("Третій рівень") and
-      stringOrInt("Четвертий рівень") and
+    stringOrLong("Перший рівень") and
+      stringOrLong("Другий рівень") and
+      stringOrLong("Третій рівень") and
+      stringOrLong("Четвертий рівень") and
       (__ \ "Назва об'єкта українською мовою").read[String].map(betterName) and
       (__ \ "Категорія").readNullable[String].map(_.flatMap(RegionTypes.codeToType.get))
     ) (AdmDivisionFlat.apply(_, _, _, _, _, _))
