@@ -26,6 +26,26 @@ class KoatuuParserSpec extends Specification {
       |   "Назва об'єкта українською мовою": "СІМФЕРОПОЛЬ"
       |}""".stripMargin
 
+  val dniproRegionJson =
+    """  {
+      |    "Перший рівень": 1200000000,
+      |    "Другий рівень": "",
+      |    "Третій рівень": "",
+      |    "Четвертий рівень": "",
+      |    "Категорія": "",
+      |    "Назва об'єкта українською мовою": "ДНІПРОПЕТРОВСЬКА ОБЛАСТЬ/М.ДНІПРО"
+      |  }""".stripMargin
+
+  val dniproCityJson =
+    """  {
+      |    "Перший рівень": 1200000000,
+      |    "Другий рівень": 1210100000,
+      |    "Третій рівень": "",
+      |    "Четвертий рівень": "",
+      |    "Категорія": "",
+      |    "Назва об'єкта українською мовою": "ДНІПРО"
+      |  }""".stripMargin
+
   def arr(s: String*): String = s.mkString("[", ",", "]")
 
   "parser" should {
@@ -47,6 +67,22 @@ class KoatuuParserSpec extends Specification {
       val simferopol = regions.last
       simferopol.code === "0110100000"
       simferopol.name === "Сімферополь"
+    }
+
+    "parse Dnipro region" in {
+      val regions = parse(arr(dniproRegionJson))
+      regions.size === 1
+      val dnipro = regions.head
+      dnipro.code === "1200000000"
+      dnipro.name === "Дніпропетровська область"
+    }
+
+    "parse Dnipro city" in {
+      val regions = parse(arr(dniproCityJson))
+      regions.size === 1
+      val dnipro = regions.head
+      dnipro.code === "1210100000"
+      dnipro.name === "Дніпро"
     }
   }
 

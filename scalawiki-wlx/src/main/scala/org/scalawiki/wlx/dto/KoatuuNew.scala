@@ -23,11 +23,18 @@ object AdmDivisionFlat {
 
 object KoatuuNew {
 
+  val readStringFromInt: Reads[String] = implicitly[Reads[Int]].map(x => x.toString)
+
+  def stringOrInt(name: String): Reads[String] = {
+    (__ \ name).read[String] or
+      (__ \ name).read[String](readStringFromInt)
+  }
+
   implicit val regionReads: Reads[AdmDivisionFlat] = (
-    (__ \ "Перший рівень").read[String] and
-      (__ \ "Другий рівень").read[String] and
-      (__ \ "Третій рівень").read[String] and
-      (__ \ "Четвертий рівень").read[String] and
+    stringOrInt("Перший рівень") and
+      stringOrInt("Другий рівень") and
+      stringOrInt("Третій рівень") and
+      stringOrInt("Четвертий рівень") and
       (__ \ "Назва об'єкта українською мовою").read[String].map(betterName) and
       (__ \ "Категорія").readNullable[String].map(_.flatMap(RegionTypes.codeToType.get))
     ) (AdmDivisionFlat.apply(_, _, _, _, _, _))
@@ -36,11 +43,11 @@ object KoatuuNew {
     json.as[Seq[AdmDivisionFlat]]
   }
 
-  def makeHierarchy(flat: Seq[AdmDivisionFlat]): Seq[AdmDivision] = {
+  def makeHierarchy(flat: Seq[AdmDivisionFlat], parent: () => Option[AdmDivision] = () => None): Seq[AdmDivision] = {
     flat.groupBy(_.codeLevels.head).map { case (code, regions) =>
       val (topList, subRegions) = regions.partition(_.codeLevels.size == 1)
       val top = topList.head
-      top.toHierarchy(subRegions.map(_.toHierarchy(Nil, () => None)), () => Some(Country.Ukraine))
+      top.toHierarchy(subRegions.map(_.toHierarchy(Nil, parent)), () => Some(Country.Ukraine))
     }.toSeq
   }
 }

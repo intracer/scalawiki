@@ -1,8 +1,11 @@
 package org.scalawiki.wlx.dto
 
+import org.scalawiki.wlx.dto.KoatuuNew.{makeHierarchy, parse}
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
+
+import scala.io.{Codec, Source}
 
 case class RegionType(code: String, names: Seq[String])
 
@@ -30,9 +33,10 @@ object Koatuu {
     (json \ "level1").as[Seq[AdmDivision]].map(_.withParents(parent))
   }
 
-  def regionsNew = {
+  def regionsNew(parent: () => Option[AdmDivision] = () => None, size: Int = 1): Seq[AdmDivision] = {
     val stream = getClass.getResourceAsStream("/koatuu_new.json")
     val json = Json.parse(stream)
+    makeHierarchy(parse(json), parent)
   }
 
   def regionReads(level: Int, parent: () => Option[AdmDivision] = () => None): Reads[AdmDivision] = (
