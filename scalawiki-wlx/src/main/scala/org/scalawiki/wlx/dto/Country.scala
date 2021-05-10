@@ -21,7 +21,13 @@ trait AdmDivision {
 
   def regionName(regId: String): String = if (regId == code) name else ""
 
-  def byId(monumentId: String): Option[AdmDivision] = if (regionId(monumentId) == code) Some(this) else None
+  def byId(monumentId: String): Option[AdmDivision] = {
+    if (regionId(monumentId) == code) {
+      Some(this)
+    } else {
+      None
+    }
+  }
 
   def byName(name: String): Seq[AdmDivision] = {
     Seq(this).filter(_.name.toLowerCase == name.toLowerCase) ++ regions.flatMap(_.byName(name))

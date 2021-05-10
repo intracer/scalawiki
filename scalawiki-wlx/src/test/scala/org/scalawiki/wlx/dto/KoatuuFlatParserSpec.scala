@@ -53,7 +53,7 @@ class KoatuuFlatParserSpec extends Specification {
       val regions = parse(arr(crimeaJson))
       regions.size === 1
       val crimea = regions.head
-      crimea.code === "0100000000"
+      crimea.code === "01"
       crimea.name === "Автономна Республіка Крим"
     }
 
@@ -61,11 +61,11 @@ class KoatuuFlatParserSpec extends Specification {
       val regions = parse(arr(crimeaJson, simferopolJson))
       regions.size === 2
       val crimea = regions.head
-      crimea.code === "0100000000"
+      crimea.code === "01"
       crimea.name === "Автономна Республіка Крим"
 
       val simferopol = regions.last
-      simferopol.code === "0110100000"
+      simferopol.code === "01101"
       simferopol.name === "Сімферополь"
     }
 
@@ -73,7 +73,7 @@ class KoatuuFlatParserSpec extends Specification {
       val regions = parse(arr(dniproRegionJson))
       regions.size === 1
       val dnipro = regions.head
-      dnipro.code === "1200000000"
+      dnipro.code === "12"
       dnipro.name === "Дніпропетровська область"
     }
 
@@ -81,7 +81,7 @@ class KoatuuFlatParserSpec extends Specification {
       val regions = parse(arr(dniproCityJson))
       regions.size === 1
       val dnipro = regions.head
-      dnipro.code === "1210100000"
+      dnipro.code === "12101"
       dnipro.name === "Дніпро"
     }
   }
@@ -91,21 +91,22 @@ class KoatuuFlatParserSpec extends Specification {
       val regions = makeHierarchy(parse(arr(crimeaJson)))
       regions.size === 1
       val crimea = regions.head
-      crimea.code === "0100000000"
+      crimea.code === "01"
       crimea.name === "Автономна Республіка Крим"
+      crimea.byId("01") === Some(crimea)
     }
 
     "parse Simferopol" in {
       val regions = makeHierarchy(parse(arr(crimeaJson, simferopolJson)))
       regions.size === 1
       val crimea = regions.head
-      crimea.code === "0100000000"
+      crimea.code === "01"
       crimea.name === "Автономна Республіка Крим"
 
       crimea.regions.size === 1
 
       val simferopol = crimea.regions.head
-      simferopol.code === "0110100000"
+      simferopol.code === "01101"
       simferopol.name === "Сімферополь"
     }
   }

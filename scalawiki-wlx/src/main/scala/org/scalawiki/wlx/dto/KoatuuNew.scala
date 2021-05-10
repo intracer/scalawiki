@@ -17,7 +17,9 @@ case class AdmDivisionFlat(codeLevels: Seq[String], name: String, regionType: Op
 
 object AdmDivisionFlat {
   def apply(l1: String, l2: String, l3: String, l4: String, name: String, regionType: Option[RegionType]): AdmDivisionFlat = {
-    AdmDivisionFlat(Seq(l1, l2, l3, l4).filterNot(_.isEmpty), name, regionType)
+    val levels = Seq(l1, l2, l3, l4).filterNot(_.isEmpty)
+    val codes = levels.zipWithIndex.map { case (c, level) => shortCode(c, level + 2) }
+    AdmDivisionFlat(codes, betterName(name), regionType)
   }
 }
 
