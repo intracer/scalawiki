@@ -51,7 +51,7 @@ object KoatuuNew {
     flat.groupBy(_.codeLevels.head).map { case (code, regions) =>
       val (topList, subRegions) = regions.partition(_.codeLevels.size == 1)
       val top = topList.head
-      top.toHierarchy(subRegions.map(_.toHierarchy(Nil, parent)), () => Some(Country.Ukraine))
+      top.toHierarchy(skipGroups(subRegions.map(_.toHierarchy(Nil, parent))), () => Some(Country.Ukraine))
     }.toSeq
   }
 }
