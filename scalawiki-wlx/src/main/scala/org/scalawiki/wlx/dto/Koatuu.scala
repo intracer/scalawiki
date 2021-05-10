@@ -49,7 +49,7 @@ object Koatuu {
       (__ \ "type").readNullable[String].map(_.flatMap(RegionTypes.codeToType.get))
     ) (AdmDivision.apply(_, _, _, _, _))
 
-  val groupNames = Seq("Міста обласного підпорядкування", "Міста", "Райони", "Селища міського типу", "Населені пункти")
+  val groupNames = Seq("Міста обласного підпорядкування", "Міста", "Райони", "Селища міського типу", "Населені пункти", "Сільради")
     .map(_.toUpperCase)
 
   def groupPredicate(r: AdmDivision) = groupNames.exists(r.name.toUpperCase.startsWith)
