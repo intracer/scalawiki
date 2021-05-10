@@ -26,6 +26,16 @@ class KoatuuFlatParserSpec extends Specification {
       |   "Назва об'єкта українською мовою": "СІМФЕРОПОЛЬ"
       |}""".stripMargin
 
+  val simferopolRegionJson = """  {
+  |    "Перший рівень": "0100000000",
+  |    "Другий рівень": "0110100000",
+  |    "Третій рівень": "0110136300",
+  |    "Четвертий рівень": "",
+  |    "Категорія": "Р",
+  |    "Назва об'єкта українською мовою": "ЗАЛІЗНИЧНИЙ"
+  |  }
+  |""".stripMargin
+
   val dniproRegionJson =
     """  {
       |    "Перший рівень": 1200000000,
@@ -58,7 +68,7 @@ class KoatuuFlatParserSpec extends Specification {
     }
 
     "parse Simferopol" in {
-      val regions = parse(arr(crimeaJson, simferopolJson))
+      val regions = parse(arr(crimeaJson, simferopolJson, simferopolRegionJson))
       regions.size === 2
       val crimea = regions.head
       crimea.code === "01"
@@ -97,7 +107,7 @@ class KoatuuFlatParserSpec extends Specification {
     }
 
     "parse Simferopol" in {
-      val regions = makeHierarchy(parse(arr(crimeaJson, simferopolJson)))
+      val regions = makeHierarchy(parse(arr(crimeaJson, simferopolJson, simferopolRegionJson)))
       regions.size === 1
       val crimea = regions.head
       crimea.code === "01"
@@ -108,6 +118,8 @@ class KoatuuFlatParserSpec extends Specification {
       val simferopol = crimea.regions.head
       simferopol.code === "01101"
       simferopol.name === "Сімферополь"
+
+      crimea.regions.flatMap(_.parent().map(_.name)) === Seq("Автономна Республіка Крим")
     }
   }
 
