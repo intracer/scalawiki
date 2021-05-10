@@ -4,7 +4,7 @@ import org.specs2.mutable.Specification
 import play.api.libs.json.{JsValue, Json}
 import KoatuuNew.{makeHierarchy, parse}
 
-class KoatuuParserSpec extends Specification {
+class KoatuuFlatParserSpec extends Specification {
 
   implicit def toJson(s: String): JsValue = Json.parse(s)
 
