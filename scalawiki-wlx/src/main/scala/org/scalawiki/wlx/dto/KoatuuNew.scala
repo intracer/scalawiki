@@ -10,7 +10,9 @@ case class AdmDivisionFlat(codeLevels: Seq[String], name: String, regionType: Op
 
   def toHierarchy(regions: Seq[AdmDivision],
                   parent: () => Option[AdmDivision]): AdmDivision = {
-    AdmDivision(code, name, regions, parent, regionType)
+    val hier = AdmDivision(code, name, regions, parent, regionType)
+    regions.map(_.withParents(() => Some(hier)))
+    hier
   }
 
 }
