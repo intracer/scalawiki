@@ -47,11 +47,14 @@ object KoatuuNew {
     json.as[Seq[AdmDivisionFlat]]
   }
 
-  def makeHierarchy(flat: Seq[AdmDivisionFlat], parent: () => Option[AdmDivision] = () => None): Seq[AdmDivision] = {
-    flat.groupBy(_.codeLevels.head).map { case (code, regions) =>
-      val (topList, subRegions) = regions.partition(_.codeLevels.size == 1)
+  def makeHierarchy(flat: Seq[AdmDivisionFlat],
+                    parent: () => Option[AdmDivision] = () => None,
+                    level: Int = 0): Seq[AdmDivision] = {
+    flat.groupBy(_.codeLevels(level)).map { case (code, regions) =>
+      val (topList, subRegions) = regions.partition(_.codeLevels.size == level + 1)
       val top = topList.head
-      top.toHierarchy(skipGroups(subRegions.map(_.toHierarchy(Nil, parent))), () => Some(Country.Ukraine))
-    }.toSeq
+      val children = skipGroups(makeHierarchy(subRegions, () => None, level + 1))
+      top.toHierarchy(children, parent)
+    }.toSeq.sortBy(_.code)
   }
 }
