@@ -173,9 +173,14 @@ class KoatuuFlatParserSpec extends Specification {
       crimea.code === "01"
       crimea.name === "Автономна Республіка Крим"
 
-      val simferopol = regions.tail.head
+      val simferopol = regions.init.last
       simferopol.code === "01101"
       simferopol.name === "Сімферополь"
+
+      val simferopolRegion = regions.last
+      simferopolRegion.code === "0110136300"
+      simferopolRegion.name === "Залізничний"
+
     }
 
     "parse Dnipro region" in {

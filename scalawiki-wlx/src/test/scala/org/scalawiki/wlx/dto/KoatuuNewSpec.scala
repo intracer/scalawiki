@@ -84,8 +84,9 @@ class KoatuuNewSpec extends Specification {
       val regionNames = Seq("Голосіївський", "Дарницький", "Деснянський", "Дніпровський",
         "Оболонський", "Печерський", "Подільський", "Святошинський", "Солом'янський", "Шевченківський")
       val kyiv = regions.find(_.name == "Київ").get
-      kyiv.regions.map(_.name) === regionNames
-      kyiv.regions.flatMap(_.parent().map(_.name)) === List.fill(regionNames.size)("Київ")
+      val kyivRegions = kyiv.regions
+      kyivRegions.map(_.name) === regionNames
+      kyivRegions.flatMap(_.parent().map(_.name)) === List.fill(regionNames.size)("Київ")
     }
 
     "find Kyiv raions by code" in {
@@ -110,7 +111,7 @@ class KoatuuNewSpec extends Specification {
 
     "contain Kyiv oblast regions" in {
       val ko = regions.find(_.name == "Київська область").get
-      val koRegions = Seq(
+      val koRegionNames = Seq(
         "Баришівський", "Білоцерківський", "Богуславський", "Бориспільський", "Бородянський", "Броварський",
         "Васильківський", "Вишгородський", "Володарський", "Згурівський", "Іванківський", "Кагарлицький", "Києво-Святошинський",
         "Макарівський", "Миронівський", "Обухівський", "Переяслав-Хмельницький", "Поліський", "Рокитнянський", "Сквирський",
@@ -120,10 +121,10 @@ class KoatuuNewSpec extends Specification {
       val koCities = Seq("Біла Церква", "Березань", "Бориспіль", "Бровари", "Буча", "Васильків", "Ірпінь", "Обухів", "Переяслав",
         "Прип'ять", "Ржищів", "Славутич", "Фастів")
 
-      val names = Seq() ++ koCities ++ koRegions
-      ko.regions.map(_.name).sorted === names.sorted
-
-      ko.regions.flatMap(_.parent().map(_.name)) === List.fill(names.size)("Київська область")
+      val names = Seq() ++ koCities ++ koRegionNames
+      val koRegions = ko.regions
+      koRegions.map(_.name).sorted === names.sorted
+      koRegions.flatMap(_.parent().map(_.name)) === List.fill(names.size)("Київська область")
     }
 
     "contain Crimea regions" in {
