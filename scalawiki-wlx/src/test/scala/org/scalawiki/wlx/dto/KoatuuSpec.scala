@@ -215,11 +215,11 @@ class KoatuuSpec extends Specification {
       val village1 = Ukraine.byIdAndName("14-215", "село Андріївка")
       val village2 = Ukraine.byIdAndName("14-215", "[[Андріївка (Волноваський район, село)|Андріївка (село)]]")
       smt.size === 1
-      smt.head.regionType === Some(RegionTypes.codeToType("Т"))
+      smt.head.regionType === Some(KoatuuTypes.codeToType("Т"))
       village1.size === 1
-      village1.head.regionType === Some(RegionTypes.codeToType("С"))
+      village1.head.regionType === Some(KoatuuTypes.codeToType("С"))
       village2.size === 1
-      village2.head.regionType === Some(RegionTypes.codeToType("С"))
+      village2.head.regionType === Some(KoatuuTypes.codeToType("С"))
     }
 
     "contain lesser regions" in {

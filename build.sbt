@@ -105,7 +105,8 @@ lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "de.sciss" %% "scala-chart" % ScalaChartV
+      "de.sciss" %% "scala-chart" % ScalaChartV,
+      "com.github.tototoshi" %% "scala-csv" % ScalaCsvV
     ),
     mainClass in assembly := Some("org.scalawiki.wlx.stat.Statistics")
   )

@@ -1,26 +1,38 @@
 package org.scalawiki.wlx.dto
 
-import org.scalawiki.wlx.dto.KoatuuNew.{makeHierarchy, parse}
+import org.scalawiki.wlx.dto.KoatuuNew.parse
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 
-import scala.io.{Codec, Source}
+case class RegionType(code: String, names: Seq[String],
+                      nameSuffix: Option[String] = None,
+                      noSuffix: Set[String] = Set.empty)
 
-case class RegionType(code: String, names: Seq[String])
+trait RegionTypes {
 
-object RegionTypes {
+  def regionTypes: Seq[RegionType]
 
-  val types = Seq(
+  def codeToType: Map[String, RegionType]
+
+  def groupTypes(types: Seq[RegionType]): Map[String, RegionType] = types.groupBy(_.code).mapValues(_.head).toMap
+
+  def nameToType(name: String): Seq[RegionType] = regionTypes.filter(_.names.exists(name.toLowerCase.contains))
+
+}
+
+object KoatuuTypes extends RegionTypes {
+
+  override val regionTypes = Seq(
     RegionType("Р", Seq("район")),
     RegionType("Т", Seq("селище міського типу", "смт")),
     RegionType("С", Seq("село", "c.")),
     RegionType("Щ", Seq("селище", "с-ще")),
-    RegionType("М", Seq("місто", "м."))
+    RegionType("М", Seq("місто", "м.")),
   )
 
-  val codeToType = types.groupBy(_.code).mapValues(_.head)
-  def nameToType(name: String): Seq[RegionType] = types.filter(_.names.exists(name.toLowerCase.contains))
+  override val codeToType = groupTypes(regionTypes)
+
 }
 
 object Koatuu {
@@ -36,7 +48,7 @@ object Koatuu {
   def regionsNew(parent: () => Option[AdmDivision] = () => None, size: Int = 1): Seq[AdmDivision] = {
     val stream = getClass.getResourceAsStream("/koatuu_new.json")
     val json = Json.parse(stream)
-    makeHierarchy(parse(json), parent)
+    AdmDivisionFlat.makeHierarchy(parse(json), parent)
   }
 
   def regionReads(level: Int, parent: () => Option[AdmDivision] = () => None): Reads[AdmDivision] = (
@@ -46,7 +58,7 @@ object Koatuu {
         .lazyReadNullable(Reads.seq[AdmDivision](regionReads(level + 1)))
         .map(_.getOrElse(Nil)).map(skipGroups) and
       Reads.pure(parent) and
-      (__ \ "type").readNullable[String].map(_.flatMap(RegionTypes.codeToType.get))
+      (__ \ "type").readNullable[String].map(_.flatMap(KoatuuTypes.codeToType.get))
     ) (AdmDivision.apply(_, _, _, _, _))
 
   val groupNames = Seq("Міста обласного підпорядкування", "Міста", "Райони", "Селища міського типу", "Населені пункти", "Сільради")
@@ -81,6 +93,7 @@ object Koatuu {
       .replaceFirst("^[Мм]\\.[ ]?", "")
       .replaceAll("Область$", "область")
       .replaceAll("Район$", "район")
+      .replaceAll("’", "'")
   }
 
   def withBetterName(r: Region) = r.copy(name = betterName(r.name))

@@ -2,10 +2,10 @@ package org.scalawiki.wlx.dto
 
 import org.specs2.mutable.Specification
 
-class KoatuuNewSpec extends Specification {
+class KatotthSpec extends Specification {
 
   val Ukraine: Country = new Country("UA", "Ukraine", Seq("uk"),
-    Koatuu.regionsNew(() => Some(Ukraine)))
+    Katotth.regions(() => Some(Ukraine)))
   val regions = Ukraine.regions
 
   "level1" should {
@@ -49,13 +49,13 @@ class KoatuuNewSpec extends Specification {
     }
 
     "contain level1 names" in {
-      regions.map(_.name).toSet === topRegions.toSeq.map(_._2).toSet
+      regions.map(_.fullName).toSet === topRegions.toSeq.map(_._2).toSet
     }
 
     "lookup level1 by code" in {
       val set = topRegions.keySet
       val byRegion = Ukraine.byRegion(set)
-      byRegion.map { case (adm, ids) => ids.head -> adm.name } === topRegions
+      byRegion.map { case (adm, ids) => ids.head -> adm.fullName } === topRegions
 
       Ukraine.byIdAndName("80-361", "Київ").head.name === "Київ"
     }
@@ -110,7 +110,7 @@ class KoatuuNewSpec extends Specification {
     }
 
     "contain Kyiv oblast regions" in {
-      val ko = regions.find(_.name == "Київська область").get
+      val ko = regions.find(_.name == "Київська").get
       val koRegionNames = Seq(
         "Баришівський", "Білоцерківський", "Богуславський", "Бориспільський", "Бородянський", "Броварський",
         "Васильківський", "Вишгородський", "Володарський", "Згурівський", "Іванківський", "Кагарлицький", "Києво-Святошинський",
@@ -141,7 +141,7 @@ class KoatuuNewSpec extends Specification {
     }
 
     "contain Vinnytsya oblast regions" in {
-      val vinnytsyaRegion = regions.find(_.name == "Вінницька область").get
+      val vinnytsyaRegion = regions.find(_.name == "Вінницька").get
       val regionNames = Seq(
         "Вінниця", "Жмеринка", "Могилів-Подільський", "Козятин", "Ладижин", "Хмільник",
         "Барський район", "Бершадський район", "Вінницький район", "Гайсинський район", "Жмеринський район",

@@ -7,6 +7,8 @@ import scala.collection.immutable.SortedSet
 trait AdmDivision {
   def code: String
 
+  def shortCode: String = KatotthTypes.shortRegionCode(code, regionType)
+
   def name: String
 
   def regionType: Option[RegionType]
@@ -22,7 +24,7 @@ trait AdmDivision {
   def regionName(regId: String): String = if (regId == code) name else ""
 
   def byId(monumentId: String): Option[AdmDivision] = {
-    if (regionId(monumentId) == code) {
+    if (regionId(monumentId) == shortCode) {
       Some(this)
     } else {
       None
@@ -53,10 +55,10 @@ trait AdmDivision {
       }
     }.getOrElse(Nil)
 
-    val types = cityType.fold(RegionTypes.nameToType(rawName).toSet.filterNot(_.code == "Р")) { code =>
-      RegionTypes.codeToType.get(code)
+    val types = cityType.fold(KoatuuTypes.nameToType(rawName).toSet.filterNot(_.code == "Р")) { code =>
+      KoatuuTypes.codeToType.get(code)
         .map(Set(_))
-        .getOrElse(RegionTypes.nameToType(code).toSet.filterNot(_.code == "Р"))
+        .getOrElse(KoatuuTypes.nameToType(code).toSet.filterNot(_.code == "Р"))
     }
 
     if (candidates.size > 1) {
@@ -89,16 +91,18 @@ trait AdmDivision {
   def regionsWithParents(): Seq[AdmDivision] = {
     regions.map(_.withParents(() => Some(this)))
   }
+
+  def fullName: String = name + regionType.flatMap(_.nameSuffix)
 }
 
 trait AdmRegion extends AdmDivision {
-  lazy val regionIds: SortedSet[String] = SortedSet(regions.map(_.code): _*)
+  lazy val regionIds: SortedSet[String] = SortedSet(regions.map(_.shortCode): _*)
 
-  lazy val regionNames: Seq[String] = regions.sortBy(_.code).map(_.name)
+  lazy val regionNames: Seq[String] = regions.sortBy(_.shortCode).map(_.fullName)
 
-  lazy val regionById: Map[String, AdmDivision] = regions.groupBy(_.code).mapValues(_.head).toMap
+  lazy val regionById: Map[String, AdmDivision] = regions.groupBy(_.shortCode).mapValues(_.head).toMap
 
-  override def regionName(regId: String) = byId(regId).map(_.name).getOrElse("")
+  override def regionName(regId: String) = byId(regId).map(_.fullName).getOrElse("")
 
   override def byId(monumentId: String): Option[AdmDivision] = {
     regionById.get(regionId(monumentId)).flatMap(region => region.byId(monumentId).orElse(Some(region)))
@@ -139,6 +143,10 @@ case class Region(code: String, name: String,
     this.regions = regionsWithParents()
     this
   }
+
+  override def fullName: String = name + regionType
+    .filterNot(_.noSuffix.contains(name))
+    .flatMap(_.nameSuffix).getOrElse("")
 }
 
 case class NoRegions(code: String, name: String,

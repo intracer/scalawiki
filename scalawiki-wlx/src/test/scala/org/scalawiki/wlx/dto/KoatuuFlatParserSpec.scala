@@ -2,7 +2,8 @@ package org.scalawiki.wlx.dto
 
 import org.specs2.mutable.Specification
 import play.api.libs.json.{JsValue, Json}
-import KoatuuNew.{makeHierarchy, parse}
+import KoatuuNew.parse
+import AdmDivisionFlat.makeHierarchy
 
 class KoatuuFlatParserSpec extends Specification {
 
