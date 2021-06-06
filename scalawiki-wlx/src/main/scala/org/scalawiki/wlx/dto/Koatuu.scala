@@ -59,7 +59,7 @@ object Koatuu {
         .map(_.getOrElse(Nil)).map(skipGroups) and
       Reads.pure(parent) and
       (__ \ "type").readNullable[String].map(_.flatMap(KoatuuTypes.codeToType.get))
-    ) (AdmDivision.apply(_, _, _, _, _))
+    ) (AdmDivision.apply(_, _, _, _, _, level))
 
   val groupNames = Seq("Міста обласного підпорядкування", "Міста", "Райони", "Селища міського типу", "Населені пункти", "Сільради")
     .map(_.toUpperCase)

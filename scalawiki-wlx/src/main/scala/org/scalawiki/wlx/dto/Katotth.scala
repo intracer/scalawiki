@@ -37,6 +37,8 @@ object Katotth {
     }.toMap
   }
 
+  lazy val toKatotth: Map[String, Seq[String]] = toKoatuu.toSeq.groupBy(_._2).view.mapValues(_.map(_._1)).toMap
+
   def toFlat(row: Seq[String]): AdmDivisionFlat = {
     val mainLevels = row.take(4).filterNot(_.isEmpty).map(_.replace("UA", "")).distinct
     val codes = mainLevels.zipWithIndex.map { case (c, level) => shortCode(c, level + 2) }

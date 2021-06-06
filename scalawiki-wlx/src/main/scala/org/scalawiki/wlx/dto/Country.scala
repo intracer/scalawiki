@@ -13,6 +13,8 @@ trait AdmDivision {
 
   def regionType: Option[RegionType]
 
+  def level: Int
+
   override def toString = s"$name ($code)"
 
   def regions: Seq[AdmDivision]
@@ -141,12 +143,15 @@ case class Country(code: String,
   }
 
   override def regionType: Option[RegionType] = None
+
+  override def level: Int = 0
 }
 
 case class Region(code: String, name: String,
                   var regions: Seq[AdmDivision] = Nil,
                   var parent: () => Option[AdmDivision] = () => None,
-                  regionType: Option[RegionType] = None)
+                  regionType: Option[RegionType] = None,
+                  level: Int = 0)
   extends AdmRegion {
 
   override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
@@ -162,7 +167,7 @@ case class Region(code: String, name: String,
 
 case class NoRegions(code: String, name: String,
                      var parent: () => Option[AdmDivision] = () => None,
-                     regionType: Option[RegionType] = None)
+                     regionType: Option[RegionType] = None, level: Int = 0)
   extends AdmDivision {
 
   val regions: Seq[AdmDivision] = Nil
@@ -178,11 +183,11 @@ object AdmDivision {
   def apply(code: String, name: String,
             regions: Seq[AdmDivision],
             parent: () => Option[AdmDivision],
-            regionType: Option[RegionType]): AdmDivision = {
+            regionType: Option[RegionType], level: Int = 0): AdmDivision = {
     if (regions.isEmpty) {
-      NoRegions(code, name, parent, regionType)
+      NoRegions(code, name, parent, regionType, level)
     } else {
-      Region(code, name, regions, parent, regionType)
+      Region(code, name, regions, parent, regionType, level)
     }
   }
 
