@@ -83,7 +83,7 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
         imagesText += s"\n== ${region.name} ${images.size} images ==\n"
 
         imagesText += byPlace.map { case (code, monumentIds) =>
-          val place = Country.Ukraine.byId(monumentIds.head).map(_.name).getOrElse("Unknown")
+          val place = Country.Ukraine.byMonumentId(monumentIds.head).map(_.name).getOrElse("Unknown")
           val placeImages = images.filter(_.monumentIds.toSet.intersect(monumentIds).nonEmpty)
           s"\n=== $place ${placeImages.size} images ===\n" ++
             placeImages.map(_.title).mkString("<gallery>\n", "\n", "</gallery>")

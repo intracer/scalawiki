@@ -17,13 +17,23 @@ trait AdmDivision {
 
   def regions: Seq[AdmDivision]
 
+  def allSubregions: Seq[AdmDivision] = {
+    Seq(this) ++ regions.flatMap(_.allSubregions)
+  }
+
+  def mapByCode: Map[String, AdmDivision] = {
+    allSubregions.map{ place =>
+      place.code -> place
+    }.toMap
+  }
+
   def parent: () => Option[AdmDivision]
 
   def regionId(monumentId: String): String = monumentId.split("-").take(2).mkString
 
   def regionName(regId: String): String = if (regId == code) name else ""
 
-  def byId(monumentId: String): Option[AdmDivision] = {
+  def byMonumentId(monumentId: String): Option[AdmDivision] = {
     if (regionId(monumentId) == shortCode) {
       Some(this)
     } else {
@@ -36,7 +46,7 @@ trait AdmDivision {
   }
 
   def byRegion(monumentIds: Set[String]): Map[AdmDivision, Set[String]] = {
-    val entries = monumentIds.flatMap(id => byId(id).map(adm => id -> adm))
+    val entries = monumentIds.flatMap(id => byMonumentId(id).map(adm => id -> adm))
 
     entries
       .groupBy { case (id, adm) => adm }
@@ -46,7 +56,7 @@ trait AdmDivision {
   def byIdAndName(regionId: String, rawName: String, cityType: Option[String] = None): Seq[AdmDivision] = {
     val cleanName = AdmDivision.cleanName(rawName)
 
-    val candidates = byId(regionId).map { region =>
+    val candidates = byMonumentId(regionId).map { region =>
       val here = region.byName(cleanName)
       if (here.isEmpty) {
         region.parent().map(_.byName(cleanName)).getOrElse(Nil)
@@ -102,10 +112,10 @@ trait AdmRegion extends AdmDivision {
 
   lazy val regionById: Map[String, AdmDivision] = regions.groupBy(_.shortCode).mapValues(_.head).toMap
 
-  override def regionName(regId: String) = byId(regId).map(_.fullName).getOrElse("")
+  override def regionName(regId: String) = byMonumentId(regId).map(_.fullName).getOrElse("")
 
-  override def byId(monumentId: String): Option[AdmDivision] = {
-    regionById.get(regionId(monumentId)).flatMap(region => region.byId(monumentId).orElse(Some(region)))
+  override def byMonumentId(monumentId: String): Option[AdmDivision] = {
+    regionById.get(regionId(monumentId)).flatMap(region => region.byMonumentId(monumentId).orElse(Some(region)))
   }
 }
 
@@ -115,7 +125,8 @@ object NoAdmDivision extends Country("", "")
 case class Country(code: String,
                    name: String,
                    val languageCodes: Seq[String] = Nil,
-                   var regions: Seq[AdmDivision] = Nil
+                   var regions: Seq[AdmDivision] = Nil,
+                   val codeToRegion: Map[String, AdmDivision] = Map.empty
                   ) extends AdmRegion {
 
   val parent: () => Option[AdmDivision] = () => None

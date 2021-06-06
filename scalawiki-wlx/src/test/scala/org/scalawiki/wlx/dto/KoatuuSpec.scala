@@ -153,11 +153,11 @@ class KoatuuSpec extends Specification {
     }
 
     "lookup regions by monumentId" in {
-      val r1 = Ukraine.byId("14-215-0078").get
+      val r1 = Ukraine.byMonumentId("14-215-0078").get
       r1.name === "Волноваський район"
       r1.parent().get.name === "Донецька область"
 
-      val r2 = Ukraine.byId("26-252-0002").get
+      val r2 = Ukraine.byMonumentId("26-252-0002").get
       r2.name === "Снятинський район"
       r2.parent().get.name === "Івано-Франківська область"
     }
@@ -178,7 +178,7 @@ class KoatuuSpec extends Specification {
 
   "level3/4" should {
     "contain Irpin regions" in {
-      val irpin = Ukraine.byId("32-109").get
+      val irpin = Ukraine.byMonumentId("32-109").get
       irpin.name === "Ірпінь"
       irpin.regions.map(_.name) === Seq("Ворзель", "Гостомель", "Коцюбинське")
 
@@ -186,7 +186,7 @@ class KoatuuSpec extends Specification {
     }
 
     "contain Obuhiv regions" in {
-      val obuhiv = Ukraine.byId("32-116").get
+      val obuhiv = Ukraine.byMonumentId("32-116").get
       obuhiv.name === "Обухів"
       obuhiv.regions.map(_.name) === Seq("Ленди", "Таценки")
 
@@ -194,7 +194,7 @@ class KoatuuSpec extends Specification {
     }
 
     "contain Simferopol regions" in {
-      val simferopol = Ukraine.byId("01-101").get
+      val simferopol = Ukraine.byMonumentId("01-101").get
       simferopol.name === "Сімферополь"
       simferopol.regions.map(_.name) === Seq("Залізничний", "Київський", "Центральний", "Аерофлотський", "Гресівський",
         "Комсомольське", "Аграрне")

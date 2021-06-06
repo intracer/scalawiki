@@ -97,7 +97,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
       percentage) ++ pictured).map(_.toString)
 
     if (regionId.length == 2 && regionalDetails) {
-      val child = new MonumentsPicturedByRegion(stat, false, parentRegion.byId(regionId))
+      val child = new MonumentsPicturedByRegion(stat, false, parentRegion.byMonumentId(regionId))
       child.updateWiki(bot)
     }
 

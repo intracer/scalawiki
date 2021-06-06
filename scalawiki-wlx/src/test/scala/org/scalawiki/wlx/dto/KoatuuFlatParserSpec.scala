@@ -217,7 +217,7 @@ class KoatuuFlatParserSpec extends Specification {
       val crimea = regions.head
       crimea.code === "01"
       crimea.name === "Автономна Республіка Крим"
-      crimea.byId("01") === Some(crimea)
+      crimea.byMonumentId("01") === Some(crimea)
     }
 
     "parse Simferopol" in {

@@ -10,13 +10,13 @@ object KatotthTypes extends RegionTypes {
   override val regionTypes = Seq(
     RegionType("O", Seq("область"), Some(" область"), Set("Автономна Республіка Крим")),
     RegionType("K", Seq("місто")), // що має спеціальний статус;
-    RegionType("Р", Seq("район")),
-    RegionType("Н", Seq("громада")),
-    RegionType("М", Seq("місто", "м.")),
-    RegionType("Т", Seq("селище міського типу", "смт")),
-    RegionType("С", Seq("село", "c.")),
-    RegionType("Х", Seq("селище", "с-ще")),
-    RegionType("В", Seq("район")), // в місті
+    RegionType("P", Seq("район"), Some(" район")),
+    RegionType("H", Seq("громада")),
+    RegionType("M", Seq("місто", "м.")),
+    RegionType("T", Seq("селище міського типу", "смт")),
+    RegionType("C", Seq("село", "c.")),
+    RegionType("X", Seq("селище", "с-ще")),
+    RegionType("B", Seq("район")), // в місті
   )
 
   override val codeToType = groupTypes(regionTypes)
@@ -31,6 +31,12 @@ object KatotthTypes extends RegionTypes {
 
 object Katotth {
 
+  lazy val toKoatuu: Map[String, String] = {
+    readCsv("katotth_koatuu").map { row =>
+      row(0).replace("UA", "") -> row(1)
+    }.toMap
+  }
+
   def toFlat(row: Seq[String]): AdmDivisionFlat = {
     val mainLevels = row.take(4).filterNot(_.isEmpty).map(_.replace("UA", "")).distinct
     val codes = mainLevels.zipWithIndex.map { case (c, level) => shortCode(c, level + 2) }
@@ -41,12 +47,13 @@ object Katotth {
     )
   }
 
-  def readCsv: Seq[List[String]] = {
-    val csv = CSVReader.open(new InputStreamReader(getClass.getResourceAsStream("/katotth.csv")))
+  def readCsv(filename: String): Seq[List[String]] = {
+    val csv = CSVReader.open(new InputStreamReader(getClass.getResourceAsStream(s"/$filename.csv")))
     csv.all().tail
   }
 
   def regions(parent: () => Option[AdmDivision] = () => None, size: Int = 1): Seq[AdmDivision] = {
-    AdmDivisionFlat.makeHierarchy(readCsv.map(toFlat), parent)
+    val flat = readCsv("katotth").map(toFlat)
+    AdmDivisionFlat.makeHierarchy(flat, parent)
   }
 }
