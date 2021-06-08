@@ -64,9 +64,9 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
           Output.multipleIds(imageDb, mDb)
         }
 
-        if (cfg.fillLists) {
-          ImageFiller.fillLists(mDb, imageDb)
-        }
+//        if (cfg.fillLists) {
+//          ImageFiller.fillLists(mDb, imageDb)
+//        }
 
         if (cfg.missingGallery) {
           Output.missingGallery(mDb)
@@ -86,6 +86,10 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
 
   def allYears() = {
     for (imageDb <- totalImageDb) {
+      if (cfg.fillLists) {
+           ImageFiller.fillLists(monumentDb.get, new ImageDB(stat.contest, stat.oldImages, monumentDb))
+      }
+
       if (cfg.regionalStat) {
         Output.regionalStat(stat)
       }
