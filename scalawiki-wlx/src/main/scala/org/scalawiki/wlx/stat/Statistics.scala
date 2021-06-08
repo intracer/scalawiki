@@ -1,10 +1,9 @@
 package org.scalawiki.wlx.stat
 
 import java.time.{ZoneOffset, ZonedDateTime}
-
 import org.scalawiki.MwBot
 import org.scalawiki.cache.CachedBot
-import org.scalawiki.dto.Site
+import org.scalawiki.dto.{Image, Site}
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
@@ -34,6 +33,15 @@ case class ContestStat(contest: Contest,
 
   val imageDbsByYear = dbsByYear.groupBy(_.contest.year)
   val yearSeq = imageDbsByYear.keys.toSeq.sorted
+
+  lazy val oldImages: Seq[Image] = {
+    for (total <- totalImageDb;
+    current <- currentYearImageDb)
+      yield {
+        val currentImageIds = current.images.flatMap(_.pageId).toSet
+        total.images.filter(image => !currentImageIds.contains(image.pageId.get))
+      }
+  }.getOrElse(Nil)
 
   def imageDbByYear(year: Int) = imageDbsByYear.get(year).map(_.head)
 
