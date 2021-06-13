@@ -1,7 +1,9 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.wlx.dto.{Contest, Country, Katotth, Koatuu}
+import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Katotth, Koatuu}
 import org.scalawiki.wlx.query.MonumentQuery
+
+case class Koatuu2Katotth(koatuu: Option[String], katotth: Option[AdmDivision], monumentIds: Seq[String])
 
 object KatotthMonumentListCreator {
 
@@ -19,13 +21,26 @@ object KatotthMonumentListCreator {
     val query = MonumentQuery.create(contest)
     val monumentDB = MonumentDB.getMonumentDb(contest, query)
     val placeByMonumentId = monumentDB.placeByMonumentId
-    monumentDB.monuments.map { m =>
-      val koatuuOpt  = placeByMonumentId.get(m.id)
-      val katotth = koatuuOpt.map { koatuu =>
-        Katotth.toKatotth(koatuu).map(katotthMap.apply).maxBy(_.level)
+    val sequence = monumentDB.monuments.map { m =>
+      val koatuuOpt = placeByMonumentId.get(m.id)
+      val katotthOpt = koatuuOpt.flatMap { koatuu =>
+        val candidates = Katotth.toKatotth.getOrElse(koatuu, Nil).flatMap(katotthMap.get)
+        if (candidates.nonEmpty) Some(candidates.maxBy(_.level)) else None
       }
 
-      m
+      Koatuu2Katotth(koatuuOpt, katotthOpt, List(m.id))
     }
+    val parentCodes = Set("H", "P", "K", "O")
+    val grouped = sequence.filter(_.katotth.nonEmpty).groupBy { k2k =>
+      val k = k2k.katotth.get
+      var groupK = k
+
+      while (!groupK.regionType.exists(rt => parentCodes.contains(rt.code)) && groupK.parent().nonEmpty) {
+        groupK = groupK.parent().get
+      }
+      groupK
+    }
+
+    println(grouped.size)
   }
 }
