@@ -2,9 +2,9 @@ import sbt._
 
 object Dependencies {
 
-  val AaltoXmlV = "1.2.2"
+  val AaltoXmlV = "1.3.0"
   val BetterFilesV = "3.9.1"
-  val BlameApiV = "13.1"
+  val BlameApiV = "13.4"
   val ChronicleMapV = "3.19.40"
   val ChronoScalaV = "1.0.0"
   val FicusV = "1.5.0"
@@ -17,12 +17,12 @@ object Dependencies {
   val MockServerV = "5.7.0"
   val ReactiveStreamsV = "1.0.2"
   val RetryV = "0.3.3"
-  val Scala213V = "2.13.5"
-  val Scala212V = "2.12.13"
+  val Scala213V = "2.13.6"
+  val Scala212V = "2.12.14"
   val Scala211V = "2.11.12"
   val ScalaChartV = "0.7.1"
   val ScalaCheckV = "1.15.2"
-  val ScalaCsvV = "1.3.7"
+  val ScalaCsvV = "1.3.8"
   val ScalaParserCombinatorsV = "1.1.2"
   val ScalaXmlV = "1.2.0"
   val ScallopV = "4.0.2"

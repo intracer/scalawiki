@@ -41,11 +41,7 @@ trait Rater {
     rateMonumentIds(imageDb._byAuthorAndRegion.by(author, regionId).flatMap(_.monumentId).toSet, author)
   }
 
-  lazy val oldImages: Seq[Image] = {
-    val totalImageDb = stat.totalImageDb.get
-    val currentImageIds = imageDb.images.flatMap(_.pageId).toSet
-    totalImageDb.images.filter(image => !currentImageIds.contains(image.pageId.get))
-  }
+  val oldImages = stat.oldImages
 
   lazy val oldMonumentIds: Set[String] = oldImages.flatMap(_.monumentId).toSet
 
