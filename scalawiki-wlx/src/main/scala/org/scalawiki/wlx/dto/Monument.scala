@@ -86,7 +86,7 @@ case class Monument(page: String = "",
       } ++
         otherParams.toSeq
 
-    val template = new Template(templateName.orElse(listConfig.map(_.templateName)).get, ListMap(params: _*))
+    val template = Template(templateName.orElse(listConfig.map(_.templateName)).get, ListMap(params: _*))
 
     template.text + "\n"
   }

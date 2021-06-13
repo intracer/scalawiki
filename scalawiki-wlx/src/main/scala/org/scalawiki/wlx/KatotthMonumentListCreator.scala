@@ -1,7 +1,11 @@
 package org.scalawiki.wlx
 
+import org.scalawiki.MwBot
 import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Katotth, Koatuu}
 import org.scalawiki.wlx.query.MonumentQuery
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 case class Koatuu2Katotth(koatuu: Option[String], katotth: Option[AdmDivision], monumentIds: Seq[String])
 
@@ -14,7 +18,6 @@ object KatotthMonumentListCreator {
   val UkraineKoatuu: Country = new Country("UA", "Ukraine", Seq("uk"), Koatuu.regionsNew(() => Some(UkraineKoatuu)))
   val regionsKoatuu = UkraineKoatuu.regions
   val koatuuMap = UkraineKoatuu.mapByCode
-
 
   def main(args: Array[String]): Unit = {
     val contest = Contest.WLMUkraine(2021)
@@ -41,6 +44,14 @@ object KatotthMonumentListCreator {
       groupK
     }
 
-    println(grouped.size)
+    val ukWiki = MwBot.fromHost(MwBot.ukWiki)
+
+    Future.sequence(grouped.map { case (adm, k2k) =>
+      val pageName = s"Вікіпедія:Вікі любить пам'ятки/новий АТУ/${adm.namesList.tail.mkString("/")}"
+      val monumentIds = k2k.flatMap(_.monumentIds).sorted
+      val header = "{{WLM-шапка}}\n"
+      val monuments = header + monumentIds.flatMap(id => monumentDB.byId(id)).map(_.asWiki()).mkString("")
+      ukWiki.page(pageName).edit(monuments)
+    })
   }
 }
