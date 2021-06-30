@@ -1,11 +1,13 @@
 package org.scalawiki.wlx.stat
 
 import org.scalawiki.MwBot
+import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.{ImageDB, ImageFiller, MonumentDB}
 
 import scala.concurrent.ExecutionContext
 
 class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: ExecutionContext) {
+
   import org.scalawiki.wlx.stat.{ReporterRegistry => RR}
 
   val contest = stat.contest
@@ -64,9 +66,9 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
           Output.multipleIds(imageDb, mDb)
         }
 
-//        if (cfg.fillLists) {
-//          ImageFiller.fillLists(mDb, imageDb)
-//        }
+        //        if (cfg.fillLists) {
+        //          ImageFiller.fillLists(mDb, imageDb)
+        //        }
 
         if (cfg.missingGallery) {
           Output.missingGallery(mDb)
@@ -87,7 +89,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
   def allYears() = {
     for (imageDb <- totalImageDb) {
       if (cfg.fillLists) {
-           ImageFiller.fillLists(monumentDb.get, new ImageDB(stat.contest, stat.oldImages, monumentDb))
+        ImageFiller.fillLists(monumentDb.get, new ImageDB(stat.contest, stat.oldImages, monumentDb))
       }
 
       if (cfg.regionalStat) {
@@ -107,6 +109,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
       if (cfg.regionalGallery) {
         Output.byRegion(monumentDb.get, imageDb)
       }
+      new NumberOfMonumentsByNumberOfPictures(stat, imageDb).updateWiki(commons)
     }
   }
 
@@ -115,6 +118,20 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
     allYears()
   }
 
+}
+
+class NumberOfMonumentsByNumberOfPictures(val stat: ContestStat, val imageDb: ImageDB) extends Reporter {
+  val picturesPerMonument = imageDb.images.flatMap(_.monumentIds).groupBy(identity).values.map(_.size)
+  val numberOfMonumentsByNumberOfPictures = picturesPerMonument.groupBy(identity).mapValues(_.size).toSeq
+    .sortBy { case (pictures, monuments) => -pictures }
+
+  override val table =
+    Table(
+      Seq("pictures", "monuments"),
+      numberOfMonumentsByNumberOfPictures.map { case (pictures, monuments) => Seq(pictures.toString, monuments.toString) }
+    )
+
+  override def name: String = "Number Of monuments by number of pictures"
 }
 
 object ReporterRegistry {
