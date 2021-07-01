@@ -1,7 +1,7 @@
 import sbt.Keys._
 import Dependencies._
 
-fork in Test in ThisBuild := true
+ThisBuild / Test / fork := true
 
 lazy val isScala213 = settingKey[Boolean]("Is the scala version 2.13.")
 
@@ -34,14 +34,14 @@ lazy val commonSettings = Seq(
     assert(CompatibleJavaVersion(curr, required), s"Java $required or above required")
   },
 
-  assemblyJarName in assembly := {
+  assembly / assemblyJarName := {
     s"${name.value}-${version.value}.jar"
   },
-  test in assembly := {},
-  assemblyMergeStrategy in assembly := {
+  assembly / test := {},
+  assembly / assemblyMergeStrategy := {
     case PathList("org", "xmlpull", "v1", xs@_*) => MergeStrategy.first
     case x =>
-      val oldStrategy = (assemblyMergeStrategy in assembly).value
+      val oldStrategy = (assembly / assemblyMergeStrategy).value
       oldStrategy(x)
   }
 )
@@ -108,7 +108,7 @@ lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
       "de.sciss" %% "scala-chart" % ScalaChartV,
       "com.github.tototoshi" %% "scala-csv" % ScalaCsvV
     ),
-    mainClass in assembly := Some("org.scalawiki.wlx.stat.Statistics")
+    assembly / mainClass := Some("org.scalawiki.wlx.stat.Statistics")
   )
 
 lazy val sql = Project("scalawiki-sql", file("scalawiki-sql"))
