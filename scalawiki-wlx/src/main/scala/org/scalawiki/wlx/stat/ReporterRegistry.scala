@@ -109,7 +109,10 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
       if (cfg.regionalGallery) {
         Output.byRegion(monumentDb.get, imageDb)
       }
-      new NumberOfMonumentsByNumberOfPictures(stat, imageDb).updateWiki(commons)
+
+      if (cfg.numberOfMonumentsByNumberOfPictures) {
+        new NumberOfMonumentsByNumberOfPictures(stat, imageDb).updateWiki(commons)
+      }
     }
   }
 
