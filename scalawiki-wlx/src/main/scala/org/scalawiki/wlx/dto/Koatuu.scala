@@ -28,7 +28,7 @@ object KoatuuTypes extends RegionTypes {
     RegionType("Т", Seq("селище міського типу", "смт")),
     RegionType("С", Seq("село", "c.")),
     RegionType("Щ", Seq("селище", "с-ще")),
-    RegionType("М", Seq("місто", "м.")),
+    RegionType("М", Seq("місто", "м."))
   )
 
   override val codeToType = groupTypes(regionTypes)

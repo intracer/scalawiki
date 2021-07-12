@@ -4,7 +4,7 @@ resolvers += Classpaths.sbtPluginReleases
 
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.8.2")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.4.2")
+addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.5.1")
 
 addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.6.1")
 

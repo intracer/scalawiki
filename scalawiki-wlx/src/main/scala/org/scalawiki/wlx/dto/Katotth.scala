@@ -16,7 +16,7 @@ object KatotthTypes extends RegionTypes {
     RegionType("T", Seq("селище міського типу", "смт")),
     RegionType("C", Seq("село", "c.")),
     RegionType("X", Seq("селище", "с-ще")),
-    RegionType("B", Seq("район")), // в місті
+    RegionType("B", Seq("район")) // в місті
   )
 
   override val codeToType = groupTypes(regionTypes)
