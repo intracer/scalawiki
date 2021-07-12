@@ -17,19 +17,17 @@ import scala.concurrent.{Future, _}
 trait MonumentQuery {
   val Timeout = 2.minutes
 
-  import scala.concurrent.duration._
-
   def contest: Contest
 
-  def listTemplate: String = contest.uploadConfigs.head.listTemplate
+  def defaultListTemplate: String = contest.uploadConfigs.head.listTemplate
 
-  def byMonumentTemplateAsync(generatorTemplate: String = listTemplate,
+  def byMonumentTemplateAsync(generatorTemplate: String = defaultListTemplate,
                               date: Option[ZonedDateTime] = None,
                               listTemplate: Option[String] = None): Future[Seq[Monument]]
 
   def byPageAsync(page: String, template: String, date: Option[ZonedDateTime] = None): Future[Seq[Monument]]
 
-  final def byMonumentTemplate(generatorTemplate: String = listTemplate,
+  final def byMonumentTemplate(generatorTemplate: String = defaultListTemplate,
                                date: Option[ZonedDateTime] = None,
                                listTemplate: Option[String] = None): Seq[Monument] =
     Await.result(byMonumentTemplateAsync(generatorTemplate, date, listTemplate), Timeout): Seq[Monument]
