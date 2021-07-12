@@ -20,6 +20,7 @@ object KatotthMonumentListCreator {
   val koatuuMap = UkraineKoatuu.mapByCode
 
   def main(args: Array[String]): Unit = {
+    val ukWiki = MwBot.fromHost(MwBot.ukWiki)
     val contest = Contest.WLMUkraine(2021)
     val query = MonumentQuery.create(contest)
     val monumentDB = MonumentDB.getMonumentDb(contest, query)
@@ -36,14 +37,13 @@ object KatotthMonumentListCreator {
       groupK
     }
 
-    val ukWiki = MwBot.fromHost(MwBot.ukWiki)
-
     Future.sequence(grouped.map { case (adm, k2k) =>
       val pageName = s"Вікіпедія:Вікі любить пам'ятки/новий АТУ/${adm.namesList.tail.mkString("/")}"
-      val monumentIds = k2k.flatMap(_.monumentIds).sorted
+      val monumentIds = k2k.flatMap(_.monumentIds).toSet
       val header = "{{WLM-шапка}}\n"
-      val monuments = header + monumentIds.flatMap(id => monumentDB.byId(id)).map(_.asWiki()).mkString("")
-      ukWiki.page(pageName).edit(monuments)
+      val monuments = monumentDB.monuments.filter(m => monumentIds.contains(m.id))
+      val pageText = header + monuments.map(_.asWiki()).mkString("")
+      ukWiki.page(pageName).edit(pageText)
     })
   }
 
