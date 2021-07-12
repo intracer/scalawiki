@@ -1,8 +1,6 @@
 package org.scalawiki.wlx.query
 
-import java.time.ZonedDateTime
-
-import org.scalawiki.{ActionBot, MwBot, WithBot}
+import org.scalawiki.MwBot
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{PageIdsParam, Query}
@@ -11,72 +9,69 @@ import org.scalawiki.query.QueryLibrary
 import org.scalawiki.wlx.dto.lists.OtherTemplateListConfig
 import org.scalawiki.wlx.dto.{Contest, Monument}
 
+import java.time.ZonedDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Future, _}
 
 trait MonumentQuery {
+  val Timeout = 2.minutes
 
   import scala.concurrent.duration._
 
   def contest: Contest
 
-  def byMonumentTemplateAsync(template: String = contest.uploadConfigs.head.listTemplate, date: Option[ZonedDateTime] = None): Future[Seq[Monument]]
+  def listTemplate: String = contest.uploadConfigs.head.listTemplate
 
-  def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false, date: Option[ZonedDateTime] = None): Future[Seq[Monument]]
+  def byMonumentTemplateAsync(generatorTemplate: String = listTemplate,
+                              date: Option[ZonedDateTime] = None,
+                              listTemplate: Option[String] = None): Future[Seq[Monument]]
 
-  final def byMonumentTemplate(template: String = contest.uploadConfigs.head.listTemplate, date: Option[ZonedDateTime] = None) =
-    Await.result(byMonumentTemplateAsync(template, date), 120.minutes): Seq[Monument]
+  def byPageAsync(page: String, template: String, date: Option[ZonedDateTime] = None): Future[Seq[Monument]]
 
-  final def byPage(page: String, template: String, pageIsTemplate: Boolean = false) =
-    Await.result(byPageAsync(page, template, pageIsTemplate), 15.minutes): Seq[Monument]
+  final def byMonumentTemplate(generatorTemplate: String = listTemplate,
+                               date: Option[ZonedDateTime] = None,
+                               listTemplate: Option[String] = None): Seq[Monument] =
+    Await.result(byMonumentTemplateAsync(generatorTemplate, date, listTemplate), Timeout): Seq[Monument]
+
+  final def byPage(page: String, template: String): Seq[Monument] =
+    Await.result(byPageAsync(page, template), Timeout): Seq[Monument]
 }
 
 class MonumentQueryApi(val contest: Contest)(implicit val bot: MwBot) extends MonumentQuery with QueryLibrary {
 
   val host = getHost.get
 
-  val listConfig = contest.uploadConfigs.head.listConfig
+  val defaultListConfig = contest.uploadConfigs.head.listConfig
 
-  def getHost = contest.listsHost
+  def getHost: Option[String] = contest.listsHost
 
-  override def byMonumentTemplateAsync(template: String, date: Option[ZonedDateTime] = None): Future[Seq[Monument]] = {
-
+  override def byMonumentTemplateAsync(generatorTemplate: String,
+                                       date: Option[ZonedDateTime] = None,
+                                       listTemplate: Option[String] = None): Future[Seq[Monument]] = {
+    val title = if (generatorTemplate.startsWith("Template")) generatorTemplate else "Template:" + generatorTemplate
+    val listConfig = listTemplate.fold(defaultListConfig)(new OtherTemplateListConfig(_, defaultListConfig))
     if (date.isEmpty) {
-
-      bot.page("Template:" + template).revisionsByGenerator("embeddedin", "ei",
+      bot.page(title).revisionsByGenerator("embeddedin", "ei",
         Set(Namespace.PROJECT, Namespace.MAIN),
         Set("ids", "content", "timestamp", "user", "userid", "comment"), None, "100") map { pages =>
-          pages.flatMap(page =>
-            Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig))
+        pages.flatMap(page =>
+          Monument.monumentsFromText(page.text.getOrElse(""), page.title, listTemplate.getOrElse(generatorTemplate), listConfig))
       }
     } else {
-      monumentsByDate("Template:" + template, template, date.get)
+      monumentsByDate(title, listTemplate.getOrElse(generatorTemplate), date.get)
     }
   }
 
-  override def byPageAsync(page: String, template: String, pageIsTemplate: Boolean = false, date: Option[ZonedDateTime] = None): Future[Seq[Monument]] = {
-    val config = new OtherTemplateListConfig(template, listConfig)
-    if (!page.startsWith("Template") || pageIsTemplate) {
-      bot.page(page).revisions(Set.empty, Set("content", "timestamp", "user", "userid", "comment")).map {
-        revs =>
-          revs.headOption.map(page =>
-            Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, config).toSeq).getOrElse(Seq.empty)
+  override def byPageAsync(page: String, template: String, date: Option[ZonedDateTime] = None): Future[Seq[Monument]] = {
+    val config = new OtherTemplateListConfig(template, defaultListConfig)
+    if (!page.startsWith("Template")) {
+      bot.page(page).revisions(Set.empty, Set("content", "timestamp", "user", "userid", "comment")).map { revs =>
+        revs.headOption.map(page =>
+          Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, config).toSeq).getOrElse(Seq.empty)
       }
     } else {
-      //      bot.page(page).revisionsByGenerator("links", null, Set.empty, Set("content", "timestamp", "user", "comment")).map {
-      //        pages =>
-      //          pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template).toSeq)
-      //      }
-      if (date.isEmpty) {
-        bot.page(page).revisionsByGenerator(
-          "embeddedin", "ei", Set(Namespace.PROJECT), Set("content", "timestamp", "user", "userid", "comment"), None, "100"
-        ).map {
-          pages =>
-            pages.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, config))
-        }
-      } else {
-        monumentsByDate(page, template, date.get)
-      }
+      byMonumentTemplateAsync(page, date, Some(template))
     }
   }
 
@@ -85,7 +80,7 @@ class MonumentQueryApi(val contest: Contest)(implicit val bot: MwBot) extends Mo
       ids =>
         Future.traverse(ids)(id => pageRevisions(id, date)).map {
           pages =>
-            pages.flatten.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, listConfig))
+            pages.flatten.flatMap(page => Monument.monumentsFromText(page.text.getOrElse(""), page.title, template, defaultListConfig))
         }
     }
   }
