@@ -4,7 +4,7 @@ scalawiki is an experimental MediaWiki client in Scala on early stages of develo
 
 
 
-[![Build Status](https://travis-ci.org/intracer/scalawiki.svg?branch=master)](https://travis-ci.org/intracer/scalawiki?branch=master)
+[![Build Status](https://travis-ci.com/intracer/scalawiki.svg?branch=master)](https://travis-ci.com/intracer/scalawiki?branch=master)
 [![Build status](https://ci.appveyor.com/api/projects/status/21ow3gsesrduiuc6/branch/master?svg=true)](https://ci.appveyor.com/project/intracer/scalawiki/branch/master)
 [![codecov.io](http://codecov.io/github/intracer/scalawiki/coverage.svg?branch=master)](http://codecov.io/github/intracer/scalawiki?branch=master)
 [![Join the chat at https://gitter.im/intracer/scalawiki](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/intracer/scalawiki?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
