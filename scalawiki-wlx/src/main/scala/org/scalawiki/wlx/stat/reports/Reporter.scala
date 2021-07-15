@@ -1,7 +1,8 @@
-package org.scalawiki.wlx.stat
+package org.scalawiki.wlx.stat.reports
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
+import org.scalawiki.wlx.stat.ContestStat
 
 trait Reporter {
 

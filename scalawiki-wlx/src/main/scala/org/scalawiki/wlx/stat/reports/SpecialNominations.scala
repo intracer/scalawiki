@@ -1,10 +1,10 @@
-package org.scalawiki.wlx.stat
+package org.scalawiki.wlx.stat.reports
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.ImageDB
-import org.scalawiki.wlx.dto.{Contest, Country, Koatuu, Monument, SpecialNomination}
-import org.scalawiki.wlx.query.MonumentQuery
+import org.scalawiki.wlx.dto.{Country, SpecialNomination}
+import org.scalawiki.wlx.stat.ContestStat
 
 class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
 

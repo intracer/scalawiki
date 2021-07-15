@@ -4,6 +4,7 @@ import com.typesafe.config.Config
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.ImageDB
+import org.scalawiki.wlx.stat.reports.RateInputDistribution
 
 import scala.collection.mutable
 

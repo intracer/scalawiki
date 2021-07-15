@@ -1,9 +1,10 @@
-package org.scalawiki.wlx.stat
+package org.scalawiki.wlx.stat.reports
 
 import org.jfree.data.category.DefaultCategoryDataset
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.dto.markup.Table
+import org.scalawiki.wlx.stat.ContestStat
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 class AuthorsStat(val uploadImages: Boolean = false) {

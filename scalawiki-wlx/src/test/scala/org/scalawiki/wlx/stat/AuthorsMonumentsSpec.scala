@@ -4,6 +4,7 @@ import org.scalawiki.dto.Image
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.dto._
 import org.scalawiki.wlx.dto.lists.ListConfig._
+import org.scalawiki.wlx.stat.reports.AuthorMonuments
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 import org.specs2.mutable.Specification
 

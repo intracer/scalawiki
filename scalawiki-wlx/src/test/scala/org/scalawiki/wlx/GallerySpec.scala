@@ -2,7 +2,7 @@ package org.scalawiki.wlx
 
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.{Contest, Monument}
-import org.scalawiki.wlx.stat.Output
+import org.scalawiki.wlx.stat.reports.Output
 import org.specs2.mutable.Specification
 
 class GallerySpec extends Specification {

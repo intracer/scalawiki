@@ -1,7 +1,8 @@
-package org.scalawiki.wlx.stat
+package org.scalawiki.wlx.stat.reports
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
+import org.scalawiki.wlx.stat.{ContestStat, Rater, StatConfig, Stats}
 import org.scalawiki.wlx.{ImageDB, ImageFiller, MonumentDB}
 
 import scala.concurrent.ExecutionContext
@@ -9,7 +10,7 @@ import scala.util.Try
 
 class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: ExecutionContext) {
 
-  import org.scalawiki.wlx.stat.{ReporterRegistry => RR}
+  import org.scalawiki.wlx.stat.reports.{ReporterRegistry => RR}
 
   val contest = stat.contest
   val monumentDb = stat.monumentDb

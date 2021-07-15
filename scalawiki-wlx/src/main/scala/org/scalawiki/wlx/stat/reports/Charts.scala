@@ -1,8 +1,4 @@
-package org.scalawiki.wlx.stat
-
-import java.awt.{Color, Font}
-import java.io.File
-import java.text.DecimalFormat
+package org.scalawiki.wlx.stat.reports
 
 import org.jfree.chart.axis.NumberAxis
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator
@@ -12,6 +8,10 @@ import org.jfree.chart.{ChartFactory, ChartUtilities, JFreeChart}
 import org.jfree.data.category.{CategoryDataset, DefaultCategoryDataset}
 import org.jfree.data.general.{DefaultPieDataset, PieDataset}
 import org.scalawiki.{MwBot, WithBot}
+
+import java.awt.{Color, Font}
+import java.io.File
+import java.text.DecimalFormat
 
 class Charts extends WithBot {
 

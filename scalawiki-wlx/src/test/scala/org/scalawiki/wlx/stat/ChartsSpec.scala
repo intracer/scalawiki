@@ -1,5 +1,6 @@
 package org.scalawiki.wlx.stat
 
+import org.scalawiki.wlx.stat.reports.Charts
 import org.specs2.mutable.Specification
 
 import scala.collection.JavaConverters._

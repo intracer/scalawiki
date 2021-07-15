@@ -6,6 +6,7 @@ import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.{Image, Site}
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
+import org.scalawiki.wlx.stat.reports.ReporterRegistry
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 import scala.concurrent.ExecutionContext.Implicits.global

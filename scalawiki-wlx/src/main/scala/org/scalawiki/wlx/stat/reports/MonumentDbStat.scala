@@ -1,9 +1,9 @@
-package org.scalawiki.wlx.stat
-
-import java.text.NumberFormat
+package org.scalawiki.wlx.stat.reports
 
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.MonumentDB
+
+import java.text.NumberFormat
 
 class MonumentDbStat {
 

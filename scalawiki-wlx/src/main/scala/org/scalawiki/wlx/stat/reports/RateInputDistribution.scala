@@ -1,6 +1,7 @@
-package org.scalawiki.wlx.stat
+package org.scalawiki.wlx.stat.reports
 
 import org.scalawiki.dto.markup.Table
+import org.scalawiki.wlx.stat.ContestStat
 
 class RateInputDistribution(val stat: ContestStat,
                             val distribution: Map[Int, Int],
