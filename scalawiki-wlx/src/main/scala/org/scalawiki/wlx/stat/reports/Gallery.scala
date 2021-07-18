@@ -16,28 +16,14 @@ object Gallery {
     val byReg1 = monuments.groupBy(_.split("-").head)
     val reg1Links = for (reg1 <- byReg1.keySet.toSeq.sorted) yield {
       val reg1Ids = byReg1(reg1)
-      val byReg2 = reg1Ids.groupBy(_.split("-")(1))
-      val reg2Links = for (reg2 <- byReg2.keySet.toSeq.sorted) yield {
-        val reg2Ids = byReg2(reg2)
-        val texts = for (monumentId <- reg2Ids.toSeq.sorted) yield {
-          Try {
-            monumentInfo(mDb.byId(monumentId).get) +
-              imageDb.byId(monumentId).map(_.title).sorted
-              .mkString("\n<gallery>\n", "\n", "\n</gallery>\n")
-          }.getOrElse("")
-        }
-        val text = texts.mkString
-        val title = s"Commons:WLM-UA/$reg1/$reg1"
-        commons.page(title).edit(text)
-        val regionName = Ukraine.byMonumentId(s"$reg1-$reg1").map(_.fullName).getOrElse("")
+      Try(getReg2Links(imageDb, mDb, reg1, reg1Ids)).map { reg2Links =>
+        val reg2Text = reg2Links.mkString("\n")
+        val title = s"Commons:WLM-UA/$reg1"
+        commons.page(title).edit(reg2Text)
+
+        val regionName = Ukraine.regionById.get(reg1).map(_.fullName).getOrElse("")
         s"* [[$title]] $regionName"
       }
-      val reg2Text = reg2Links.mkString("\n")
-      val title = s"Commons:WLM-UA/$reg1"
-      commons.page(title).edit(reg2Text)
-
-      val regionName = Ukraine.regionById.get(reg1).map(_.fullName).getOrElse("")
-      s"* [[$title]] $regionName"
     }
 //    val reg1Text = reg1Links.mkString("\n")
 //    val title = s"Commons:WLM-UA"
@@ -47,6 +33,25 @@ object Gallery {
   def monumentsPictured(imageDb: ImageDB, sizePredicate: Int => Boolean): Set[String] = {
     val picturesPerMonument = imageDb.images.flatMap(_.monumentIds).groupBy(identity).mapValues(_.size).toMap
     picturesPerMonument.filter { case (_, size) => sizePredicate(size) }.keySet
+  }
+
+  def getReg2Links(imageDb: ImageDB, mDb: MonumentDB, reg1: String, reg1Ids: Set[String]): Seq[String] = {
+    val byReg2 = reg1Ids.filter(_.split("-").length >= 2).groupBy(_.split("-")(1))
+    for (reg2 <- byReg2.keySet.toSeq.sorted) yield {
+      val reg2Ids = byReg2(reg2)
+      val texts = for (monumentId <- reg2Ids.toSeq.sorted) yield {
+        Try {
+          monumentInfo(mDb.byId(monumentId).get) +
+            imageDb.byId(monumentId).map(_.title).sorted
+              .mkString("\n<gallery>\n", "\n", "\n</gallery>\n")
+        }.getOrElse("")
+      }
+      val text = texts.mkString
+      val title = s"Commons:WLM-UA/$reg1/$reg2"
+      commons.page(title).edit(text)
+      val regionName = Ukraine.byMonumentId(s"$reg1-$reg2").map(_.fullName).getOrElse("")
+      s"* [[$title]] $regionName"
+    }
   }
 
   def monumentInfo(m: Monument): String = {
