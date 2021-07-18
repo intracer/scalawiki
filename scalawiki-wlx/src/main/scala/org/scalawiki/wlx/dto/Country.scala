@@ -106,7 +106,7 @@ trait AdmDivision {
     regions.map(_.withParents(() => Some(this)))
   }
 
-  def fullName: String = name + regionType.flatMap(_.nameSuffix)
+  def fullName: String = name + regionType.flatMap(_.nameSuffix).getOrElse("")
 }
 
 trait AdmRegion extends AdmDivision {

@@ -27,9 +27,9 @@ object Gallery {
           }.getOrElse("")
         }
         val text = texts.mkString
-        val title = s"Commons:WLM-UA/$reg1/$reg2"
+        val title = s"Commons:WLM-UA/$reg1/$reg1"
         commons.page(title).edit(text)
-        val regionName = Ukraine.byMonumentId(s"$byReg1-$byReg2").map(_.fullName).getOrElse("")
+        val regionName = Ukraine.byMonumentId(s"$reg1-$reg1").map(_.fullName).getOrElse("")
         s"* [[$title]] $regionName"
       }
       val reg2Text = reg2Links.mkString("\n")

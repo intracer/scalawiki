@@ -174,6 +174,16 @@ class KoatuuSpec extends Specification {
       parent.name === "Запорізька область"
       parent.code === "23"
     }
+
+    "lookup by monument id" in {
+      Ukraine.byMonumentId("18-240").map(_.fullName).getOrElse("") === "Новоград-Волинський район"
+      Ukraine.byMonumentId("07-101").map(_.fullName).getOrElse("") === "Луцьк"
+      Ukraine.byMonumentId("01-101").map(_.fullName).getOrElse("") === "Сімферополь"
+      Ukraine.byMonumentId("01-103").map(_.fullName).getOrElse("") === "Алушта"
+      Ukraine.byMonumentId("01-106").map(_.fullName).getOrElse("") === "Джанкой"
+      Ukraine.byMonumentId("01-109").map(_.fullName).getOrElse("") === "Євпаторія"
+      Ukraine.byMonumentId("05-101").map(_.fullName).getOrElse("") === "Вінниця"
+    }
   }
 
   "level3/4" should {
