@@ -50,7 +50,7 @@ class AuthorMonuments(val stat: ContestStat,
     val byRegion = country.regionIds.toSeq.map { regionId =>
       val regionIds = monumentDb.byRegion(regionId).map(_.id).toSet
       val currentIds = regionIds intersect ids
-      val rating = userOpt.map(user => rater.rateMonumentIds(currentIds, user)).getOrElse(currentIds.size)
+      val rating: Double = userOpt.map(user => rater.rateMonumentIds(currentIds, user)).getOrElse(currentIds.size)
       optionalUserGalleryLink(rating, userOpt, country.regionById.get(regionId).map(_.name))
     }
 
@@ -103,7 +103,7 @@ class AuthorMonuments(val stat: ContestStat,
     }
   }
 
-  private def optionalUserGalleryLink(number: Int, userOpt: Option[String], regionOpt: Option[String] = None) = {
+  private def optionalUserGalleryLink(number: Double, userOpt: Option[String], regionOpt: Option[String] = None) = {
     if (gallery && userOpt.isDefined && number > 0) {
       userGalleryLink(number, userOpt, regionOpt)
     } else {
@@ -111,7 +111,7 @@ class AuthorMonuments(val stat: ContestStat,
     }
   }
 
-  private def userGalleryLink(number: Int, userOpt: Option[String], regionOpt: Option[String] = None) = {
+  private def userGalleryLink(number: Double, userOpt: Option[String], regionOpt: Option[String] = None) = {
     val noTemplateUser = userOpt.get.split("\\|").last.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
 
     val galleryPage = "Commons:" + contest.name + "/" + noTemplateUser + regionOpt.fold("") { region =>
