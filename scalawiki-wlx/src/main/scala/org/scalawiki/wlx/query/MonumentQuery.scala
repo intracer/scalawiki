@@ -53,8 +53,11 @@ class MonumentQueryApi(val contest: Contest)(implicit val bot: MwBot) extends Mo
       bot.page(title).revisionsByGenerator("embeddedin", "ei",
         Set(Namespace.PROJECT, Namespace.MAIN),
         Set("ids", "content", "timestamp", "user", "userid", "comment"), None, "100") map { pages =>
-        pages.flatMap(page =>
-          Monument.monumentsFromText(page.text.getOrElse(""), page.title, listTemplate.getOrElse(generatorTemplate), listConfig))
+        pages.flatMap { page =>
+          if (!page.title.contains("новий АТУ")) {
+            Monument.monumentsFromText(page.text.getOrElse(""), page.title, listTemplate.getOrElse(generatorTemplate), listConfig)
+          } else Nil
+        }
       }
     } else {
       monumentsByDate(title, listTemplate.getOrElse(generatorTemplate), date.get)
