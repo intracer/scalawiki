@@ -7,7 +7,7 @@ import org.scalawiki.wlx.query.MonumentQuery
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-case class Koatuu2Katotth(koatuu: Option[String], katotth: Option[AdmDivision], monumentIds: Seq[String])
+case class Koatuu2Katotth(koatuu: Option[String], katotth: Option[AdmDivision], monumentIds: Seq[String], candidates: Candidate)
 
 object KatotthMonumentListCreator {
 
@@ -19,23 +19,18 @@ object KatotthMonumentListCreator {
   val regionsKoatuu = UkraineKoatuu.regions
   val koatuuMap = UkraineKoatuu.mapByCode
 
+  val parentCodes = Set("H", "P", "K", "O")
+
   def main(args: Array[String]): Unit = {
     val ukWiki = MwBot.fromHost(MwBot.ukWiki)
     val contest = Contest.WLMUkraine(2021)
     val query = MonumentQuery.create(contest)
     val monumentDB = MonumentDB.getMonumentDb(contest, query)
-    val sequence = getMapping(monumentDB)
+    val sequence: Seq[Koatuu2Katotth] = getMapping(monumentDB)
 
-    val parentCodes = Set("H", "P", "K", "O")
-    val grouped = sequence.filter(_.katotth.nonEmpty).groupBy { k2k =>
-      val k = k2k.katotth.get
-      var groupK = k
-
-      while (!groupK.regionType.exists(rt => parentCodes.contains(rt.code)) && groupK.parent().nonEmpty) {
-        groupK = groupK.parent().get
-      }
-      groupK
-    }
+    val (mapped, unmapped) = sequence.partition(_.katotth.nonEmpty)
+    val grouped = groupByAdm(mapped)
+    reportUnmapped(unmapped)
 
     Future.sequence(grouped.map { case (adm, k2k) =>
       val pageName = s"Вікіпедія:Вікі любить пам'ятки/новий АТУ/${adm.namesList.tail.mkString("/")}"
@@ -45,6 +40,22 @@ object KatotthMonumentListCreator {
       val pageText = header + monuments.map(_.asWiki()).mkString("")
       ukWiki.page(pageName).edit(pageText)
     })
+  }
+
+  def groupByAdm(sequence: Seq[Koatuu2Katotth]): Map[AdmDivision, Seq[Koatuu2Katotth]] = {
+    sequence.groupBy { k2k =>
+      val k = k2k.katotth.get
+      var groupK = k
+
+      while (!groupK.regionType.exists(rt => parentCodes.contains(rt.code)) && groupK.parent().nonEmpty) {
+        groupK = groupK.parent().get
+      }
+      groupK
+    }
+  }
+
+  def reportUnmapped(sequence: Seq[Koatuu2Katotth]) = {
+    // TODO
   }
 
   def getMapping(monumentDB: MonumentDB): Seq[Koatuu2Katotth] = {
