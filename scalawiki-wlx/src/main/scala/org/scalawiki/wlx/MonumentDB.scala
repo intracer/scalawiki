@@ -80,7 +80,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
         Seq(
           place.name,
           place.candidates.map(_.name).mkString(", "),
-          place.monuments.map(_.name).mkString(",")
+          place.monuments.map(m => s"${m.id} ${m.name}").mkString(",")
         )
       }
       Table(headers, data, page)

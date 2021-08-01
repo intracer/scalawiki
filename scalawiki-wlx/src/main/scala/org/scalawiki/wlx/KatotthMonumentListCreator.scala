@@ -1,8 +1,10 @@
 package org.scalawiki.wlx
 
 import org.scalawiki.MwBot
+import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Katotth, Koatuu, RegionType}
 import org.scalawiki.wlx.query.MonumentQuery
+import org.scalawiki.wlx.stat.reports.Output
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -30,12 +32,11 @@ object KatotthMonumentListCreator {
 
     val (mapped, unmapped) = sequence.partition(_.katotth.nonEmpty)
     val grouped = groupByAdm(mapped)
-    reportUnmapped(unmapped)
-
-    val duplicates = grouped.filter { case (adm, k2k) =>
-      val pageName = s"Вікіпедія:Вікі любить пам'ятки/новий АТУ/${adm.namesList.tail.mkString("/")}"
-      pageName == "Вікіпедія:Вікі любить пам'ятки/новий АТУ/Сумська область/Сумський район/Миколаївська громада"
-    }
+    reportUnmapped(monumentDB, unmapped
+      .filter(_.koatuu.nonEmpty)
+      .filterNot(_.koatuu.contains("80"))
+      .filterNot(_.koatuu.contains("85"))
+    )
 
     val citiRegions = Set("51100370000040590", "12080090000039979")
     val village1Regions = Set("51100390000087217", "59080130000022249")
@@ -82,8 +83,19 @@ object KatotthMonumentListCreator {
     }
   }
 
-  def reportUnmapped(sequence: Seq[Koatuu2Katotth]) = {
-    // TODO
+  def reportUnmapped(mDb: MonumentDB, sequence: Seq[Koatuu2Katotth]) = {
+    Output.unknownPlaces(mDb)
+    val byKoatuu = sequence.map { k2k =>
+      k2k.koatuu.get -> k2k.monumentIds
+    }.groupBy(_._1).mapValues(_.flatMap(_._2)).toMap
+
+    val table = Table(Seq("koatuu", "monumentIds"), byKoatuu.toSeq.sortBy(_._1).map{
+      case (koatuu, ids) => Seq(koatuu, ids.mkString(", "))
+    })
+
+    val text = table.asWiki
+    val pageName = s"Вікіпедія:${mDb.contest.contestType.name}/unmappedPlaces"
+    MwBot.fromHost(MwBot.ukWiki).page(pageName).edit(text, Some("updating"))
   }
 
   def getMapping(monumentDB: MonumentDB): Seq[Koatuu2Katotth] = {
@@ -94,7 +106,11 @@ object KatotthMonumentListCreator {
       val katotthOpt = koatuuOpt.flatMap { koatuu =>
         val paddedKoatuu = koatuu.padTo(10, "0").mkString
         val candidates = Katotth.toKatotth.getOrElse(paddedKoatuu, Nil).flatMap(katotthMap.get)
-        if (candidates.nonEmpty) Some(candidates.maxBy(_.level)) else None
+        if (candidates.nonEmpty) {
+          Some(candidates.maxBy(_.level))
+        } else {
+          None
+        }
       }
 
       Koatuu2Katotth(koatuuOpt, katotthOpt, List(m.id))

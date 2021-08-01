@@ -37,13 +37,7 @@ object KoatuuTypes extends RegionTypes {
 
 object Koatuu {
 
-  def regions(parent: () => Option[AdmDivision] = () => None): Seq[AdmDivision] = {
-    val stream = getClass.getResourceAsStream("/koatuu.json")
-    val json = Json.parse(stream)
-
-    implicit val level2Reads: Reads[AdmDivision] = regionReads(2, parent)
-    (json \ "level1").as[Seq[AdmDivision]].map(_.withParents(parent))
-  }
+  def regions(parent: () => Option[AdmDivision] = () => None) = regionsNew(parent)
 
   def regionsNew(parent: () => Option[AdmDivision] = () => None, size: Int = 1): Seq[AdmDivision] = {
     val stream = getClass.getResourceAsStream("/koatuu_new.json")
