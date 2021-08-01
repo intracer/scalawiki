@@ -11,12 +11,12 @@ object KatotthTypes extends RegionTypes {
     RegionType("O", Seq("область"), Some(" область"), Set("Автономна Республіка Крим")),
     RegionType("K", Seq("місто")), // що має спеціальний статус;
     RegionType("P", Seq("район"), Some(" район")),
-    RegionType("H", Seq("громада")),
+    RegionType("H", Seq("громада"), Some(" громада")),
     RegionType("M", Seq("місто", "м.")),
     RegionType("T", Seq("селище міського типу", "смт")),
     RegionType("C", Seq("село", "c.")),
     RegionType("X", Seq("селище", "с-ще")),
-    RegionType("B", Seq("район")) // в місті
+    RegionType("B", Seq("район"), Some(" район")) // в місті
   )
 
   override val codeToType = groupTypes(regionTypes)

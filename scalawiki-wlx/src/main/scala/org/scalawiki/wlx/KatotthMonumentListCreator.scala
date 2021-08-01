@@ -7,7 +7,7 @@ import org.scalawiki.wlx.query.MonumentQuery
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-case class Koatuu2Katotth(koatuu: Option[String], katotth: Option[AdmDivision], monumentIds: Seq[String], candidates: Candidate)
+case class Koatuu2Katotth(koatuu: Option[String], katotth: Option[AdmDivision], monumentIds: Seq[String]/*, candidates: Candidate*/)
 
 object KatotthMonumentListCreator {
 
@@ -34,10 +34,22 @@ object KatotthMonumentListCreator {
 
     Future.sequence(grouped.map { case (adm, k2k) =>
       val pageName = s"Вікіпедія:Вікі любить пам'ятки/новий АТУ/${adm.namesList.tail.mkString("/")}"
+
+//      val toRedirectList = adm.namesList.tail.init ++ Seq(adm.shortNamesList.last)
+//      val toRedirect = s"Вікіпедія:Вікі любить пам'ятки/новий АТУ/${toRedirectList.mkString("/")}"
       val monumentIds = k2k.flatMap(_.monumentIds).toSet
       val header = "{{WLM-шапка}}\n"
       val monuments = monumentDB.monuments.filter(m => monumentIds.contains(m.id))
-      val pageText = header + monuments.map(_.asWiki()).mkString("")
+      val koatuuPages = monuments.map(_.page).distinct.sorted
+      val pageText = header + monuments.map(_.asWiki()).mkString("") + "\n|}" +
+        "\n== Взято з ==\n" + koatuuPages.map(page => s"* [[$page]]").mkString("\n") +
+        "\n== Примітки ==\n{{reflist}}"
+
+//      val toDeleteText = "{{q-delete|author request}}"
+//      if (toRedirect != pageName) {
+//        val toRedirectText = s"#redirect[[$pageName]]"
+//        ukWiki.page(toRedirect).edit(toRedirectText)
+//      }
       ukWiki.page(pageName).edit(pageText)
     })
   }

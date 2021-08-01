@@ -11,7 +11,9 @@ trait AdmDivision {
 
   def name: String
 
-  lazy val namesList: Seq[String] = parent().map(_.namesList).getOrElse(Nil) :+ name
+  lazy val namesList: Seq[String] = parent().map(_.namesList).getOrElse(Nil) :+ fullName
+
+  lazy val shortNamesList: Seq[String] = parent().map(_.shortNamesList).getOrElse(Nil) :+ name
 
   def regionType: Option[RegionType]
 
