@@ -1,7 +1,7 @@
 package org.scalawiki.wlx
 
 import org.scalawiki.MwBot
-import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Katotth, Koatuu}
+import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Katotth, Koatuu, RegionType}
 import org.scalawiki.wlx.query.MonumentQuery
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -32,12 +32,36 @@ object KatotthMonumentListCreator {
     val grouped = groupByAdm(mapped)
     reportUnmapped(unmapped)
 
-    Future.sequence(grouped.map { case (adm, k2k) =>
+    val duplicates = grouped.filter { case (adm, k2k) =>
       val pageName = s"Вікіпедія:Вікі любить пам'ятки/новий АТУ/${adm.namesList.tail.mkString("/")}"
+      pageName == "Вікіпедія:Вікі любить пам'ятки/новий АТУ/Сумська область/Сумський район/Миколаївська громада"
+    }
 
-      val monumentIds = k2k.flatMap(_.monumentIds).toSet
+    val citiRegions = Set("51100370000040590", "12080090000039979")
+    val village1Regions = Set("51100390000087217", "59080130000022249")
+    val village2Regions = Set("12080110000055958", "59080150000013842")
+
+    Future.sequence(grouped.map { case (adm, k2k) =>
+      val pageNameGuess = s"Вікіпедія:Вікі любить пам'ятки/новий АТУ/${adm.namesList.tail.mkString("/")}"
+
+      val pageName = if (citiRegions.contains(adm.code)) {
+        pageNameGuess.replace("громада", "міська громада")
+      } else if (village1Regions.contains(adm.code)) {
+        pageNameGuess.replace("громада", "селищна громада")
+      } else if (village2Regions.contains(adm.code)) {
+        pageNameGuess.replace("громада", "сільська громада")
+      } else {
+        pageNameGuess
+      }
+
+      val (cities, other) = k2k.partition(_.katotth.exists(_.regionType.exists(_.code == "М")))
+      val cityMonumentIds = cities.flatMap(_.monumentIds).toSet
+      val otherMonumentIds = other.flatMap(_.monumentIds).toSet
+
       val header = "{{WLM-шапка}}\n"
-      val monuments = monumentDB.monuments.filter(m => monumentIds.contains(m.id))
+      val monuments = monumentDB.monuments.filter(m => cityMonumentIds.contains(m.id)) ++
+        monumentDB.monuments.filter(m => otherMonumentIds.contains(m.id))
+
       val koatuuPages = monuments.map(_.page).distinct.sorted
       val pageText = header + monuments.map(_.asWiki()).mkString("") + "\n|}" +
         "\n== Взято з ==\n" + koatuuPages.map(page => s"* [[$page]]").mkString("\n") +
