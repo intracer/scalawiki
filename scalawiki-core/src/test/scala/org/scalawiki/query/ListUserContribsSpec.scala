@@ -59,7 +59,7 @@ class ListUserContribsSpec extends Specification with MockBotSpec {
 
       val rev = new Revision(Some(136629050), Some(11650099), Some(0), Some(user),
         Some(Timestamp.parse("2007-06-07T16:45:30Z")), Some("Creation; directing to BW"), None, Some(119))
-      result(0) === new Page(Some(11650099), 3, "User talk:Catrope", revisions = Seq(rev))
+      result(0) === new Page(Some(11650099), Some(3), "User talk:Catrope", revisions = Seq(rev))
     }
   }
 

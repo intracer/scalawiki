@@ -83,13 +83,9 @@ class Charts extends WithBot {
    * @return The dataset.
    */
   def createTotalDataset(years: Seq[Int], values: Seq[Int]) = {
-
     val category1 = "Всього"
-
     val dataset = new DefaultCategoryDataset()
-
     years.zip(values).foreach { case (year, value) => dataset.addValue(value, year, category1) }
-
     dataset
   }
 
@@ -181,7 +177,7 @@ class Charts extends WithBot {
         }
     }.toMap
 
-    val yearsMap = idsMap.mapValues(_.mkString(" & ")).groupBy(_._2).mapValues(_.keys)
+    val yearsMap = idsMap.mapValues(_.mkString(" & ")).groupBy(_._2).mapValues(_.map(_._1))
 
     val pieDataset = new DefaultPieDataset()
 

@@ -49,7 +49,9 @@ case class Image(title: String,
 
   def pixels: Option[Long] = for (w <- width; h <- height) yield w * h
 
-  def mpx: Option[Double] = pixels.map(_ / Math.pow(10, 6))
+  def mpx: Option[Float] = pixels.map(_ / Math.pow(10, 6)).map(_.toFloat)
+
+  def atLeastMpx(minMpxOpt: Option[Float]): Boolean = minMpxOpt.fold(true)(minMpx => mpx.exists(_ >= minMpx))
 
   def mpxStr: String = mpx.fold("")(v => f"$v%1.2f Mpx ")
 
@@ -58,6 +60,9 @@ case class Image(title: String,
   def resizeTo(resizeToX: Int, resizeToY: Int): Int =
     Image.resizedWidth(width.get, height.get, resizeToX, resizeToY)
 
+  def withAuthor(newAuthor: String): Image = this.copy(author = Some(newAuthor))
+
+  def withMonument(monumentId: String): Image = this.copy(monumentIds = Seq(monumentId))
 }
 
 object Image {
@@ -91,7 +96,10 @@ object Image {
   def fromPage(page: Page, monumentIdTemplate: Option[String]): Option[Image] = {
     for (fromImage <- Image.fromPageImages(page);
          fromRev <- Image.fromPageRevision(page, monumentIdTemplate))
-      yield fromImage.copy(monumentIds = fromRev.monumentIds, author = fromRev.author, categories = fromRev.categories)
+      yield {
+        val renamedAuthor = fromRev.author.map(author => AuthorsMap.renames.getOrElse(author, author))
+        fromImage.copy(monumentIds = fromRev.monumentIds, author = renamedAuthor, categories = fromRev.categories)
+      }
   }
 
   def getAuthorFromPage(content: String): String = {
@@ -114,9 +122,19 @@ object Image {
         pipe
       else authorValue.length
       authorValue.substring(start + "user:".length, end)
-    }
-    else
+    } else if (authorValue.contains('[')) {
+      val extLinkStart = authorValue.indexOf('[')
+      val wikiLinkStart = authorValue.indexOf("[[")
+      val linkSpace = authorValue.indexOf(' ', extLinkStart)
+      val extLinkEnd = authorValue.indexOf(']', linkSpace)
+      if (extLinkStart != wikiLinkStart && linkSpace >= 0 && extLinkEnd >= 0) {
+        authorValue.substring(linkSpace, extLinkEnd).trim
+      } else {
+        authorValue
+      }
+    } else {
       authorValue
+    }
   }
 
   def basic(title: String,
@@ -151,4 +169,8 @@ object Image {
     val width = Math.min(resizeToX, w / yRatio)
     width.toInt
   }
+}
+
+object AuthorsMap {
+  val renames = Map("ЯдвигаВереск" -> "Wereskowa")
 }

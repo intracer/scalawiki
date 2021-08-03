@@ -42,7 +42,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
     "not insert without revision" in {
       createSchema()
 
-      val page = new Page(None, 0, "title")
+      val page = new Page(None, Some(0), "title")
       pageDao.insert(page) must throwA[IllegalArgumentException]
       pageDao.count aka "page count" must_== 0
       revisionDao.count aka "revision count" must_== 0
@@ -54,7 +54,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val text = "revision text"
       val revision = Revision.one(text)
 
-      val page = Page(None, 0, "title", Seq(revision))
+      val page = Page(None, Some(0), "title", Seq(revision))
 
       val pageId = pageDao.insert(page)
 
@@ -71,7 +71,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val text = "revision text"
       val revision = Revision.one(text)
 
-      val page = Page(Some(3), 0, "title", Seq(revision))
+      val page = Page(Some(3), Some(0), "title", Seq(revision))
 
       val pageId = pageDao.insert(page)
       pageId === 3
@@ -90,7 +90,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val text = "revision text"
       val revision: Revision = new Revision(revId = Some(5L), pageId = Some(3L), content = Some(text))
 
-      val page: Page = new Page(Some(3L), 0, "title", Seq(revision))
+      val page: Page = new Page(Some(3L), Some(0), "title", Seq(revision))
 
       val pageId = pageDao.insert(page)
       pageId === 3L
@@ -111,7 +111,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val user = User(5, username.get)
       val revision: Revision = new Revision(user = Some(user), content = Some("revision text"))
 
-      val page = Page(None, 0, "title", Seq(revision))
+      val page = Page(None, Some(0), "title", Seq(revision))
 
       val pageId = pageDao.insert(page)
       val dbPage = pageDao.withText(pageId)
@@ -134,7 +134,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val revision: Revision = new Revision(user = Some(user.copy(login = None)), content = Some("revision text"))
 
-      val page = Page(None, 0, "title", Seq(revision))
+      val page = Page(None, Some(0), "title", Seq(revision))
 
       val pageId = pageDao.insert(page)
       val dbPage = pageDao.withText(pageId)
@@ -157,7 +157,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
 
       val revision: Revision = new Revision(user = Some(user.copy(id = None)), content = Some("revision text"))
 
-      val page = Page(None, 0, "title", Seq(revision))
+      val page = Page(None, Some(0), "title", Seq(revision))
 
       val pageId = pageDao.insert(page)
       val dbPage = pageDao.withText(pageId)
@@ -178,7 +178,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val user = new User(None, username)
       val revision: Revision = new Revision(user = Some(user), content = Some("revision text"))
 
-      val page = Page(None, 0, "title", Seq(revision))
+      val page = Page(None, Some(0), "title", Seq(revision))
 
       pageDao.insert(page) must throwA[IllegalArgumentException]
 
@@ -201,7 +201,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       )
       val revision: Revision = new Revision(user = Some(user), content = Some("revision text"))
 
-      val page = Page(None, 0, title, Seq(revision), Seq(image))
+      val page = Page(None, Some(0), title, Seq(revision), Seq(image))
 
       val pageId = pageDao.insert(page).toOption
 
@@ -220,7 +220,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val text = "revision text"
       val revision = Revision.one(text).copy(revId = Some(12))
 
-      val page = Page(None, 0, "title", Seq(revision))
+      val page = Page(None, Some(0), "title", Seq(revision))
 
       val pageId = pageDao.insert(page)
 
@@ -241,7 +241,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val text = "revision text"
       val revision = Revision.one(text)
 
-      val page1 = Page(None, 0, "title", Seq(revision))
+      val page1 = Page(None, Some(0), "title", Seq(revision))
       val page2 = page1.copy()
 
       val pageId = pageDao.insert(page1)
@@ -259,8 +259,8 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val title = "title"
       val (text1, text2) = ("text1", "text2")
 
-      val page1 = Page(None, Namespace.MAIN, title, Seq(Revision.one(text1)))
-      val page2 = Page(None, Namespace.FILE, title, Seq(Revision.one(text2)))
+      val page1 = Page(None, Some(Namespace.MAIN), title, Seq(Revision.one(text1)))
+      val page2 = Page(None, Some(Namespace.FILE), title, Seq(Revision.one(text2)))
 
       val pageId1 = pageDao.insert(page1)
       val pageId2 = pageDao.insert(page2)
@@ -281,7 +281,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val texts = Seq("rev2", "rev1")
       val revisions = texts.map(Revision.one)
 
-      val page = Page(None, 0, "title", revisions)
+      val page = Page(None, Some(0), "title", revisions)
 
       val pageId = pageDao.insert(page)
 
@@ -306,7 +306,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val texts = Seq("page1Text", "page2Text", "page3Text")
       //      val revisions = texts.map(Revision.one)
       val pages = names.zip(texts).map {
-        case (n, t) => Page(None, 0, n, Seq(Revision.one(t)))
+        case (n, t) => Page(None, Some(0), n, Seq(Revision.one(t)))
       }
 
       val pageIds = pages.flatMap(p => pageDao.insert(p).toOption)
@@ -324,7 +324,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val texts = Seq("page1Text", "page2Text", "page3Text")
       //      val revisions = texts.map(Revision.one)
       val pages = names.zip(texts).map {
-        case (n, t) => Page(None, 0, n, Seq(Revision.one(t)))
+        case (n, t) => Page(None, Some(0), n, Seq(Revision.one(t)))
       }
 
       val pageIds = pages.flatMap(p => pageDao.insert(p).toOption)
@@ -343,7 +343,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       val texts = Seq("page1Text", "page2Text", "page3Text")
       //      val revisions = texts.map(Revision.one)
       val pages = names.zip(texts).map {
-        case (n, t) => Page(None, 0, n, Seq(Revision.one(t)))
+        case (n, t) => Page(None, Some(0), n, Seq(Revision.one(t)))
       }
 
       val pageIds = pages.flatMap(p => pageDao.insert(p).toOption)
@@ -366,7 +366,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       )
       //      val revisions = texts.map(Revision.one)
       val pages = names.zip(texts).map {
-        case (n, t) => Page(None, 0, n, t.map(Revision.one))
+        case (n, t) => Page(None, Some(0), n, t.map(Revision.one))
       }
 
       val pageIds = pages.flatMap(p => pageDao.insert(p).toOption.toSeq)
@@ -395,7 +395,7 @@ class PageDaoSpec extends Specification with BeforeAfter {
       )
       //      val revisions = texts.map(Revision.one)
       val pages = names.zip(texts).map {
-        case (n, t) => Page(None, 0, n, t.map(Revision.one))
+        case (n, t) => Page(None, Some(0), n, t.map(Revision.one))
       }
 
       val pageIds = pages.flatMap(p => pageDao.insert(p).toOption.toSeq)

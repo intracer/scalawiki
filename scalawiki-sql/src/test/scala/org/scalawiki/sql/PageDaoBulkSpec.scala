@@ -40,7 +40,7 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
     "not insert without revision" in {
       createSchema()
 
-      val pages = (1 to 10) map (i => new Page(None, 0, "title" + i))
+      val pages = (1 to 10) map (i => new Page(None, Some(0), "title" + i))
       pageDao.insertAll(pages) must throwA[IllegalArgumentException]
       pageDao.count === 0
     }
@@ -55,7 +55,7 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
 
       val pages = titles.zip(texts) map {
         case (title, text) =>
-          Page(None, 0, title, Seq(Revision.one(text)))
+          Page(None, Some(0), title, Seq(Revision.one(text)))
       }
 
       pageDao.insertAll(pages)
@@ -96,7 +96,7 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
 
       val pages = titles.zip(texts).zip(pageIds) map {
         case ((title, text), pageId) =>
-          Page(Some(pageId), 0, title, Seq(Revision.one(text)))
+          Page(Some(pageId), Some(0), title, Seq(Revision.one(text)))
       }
 
       pageDao.insertAll(pages)
@@ -140,7 +140,7 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
       val pages = titles.zip(texts).zip(pageIds).zip(revIds) map {
         case (((title, text), pageId), revId) =>
           val revision: Revision = new Revision(revId = Some(revId), pageId = Some(pageId), content = Some(text))
-          Page(Some(pageId), 0, title, Seq(revision))
+          Page(Some(pageId), Some(0), title, Seq(revision))
       }
 
       pageDao.insertAll(pages)
@@ -188,7 +188,7 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
         i =>
           val revision: Revision = new Revision(revId = Some(revIds(i)), pageId = Some(pageIds(i)), content = Some(texts(i)),
             user = Some(User(userIds(i), userNames(i))))
-          Page(Some(pageIds(i)), 0, titles(i), Seq(revision))
+          Page(Some(pageIds(i)), Some(0), titles(i), Seq(revision))
       }
 
       pageDao.insertAll(pages)
@@ -236,7 +236,7 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
       )
       val revision: Revision = new Revision(user = Some(user), content = Some("revision text"))
 
-      val page = Page(None, 0, title, Seq(revision), Seq(image))
+      val page = Page(None, Some(0), title, Seq(revision), Seq(image))
 
       val pageId = pageDao.insertAll(Seq(page)).head
 

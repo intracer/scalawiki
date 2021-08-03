@@ -17,32 +17,34 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
 
   def monumentDbStat: Option[String] = stat.monumentDb.map(RR.monumentDbStat)
 
-//  def authorsMonuments: String =
-//    RR.authorsMonuments(stat.currentYearImageDb.get)
+  //  def authorsMonuments: String =
+  //    RR.authorsMonuments(stat.currentYearImageDb.get)
 
   def authorsImages: String = RR.authorsImages(currentYearImageDb.get, monumentDb)
 
   def authorsContributed: String = RR.authorsContributed(stat.dbsByYear, totalImageDb, monumentDb)
 
-  def specialNominations(): String = RR.specialNominations(currentYearImageDb.get)
+  def specialNominations(): String = RR.specialNominations(stat)
 
   def mostPopularMonuments: String = new MostPopularMonuments(stat).asText
 
   def monumentsPictured: String = new MonumentsPicturedByRegion(stat).asText
 
-  def galleryByRegionAndId: Option[String] = RR.galleryByRegionAndId(monumentDb, currentYearImageDb.get, totalImageDb.get)
-
   def withArticles: Option[String] = RR.withArticles(monumentDb)
 
   /**
-    * Outputs current year reports.
-    *
-    */
+   * Outputs current year reports.
+   *
+   */
   def currentYear() = {
     for (imageDb <- currentYearImageDb) {
 
+      if (cfg.regionalGallery && stat.totalImageDb.isEmpty) {
+        Output.byRegion(monumentDb.get, imageDb)
+      }
+
       if (cfg.specialNominations) {
-        new SpecialNominations(contest, imageDb).statistics()
+        new SpecialNominations(stat, imageDb).statistics()
       }
 
       if (cfg.lowRes) {
@@ -50,8 +52,6 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
       }
 
       monumentDb.foreach { mDb =>
-        Output.unknownPlaces(mDb, imageDb)
-
         if (cfg.wrongIds) {
           Output.wrongIds(imageDb, mDb)
         }
@@ -64,16 +64,21 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
           Output.multipleIds(imageDb, mDb)
         }
 
-        if (cfg.fillLists) {
-          ImageFiller.fillLists(mDb, imageDb)
-        }
+//        if (cfg.fillLists) {
+//          ImageFiller.fillLists(mDb, imageDb)
+//        }
 
         if (cfg.missingGallery) {
           Output.missingGallery(mDb)
         }
 
         if (cfg.placeDetection) {
+          Output.unknownPlaces(mDb, imageDb)
           Output.unknownPlaces(mDb)
+        }
+
+        if (cfg.mostPopularMonuments) {
+          new MostPopularMonuments(stat).updateWiki(MwBot.fromHost(MwBot.commons))
         }
       }
     }
@@ -81,12 +86,22 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
 
   def allYears() = {
     for (imageDb <- totalImageDb) {
+      if (cfg.fillLists) {
+           ImageFiller.fillLists(monumentDb.get, new ImageDB(stat.contest, stat.oldImages, monumentDb))
+      }
+
       if (cfg.regionalStat) {
         Output.regionalStat(stat)
       }
 
+      if (cfg.newMonuments) {
+        Output.newMonuments(stat)
+      }
+
       if (cfg.authorsStat) {
         new AuthorsStat().authorsStat(stat, commons, cfg.gallery)
+      } else if (cfg.rateInputDistribution) {
+        Rater.create(stat)
       }
 
       if (cfg.regionalGallery) {
@@ -107,8 +122,8 @@ object ReporterRegistry {
   def monumentDbStat(db: MonumentDB): String =
     new MonumentDbStat().getStat(Seq(db))
 
-//  def authorsMonuments(imageDb: ImageDB, newObjectRating: Option[Int] = None): String =
-//    new AuthorMonuments(imageDb, newObjectRating).asText
+  //  def authorsMonuments(imageDb: ImageDB, newObjectRating: Option[Int] = None): String =
+  //    new AuthorMonuments(imageDb, newObjectRating).asText
 
   def authorsImages(imageDb: ImageDB, monumentDb: Option[MonumentDB]): String =
     new AuthorsStat().authorsImages(imageDb._byAuthor.grouped, monumentDb)
@@ -116,11 +131,8 @@ object ReporterRegistry {
   def authorsContributed(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: Option[MonumentDB]): String =
     new AuthorsStat().authorsContributed(imageDbs, totalImageDb, monumentDb)
 
-  def specialNominations(imageDB: ImageDB): String =
-    new SpecialNominations(imageDB.contest, imageDB).specialNomination()
-
-  def galleryByRegionAndId(monumentDb: Option[MonumentDB], imageDb: ImageDB, oldImageDb: ImageDB): Option[String] =
-    monumentDb.map(db => Output.galleryByRegionAndId(db, imageDb, oldImageDb))
+  def specialNominations(stat: ContestStat): String =
+    new SpecialNominations(stat, stat.currentYearImageDb.get).specialNomination()
 
   def withArticles(monumentDb: Option[MonumentDB]): Option[String] =
     monumentDb.map(db => Stats.withArticles(db).asWiki("").asWiki)

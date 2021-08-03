@@ -4,7 +4,7 @@ import org.scalawiki.dto.history.History
 
 case class Page(
                  id: Option[Long],
-                 ns: Int,
+                 ns: Option[Int],
                  title: String,
                  revisions: Seq[Revision] = Seq.empty,
                  images: Seq[Image] = Seq.empty,
@@ -15,7 +15,8 @@ case class Page(
                  talkId: Option[Long] = None,
                  langLinks: Map[String, String] = Map.empty,
                  links: Seq[Page] = Seq.empty,
-                 categoryInfo: Option[CategoryInfo] = None
+                 categoryInfo: Option[CategoryInfo] = None,
+                 invalidReason: Option[String] = None
                ) /*extends HasId[Page]*/ {
   val history = new History(revisions)
 
@@ -25,9 +26,9 @@ case class Page(
 
   def text: Option[String] = revisions.headOption.flatMap(_.content)
 
-  def isTalkPage = ns % 2 == 1
+  def isTalkPage = ns.exists(_ % 2 == 1)
 
-  def isArticle = ns == Namespace.MAIN
+  def isArticle = ns.contains(Namespace.MAIN)
 
   def withId(id: Long): Page = copy(id = Some(id))
 
@@ -45,38 +46,39 @@ case class Page(
 
 object Page {
 
-  def full(
-            id: Option[Long],
-            ns: Int,
-            title: String,
-            missing: Option[String],
-            subjectId: Option[Long],
-            talkId: Option[Long]) = {
+  def full(id: Option[Long],
+           ns: Option[Int],
+           title: String,
+           missing: Option[String],
+           subjectId: Option[Long],
+           talkId: Option[Long],
+           invalidReason: Option[String]): Page = {
     new Page(id, ns, title,
       missing = missing.fold(false)(_ => true),
       subjectId = subjectId,
-      talkId = talkId)
+      talkId = talkId,
+      invalidReason = invalidReason)
   }
 
-  def noText(id: Long, ns: Int, title: String, missing: Option[String] = None) = new Page(Some(id), ns, title, missing = missing.fold(false)(_ => true))
+  def noText(id: Long, ns: Option[Int], title: String, missing: Option[String] = None) = new Page(Some(id), ns, title, missing = missing.fold(false)(_ => true))
 
-  def withText(id: Long, ns: Int, title: String, text: Option[String]) = new Page(Some(id), ns, title, revisionsFromText(text))
+  def withText(id: Long, ns: Option[Int], title: String, text: Option[String]) = new Page(Some(id), ns, title, revisionsFromText(text))
 
-  def withRevisionsText(id: Long, ns: Int, title: String, texts: Seq[String])
+  def withRevisionsText(id: Long, ns: Option[Int], title: String, texts: Seq[String])
   = new Page(Some(id), ns, title, Revision.many(texts: _*))
 
-  def withRevisions(id: Long, ns: Int, title: String, editToken: Option[String], revisions: Seq[Revision], missing: Option[String])
+  def withRevisions(id: Long, ns: Option[Int], title: String, editToken: Option[String], revisions: Seq[Revision], missing: Option[String])
   = new Page(Some(id), ns, title, revisions, Seq.empty, editToken, missing.fold(false)(_ => true))
 
-  def withImages(id: Long, ns: Int, title: String, images: Seq[Image]) = new Page(Some(id), ns, title, Seq.empty, images)
+  def withImages(id: Long, ns: Option[Int], title: String, images: Seq[Image]) = new Page(Some(id), ns, title, Seq.empty, images)
 
-  def apply(title: String) = new Page(Some(0L), 0, title)
+  def apply(title: String) = new Page(Some(0L), None, title)
 
-  def apply(id: Long) = new Page(Some(0L), 0, null)
+  def apply(id: Long) = new Page(Some(0L), None, null)
 
-  def apply(id: Long, ns: Int, title: String) = new Page(Some(id), ns, title)
+  def apply(id: Long, ns: Option[Int], title: String) = new Page(Some(id), ns, title)
 
-  def withEditToken(id: Option[Long], ns: Int, title: String, editToken: Option[String]) = {
+  def withEditToken(id: Option[Long], ns: Option[Int], title: String, editToken: Option[String]) = {
     new Page(id, ns, title, Seq.empty, Seq.empty, editToken)
   }
 

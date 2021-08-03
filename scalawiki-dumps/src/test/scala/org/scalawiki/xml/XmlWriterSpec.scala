@@ -21,7 +21,7 @@ class XmlWriterSpec extends Specification with XmlMatchers {
         (345, 456, ZonedDateTime.now, "user", 567, "revision comment", "revision text", true, "sha1")
 
       val rev = Revision(Some(revId), Some(pageId), Some(parentId), Some(User(userId, user)), Some(timestamp), Some(comment), Some(text), sha1 = Some(sha1)/*, minor = Some(minor)*/)
-      val page = Page(Some(pageId), ns, title, Seq(rev))
+      val page = Page(Some(pageId), Some(ns), title, Seq(rev))
 
       val sw = new StringWriter()
 

@@ -7,8 +7,8 @@ lazy val isScala213 = settingKey[Boolean]("Is the scala version 2.13.")
 
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
-  version := "0.6.2",
-  crossScalaVersions := Seq(Scala211V, Scala212V),
+  version := "0.6.4",
+  crossScalaVersions := Seq(Scala211V, Scala212V, Scala213V),
   scalaVersion := crossScalaVersions.value.last,
   isScala213 := scalaVersion.value.startsWith("2.13."),
   scalacOptions := Seq("-target:jvm-1.8"),
@@ -96,7 +96,7 @@ lazy val dumps = Project("scalawiki-dumps", file("scalawiki-dumps"))
   .settings(libraryDependencies ++=
     Seq("com.fasterxml" % "aalto-xml" % AaltoXmlV,
       Library.Commons.compress,
-      "org.glassfish.jaxb" % "txw2" % "2.3.2"
+      "org.glassfish.jaxb" % "txw2" % "3.0.2"
     )
   )
 

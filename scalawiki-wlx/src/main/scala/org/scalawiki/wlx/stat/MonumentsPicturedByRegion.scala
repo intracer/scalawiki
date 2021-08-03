@@ -19,99 +19,120 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
     ))
   }
 
+  val yearSeq: Seq[Int] = stat.yearSeq.reverse
+  val regionalDetails: Boolean = stat.config.exists(_.regionalDetails)
+  val parentRegion: AdmDivision = regionParam.getOrElse(stat.contest.country)
+  val monumentDb: MonumentDB = stat.monumentDb.get
+  val bot: MwBot = MwBot.fromHost(MwBot.commons)
+  val name: String = pageName(parentRegion.name)
 
-  val yearSeq = stat.yearSeq.reverse
-  val regionalDetails = stat.config.exists(_.regionalDetails)
-  val parentRegion = regionParam.getOrElse(stat.contest.country)
-  private val monumentDb: MonumentDB = stat.monumentDb.get
+  val currentYearPageIds: Set[Long] = stat.currentYearImageDb.get.images.flatMap(_.pageId).toSet
+  val oldImagesMonumentIds: Set[String] = stat.totalImageDb.get.images
+    .filter(image => !currentYearPageIds.contains(image.pageId.get))
+    .flatMap(_.monumentIds).toSet
 
-  def pageName(region: String) = s"Monuments pictured by region in ${region}"
-
-  val name = pageName(parentRegion.name)
-
+  def pageName(region: String, newly: Boolean = false): String = {
+    if (newly) s"Monuments newly pictured by region in ${region}"
+    else s"Monuments pictured by region in ${region}"
+  }
 
   override def asText: String = {
-
     val header = s"\n==$name==\n"
-
     header + table.asWiki + regionalStatImages().getOrElse("") + wrongRegionIds
   }
 
-  def table = monumentsPicturedTable(stat.dbsByYear, stat.totalImageDb, monumentDb)
+  def table: Table = monumentsPicturedTable(stat.totalImageDb, monumentDb)
 
-  private val bot: MwBot = MwBot.fromHost(MwBot.commons)
-
-  def monumentsPicturedTable(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: MonumentDB): Table = {
-
-    val columns = {
-      val numYears = yearSeq.size
-      val yearsColumns = yearSeq.flatMap { year =>
-        val ys = year.toString
-        Seq(ys + " Objects", ys + " Pictures")
-      }
-
-      (if (parentRegion == contest.country) {
-        Seq("Region", "Objects in lists", s"$numYears years total", s"$numYears years percentage")
-      } else {
-        Seq("Region (KOATUU)", "Objects in lists", "Total", s"Total percentage")
-      }) ++ yearsColumns
+  def columns: Seq[String] = {
+    val numYears = yearSeq.size
+    val yearsColumns = yearSeq.flatMap { year =>
+      val ys = year.toString
+      Seq(s"$ys Objects", s"$ys Pictures") ++
+        (if (year == yearSeq.head) Seq(s"$ys newly pictured") else Nil)
     }
 
-    def regionData(regionId: String, regionalDetails: Boolean = regionalDetails) = {
-      val picturedMonumentsInRegionSet = totalImageDb.map(_.idsByRegion(regionId)).getOrElse(Set.empty) ++
-        monumentDb.picturedInRegion(regionId)
-      val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
-      val allMonumentsInRegion = monumentDb.byRegion(regionId).size
+    (if (parentRegion == contest.country) {
+      Seq("Region", "Objects in lists", s"$numYears years total", s"$numYears years percentage")
+    } else {
+      Seq("Region (KOATUU)", "Objects in lists", "Total", s"Total percentage")
+    }) ++ yearsColumns
+  }
 
-      val pictured = stat.mapYears { db =>
-        Seq(
-          db.idsByRegion(regionId).size,
-          db.imagesByRegion(regionId).toSet.size
-        )
-      }.reverse.flatten
+  def regionData(regionId: String, regionalDetails: Boolean = regionalDetails,
+                 totalImageDb: Option[ImageDB], monumentDb: MonumentDB): Seq[String] = {
+    val picturedMonumentsInRegionSet = totalImageDb.map(_.idsByRegion(regionId)).getOrElse(Set.empty) ++
+      monumentDb.picturedInRegion(regionId)
+    val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
+    val allMonumentsInRegion = monumentDb.byRegion(regionId).size
 
-      val regionName = if (parentRegion.code != regionId) parentRegion.regionName(regionId) else parentRegion.name
-      val percentage = if (allMonumentsInRegion != 0) 100 * picturedMonumentsInRegion / allMonumentsInRegion else 0
+    val regionName = if (parentRegion.code != regionId) parentRegion.regionName(regionId) else parentRegion.name
+    val percentage = if (allMonumentsInRegion != 0) 100 * picturedMonumentsInRegion / allMonumentsInRegion else 0
 
-      val columnData = (Seq(
-        if (regionalDetails && regionId.length == 2) s"[[Commons:$category/${pageName(regionName)}|$regionName ($regionId)]]"
-        else if (regionId.length != 2) s"$regionName ($regionId)"
-        else regionName,
-        allMonumentsInRegion,
-        picturedMonumentsInRegion,
-        percentage) ++ pictured).map(_.toString)
+    val newIds = stat.currentYearImageDb.get.idsByRegion(regionId) -- oldImagesMonumentIds
+    val newlyPicturedPage = s"Commons:$category/${pageName(regionName, true)}"
 
-      if (regionId.length == 2 && regionalDetails) {
-        val child = new MonumentsPicturedByRegion(stat, false, parentRegion.byId(regionId))
-        child.updateWiki(bot)
-      }
+    val pictured = stat.mapYears { db =>
+      Seq(
+        db.idsByRegion(regionId).size,
+        db.imagesByRegion(regionId).toSet.size
+      ) ++
+        (if (db.contest.year == yearSeq.head && newIds.nonEmpty) {
+          Seq(
+            s"[[$newlyPicturedPage|${newIds.size}]]"
+          )
+        } else Nil)
+    }.reverse.flatten
 
-      columnData
+    val newImagesDb = stat.currentYearImageDb.get.subSet(i => i.monumentIds.exists(newIds.contains))
+    val galleryText = Output.galleryByMonumentId(newImagesDb, monumentDb)
+
+    MwBot.fromHost(MwBot.commons).page(newlyPicturedPage).edit(galleryText)
+
+    val columnData = (Seq(
+      if (regionalDetails && regionId.length == 2) s"[[Commons:$category/${pageName(regionName)}|$regionName ($regionId)]]"
+      else if (regionId.length != 2) s"$regionName ($regionId)"
+      else regionName,
+      allMonumentsInRegion,
+      picturedMonumentsInRegion,
+      percentage) ++ pictured).map(_.toString)
+
+    if (regionId.length == 2 && regionalDetails) {
+      val child = new MonumentsPicturedByRegion(stat, false, parentRegion.byId(regionId))
+      child.updateWiki(bot)
     }
 
+    columnData
+  }
+
+  def monumentsPicturedTable(totalImageDb: Option[ImageDB], monumentDb: MonumentDB): Table = {
     val regionIds = parentRegion.regions.map(_.code)
-    val rows = regionIds.map(regionData(_, regionalDetails)).filter(row => regionalDetails || row(1) != "0" )
+    val rows = regionIds.map(regionData(_, regionalDetails, totalImageDb, monumentDb)).filter(row => regionalDetails || row(1) != "0")
 
     val allMonuments = monumentDb.monuments.size
     val picturedMonuments = (totalImageDb.map(_.ids).getOrElse(Set.empty) ++ monumentDb.picturedIds).size
 
     val ids = stat.mapYears(_.ids).reverse
-
     val photoSize = stat.mapYears(_.images.size).reverse
 
-    val idsSize = ids.map(_.size)
+    val totalByYear = ids.zip(photoSize).zipWithIndex.flatMap { case ((ids, photos), index) =>
+      Seq(ids.size, photos) ++ (if (index == 0) Seq(
+        (ids -- oldImagesMonumentIds).size
+      ) else Nil)
+    }
 
-    val totalByYear = idsSize.zip(photoSize).flatMap { case (ids, photos) => Seq(ids, photos) }
-
-    val totalData = if (parentRegion == contest.country) Seq(Seq(
-      "Total",
-      allMonuments.toString,
-      picturedMonuments.toString,
-      (if (allMonuments != 0) 100 * picturedMonuments / allMonuments else 0).toString) ++ totalByYear.map(_.toString)
-    ) else Seq(
-      Seq("Sum") ++ rows.head.indices.tail.map(i => rows.map(_(i).toInt).sum.toString),
-      regionData(parentRegion.code, false)
-    )
+    val totalData = if (parentRegion == contest.country) {
+      Seq(Seq(
+        "Total",
+        allMonuments.toString,
+        picturedMonuments.toString,
+        (if (allMonuments != 0) 100 * picturedMonuments / allMonuments else 0).toString) ++ totalByYear.map(_.toString)
+      )
+    } else {
+      Seq(
+        Seq("Sum") ++ rows.head.indices.tail.map(i => rows.map(_ (i).toInt).sum.toString),
+        regionData(parentRegion.code, false, totalImageDb, monumentDb)
+      )
+    }
 
     Table(columns, rows ++ totalData, "Objects pictured")
   }

@@ -29,12 +29,7 @@ class AuthorMonuments(val stat: ContestStat,
 
   val monumentDb = stat.monumentDb.get
 
-  def withRating: Boolean = {
-    contest.rateConfig.newObjectRating.isDefined ||
-      contest.rateConfig.newAuthorObjectRating.isDefined ||
-      contest.rateConfig.numberOfImagesBonus ||
-      contest.rateConfig.numberOfAuthorsBonus
-  }
+  def withRating: Boolean = rater.withRating
 
   def rowData(ids: Set[String], images: Int, userOpt: Option[String] = None): Seq[String] = {
 
@@ -50,7 +45,7 @@ class AuthorMonuments(val stat: ContestStat,
           rater.rateMonumentIds(ids, user).toString
         }.getOrElse(ids.size)
       )
-    } else Seq.empty[String]
+    } else Nil
 
     val byRegion = country.regionIds.toSeq.map { regionId =>
       val regionIds = monumentDb.byRegion(regionId).map(_.id).toSet
@@ -87,7 +82,25 @@ class AuthorMonuments(val stat: ContestStat,
         rowData(imageDb._byAuthorAndId.by(user).keys, imageDb._byAuthor.by(user).size, Some(user))
     }
 
+    reportUnknownPlaces()
+
     Table(columns, totalData +: authorsData, name)
+  }
+
+  def reportUnknownPlaces() = {
+    (rater match {
+      case sum: RateSum => sum.raters.collectFirst { case r: NumberOfImagesInPlaceBonus => r }
+      case r: NumberOfImagesInPlaceBonus => Some(r)
+      case _ => None
+    }).map { reportRater =>
+      reportRater.unknownPlaceMonumentsByAuthor.toSeq.sortBy(-_._2.size).map{ case (author, monuments) =>
+          s"# $author, ${monuments.size} unknown place ids: ${monuments.toSeq.sorted.mkString(", ")}"
+      }.mkString("\n")
+    }.map { text =>
+      for (bot <- commons) {
+        bot.page(page + " unknown places").edit(text)
+      }
+    }
   }
 
   private def optionalUserGalleryLink(number: Int, userOpt: Option[String], regionOpt: Option[String] = None) = {
@@ -99,13 +112,12 @@ class AuthorMonuments(val stat: ContestStat,
   }
 
   private def userGalleryLink(number: Int, userOpt: Option[String], regionOpt: Option[String] = None) = {
-    val noTemplateUser = userOpt.get.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
+    val noTemplateUser = userOpt.get.split("\\|").last.replaceAll("\\{\\{", "").replaceAll("\\}\\}", "")
 
     val galleryPage = "Commons:" + contest.name + "/" + noTemplateUser + regionOpt.fold("") { region =>
       "#" + region.replaceAll(" ", "_")
     }
-
-    val galleryText = Output.galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt), oldImageDb)
+    val galleryText = Output.galleryByRegionAndId(imageDb.monumentDb.get, imageDb.subSet(_.author == userOpt), oldImageDb, rater, stat.config.exists(_.previousYearsGallery))
 
     for (bot <- commons if regionOpt.isEmpty) {
       bot.page(galleryPage).edit(galleryText)

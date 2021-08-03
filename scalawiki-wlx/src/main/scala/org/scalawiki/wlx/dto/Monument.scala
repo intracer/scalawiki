@@ -16,6 +16,7 @@ case class Monument(page: String = "",
                     description: Option[String] = None,
                     article: Option[String] = None,
                     city: Option[String] = None,
+                    cityType: Option[String] = None,
                     place: Option[String] = None,
                     user: Option[String] = None,
                     area: Option[String] = None,
@@ -32,7 +33,7 @@ case class Monument(page: String = "",
                     source: Option[String] = None,
                     otherParams: Map[String, String] = Map.empty,
                     listConfig: Option[ListConfig] = None
-                   ) {
+                   ) extends Ordered[Monument] {
 
   val cityName = AdmDivision.cleanName(city.getOrElse(""))
 
@@ -61,6 +62,7 @@ case class Monument(page: String = "",
       "description" -> description,
       "article" -> article,
       "city" -> city,
+      "city-type" -> cityType,
       "place" -> place,
       "user" -> user,
       "area" -> area,
@@ -72,7 +74,7 @@ case class Monument(page: String = "",
       "gallery" -> gallery,
       "resolution" -> resolution)
 
-    val names = listConfig.fold(paramValues.filter(_._2.nonEmpty).keys)(_.namesMap.values)
+    val names = listConfig.fold(paramValues.filter(_._2.nonEmpty).keys)(_.namesMap.values.toSeq)
     val namesMap = listConfig.map(_.namesMap).getOrElse(names.map(name => name -> name).toMap)
     val longest = names.map(_.length).max
 
@@ -80,7 +82,7 @@ case class Monument(page: String = "",
 
     val params =
       namesMapPadded.toSeq.map {
-        case (englName, mappedName) => mappedName -> paramValues(englName).getOrElse("")
+        case (englName, mappedName) => mappedName -> paramValues.get(englName).flatten.getOrElse("")
       } ++
         otherParams.toSeq
 
@@ -89,6 +91,7 @@ case class Monument(page: String = "",
     template.text + "\n"
   }
 
+  override def compare(that: Monument): Int = id.compare(that.id)
 }
 
 object Monument {

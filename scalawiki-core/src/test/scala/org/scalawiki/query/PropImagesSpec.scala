@@ -50,7 +50,7 @@ class PropImagesSpec extends Specification with MockBotSpec {
       val result = bot.run(action).await
       result must have size 1
       val page = result(0)
-      page === new Page(Some(736), 0, "Albert Einstein", images = Seq(
+      page === new Page(Some(736), Some(0), "Albert Einstein", images = Seq(
         new Image("File:1919 eclipse positive.jpg"),
         new Image("File:Albert Einstein's exam of maturity grades (color2).jpg")
       ))

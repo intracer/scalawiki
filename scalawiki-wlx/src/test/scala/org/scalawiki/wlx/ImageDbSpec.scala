@@ -22,7 +22,7 @@ class ImageDbSpec extends Specification {
 
   def images(year: Int): Set[Image] = {
     var imageCount = 0
-    Ukraine.regionIds.keySet.flatMap {
+    Ukraine.regionIds.flatMap {
       regionId =>
         (1 to regionId.toInt).flatMap { i =>
           val id = regionId + "-001-" + f"$i%04d"

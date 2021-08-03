@@ -96,7 +96,7 @@ class PropLinksSpec extends Specification with MockBotSpec {
       p1.title === "Reactive Streams"
       p1.links.size === 4
       p1.links.map(_.title) === Seq("API",  "Data buffer", "Implementation",  "Interoperability")
-      p1.links.map(_.ns).toSet === Set(0)
+      p1.links.flatMap(_.ns).toSet === Set(0)
     }
   }
 }

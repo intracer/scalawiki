@@ -7,9 +7,10 @@ import org.scalawiki.wlx.query.ImageQuery
 import scala.concurrent.Future
 
 
-class ImageDB(val contest: Contest,
-              val images: Seq[Image],
-              val monumentDb: Option[MonumentDB]) {
+case class ImageDB(contest: Contest,
+                   images: Seq[Image],
+                   monumentDb: Option[MonumentDB],
+                   minMpx: Option[Float] = None) {
 
   def this(contest: Contest, images: Seq[Image]) = this(contest, images, None)
 
@@ -21,11 +22,19 @@ class ImageDB(val contest: Contest,
     db => images.filter(_.monumentId.exists(db.ids.contains))
   }
 
+  lazy val sansIneligible: Seq[Image] = withCorrectIds
+    .filterNot(_.categories.contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
+    .filter(_.atLeastMpx(minMpx))
+
+  lazy val ineligible: Seq[Image] = withCorrectIds
+    .filter(_.categories.contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
+    .filterNot(_.atLeastMpx(minMpx))
+
   lazy val _byId: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byMonument, withCorrectIds)
 
   lazy val _byRegion: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byRegion, withCorrectIds)
 
-  lazy val _byAuthor: Grouping[String, Image] = new Grouping("author", ImageGrouping.byAuthor, withCorrectIds)
+  lazy val _byAuthor: Grouping[String, Image] = new Grouping("author", ImageGrouping.byAuthor, sansIneligible)
 
   lazy val _byRegionAndId: NestedGrouping[String, Image] = _byRegion.compose(ImageGrouping.byMonument)
 
@@ -76,21 +85,21 @@ class ImageDB(val contest: Contest,
     _byMegaPixels.grouped.filterKeys(mpx => mpx >= 0 && predicate(mpx)).values.flatten.toSeq.groupBy(_.author.getOrElse(""))
   }
 
-  def authorsCountById: Map[String, Int] = _byId.grouped.mapValues(_.flatMap(_.author).toSet.size)
+  def authorsCountById: Map[String, Int] = _byId.grouped.mapValues(_.flatMap(_.author).toSet.size).toMap
 
-  def imageCountById: Map[String, Int] = _byId.grouped.mapValues(_.size)
+  def imageCountById: Map[String, Int] = _byId.grouped.mapValues(_.size).toMap
 
   def byNumberOfAuthors: Map[Int, Map[String, Seq[Image]]] = {
     _byId.grouped.groupBy {
       case (id, photos) =>
         photos.flatMap(_.author).toSet.size
-    }.mapValues(_.toMap)
+    }.mapValues(_.toMap).toMap
   }
 
   def byNumberOfPhotos: Map[Int, Map[String, Seq[Image]]] = {
     _byId.grouped.groupBy {
       case (id, photos) => photos.size
-    }.mapValues(_.toMap)
+    }.mapValues(_.toMap).toMap
   }
 
   def subSet(monuments: Seq[Monument], withFalseIds: Boolean = false): ImageDB = {
@@ -123,7 +132,7 @@ class Grouping[T, F](name: String, val f: F => T, data: Seq[F]) {
 
   def compose(g: F => T): NestedGrouping[T, F] =
     new NestedGrouping(
-      grouped.mapValues(v => new Grouping("", g, v))
+      grouped.mapValues(v => new Grouping("", g, v)).toMap
     )
 
 }
@@ -158,9 +167,9 @@ object ImageDB {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def create(contest: Contest, imageQuery: ImageQuery, monumentDb: Option[MonumentDB]): Future[ImageDB] = {
-    imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest).map {
-      images => new ImageDB(contest, images, monumentDb)
+  def create(contest: Contest, imageQuery: ImageQuery, monumentDb: Option[MonumentDB], minMpx: Option[Float] = None): Future[ImageDB] = {
+    imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest).map { images =>
+      new ImageDB(contest, images, monumentDb, minMpx)
     }
   }
 }

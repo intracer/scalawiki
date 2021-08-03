@@ -81,7 +81,7 @@ class ParserSpec extends Specification {
 
   def checkPage(page: Page): MatchResult[Any] = {
     page.id === Some(123)
-    page.ns === 4
+    page.ns === Some(4)
     page.title === "PageTitle"
   }
 

@@ -40,7 +40,7 @@ class XmlWriter(writer: XMLStreamWriter) {
     writer.writeStartElement("page")
 
     writeElement("title", page.title)
-    writeElement("ns", page.ns)
+    page.ns.foreach(ns => writeElement("ns", ns))
     writeElement("id", page.id.get)
 
     page.revisions.foreach(writeRevision)

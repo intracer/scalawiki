@@ -6,7 +6,7 @@ import org.scalawiki.wlx.{ImageDB, MonumentDB}
 class MostPopularMonuments(val stat: ContestStat) extends Reporter {
 
   def this(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: MonumentDB) = {
-    this(new ContestStat(
+    this(ContestStat(
       monumentDb.contest,
       imageDbs.headOption.map(_.contest.year).getOrElse(monumentDb.contest.year),
       Some(monumentDb),

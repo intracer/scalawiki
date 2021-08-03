@@ -2,32 +2,33 @@ import sbt._
 
 object Dependencies {
 
-  val AaltoXmlV = "1.2.2"
-  val BetterFilesV = "3.8.0"
-  val BlameApiV = "11.9"
-  val ChronicleMapV = "3.17.7"
-  val ChronoScalaV = "0.3.2"
-  val FicusV = "1.4.7"
+  val AaltoXmlV = "1.3.0"
+  val BetterFilesV = "3.9.1"
+  val BlameApiV = "13.6"
+  val ChronicleMapV = "3.19.40"
+  val ChronoScalaV = "1.0.0"
+  val FicusV = "1.5.0"
   val GuavaV = "20.0"
   val H2V = "1.4.200"
-  val JimFsV = "1.1"
+  val JimFsV = "1.2"
   val JodaTimeV = "2.9.9"
-  val JSoupV = "1.12.1"
-  val LogbackClassicV = "1.2.3"
-  val MockServerV = "5.7.2"
+  val JSoupV = "1.14.1"
+  val LogbackClassicV = "1.2.5"
+  val MockServerV = "5.7.0"
   val ReactiveStreamsV = "1.0.2"
   val RetryV = "0.3.3"
-  val Scala212V = "2.12.10"
+  val Scala213V = "2.13.6"
+  val Scala212V = "2.12.14"
   val Scala211V = "2.11.12"
   val ScalaChartV = "0.7.1"
-  val ScalaCheckV = "1.14.2"
-  val ScalaCsvV = "1.3.6"
+  val ScalaCheckV = "1.15.2"
+  val ScalaCsvV = "1.3.8"
   val ScalaParserCombinatorsV = "1.1.2"
   val ScalaXmlV = "1.2.0"
-  val ScallopV = "3.3.1"
+  val ScallopV = "4.0.4"
   val Slf4jV = "1.7.25"
   val SwcEngineV = "3.1.9"
-  val TypesafeConfigV = "1.4.0"
+  val TypesafeConfigV = "1.4.1"
 
   val resolvers = Seq(
     "Typesafe Repo" at "https://repo.typesafe.com/typesafe/releases/",
@@ -61,8 +62,8 @@ object Dependencies {
   object Library {
 
     object Akka {
-      val AkkaV = "2.5.26"
-      val AkkaHttpV = "10.1.10"
+      val AkkaV = "2.5.32"
+      val AkkaHttpV = "10.1.14"
 
       val actor = "com.typesafe.akka" %% "akka-actor" % AkkaV
       val stream = "com.typesafe.akka" %% "akka-stream" % AkkaV
@@ -87,7 +88,7 @@ object Dependencies {
     }
 
     object Poi {
-      val PoiV = "4.1.1"
+      val PoiV = "5.0.0"
       val PoiXwpfV = "1.0.6"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
@@ -96,8 +97,8 @@ object Dependencies {
     }
 
     object Commons {
-      val CommonsCodecV = "1.13"
-      val CommonsCompressV = "1.19"
+      val CommonsCodecV = "1.15"
+      val CommonsCompressV = "1.21"
       val CommonsLang3V = "3.7"
       val CommonsIoV = "2.6"
 
@@ -116,14 +117,14 @@ object Dependencies {
     }
 
     object Slick {
-      val SlickV = "3.3.2"
+      val SlickV = "3.3.3"
 
       val slick = "com.typesafe.slick" %% "slick" % SlickV
       val hikaricp = "com.typesafe.slick" %% "slick-hikaricp" % SlickV
     }
 
     object Specs2 {
-      val SpecsV = "4.8.1"
+      val SpecsV = "4.10.6"
 
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV

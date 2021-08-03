@@ -7,6 +7,7 @@ import better.files.File.{Order, PathMatcherSyntax}
 import better.files.{File => SFile}
 import org.scalawiki.AlphaNumOrdering
 
+import scala.collection.mutable
 import scala.io.{Codec, Source}
 
 /**
@@ -25,7 +26,7 @@ object FileUtils {
     * @param codec    character encoding/decoding preferences, default is [[scala.io.Codec.defaultCharsetCodec()]]
     * @return lines from the file
     */
-  def read(filename: String)(implicit codec: Codec): Seq[String] =
+  def read(filename: String)(implicit codec: Codec): mutable.Buffer[String] =
     Source.fromFile(filename).getLines.toBuffer
 
   /**

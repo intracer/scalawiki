@@ -35,8 +35,8 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
 
       val result = bot.page("Category:SomeCategory").categoryMembers().await
       result must have size 2
-      result(0) === Page(569559, 1, "Talk:Welfare reform")
-      result(1) === Page(4571809, 2, "User:Formator")
+      result(0) === Page(569559, Some(1), "Talk:Welfare reform")
+      result(1) === Page(4571809, Some(2), "User:Formator")
     }
   }
 
@@ -98,12 +98,12 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
 
       val result = bot.run(query).await
       result must have size 4
-      result(0) === new Page(None, 0, "NoSuchTitle", missing = true)
-      result(1) === Page(736, 0, "Albert Einstein")
-      result(2) === Page(50177636, 14, "Category:Foo").copy(
+      result(0) === new Page(None, Some(0), "NoSuchTitle", missing = true)
+      result(1) === Page(736, Some(0), "Albert Einstein")
+      result(2) === Page(50177636, Some(14), "Category:Foo").copy(
         categoryInfo = Some(org.scalawiki.dto.CategoryInfo(5, 3, 2, 0))
       )
-      result(3) === Page(3108204, 14, "Category:Infobox templates").copy(
+      result(3) === Page(3108204, Some(14), "Category:Infobox templates").copy(
         categoryInfo = Some(org.scalawiki.dto.CategoryInfo(29, 15, 0, 14))
       )
     }

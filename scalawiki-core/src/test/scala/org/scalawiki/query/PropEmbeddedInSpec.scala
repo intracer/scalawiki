@@ -42,7 +42,7 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
 
       val result = bot.page("Template:SomeTemplate").whatTranscludesHere().await
       result must have size 1
-      result(0) === Page(569559, 1, "Talk:Welfare reform")
+      result(0) === Page(569559, Some(1), "Talk:Welfare reform")
     }
   }
 
@@ -66,8 +66,8 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
 
       val result = bot.page("Template:SomeTemplate").whatTranscludesHere().await
       result must have size 2
-      result(0) === Page(569559, 1, "Talk:Welfare reform")
-      result(1) === Page(4571809, 2, "User:Formator")
+      result(0) === Page(569559, Some(1), "Talk:Welfare reform")
+      result(1) === Page(4571809, Some(2), "User:Formator")
     }
   }
 
@@ -96,8 +96,8 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
 
       val result = bot.page("Template:SomeTemplate").whatTranscludesHere().await
       result must have size 2
-      result(0) === Page(569559, 1, "Talk:Welfare reform")
-      result(1) === Page(4571809, 2, "User:Formator")
+      result(0) === Page(569559, Some(1), "Talk:Welfare reform")
+      result(1) === Page(4571809, Some(2), "User:Formator")
     }
   }
 }

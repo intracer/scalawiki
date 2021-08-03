@@ -9,7 +9,7 @@ trait MockBotSpec {
   def host = "uk.wikipedia.org"
 
   def getBot(httpStubs: HttpStub*): MwBot = {
-    val http = new TestHttpClient(host, mutable.Queue(httpStubs: _*))
+    val http = new TestHttpClient(host, httpStubs)
     new MwBotImpl(host, http)
   }
 }

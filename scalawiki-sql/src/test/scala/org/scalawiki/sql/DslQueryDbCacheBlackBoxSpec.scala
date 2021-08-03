@@ -107,10 +107,10 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
 
       result must have size 2
 
-      result(0) === Page(Some(4571809L), 2, "User:Formator",
+      result(0) === Page(Some(4571809L), Some(2), "User:Formator",
         Seq(Revision(Some(12L), Some(4571809L), None, someUser1, None, None, Some(pageText2)))
       )
-      result(1) === Page(Some(569559L), 1, "Talk:Welfare reform",
+      result(1) === Page(Some(569559L), Some(1), "Talk:Welfare reform",
         Seq(Revision(Some(11L), Some(569559L), None, someUser2, None, None, Some(pageText1)))
       )
     }
@@ -142,10 +142,10 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
       val result = future.await
 
       result must have size 2
-      result(0) === Page(Some(4571809L), 2, "User:Formator",
+      result(0) === Page(Some(4571809L), Some(2), "User:Formator",
         Seq(Revision(Some(12L), Some(4571809L), None, someUser1, None, None, Some(pageText2)))
       )
-      result(1) === Page(Some(569559L), 1, "Talk:Welfare reform",
+      result(1) === Page(Some(569559L), Some(1), "Talk:Welfare reform",
         Seq(Revision(Some(11L), Some(569559L), None, someUser2, None, None, Some(pageText1)))
       )
 
@@ -161,11 +161,11 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
 
       val resultDb = futureDb.await
       resultDb must have size 2
-      resultDb(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
+      resultDb(0) === Page(Some(569559L), Some(1), "Talk:Welfare reform",
         Seq(Revision(Some(11L), Some(569559L), Some(0), someUser2, None, None, Some(pageText1),
           textId = resultDb(0).revisions.head.textId))
       )
-      resultDb(1) === Page(Some(4571809L), 2, "User:Formator",
+      resultDb(1) === Page(Some(4571809L), Some(2), "User:Formator",
         Seq(Revision(Some(12L), Some(4571809L), Some(0), someUser1, None, None, Some(pageText2),
           textId = resultDb(1).revisions.head.textId))
       )
@@ -217,7 +217,7 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
       val result = future.await
 
       result must have size 1
-      result(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
+      result(0) === Page(Some(569559L), Some(1), "Talk:Welfare reform",
         Seq(Revision(Some(11L), Some(569559L), None, someUser2, None, None, Some(pageText1)))
       )
 
@@ -233,11 +233,11 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
 
       val plus1 = plus1Future.await
       plus1 must have size 2
-      plus1(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
+      plus1(0) === Page(Some(569559L), Some(1), "Talk:Welfare reform",
         Seq(Revision(Some(11L), Some(569559L), Some(0), someUser2, None, None, Some(pageText1),
           textId = plus1(0).revisions.head.textId))
       )
-      plus1(1) === Page(Some(4571809L), 2, "User:Formator",
+      plus1(1) === Page(Some(4571809L), Some(2), "User:Formator",
         Seq(Revision(Some(12L), Some(4571809L), None, someUser1, None, None, Some(pageText2)))
       )
 
@@ -252,11 +252,11 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
 
       val resultFinal = futureFinal.await
       resultFinal must have size 2
-      resultFinal(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
+      resultFinal(0) === Page(Some(569559L), Some(1), "Talk:Welfare reform",
         Seq(Revision(Some(11L), Some(569559L), Some(0), someUser2, None, None, Some(pageText1),
           textId = resultFinal(0).revisions.head.textId))
       )
-      resultFinal(1) === Page(Some(4571809L), 2, "User:Formator",
+      resultFinal(1) === Page(Some(4571809L), Some(2), "User:Formator",
         Seq(Revision(Some(12L), Some(4571809L), Some(0), someUser1, None, None, Some(pageText2),
           textId = resultFinal(1).revisions.head.textId))
       )
@@ -305,7 +305,7 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
       val result = future.await
 
       result must have size 1
-      result(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
+      result(0) === Page(Some(569559L), Some(1), "Talk:Welfare reform",
         Seq(Revision(Some(11L), Some(569559L), None, someUser2, None, None, Some(pageText1)))
       )
 
@@ -320,7 +320,7 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
 
       val plus1 = plus1Future.await
       plus1 must have size 1
-      plus1(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
+      plus1(0) === Page(Some(569559L), Some(1), "Talk:Welfare reform",
         Seq(Revision(Some(12L), Some(569559L), None, someUser2, None, None, Some(pageText2)))
       )
 
@@ -335,7 +335,7 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
 
       val resultFinal = futureFinal.await
       resultFinal must have size 1
-      resultFinal(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
+      resultFinal(0) === Page(Some(569559L), Some(1), "Talk:Welfare reform",
         Seq(Revision(Some(12L), Some(569559L), Some(0), someUser2, None, None, Some(pageText2),
           textId = resultFinal(0).revisions.head.textId))
       )

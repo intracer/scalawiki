@@ -33,7 +33,7 @@ object ListConfig {
         entry.getKey -> entry.getValue.unwrapped().toString
     }
 
-    new ListConfigImpl(c.getString("listTemplate"), ListMap(kvs: _*))
+    new ListConfigImpl(c.getString("listTemplate"), ListMap(kvs.toSeq: _*))
   }
 
   val WleUa = load("wle_ua.conf")

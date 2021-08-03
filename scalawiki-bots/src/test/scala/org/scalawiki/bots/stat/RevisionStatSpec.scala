@@ -31,7 +31,7 @@ class RevisionStatSpec extends Specification {
       val text = words.mkString(" ")
       val user = "user"
       val rev = Revision(revId = Some(1), user = Some(User(12, user)), content = Some(text))
-      val page = new Page(Some(1), 0, "page", revisions = Seq(rev))
+      val page = new Page(Some(1), Some(0), "page", revisions = Seq(rev))
       val stat = RevisionStat.fromPage(page)
 
       stat.page === page.withoutContent
@@ -50,7 +50,7 @@ class RevisionStatSpec extends Specification {
       val text = words.mkString(" ")
       val user = "user"
       val rev = Revision(revId = Some(1), user = Some(User(12, user)), content = Some(text))
-      val page = new Page(Some(1), 0, "page", revisions = Seq(rev))
+      val page = new Page(Some(1), Some(0), "page", revisions = Seq(rev))
       val stat = RevisionStat.fromPage(page)
 
       stat.page === page.withoutContent
@@ -76,7 +76,7 @@ class RevisionStatSpec extends Specification {
       val user = "user"
       val rev1 = Revision(revId = Some(1), user = Some(User(12, user)), content = Some(text1))
       val rev2 = Revision(revId = Some(2), user = Some(User(12, user)), content = Some(text2))
-      val page = new Page(Some(1), 0, "page", revisions = Seq(rev2, rev1))
+      val page = new Page(Some(1), Some(0), "page", revisions = Seq(rev2, rev1))
       val stat = RevisionStat.fromPage(page)
 
       val annotation = new RevisionAnnotation(page)
@@ -101,7 +101,7 @@ class RevisionStatSpec extends Specification {
       val user = "user"
       val rev1 = Revision(revId = Some(1), user = Some(User(12, user)), content = Some(text1))
       val rev2 = Revision(revId = Some(2), user = Some(User(12, user)), content = Some(text2))
-      val page = new Page(Some(1), 0, "page", revisions = Seq(rev2, rev1))
+      val page = new Page(Some(1), Some(0), "page", revisions = Seq(rev2, rev1))
       val stat = RevisionStat.fromPage(page)
 
       stat.page === page.withoutContent
@@ -126,7 +126,7 @@ class RevisionStatSpec extends Specification {
       val user = "user"
       val rev1 = Revision(revId = Some(1), user = Some(User(12, user)), content = Some(text1))
       val rev2 = Revision(revId = Some(2), user = Some(User(12, user)), content = Some(text2))
-      val page = new Page(Some(1), 0, "page", revisions = Seq(rev2, rev1))
+      val page = new Page(Some(1), Some(0), "page", revisions = Seq(rev2, rev1))
       val stat = RevisionStat.fromPage(page)
 
       val annotation = new RevisionAnnotation(page)

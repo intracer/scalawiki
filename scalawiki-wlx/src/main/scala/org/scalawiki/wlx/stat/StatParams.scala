@@ -21,7 +21,12 @@ case class StatConfig(campaign: String,
                       authorsStat: Boolean = false,
                       regionalGallery: Boolean = false,
                       missingGallery: Boolean = false,
-                      placeDetection: Boolean = false)
+                      placeDetection: Boolean = false,
+                      newMonuments: Boolean = false,
+                      rateInputDistribution: Boolean = false,
+                      mostPopularMonuments: Boolean = false,
+                      minMpx: Option[Float] = None,
+                      previousYearsGallery: Boolean = false)
 
 import org.rogach.scallop._
 
@@ -41,6 +46,7 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
   val fillLists = opt[Boolean](name = "fill-lists", descr = "fill lists")
   val wrongIds = opt[Boolean](name = "wrong-ids", descr = "report wrong ids")
   val missingIds = opt[Boolean](name = "missing-ids", descr = "report missing ids")
+  val multipleIds = opt[Boolean](name = "multiple-ids", descr = "report multiple ids")
   val lowRes = opt[Boolean](name = "low-res", descr = "report low resolution photos")
   val specialNominations = opt[Boolean](name = "special-nominations", descr = "report special nominations")
   val regionalStat = opt[Boolean](name = "regional-stat", descr = "report regional statistics")
@@ -49,6 +55,11 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
   val regionalGallery = opt[Boolean](name = "regional-gallery", descr = "report regional gallery")
   val missingGallery = opt[Boolean](name = "missing-gallery", descr = "report missing galleries")
   val placeDetection = opt[Boolean](name = "place-detection", descr = "report place detection")
+  val newMonuments = opt[Boolean](name = "new-monuments", descr = "new monuments")
+  val rateInputDistribution = opt[Boolean](name = "rate-input-distribution", descr = "rate input distribution")
+  val mostPopularMonuments = opt[Boolean](name = "most-popular-monuments", descr = "most popular monuments")
+  val minMpx = opt[Float](name = "min-mpx", descr = "minimum megapixels")
+  val previousYearsGallery = opt[Boolean](name = "prev-years-gallery", descr = "previous years gallery")
   verify()
 }
 
@@ -75,6 +86,7 @@ object StatParams {
       fillLists = conf.fillLists.getOrElse(false),
       wrongIds = conf.wrongIds.getOrElse(false),
       missingIds = conf.missingIds.getOrElse(false),
+      multipleIds = conf.multipleIds.getOrElse(false),
       lowRes = conf.lowRes.getOrElse(false),
       specialNominations = conf.specialNominations.getOrElse(false),
       regionalStat = conf.regionalStat.getOrElse(false),
@@ -82,7 +94,12 @@ object StatParams {
       authorsStat = conf.authorsStat.getOrElse(false),
       regionalGallery = conf.regionalGallery.getOrElse(false),
       missingGallery = conf.missingGallery.getOrElse(false),
-      placeDetection = conf.placeDetection.getOrElse(false)
+      placeDetection = conf.placeDetection.getOrElse(false),
+      newMonuments = conf.newMonuments.getOrElse(false),
+      rateInputDistribution = conf.rateInputDistribution.getOrElse(false),
+      mostPopularMonuments = conf.mostPopularMonuments.getOrElse(false),
+      minMpx = conf.minMpx.toOption,
+      previousYearsGallery = conf.previousYearsGallery.getOrElse(false)
     )
   }
 }

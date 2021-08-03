@@ -43,10 +43,10 @@ class PropRevisionsSpec extends Specification with MockBotSpec {
 
       result must have size 2
 
-      result(0) === Page(Some(569559L), 1, "Talk:Welfare reform",
+      result(0) === Page(Some(569559L), Some(1), "Talk:Welfare reform",
         Seq(Revision(Some(1L), Some(569559L), None, Some(User(None, Some("u1"))), None, Some("c1"), Some(pageText1)))
       )
-      result(1) === Page(Some(4571809L), 2, "User:Formator",
+      result(1) === Page(Some(4571809L), Some(2), "User:Formator",
         Seq(Revision(Some(2L), Some(4571809L), None, Some(User(None, Some("u2"))), None, Some("c2"), Some(pageText2)))
       )
     }

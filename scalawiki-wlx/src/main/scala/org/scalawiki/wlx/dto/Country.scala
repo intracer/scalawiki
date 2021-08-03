@@ -32,10 +32,10 @@ trait AdmDivision {
 
     entries
       .groupBy { case (id, adm) => adm }
-      .mapValues(_.toMap.keySet)
+      .mapValues(_.toMap.keySet).toMap
   }
 
-  def byIdAndName(regionId: String, rawName: String): Seq[AdmDivision] = {
+  def byIdAndName(regionId: String, rawName: String, cityType: Option[String] = None): Seq[AdmDivision] = {
     val cleanName = AdmDivision.cleanName(rawName)
 
     val candidates = byId(regionId).map { region =>
@@ -47,7 +47,11 @@ trait AdmDivision {
       }
     }.getOrElse(Nil)
 
-    val types = RegionTypes.nameToType(rawName).toSet.filterNot(_.code == "Р")
+    val types = cityType.fold(RegionTypes.nameToType(rawName).toSet.filterNot(_.code == "Р")) { code =>
+      RegionTypes.codeToType.get(code)
+        .map(Set(_))
+        .getOrElse(RegionTypes.nameToType(code).toSet.filterNot(_.code == "Р"))
+    }
 
     if (candidates.size > 1) {
       val byType = if (types.nonEmpty) {
@@ -86,7 +90,7 @@ trait AdmRegion extends AdmDivision {
 
   lazy val regionNames: Seq[String] = regions.sortBy(_.code).map(_.name)
 
-  lazy val regionById: Map[String, AdmDivision] = regions.groupBy(_.code).mapValues(_.head)
+  lazy val regionById: Map[String, AdmDivision] = regions.groupBy(_.code).mapValues(_.head).toMap
 
   override def regionName(regId: String) = byId(regId).map(_.name).getOrElse("")
 
@@ -176,6 +180,7 @@ object AdmDivision {
       .replace("смт", "")
       .replace("Смт", "")
       .replace("с-ще", "")
+      .replace("с-щ", "")
       .replace("'''", "")
       .replace("''", "")
       .replace(",", "")
@@ -202,12 +207,12 @@ object Country {
       .map {
         case (countryCode, locales) =>
 
-          val langs = locales.flatMap {
+          val langs = locales.toSeq.flatMap {
             locale =>
               Option(locale.getLanguage)
                 .filter(_.nonEmpty)
           }
-          countryCode -> langs.toSeq
+          countryCode -> langs
       }
   }
 
@@ -235,7 +240,7 @@ object Country {
   }
 
   lazy val countryMap: Map[String, Country] =
-    (fromJavaLocales ++ customCountries).groupBy(_.code.toLowerCase).mapValues(_.head)
+    (fromJavaLocales ++ customCountries).groupBy(_.code.toLowerCase).mapValues(_.head).toMap
 
   def byCode(code: String): Option[Country] = countryMap.get(code.toLowerCase)
 }

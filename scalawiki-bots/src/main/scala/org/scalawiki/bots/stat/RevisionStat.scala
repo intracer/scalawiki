@@ -43,7 +43,7 @@ object RevisionStat {
         rev.withoutContent -> words.map(_.getBytes(StandardCharsets.UTF_8).length.toLong).sum
     }
 
-    val byUserSize = annotation.byUserContent.mapValues(_.map(_.getBytes(StandardCharsets.UTF_8).length.toLong).sum)
+    val byUserSize = annotation.byUserContent.mapValues(_.map(_.getBytes(StandardCharsets.UTF_8).length.toLong).sum).toMap
 
     new RevisionStat(
       page.copy(revisions = revFilter(page.revisions.map(_.withoutContent))),

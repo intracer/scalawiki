@@ -1,10 +1,9 @@
 package org.scalawiki.wlx.stat
 
 import java.time.{ZoneOffset, ZonedDateTime}
-
 import org.scalawiki.MwBot
 import org.scalawiki.cache.CachedBot
-import org.scalawiki.dto.Site
+import org.scalawiki.dto.{Image, Site}
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
@@ -25,15 +24,24 @@ import scala.concurrent.Future
   */
 case class ContestStat(contest: Contest,
                        startYear: Int,
-                       monumentDb: Option[MonumentDB],
-                       currentYearImageDb: Option[ImageDB],
-                       totalImageDb: Option[ImageDB],
+                       monumentDb: Option[MonumentDB] = None,
+                       currentYearImageDb: Option[ImageDB] = None,
+                       totalImageDb: Option[ImageDB] = None,
                        dbsByYear: Seq[ImageDB] = Seq.empty,
                        monumentDbOld: Option[MonumentDB] = None,
                        config: Option[StatConfig] = None) {
 
   val imageDbsByYear = dbsByYear.groupBy(_.contest.year)
   val yearSeq = imageDbsByYear.keys.toSeq.sorted
+
+  lazy val oldImages: Seq[Image] = {
+    for (total <- totalImageDb;
+    current <- currentYearImageDb)
+      yield {
+        val currentImageIds = current.images.flatMap(_.pageId).toSet
+        total.images.filter(image => !currentImageIds.contains(image.pageId.get))
+      }
+  }.getOrElse(Nil)
 
   def imageDbByYear(year: Int) = imageDbsByYear.get(year).map(_.head)
 
@@ -102,7 +110,7 @@ class Statistics(contest: Contest,
   }
 
   private def contestImages(monumentDb: Some[MonumentDB])(contest: Contest) =
-    ImageDB.create(contest, imageQuery, monumentDb)
+    ImageDB.create(contest, imageQuery, monumentDb, config.minMpx)
 
   private def imagesByTemplate(monumentDb: Some[MonumentDB], imageQuery: ImageQuery = imageQuery) =
     for (commons <- imageQuery.imagesWithTemplateAsync(contest.uploadConfigs.head.fileTemplate, contest);
@@ -140,9 +148,7 @@ class Statistics(contest: Contest,
   def message(bot: MwBot, user: String, msg: String => String): Unit = {
     bot.page("User_talk:" + user).edit(msg(user), section = Some("new"))
   }
-
 }
-
 
 object Statistics {
 

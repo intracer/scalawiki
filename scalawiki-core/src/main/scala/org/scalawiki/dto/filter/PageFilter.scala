@@ -8,7 +8,7 @@ object PageFilter {
 
   def ids(ids: Set[Long]) = (p:Page) => p.id.exists(ids.contains)
 
-  def ns(namespaces: Set[Int]) = (p:Page) => namespaces.contains(p.ns)
+  def ns(namespaces: Set[Int]) = (p:Page) => p.ns.exists(namespaces.contains)
 
   val all = (p:Page) => true
 

@@ -28,6 +28,11 @@ class ImageSpec extends Specification {
       Image.getAuthorFromPage(wiki) === "PhotoAmateur"
     }
 
+    "get author from link" in {
+      val wiki = makeTemplate("[http://wikimapia.org/#show=/user/2246978/ Alexander Savitsky]")
+      Image.getAuthorFromPage(wiki) === "Alexander Savitsky"
+    }
+
   }
 
   "fromPageRevision" should {

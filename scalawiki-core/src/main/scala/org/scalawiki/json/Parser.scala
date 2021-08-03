@@ -103,7 +103,7 @@ class Parser(val action: Action) {
     val emailable = if (props.contains("emailable")) Some(userJson.keys.contains("emailable")) else None
     val jsResult = mappedJson.validate(Parser.userReads)
     val user = jsResult.get.copy(blocked = blocked, emailable = emailable)
-    new Page(id = None, title = user.name.get, ns = Namespace.USER, revisions = Seq(Revision(user = Some(user))))
+    new Page(id = None, title = user.name.get, ns = Some(Namespace.USER), revisions = Seq(Revision(user = Some(user))))
   }
 
   def parseUserContrib(userJson: JsObject): Page = {
@@ -129,7 +129,7 @@ class Parser(val action: Action) {
     (pageJson \ "links").asOpt[JsArray].map {
       _.value.map { l =>
         new Page(id = None,
-          ns = (l \ "ns").as[Int],
+          ns = (l \ "ns").asOpt[Int],
           title = (l \ "title").as[String]
         )
       }.toSeq
@@ -152,9 +152,9 @@ class Parser(val action: Action) {
         sulAccounts = gui.merged
       )
 
-      new Page(id = None, title = gui.name, ns = Namespace.USER, revisions = Seq(Revision(user = Some(user))))
+      new Page(id = None, title = gui.name, ns = Some(Namespace.USER), revisions = Seq(Revision(user = Some(user))))
     } else {
-      new Page(id = None, title = "missing", ns = Namespace.USER, revisions = Seq.empty)
+      new Page(id = None, title = "missing", ns = Some(Namespace.USER), revisions = Seq.empty)
     }
   }
 
