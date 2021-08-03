@@ -96,7 +96,7 @@ lazy val dumps = Project("scalawiki-dumps", file("scalawiki-dumps"))
   .settings(libraryDependencies ++=
     Seq("com.fasterxml" % "aalto-xml" % AaltoXmlV,
       Library.Commons.compress,
-      "org.glassfish.jaxb" % "txw2" % "3.0.1"
+      "org.glassfish.jaxb" % "txw2" % "3.0.2"
     )
   )
 
