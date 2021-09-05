@@ -79,7 +79,9 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
       val data = places.sortBy(_.name).map { place =>
         Seq(
           place.name,
-          place.candidates.map(_.name).mkString(", "),
+          place.candidates.map{ c =>
+            s"${c.name} ${c.code} ${c.regionType.map(_.code).getOrElse("")} ${c.parent().getOrElse("")}"
+          }.mkString(", "),
           place.monuments.map(m => s"${m.id} ${m.name}").mkString(",")
         )
       }
