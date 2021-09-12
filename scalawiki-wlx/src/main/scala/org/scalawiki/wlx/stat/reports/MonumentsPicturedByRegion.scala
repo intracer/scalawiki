@@ -176,7 +176,7 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
                           dataset: DefaultCategoryDataset,
                           ids: Seq[Set[String]],
                           idsSize: Seq[Int],
-                          uploadImages: Boolean = true): String = {
+                          uploadImages: Boolean = false): String = {
     val images =
       s"\n[[File:${filenamePrefix}PicturedByYearTotal.png|$categoryName, monuments pictured by year overall|left]]" +
         s"\n[[File:${filenamePrefix}PicturedByYearPie.png|$categoryName, monuments pictured by year pie chart|left]]" +
