@@ -2,7 +2,7 @@ package org.scalawiki.wlx
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
-import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Katotth, Koatuu, RegionType}
+import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Katotth, Koatuu, Monument, RegionType}
 import org.scalawiki.wlx.query.MonumentQuery
 import org.scalawiki.wlx.stat.reports.Output
 
@@ -43,31 +43,57 @@ object KatotthMonumentListCreator {
     val village2Regions = Set("12080110000055958", "59080150000013842")
 
     Future.sequence(grouped.map { case (adm, k2k) =>
-      val pageNameGuess = s"Вікіпедія:Вікі любить пам'ятки/новий АТУ/${adm.namesList.tail.mkString("/")}"
+      if (!Set("Автономна Республіка Крим", "Київ", "Севастополь").contains(adm.namesList.tail.head)) {
+        val pageNameGuess = s"Вікіпедія:Вікі любить пам'ятки/новий АТУ/${adm.namesList.tail.mkString("/")}"
 
-      val pageName = if (citiRegions.contains(adm.code)) {
-        pageNameGuess.replace("громада", "міська громада")
-      } else if (village1Regions.contains(adm.code)) {
-        pageNameGuess.replace("громада", "селищна громада")
-      } else if (village2Regions.contains(adm.code)) {
-        pageNameGuess.replace("громада", "сільська громада")
-      } else {
-        pageNameGuess
-      }
+        val newPageName = if (citiRegions.contains(adm.code)) {
+          pageNameGuess.replace("громада", "міська громада")
+        } else if (village1Regions.contains(adm.code)) {
+          pageNameGuess.replace("громада", "селищна громада")
+        } else if (village2Regions.contains(adm.code)) {
+          pageNameGuess.replace("громада", "сільська громада")
+        } else {
+          pageNameGuess
+        }
 
-      val (cities, other) = k2k.partition(_.katotth.exists(_.regionType.exists(_.code == "М")))
-      val cityMonumentIds = cities.flatMap(_.monumentIds).toSet
-      val otherMonumentIds = other.flatMap(_.monumentIds).toSet
+        val (cities, other) = k2k.partition(_.katotth.exists(_.regionType.exists(_.code == "М")))
+        val cityMonumentIds = cities.flatMap(_.monumentIds).toSet
+        val otherMonumentIds = other.flatMap(_.monumentIds).toSet
 
-      val header = "{{WLM-шапка}}\n"
-      val monuments = monumentDB.monuments.filter(m => cityMonumentIds.contains(m.id)) ++
-        monumentDB.monuments.filter(m => otherMonumentIds.contains(m.id))
+        val header = "{{ВЛП нові списки}}\n" +
+          s"{{Вікіпедія:Вікі любить пам'ятки/новий АТУ/${adm.namesList.tail.head}/navbar}}\n" +
+          "{{WLM-шапка}}\n"
+        val monuments = monumentDB.monuments.filter(m => cityMonumentIds.contains(m.id)) ++
+          monumentDB.monuments.filter(m => otherMonumentIds.contains(m.id))
 
-      val koatuuPages = monuments.map(_.page).distinct.sorted
-      val pageText = header + monuments.map(_.asWiki()).mkString("") + "\n|}" +
-        "\n== Взято з ==\n" + koatuuPages.map(page => s"* [[$page]]").mkString("\n") +
-        "\n== Примітки ==\n{{reflist}}"
-      ukWiki.page(pageName).edit(pageText)
+        def monumentPage(monument: Monument) = {
+          val oldPage = monument.page
+          if (oldPage.last == ')') {
+            val suffix = oldPage.substring(oldPage.lastIndexOf("("))
+            val koatuu = Katotth.toKoatuu.get(adm.code).map(_.take(5)).getOrElse("")
+            if (Set("63101", "12101", "51101", "48101", "35101", "46101", "26101", "73101", "53240").contains(koatuu)) {
+              newPageName + s" $suffix"
+            } else {
+              newPageName
+            }
+          } else newPageName
+        }
+        val bySubPage = monuments.groupBy(monumentPage)
+
+        val subPageFutures = bySubPage.map { case (page, pageMonuments) =>
+          val koatuuPages = pageMonuments.map(_.page).distinct.sorted
+          val pageText = header + pageMonuments.map(_.asWiki()).mkString("") + "\n|}" +
+            "\n== Взято з ==\n" + koatuuPages.map(page => s"* [[$page]]").mkString("\n") +
+            "\n== Примітки ==\n{{reflist}}"
+
+          if (pageText.length > 1000 * 1000) {
+            println(s" $page ${pageText.length}")
+          }
+          Future.successful()
+          //ukWiki.page(page).edit(pageText)
+        }
+        Future.sequence(subPageFutures)
+      } else Future.sequence(Seq(Future.successful()))
     })
   }
 

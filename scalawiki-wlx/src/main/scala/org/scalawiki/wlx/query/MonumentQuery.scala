@@ -10,6 +10,8 @@ import org.scalawiki.wlx.dto.lists.OtherTemplateListConfig
 import org.scalawiki.wlx.dto.{Contest, Monument}
 
 import java.time.ZonedDateTime
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Future, _}
@@ -47,17 +49,26 @@ class MonumentQueryApi(val contest: Contest)(implicit val bot: MwBot) extends Mo
   override def byMonumentTemplateAsync(generatorTemplate: String,
                                        date: Option[ZonedDateTime] = None,
                                        listTemplate: Option[String] = None): Future[Seq[Monument]] = {
+    val differentRegionIds = new ArrayBuffer[String]()
+
     val title = if (generatorTemplate.startsWith("Template")) generatorTemplate else "Template:" + generatorTemplate
     val listConfig = listTemplate.fold(defaultListConfig)(new OtherTemplateListConfig(_, defaultListConfig))
     if (date.isEmpty) {
       bot.page(title).revisionsByGenerator("embeddedin", "ei",
         Set(Namespace.PROJECT, Namespace.MAIN),
         Set("ids", "content", "timestamp", "user", "userid", "comment"), None, "100") map { pages =>
-        pages.flatMap { page =>
+        val monuments = pages.flatMap { page =>
           if (!page.title.contains("новий АТУ")) {
-            Monument.monumentsFromText(page.text.getOrElse(""), page.title, listTemplate.getOrElse(generatorTemplate), listConfig)
+            val monuments = Monument.monumentsFromText(page.text.getOrElse(""), page.title, listTemplate.getOrElse(generatorTemplate), listConfig)
+            val regionIds = monuments.map(_.id.split("-").init.mkString("-")).toSet
+            if (regionIds.size > 1) {
+              differentRegionIds.append(s"* [[${page.title}]]: ${regionIds.toSeq.sorted.mkString(", ")}")
+            }
+            monuments
           } else Nil
         }
+        Await.result(bot.page(s"Вікіпедія:${contest.name}/differentRegionIds").edit(differentRegionIds.sorted.mkString("\n")), 10.seconds)
+        monuments
       }
     } else {
       monumentsByDate(title, listTemplate.getOrElse(generatorTemplate), date.get)
