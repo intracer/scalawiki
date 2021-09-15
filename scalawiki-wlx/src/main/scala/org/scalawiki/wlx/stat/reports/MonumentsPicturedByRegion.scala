@@ -77,10 +77,11 @@ class MonumentsPicturedByRegion(val stat: ContestStat, uploadImages: Boolean = f
         db.idsByRegion(regionId).size,
         db.imagesByRegion(regionId).toSet.size
       ) ++
-        (if (db.contest.year == yearSeq.head && newIds.nonEmpty) {
-          Seq(
-            s"[[$newlyPicturedPage|${newIds.size}]]"
-          )
+        (if (db.contest.year == yearSeq.head) {
+          if (newIds.nonEmpty)
+            Seq(s"[[$newlyPicturedPage|${newIds.size}]]")
+          else
+            Seq("0")
         } else Nil)
     }.reverse.flatten
 
