@@ -12,7 +12,7 @@ object Dependencies {
   val H2V = "1.4.200"
   val JimFsV = "1.2"
   val JodaTimeV = "2.9.9"
-  val JSoupV = "1.13.1"
+  val JSoupV = "1.14.1"
   val LogbackClassicV = "1.2.3"
   val MockServerV = "5.7.0"
   val ReactiveStreamsV = "1.0.2"
@@ -97,7 +97,7 @@ object Dependencies {
 
     object Commons {
       val CommonsCodecV = "1.15"
-      val CommonsCompressV = "1.20"
+      val CommonsCompressV = "1.21"
       val CommonsLang3V = "3.7"
       val CommonsIoV = "2.6"
 

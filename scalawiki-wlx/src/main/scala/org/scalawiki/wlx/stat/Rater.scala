@@ -2,16 +2,17 @@ package org.scalawiki.wlx.stat
 
 import com.typesafe.config.Config
 import org.scalawiki.MwBot
-import org.scalawiki.dto.Image
 import org.scalawiki.wlx.ImageDB
 import org.scalawiki.wlx.stat.reports.RateInputDistribution
 
 import scala.collection.mutable
+import scala.util.Try
 
-case class RateConfig(newObjectRating: Option[Int] = None,
-                      newAuthorObjectRating: Option[Int] = None,
+case class RateConfig(newObjectRating: Option[Double] = None,
+                      newAuthorObjectRating: Option[Double] = None,
                       numberOfAuthorsBonus: Boolean = false,
-                      numberOfImagesBonus: Boolean = false)
+                      numberOfImagesBonus: Boolean = false,
+                      baseRate: Double = 1)
 
 object RateConfig {
 
@@ -19,7 +20,8 @@ object RateConfig {
     apply(conf.newObjectRating.toOption,
       conf.newAuthorObjectRating.toOption,
       conf.numberOfAuthorsBonus.getOrElse(false),
-      conf.numberOfImagesBonus.getOrElse(false)
+      conf.numberOfImagesBonus.getOrElse(false),
+      conf.baseRate.getOrElse(1)
     )
   }
 }
@@ -30,15 +32,15 @@ trait Rater {
 
   def imageDb: ImageDB = stat.currentYearImageDb.get
 
-  def rate(monumentId: String, author: String): Int
+  def rate(monumentId: String, author: String): Double
 
   def explain(monumentId: String, author: String): String
 
-  def rateMonumentIds(monumentIds: Set[String], author: String): Int = {
+  def rateMonumentIds(monumentIds: Set[String], author: String): Double = {
     monumentIds.toSeq.map(rate(_, author)).sum
   }
 
-  def rateRegion(regionId: String, author: String): Int = {
+  def rateRegion(regionId: String, author: String): Double = {
     rateMonumentIds(imageDb._byAuthorAndRegion.by(author, regionId).flatMap(_.monumentId).toSet, author)
   }
 
@@ -56,7 +58,7 @@ object Rater {
     stat.contest.config.map(fromConfig(stat, _)).getOrElse {
       val config = stat.contest.rateConfig
 
-      val raters = Seq(new NumberOfMonuments(stat)) ++
+      val raters = Seq(new NumberOfMonuments(stat, config.baseRate)) ++
         config.newAuthorObjectRating.map(r =>
           new NewlyPicturedPerAuthorBonus(stat, config.newObjectRating.getOrElse(1), r)
         ).orElse(
@@ -73,7 +75,7 @@ object Rater {
 
   def fromConfig(stat: ContestStat, config: Config): Rater = {
     val rateCfg = config.getConfig(s"rates.${stat.contest.year}")
-    val raters = Seq(new NumberOfMonuments(stat)) ++
+    val raters = Seq(new NumberOfMonuments(stat, Try(rateCfg.getDouble("base-rate")).toOption.getOrElse(1))) ++
       (if (rateCfg.hasPath("number-of-authors-bonus")) {
         Seq(new NumberOfAuthorsBonus(stat, RateRanges(rateCfg.getConfig("number-of-authors-bonus"))))
       } else Nil) ++
@@ -90,23 +92,23 @@ object Rater {
   }
 }
 
-class NumberOfMonuments(val stat: ContestStat) extends Rater {
+class NumberOfMonuments(val stat: ContestStat, baseRate: Double) extends Rater {
   val monumentIds = stat.monumentDb.map(_.ids).getOrElse(Set.empty)
 
-  override def rate(monumentId: String, author: String): Int = {
-    if (monumentIds.contains(monumentId)) 1 else 0
+  override def rate(monumentId: String, author: String): Double = {
+    if (monumentIds.contains(monumentId)) baseRate else 0
   }
 
   override def explain(monumentId: String, author: String): String = {
-    if (monumentIds.contains(monumentId)) "Base rate = 1" else "Not a known monument = 0"
+    if (monumentIds.contains(monumentId)) s"Base rate = $baseRate" else "Not a known monument = 0"
   }
 
   override def withRating: Boolean = false
 }
 
-class NewlyPicturedBonus(val stat: ContestStat, newlyPicturedRate: Int) extends Rater {
+class NewlyPicturedBonus(val stat: ContestStat, newlyPicturedRate: Double) extends Rater {
 
-  override def rate(monumentId: String, author: String): Int = {
+  override def rate(monumentId: String, author: String): Double = {
     if (!oldMonumentIds.contains(monumentId))
       newlyPicturedRate - 1
     else
@@ -122,14 +124,14 @@ class NewlyPicturedBonus(val stat: ContestStat, newlyPicturedRate: Int) extends 
 }
 
 class NewlyPicturedPerAuthorBonus(val stat: ContestStat,
-                                  newlyPicturedRate: Int,
-                                  newlyPicturedPerAuthorRate: Int) extends Rater {
+                                  newlyPicturedRate: Double,
+                                  newlyPicturedPerAuthorRate: Double) extends Rater {
 
   val oldMonumentIdsByAuthor: Map[String, Set[String]] = oldImages
     .groupBy(_.author.getOrElse(""))
     .mapValues(_.flatMap(_.monumentId).toSet).toMap
 
-  override def rate(monumentId: String, author: String): Int = {
+  override def rate(monumentId: String, author: String): Double = {
     monumentId match {
       case id if !oldMonumentIds.contains(id) =>
         newlyPicturedRate - 1
@@ -168,7 +170,7 @@ class NumberOfAuthorsBonus(val stat: ContestStat, val rateRanges: RateRanges) ex
     ).updateWiki(MwBot.fromHost(MwBot.commons))
   }
 
-  override def rate(monumentId: String, author: String): Int = {
+  override def rate(monumentId: String, author: String): Double = {
     if (rateRanges.sameAuthorZeroBonus && authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
       0
     } else {
@@ -270,9 +272,9 @@ class NumberOfImagesInPlaceBonus(val stat: ContestStat, val rateRanges: RateRang
     ).updateWiki(MwBot.fromHost(MwBot.commons))
   }
 
-  override def rate(monumentId: String, author: String): Int = {
+  override def rate(monumentId: String, author: String): Double = {
     if (rateRanges.sameAuthorZeroBonus && authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
-      0
+      0.0
     } else {
       perPlaceStat.placeByMonument.get(monumentId).map { place =>
         rateRanges.rate(perPlaceStat.imagesPerPlace.getOrElse(place, 0))
@@ -281,7 +283,7 @@ class NumberOfImagesInPlaceBonus(val stat: ContestStat, val rateRanges: RateRang
         if (!monumentIds.contains(monumentId)) {
           unknownPlaceMonumentsByAuthor(author) = monumentIds + monumentId
         }
-        0
+        0.0
       }
     }
   }
@@ -306,7 +308,7 @@ class NumberOfImagesInPlaceBonus(val stat: ContestStat, val rateRanges: RateRang
 }
 
 class RateSum(val stat: ContestStat, val raters: Seq[Rater]) extends Rater {
-  override def rate(monumentId: String, author: String): Int = {
+  override def rate(monumentId: String, author: String): Double = {
     raters.map(_.rate(monumentId, author)).sum
   }
 
