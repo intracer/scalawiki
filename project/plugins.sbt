@@ -2,7 +2,7 @@ logLevel := Level.Warn
 
 resolvers += Classpaths.sbtPluginReleases
 
-addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.8.2")
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.9.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.4.2")
 
