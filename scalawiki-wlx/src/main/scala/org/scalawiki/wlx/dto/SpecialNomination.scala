@@ -48,7 +48,7 @@ object SpecialNomination {
 
   def getMonumentsMap(nominations: Seq[SpecialNomination], stat: ContestStat): Map[SpecialNomination, Seq[Monument]] = {
     val contest = stat.contest
-    val monumentQuery = MonumentQuery.create(contest)
+    val monumentQuery = MonumentQuery.create(contest, reportDifferentRegionIds = false)
     nominations.map { nomination =>
       val monuments = if (nomination.pages.nonEmpty) {
         nomination.pages.flatMap { page =>

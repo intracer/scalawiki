@@ -38,7 +38,8 @@ trait MonumentQuery {
     Await.result(byPageAsync(page, template), Timeout): Seq[Monument]
 }
 
-class MonumentQueryApi(val contest: Contest)(implicit val bot: MwBot) extends MonumentQuery with QueryLibrary {
+class MonumentQueryApi(val contest: Contest, reportDifferentRegionIds: Boolean = true)(implicit val bot: MwBot)
+  extends MonumentQuery with QueryLibrary {
 
   val host = getHost.get
 
@@ -61,13 +62,15 @@ class MonumentQueryApi(val contest: Contest)(implicit val bot: MwBot) extends Mo
           if (!page.title.contains("новий АТУ")) {
             val monuments = Monument.monumentsFromText(page.text.getOrElse(""), page.title, listTemplate.getOrElse(generatorTemplate), listConfig)
             val regionIds = monuments.map(_.id.split("-").init.mkString("-")).toSet
-            if (regionIds.size > 1) {
+            if (regionIds.size > 1 && reportDifferentRegionIds) {
               differentRegionIds.append(s"* [[${page.title}]]: ${regionIds.toSeq.sorted.mkString(", ")}")
             }
             monuments
           } else Nil
         }
-        Await.result(bot.page(s"Вікіпедія:${contest.name}/differentRegionIds").edit(differentRegionIds.sorted.mkString("\n")), 10.seconds)
+        if (reportDifferentRegionIds) {
+          Await.result(bot.page(s"Вікіпедія:${contest.name}/differentRegionIds").edit(differentRegionIds.sorted.mkString("\n")), 10.seconds)
+        }
         monuments
       }
     } else {
@@ -121,8 +124,8 @@ class MonumentQueryApi(val contest: Contest)(implicit val bot: MwBot) extends Mo
 
 object MonumentQuery {
 
-  def create(contest: Contest)(implicit bot: MwBot = MwBot.fromHost(MwBot.ukWiki)): MonumentQuery =
-    new MonumentQueryApi(contest)(bot)
+  def create(contest: Contest, reportDifferentRegionIds: Boolean = true)(implicit bot: MwBot = MwBot.fromHost(MwBot.ukWiki)): MonumentQuery =
+    new MonumentQueryApi(contest, reportDifferentRegionIds)(bot)
 
 }
 
