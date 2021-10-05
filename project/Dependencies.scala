@@ -74,7 +74,7 @@ object Dependencies {
     object Play {
       def PlayJsonV(isScala213: Boolean) = {
         if (isScala213) {
-          "2.7.4"
+          "2.9.2"
         } else {
           "2.6.14" // scala-steward:off
         }
