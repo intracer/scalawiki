@@ -16,7 +16,7 @@ import scala.util.Try
  * @param pages        pages that contain lists of monuments, ot templates that contains links to these pages
  */
 case class SpecialNomination(name: String, listTemplate: String, pages: Seq[String], years: Seq[Int] = Nil,
-                             cities: Seq[String] = Nil)
+                             cities: Seq[AdmDivision] = Nil)
 
 object SpecialNomination {
 
@@ -39,7 +39,13 @@ object SpecialNomination {
         c.getString("listTemplate"),
         c.as[Option[Seq[String]]]("pages").getOrElse(Nil),
         c.as[Option[Seq[Int]]]("years").getOrElse(Nil),
-        c.as[Option[Seq[String]]]("cities").getOrElse(Nil)
+        if (c.hasPath("cities")) {
+          c.getConfigList("cities").asScala.toSeq.map { citiConf =>
+            val name = citiConf.getString("name")
+            val code = citiConf.getString("code")
+            lookupCity(name, code).head
+          }
+        } else Nil
       )
     }).getOrElse(Seq.empty)
   }
@@ -61,24 +67,15 @@ object SpecialNomination {
     }.toMap
   }
 
-  def monumentsInCities(cities: Seq[String], monumentDb: MonumentDB): Seq[Monument] = {
-    val placeIds = placesByCities(cities).flatten.map(_.code).toSet
+  def monumentsInCities(cities: Seq[AdmDivision], monumentDb: MonumentDB): Seq[Monument] = {
+    val placeIds = cities.map(_.code).toSet
     monumentDb.allMonuments.filter { monument =>
       monumentDb.placeByMonumentId.get(monument.id).exists(placeIds.contains)
     }
   }
 
-  def placesByCities(cities: Seq[String]): Seq[Seq[AdmDivision]] = {
-    cities.map { nameAndRegionCode =>
-      val strings = nameAndRegionCode.split(" ")
-      val name = strings.head
-      val candidates = if (strings.size > 1) {
-        Country.Ukraine.byIdAndName(strings.last, name)
-      } else {
-        Country.Ukraine.byName(name)
-      }
-      candidates.filterNot(_.regionType.exists(rt => Set("С", "Щ", "Т").contains(rt.code)))
-    }
+  def lookupCity(name: String, code: String): Seq[AdmDivision] = {
+    Country.Ukraine.byIdAndName(code.take(2), name).filter(_.code == code)
   }
 
 }

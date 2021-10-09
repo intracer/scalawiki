@@ -33,18 +33,20 @@ class SpecialNominationsSpec extends Specification {
         new SpecialNomination("Цивільні споруди доби Гетьманщини", "WLM-рядок",
           Seq("Template:WLM цивільні споруди доби Гетьманщини")),
         new SpecialNomination("Млини", "WLM-рядок",
-          Seq("Template:WLM млини та вітряки"), Seq(2019, 2020)),
+          Seq("Template:WLM млини та вітряки"), Seq(2019, 2020, 2021)),
         new SpecialNomination("Єврейська спадщина", "WLM-рядок",
-          Seq("Template:WLM єврейська спадщина"), Seq(2019, 2020)),
-        new SpecialNomination("Віа Регіа", "ВЛП-рядок", Nil, Seq(2020),
-          Seq("Дубно", "Рівне", "Острог", "Львів", "Броди", "Городок 46", "Луцьк", "Володимир-Волинський",
-            "Радомишль", "Житомир", "Київ"))
+          Seq("Template:WLM єврейська спадщина"), Seq(2019, 2020, 2021)),
+        new SpecialNomination("Віа Регіа", "ВЛП-рядок", Nil, Seq(2020, 2021),
+          Nil),
+        new SpecialNomination("Квіти України", "WLM-рядок",
+          Seq("Template:WLM Квіти України"), Seq(2021)),
+        new SpecialNomination("Національно-визвольні", "WLM-рядок",
+          Seq("Template:WLM національно-визвольні"), Seq(2021)),
+        new SpecialNomination("Пам'ятки Подесення", "WLM-рядок",
+          Seq("Template:WLM Пам'ятки Подесення"), Seq(2021))
       )
 
       SpecialNomination.load("wlm_ua.conf") === expected
-
-      val places = SpecialNomination.placesByCities(expected.last.cities)
-      places.map(_.size).distinct === Seq(1)
-    }
+   }
   }
 }
