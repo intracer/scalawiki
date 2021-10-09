@@ -175,7 +175,7 @@ object Statistics {
     val stat = new Statistics(
       contest,
       startYear = Some(cfg.years.head),
-      monumentQuery = MonumentQuery.create(contest),
+      monumentQuery = MonumentQuery.create(contest, reportDifferentRegionIds = true),
       config = Some(cfg),
       imageQuery = imageQuery,
       imageQueryWiki = Some(imageQueryWiki)
