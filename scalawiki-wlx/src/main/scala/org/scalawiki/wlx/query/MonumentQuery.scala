@@ -38,7 +38,7 @@ trait MonumentQuery {
     Await.result(byPageAsync(page, template), Timeout): Seq[Monument]
 }
 
-class MonumentQueryApi(val contest: Contest, reportDifferentRegionIds: Boolean = true)(implicit val bot: MwBot)
+class MonumentQueryApi(val contest: Contest, reportDifferentRegionIds: Boolean = false)(implicit val bot: MwBot)
   extends MonumentQuery with QueryLibrary {
 
   val host = getHost.get

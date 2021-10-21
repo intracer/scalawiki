@@ -67,9 +67,9 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
           Output.multipleIds(imageDb, mDb)
         }
 
-        //        if (cfg.fillLists) {
-        //          ImageFiller.fillLists(mDb, imageDb)
-        //        }
+        if (cfg.fillLists && cfg.years.size == 1) {
+            ImageFiller.fillLists(mDb, imageDb)
+        }
 
         if (cfg.missingGallery) {
           Output.missingGallery(mDb)
