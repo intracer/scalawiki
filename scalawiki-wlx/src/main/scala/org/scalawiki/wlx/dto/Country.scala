@@ -28,14 +28,20 @@ trait AdmDivision {
   }
 
   def mapByCode: Map[String, AdmDivision] = {
-    allSubregions.map{ place =>
+    allSubregions.map { place =>
       place.code -> place
     }.toMap
   }
 
   def parent: () => Option[AdmDivision]
 
-  def regionId(monumentId: String): String = monumentId.split("-").take(2).mkString
+  def regionId(monumentId: String): String = {
+    if (monumentId.contains("-")) {
+      monumentId.split("-").take(2).mkString
+    } else {
+      monumentId.take(4)
+    }
+  }
 
   def regionName(regId: String): String = if (regId == code) name else ""
 
@@ -48,8 +54,16 @@ trait AdmDivision {
   }
 
   def byName(name: String): Seq[AdmDivision] = {
-    Seq(this).filter(_.name.toLowerCase == name.toLowerCase) ++ regions.flatMap(_.byName(name))
+    byName(name, 0, Int.MaxValue)
   }
+
+  def byName(name: String, level: Int, max: Int): Seq[AdmDivision] = {
+    Seq(this).filter(_.name.toLowerCase == name.toLowerCase) ++
+      (if (level < max) {
+        regions.flatMap(_.byName(name, level + 1, max))
+      } else Nil)
+  }
+
 
   def byRegion(monumentIds: Set[String]): Map[AdmDivision, Set[String]] = {
     val entries = monumentIds.flatMap(id => byMonumentId(id).map(adm => id -> adm))
@@ -121,7 +135,9 @@ trait AdmRegion extends AdmDivision {
   override def regionName(regId: String) = byMonumentId(regId).map(_.fullName).getOrElse("")
 
   override def byMonumentId(monumentId: String): Option[AdmDivision] = {
-    regionById.get(regionId(monumentId)).flatMap(region => region.byMonumentId(monumentId).orElse(Some(region)))
+    regionById.get(regionId(monumentId)).flatMap { region =>
+      region.byMonumentId(monumentId).orElse(Some(region))
+    }
   }
 }
 
@@ -139,7 +155,9 @@ case class Country(code: String,
 
   def withoutLangCodes: Country = copy(languageCodes = Nil)
 
-  override def regionId(monumentId: String): String = monumentId.split("-").head
+  override def regionId(monumentId: String): String = {
+    monumentId.take(2)
+  }
 
   override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
     regions = regionsWithParents()
