@@ -5,6 +5,7 @@ import org.scalawiki.wlx.query.MonumentQuery
 import net.ceedubs.ficus.Ficus._
 import org.scalawiki.wlx.MonumentDB
 import org.scalawiki.wlx.stat.ContestStat
+import org.scalawiki.wlx.stat.reports.DesnaRegionSpecialNomination
 
 import scala.util.Try
 
@@ -56,12 +57,26 @@ object SpecialNomination {
     val contest = stat.contest
     val monumentQuery = MonumentQuery.create(contest, reportDifferentRegionIds = false)
     nominations.map { nomination =>
-      val monuments = if (nomination.pages.nonEmpty) {
+      val monuments = if (nomination.pages.nonEmpty && nomination.name != "Пам'ятки Подесення") {
         nomination.pages.flatMap { page =>
           monumentQuery.byPage(page, nomination.listTemplate)
         }
-      } else {
+      } else if (nomination.cities.nonEmpty) {
         monumentsInCities(nomination.cities, stat.monumentDb.get)
+      } else if (nomination.name == "Пам'ятки Подесення") {
+        val desna = DesnaRegionSpecialNomination()
+        val placeIds = desna.places.flatMap(desna.getPlace).map(_.code)
+        val k2k = placeIds.flatMap(Katotth.toKoatuu.get)
+        val allPlaceIds = (placeIds ++ k2k).toSet
+
+        val monumentDb = stat.monumentDb.get
+        monumentDb.allMonuments.filter { monument =>
+          monumentDb.placeByMonumentId.get(monument.id).exists(allPlaceIds.contains)
+        } ++ nomination.pages.flatMap { page =>
+          monumentQuery.byPage(page, nomination.listTemplate)
+        }
+      } else {
+        Nil
       }
       (nomination, monuments)
     }.toMap
