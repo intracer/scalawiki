@@ -23,6 +23,8 @@ class DesnaRegionSpec extends Specification {
     "detect places" in {
       val rows = desna.places
       val places = rows.map(desna.getPlace)
+      val codeSizes = places.filter(_.size == 1).map(_.head.code.length).groupBy(identity).mapValues(_.size).toMap
+      println(codeSizes)
       places.map(_.size).distinct === List(1)
     }
 
