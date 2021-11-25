@@ -82,15 +82,15 @@ object KatotthMonumentListCreator {
 
         val subPageFutures = bySubPage.map { case (page, pageMonuments) =>
           val koatuuPages = pageMonuments.map(_.page).distinct.sorted
-          val pageText = header + pageMonuments.map(_.asWiki()).mkString("") + "\n|}" +
+          val pageText = header + pageMonuments.map(_.asWiki(Some("WLM-рядок"))).mkString("") + "\n|}" +
             "\n== Взято з ==\n" + koatuuPages.map(page => s"* [[$page]]").mkString("\n") +
             "\n== Примітки ==\n{{reflist}}"
 
           if (pageText.length > 1000 * 1000) {
             println(s" $page ${pageText.length}")
           }
-          Future.successful()
-          //ukWiki.page(page).edit(pageText)
+          //Future.successful()
+          ukWiki.page(page).edit(pageText)
         }
         Future.sequence(subPageFutures)
       } else Future.sequence(Seq(Future.successful()))
