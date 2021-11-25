@@ -1,44 +1,82 @@
 package org.scalawiki.wlx.stat.reports
 
 import com.github.tototoshi.csv.CSVReader
-import org.scalawiki.wlx.dto.AdmDivision
+import org.scalawiki.wlx.dto.{AdmDivision, Country, Katotth}
 import org.scalawiki.wlx.dto.Country.Ukraine
 
 import java.io.InputStreamReader
 
 class DesnaRegionSpecialNomination(data: Seq[List[String]]) {
+  val UkraineKatotth: Country = new Country("UA", "Ukraine", Seq("uk"),
+    Katotth.regions(() => Some(UkraineKatotth)))
+
   val places = data.map(_.filter(_.trim.nonEmpty)).filter(_.size == 4)
-  val oblastNames = places.flatMap { case List(adm0, adm1, adm2, city) => Some(adm0)}
-    .map(_.trim).distinct
-  val oblasts = oblastNames.flatMap(name => Ukraine.byName(name + " область"))
+//  val oblastNames = places.flatMap { case List(adm0, adm1, adm2, city) => Some(adm0) }
+//    .map(_.trim).distinct
+//  val oblasts = oblastNames.flatMap(name => Ukraine.byName(name + " область"))
 
-  def getOblast(row: List[String]): Option[AdmDivision] = getOblast(row.head)
-  def getOblast(name: String): Option[AdmDivision] = Ukraine.byName(name.trim + " область").headOption
-
-  def getRaion(row: List[String]): Seq[AdmDivision] = {
-    (for (oblast <- getOblast(row)) yield getRaion(oblast, row(1))).getOrElse(Nil)
+  def getOblast(row: List[String], country: Country, suffix: String): Option[AdmDivision] = {
+    getOblast(row.head, country, suffix)
   }
 
-  def getRaion(oblast: AdmDivision, name: String): Seq[AdmDivision] = {
-    val candidates = Ukraine.byIdAndName(oblast.code, name + " район")
+  def getOblast(name: String, country: Country, suffix: String): Option[AdmDivision] = {
+    country.byName(name.trim + suffix, 0, 1).headOption
+  }
+
+  def getRaion(row: List[String], country: Country, suffixes: Seq[String]): Seq[AdmDivision] = {
+    (for (oblast <- getOblast(row, country: Country, suffixes.headOption.getOrElse("")))
+      yield getRaion(oblast, row(1) + suffixes.lastOption.getOrElse(""), country: Country)).getOrElse(Nil)
+  }
+
+  def getRaion(oblast: AdmDivision, name: String, country: Country): Seq[AdmDivision] = {
+    val candidates = country.byIdAndName(oblast.code.take(2), name)
     if (candidates.size != 1) {
-      println(s"${oblast.name} $name, candidates: ${candidates.map(_.name)}")
+      // println(s"${oblast.name} $name, candidates: $candidates")
     }
-    candidates
+    candidates.filter(_.regionType.exists(_.code == "P") || name.endsWith(" район"))
+  }
+
+  def getRaion(row: List[String]): Seq[AdmDivision] = {
+    val candidates = getRaion(row, UkraineKatotth, Nil)
+    val twoTries = if (candidates.isEmpty) {
+      getRaion(row, Ukraine, Seq(" область", " район"))
+    } else {
+      candidates
+    }
+
+    if (twoTries.size != 1) {
+      println(s"getRaion ${row}, candidates: $candidates")
+    }
+    twoTries
   }
 
   def getPlace(row: List[String]): Seq[AdmDivision] = {
-    (for {
-      oblast <- getOblast(row);
-      raion <- getRaion(oblast, row(1)).headOption
-    } yield getPlace(raion, row(3))).getOrElse(Nil)
+    val candidates = getPlace(row, UkraineKatotth, Nil)
+    val twoTries = if (candidates.size != 1) {
+//      println(s"getPlace ${row}, candidates: $candidates")
+      getPlace(row, Ukraine, Seq(" область", " район"))
+    } else {
+      candidates
+    }
+
+    if (twoTries.size != 1) {
+      println(s"getPlace ${row}, candidates: $candidates")
+    }
+    twoTries
   }
 
-  def getPlace(raion: AdmDivision, name: String): Seq[AdmDivision] = {
+  def getPlace(row: List[String], country: Country, suffixes: Seq[String]): Seq[AdmDivision] = {
+    (for {
+      oblast <- getOblast(row, country, suffixes.headOption.getOrElse(""));
+      raion <- getRaion(oblast, row(1) + suffixes.lastOption.getOrElse(""), country).headOption
+    } yield getPlace(raion, row(3), country)).getOrElse(Nil)
+  }
+
+  def getPlace(raion: AdmDivision, name: String, country: Country): Seq[AdmDivision] = {
     val code = raion.code.take(2) + "-" + raion.code.drop(2)
-    val candidates = Ukraine.byIdAndName(code, name)
+    val candidates = country.byIdAndName(code, name)
     if (candidates.size != 1) {
-      println(s"${raion.name} $code $name, candidates: ${candidates.map(_.name)}")
+//      println(s"${raion.name} $code $name, candidates: $candidates")
     }
     candidates
   }
