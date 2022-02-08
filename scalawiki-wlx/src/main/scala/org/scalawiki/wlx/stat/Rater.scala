@@ -182,6 +182,7 @@ class NumberOfAuthorsBonus(val stat: ContestStat, val rateRanges: RateRanges) ex
   }
 
   override def rate(monumentId: String, author: String): Double = {
+    if (disqualify(monumentId, author)) 0 else
     if (rateRanges.sameAuthorZeroBonus && authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
       0
     } else {
@@ -191,6 +192,9 @@ class NumberOfAuthorsBonus(val stat: ContestStat, val rateRanges: RateRanges) ex
 
   override def explain(monumentId: String, author: String): String = {
     val number = rate(monumentId, author)
+    if (disqualify(monumentId, author)) {
+      "Disqualified for reuploading similar images = 0"
+    } else
     if (rateRanges.sameAuthorZeroBonus && authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)) {
       s"Pictured by same author before = $number"
     } else {
@@ -198,6 +202,11 @@ class NumberOfAuthorsBonus(val stat: ContestStat, val rateRanges: RateRanges) ex
       val (rate, start, end) = rateRanges.rateWithRange(picturedBy)
       s"Pictured before by $picturedBy ($start-${end.getOrElse("")}) authors = $rate"
     }
+  }
+
+  override def disqualify(monumentId: String, author: String): Boolean = {
+    Set("Петро Халява", "SnizhokAM").contains(author) &&
+      authorsByMonument.getOrElse(author, Set.empty).contains(monumentId)
   }
 }
 
