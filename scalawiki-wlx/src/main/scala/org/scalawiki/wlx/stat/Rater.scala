@@ -36,6 +36,8 @@ trait Rater {
 
   def explain(monumentId: String, author: String): String
 
+  def disqualify(monumentId: String, author: String): Boolean = false
+
   def rateMonumentIds(monumentIds: Set[String], author: String): Double = {
     monumentIds.toSeq.map(rate(_, author)).sum
   }
@@ -132,7 +134,8 @@ class NewlyPicturedPerAuthorBonus(val stat: ContestStat,
     .mapValues(_.flatMap(_.monumentId).toSet).toMap
 
   override def rate(monumentId: String, author: String): Double = {
-    monumentId match {
+    val rate = monumentId match {
+      case id if disqualify(id, author) => 0
       case id if !oldMonumentIds.contains(id) =>
         newlyPicturedRate - 1
       case id if !oldMonumentIdsByAuthor.getOrElse(author, Set.empty).contains(id) =>
@@ -140,10 +143,13 @@ class NewlyPicturedPerAuthorBonus(val stat: ContestStat,
       case _ =>
         0
     }
+    rate
   }
 
   override def explain(monumentId: String, author: String): String = {
     monumentId match {
+      case id if disqualify(id, author) =>
+         "Disqualified for reuploading similar images = 0"
       case id if !oldMonumentIds.contains(id) =>
         s"Newly pictured bonus = ${newlyPicturedRate - 1}"
       case id if !oldMonumentIdsByAuthor.getOrElse(author, Set.empty).contains(id) =>
@@ -151,6 +157,11 @@ class NewlyPicturedPerAuthorBonus(val stat: ContestStat,
       case _ =>
         s"Not newly pictured = 0"
     }
+  }
+
+  override def disqualify(monumentId: String, author: String): Boolean = {
+    Set("Петро Халява", "SnizhokAM").contains(author) &&
+      oldMonumentIdsByAuthor.getOrElse(author, Set.empty).contains(monumentId)
   }
 }
 
@@ -309,10 +320,15 @@ class NumberOfImagesInPlaceBonus(val stat: ContestStat, val rateRanges: RateRang
 
 class RateSum(val stat: ContestStat, val raters: Seq[Rater]) extends Rater {
   override def rate(monumentId: String, author: String): Double = {
-    raters.map(_.rate(monumentId, author)).sum
+    if (!raters.exists(_.disqualify(monumentId, author))) {
+      raters.map(_.rate(monumentId, author)).sum
+    } else 0
   }
 
   override def explain(monumentId: String, author: String): String = {
-    s"Rating = ${raters.map(_.rate(monumentId, author)).sum}, is a sum of: " + raters.map(_.explain(monumentId, author)).mkString(", ")
+    val disqulifiedRater =  raters.find(_.disqualify(monumentId, author))
+    disqulifiedRater.fold(s"Rating = ${raters.map(_.rate(monumentId, author)).sum}, is a sum of: " + raters.map(_.explain(monumentId, author)).mkString(", ")) {
+      rater => rater.explain(monumentId, author)
+    }
   }
 }
