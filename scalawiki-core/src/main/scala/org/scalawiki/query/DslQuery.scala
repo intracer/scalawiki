@@ -27,9 +27,10 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
 
     onProgress(pages.size)
 
-    implicit val success: retry.Success[Seq[Page]] = retry.Success[Seq[Page]](_ => true)
+    implicit val success: retry.Success[String] = retry.Success[String](_ => true)
 
-    retry.Backoff()(odelay.Timer.default)(() => bot.post(params.toMap) flatMap {
+      // TODO fix memory leak
+    retry.Backoff()(odelay.Timer.default)(() => bot.post(params.toMap)) flatMap {
       body =>
         val parser = new Parser(action)
 
@@ -54,7 +55,7 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
             bot.log.error(s"${bot.host} exception $ex")
             Future.failed(ex)
         }
-    })
+    }
   }
 
   def mergePages(pages: Seq[Page], newPages: Seq[Page]): Seq[Page] = {

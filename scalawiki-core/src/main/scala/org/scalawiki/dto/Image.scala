@@ -82,7 +82,8 @@ object Image {
 
       val author = getAuthorFromPage(content)
 
-      val categories = categoryRegex.findAllIn(content).matchData.map(_.group(1)).toSet
+      // TODO category maps
+      val categories = categoryRegex.findAllIn(content).matchData.map(_.group(1).intern()).toSet
 
       new Image(page.title,
         author = Some(author),
