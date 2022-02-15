@@ -16,7 +16,7 @@ object Dependencies {
   val LogbackClassicV = "1.2.10"
   val MockServerV = "5.7.2"
   val ReactiveStreamsV = "1.0.2"
-  val RetryV = "0.3.3"
+  val RetryV = "0.3.4"
   val Scala213V = "2.13.8"
   val Scala212V = "2.12.15"
   val Scala211V = "2.11.12"
