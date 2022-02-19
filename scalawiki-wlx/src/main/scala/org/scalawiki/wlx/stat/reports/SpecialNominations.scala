@@ -25,7 +25,7 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
   def specialNomination(): String = {
     val monumentsMap = SpecialNomination.getMonumentsMap(nominations, stat)
     val imageDbs = nominations.map { nomination =>
-      val specialNominationImageDb = if (monumentsMap.contains(nomination)) {
+      val specialNominationImageDb = if (monumentsMap.get(nomination).exists(_.nonEmpty)) {
         imageDb.subSet(monumentsMap(nomination), withFalseIds = true)
       } else {
         imageDb.subSet(_.specialNominations.contains(nomination.name))
