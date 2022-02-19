@@ -81,7 +81,10 @@ object Image {
         TemplateParser.parse(content, template).flatMap(_.getParamOpt("1"))
       }
       val specialNominations = specialNominationTemplates.flatMap{ template =>
-        Some(template).filter(_ => TemplateParser.parse(content, template).nonEmpty)
+        Some(template).filter(_ => {
+          val value = TemplateParser.parse(content, template)
+          value.nonEmpty
+        })
       }
 
       val author = getAuthorFromPage(content)

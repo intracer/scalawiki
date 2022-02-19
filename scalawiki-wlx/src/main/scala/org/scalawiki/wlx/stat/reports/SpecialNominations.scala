@@ -28,7 +28,9 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
       val specialNominationImageDb = if (monumentsMap.get(nomination).exists(_.nonEmpty)) {
         imageDb.subSet(monumentsMap(nomination), withFalseIds = true)
       } else {
-        imageDb.subSet(_.specialNominations.contains(nomination.name))
+        imageDb.subSet { i =>
+          nomination.fileTemplate.exists(i.specialNominations.contains)
+        }
       }
       nomination -> specialNominationImageDb
     }.toMap
@@ -53,8 +55,8 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
       Seq(
         nomination.name,
         imageDb.authors.size.toString,
-        monumentsMap(nomination).size.toString,
-        monumentsMap(nomination).map(_.id).count(isSpecialNominationMonument).toString,
+        monumentsMap.get(nomination).map(_.size.toString).getOrElse(""),
+        monumentsMap.get(nomination).map(_.map(_.id).count(isSpecialNominationMonument).toString).getOrElse(""),
         imageDb.ids.size.toString,
         imageDb.ids.count(isSpecialNominationMonument).toString,
         imageDb.ids.diff(oldMonumentIds).size.toString,
