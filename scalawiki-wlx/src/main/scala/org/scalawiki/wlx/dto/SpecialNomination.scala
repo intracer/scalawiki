@@ -16,8 +16,8 @@ import scala.util.Try
  * @param listTemplate name of template that monument lists consist of
  * @param pages        pages that contain lists of monuments, ot templates that contains links to these pages
  */
-case class SpecialNomination(name: String, listTemplate: String, pages: Seq[String], years: Seq[Int] = Nil,
-                             cities: Seq[AdmDivision] = Nil)
+case class SpecialNomination(name: String, listTemplate: Option[String], pages: Seq[String], years: Seq[Int] = Nil,
+                             cities: Seq[AdmDivision] = Nil, fileTemplate: Option[String] = None)
 
 object SpecialNomination {
 
@@ -37,7 +37,7 @@ object SpecialNomination {
     }.toOption.map(_.asScala.toSeq.map { c =>
       new SpecialNomination(
         c.getString("name"),
-        c.getString("listTemplate"),
+        c.as[Option[String]]("listTemplate"),
         c.as[Option[Seq[String]]]("pages").getOrElse(Nil),
         c.as[Option[Seq[Int]]]("years").getOrElse(Nil),
         if (c.hasPath("cities")) {
@@ -46,7 +46,8 @@ object SpecialNomination {
             val code = citiConf.getString("code")
             lookupCity(name, code).head
           }
-        } else Nil
+        } else Nil,
+        c.as[Option[String]]("fileTemplate")
       )
     }).getOrElse(Seq.empty)
   }
@@ -56,29 +57,32 @@ object SpecialNomination {
   def getMonumentsMap(nominations: Seq[SpecialNomination], stat: ContestStat): Map[SpecialNomination, Seq[Monument]] = {
     val contest = stat.contest
     val monumentQuery = MonumentQuery.create(contest, reportDifferentRegionIds = false)
-    nominations.map { nomination =>
-      val monuments = if (nomination.pages.nonEmpty && nomination.name != "Пам'ятки Подесення") {
-        nomination.pages.flatMap { page =>
-          monumentQuery.byPage(page, nomination.listTemplate)
-        }
-      } else if (nomination.cities.nonEmpty) {
-        monumentsInCities(nomination.cities, stat.monumentDb.get)
-      } else if (nomination.name == "Пам'ятки Подесення") {
-        val desna = DesnaRegionSpecialNomination()
-        val placeIds = desna.places.flatMap(desna.getPlace).map(_.code)
-        val k2k = placeIds.flatMap(Katotth.toKoatuu.get)
-        val allPlaceIds = (placeIds ++ k2k).toSet
+    nominations.filter(_.listTemplate.nonEmpty).flatMap { nomination =>
+      nomination.listTemplate.map { listTemplate =>
+        val monuments = if (nomination.pages.nonEmpty && nomination.name != "Пам'ятки Подесення") {
+          nomination.pages.flatMap { page =>
+            monumentQuery.byPage(page, listTemplate)
+          }
+        } else if (nomination.cities.nonEmpty) {
+          monumentsInCities(nomination.cities, stat.monumentDb.get)
+        } else if (nomination.name == "Пам'ятки Подесення") {
+          val desna = DesnaRegionSpecialNomination()
+          val placeIds = desna.places.flatMap(desna.getPlace).map(_.code)
+          val k2k = placeIds.flatMap(Katotth.toKoatuu.get)
+          val allPlaceIds = (placeIds ++ k2k).toSet
 
-        val monumentDb = stat.monumentDb.get
-        monumentDb.allMonuments.filter { monument =>
-          monumentDb.placeByMonumentId.get(monument.id).exists(allPlaceIds.contains)
-        } ++ nomination.pages.flatMap { page =>
-          monumentQuery.byPage(page, nomination.listTemplate)
+          val monumentDb = stat.monumentDb.get
+          monumentDb.allMonuments.filter { monument =>
+            monumentDb.placeByMonumentId.get(monument.id).exists(allPlaceIds.contains)
+          } ++ nomination.pages.flatMap { page =>
+            monumentQuery.byPage(page, listTemplate)
+          }
         }
-      } else {
-        Nil
+        else {
+          Nil
+        }
+        (nomination, monuments)
       }
-      (nomination, monuments)
     }.toMap
   }
 

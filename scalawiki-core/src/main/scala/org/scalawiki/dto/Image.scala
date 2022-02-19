@@ -34,7 +34,8 @@ case class Image(title: String,
                  monumentIds: Seq[String] = Nil,
                  pageId: Option[Long] = None,
                  metadata: Option[ImageMetadata] = None,
-                 categories: Set[String] = Set.empty
+                 categories: Set[String] = Set.empty,
+                 specialNominations: Set[String] = Set.empty
                 ) extends Ordered[Image] {
 
   def compare(that: Image) = title.compareTo(that.title)
@@ -72,12 +73,15 @@ object Image {
   def fromPageImages(page: Page): Option[Image] =
     page.images.headOption
 
-  def fromPageRevision(page: Page, monumentIdTemplate: Option[String]): Option[Image] = {
+  def fromPageRevision(page: Page, monumentIdTemplate: Option[String], specialNominationTemplates: Seq[String] = Nil): Option[Image] = {
     page.revisions.headOption.map { revision =>
 
       val content = revision.content.getOrElse("")
       val ids = monumentIdTemplate.toList.flatMap { template =>
         TemplateParser.parse(content, template).flatMap(_.getParamOpt("1"))
+      }
+      val specialNominations = specialNominationTemplates.flatMap{ template =>
+        Some(template).filter(_ => TemplateParser.parse(content, template).nonEmpty)
       }
 
       val author = getAuthorFromPage(content)
@@ -90,13 +94,14 @@ object Image {
         date = revision.timestamp,
         monumentIds = ids,
         pageId = page.id,
-        categories = categories)
+        categories = categories,
+        specialNominations = specialNominations.toSet)
     }
   }
 
-  def fromPage(page: Page, monumentIdTemplate: Option[String]): Option[Image] = {
+  def fromPage(page: Page, monumentIdTemplate: Option[String], specialNominationTemplates: Seq[String] = Nil): Option[Image] = {
     for (fromImage <- Image.fromPageImages(page);
-         fromRev <- Image.fromPageRevision(page, monumentIdTemplate))
+         fromRev <- Image.fromPageRevision(page, monumentIdTemplate, specialNominationTemplates))
       yield {
         val renamedAuthor = fromRev.author.map(author => AuthorsMap.renames.getOrElse(author, author))
         fromImage.copy(monumentIds = fromRev.monumentIds, author = renamedAuthor, categories = fromRev.categories)

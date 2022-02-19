@@ -58,27 +58,8 @@ class ImageSpec extends Specification {
     }
 
     "parse categories" in {
-      val text = """=={{int:filedesc}}==
-                   |{{Information
-                   ||description={{uk|1=Храм святителя-чудотворцая Миколи на водах в Києві на Подолі}}
-                   ||date=2015-01-11 14:19:34
-                   ||source={{own}}
-                   ||author=[[User:Yuri369|Yuri369]]
-                   ||permission=
-                   ||other versions=
-                   |}}
-                   |
-                   |=={{int:license-header}}==
-                   |{{self|cc-by-sa-4.0}}
-                   |
-                   |{{Wiki Loves Monuments 2018|ua}}
-                   |<!--[[Category:Wiki loves monuments in Ukraine 2018 - Quality]]-->
-                   |
-                   |[[Category:Uploaded via Campaign:wlm-ua]]
-                   |[[Category:Obviously ineligible submissions for WLM 2018 in Ukraine]]
-                   |[[Category:Saint Nicholas Church on Water]]
-                   |""".stripMargin
-      val page = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(text)))
+
+      val page = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(withCategories)))
 
       val image = Image.fromPageRevision(page, Some("Monument")).get
 
@@ -87,6 +68,19 @@ class ImageSpec extends Specification {
         "Obviously ineligible submissions for WLM 2018 in Ukraine",
         "Saint Nicholas Church on Water")
     }
+  }
+
+  "parse special nomination template" in {
+
+    val page1 = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(withSpecialNominations)))
+    val image1 = Image.fromPageRevision(page1, Some("Monument"), Seq("WLM2021-UA-Aero")).get
+
+    image1.specialNominations === Set("WLM2021-UA-Aero")
+
+    val page2 = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(withCategories)))
+    val image2 = Image.fromPageRevision(page2, Some("Monument"), Seq("WLM2021-UA-Aero")).get
+
+    image2.specialNominations === Set.empty
   }
 
   "resize" should {
@@ -114,4 +108,47 @@ class ImageSpec extends Specification {
       px === 320
     }
   }
+
+  val withCategories =
+    """=={{int:filedesc}}==
+      |{{Information
+      ||description={{uk|1=Храм святителя-чудотворцая Миколи на водах в Києві на Подолі}}
+      ||date=2015-01-11 14:19:34
+      ||source={{own}}
+      ||author=[[User:Yuri369|Yuri369]]
+      ||permission=
+      ||other versions=
+      |}}
+      |
+      |=={{int:license-header}}==
+      |{{self|cc-by-sa-4.0}}
+      |
+      |{{Wiki Loves Monuments 2018|ua}}
+      |<!--[[Category:Wiki loves monuments in Ukraine 2018 - Quality]]-->
+      |
+      |[[Category:Uploaded via Campaign:wlm-ua]]
+      |[[Category:Obviously ineligible submissions for WLM 2018 in Ukraine]]
+      |[[Category:Saint Nicholas Church on Water]]
+      |""".stripMargin
+
+  val withSpecialNominations =
+    """=={{int:filedesc}}==
+      |{{Information
+      ||description={{uk|1=[[:uk:Замок Любарта|Єпископський будинок]], [[:uk:Луцьк|Луцьк]], [[:uk:Вулиця Кафедральна (Луцьк)|вул. Кафедральна]], 1а}}{{Monument Ukraine|07-101-0006}}[[Category:Wiki Loves Monuments in Ukraine 2021 - Quantity]]{{WLE2017-UA-SN|{{WLM2021-UA-Aero}}}}
+      ||date=2021-08-04 12:42:19
+      ||source={{own}}
+      ||author=[[User:Mark Volkoff|Mark Volkoff]]
+      ||permission=
+      ||other versions=
+      |}}
+      |{{Location|50.739102|25.323562}}
+      |
+      |=={{int:license-header}}==
+      |{{self|cc-by-sa-4.0}}
+      |
+      |{{Wiki Loves Monuments 2021|ua}}
+      |
+      |[[Category:Bishop's house in Lutsk castle]]
+      |[[Category:Uploaded via Campaign:wlm-ua]]
+      |""".stripMargin
 }
