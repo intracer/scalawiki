@@ -104,7 +104,11 @@ object Image {
          fromRev <- Image.fromPageRevision(page, monumentIdTemplate, specialNominationTemplates))
       yield {
         val renamedAuthor = fromRev.author.map(author => AuthorsMap.renames.getOrElse(author, author))
-        fromImage.copy(monumentIds = fromRev.monumentIds, author = renamedAuthor, categories = fromRev.categories)
+        fromImage.copy(
+          monumentIds = fromRev.monumentIds,
+          author = renamedAuthor,
+          categories = fromRev.categories,
+          specialNominations = fromRev.specialNominations)
       }
   }
 
