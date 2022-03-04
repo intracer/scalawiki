@@ -88,7 +88,7 @@ object Dependencies {
     }
 
     object Poi {
-      val PoiV = "5.2.0"
+      val PoiV = "5.2.1"
       val PoiXwpfV = "1.0.6"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
