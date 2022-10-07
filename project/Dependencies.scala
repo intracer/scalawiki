@@ -2,29 +2,29 @@ import sbt._
 
 object Dependencies {
 
-  val AaltoXmlV = "1.3.0"
+  val AaltoXmlV = "1.3.2"
   val BetterFilesV = "3.9.1"
-  val BlameApiV = "13.5"
+  val BlameApiV = "13.10.7"
   val ChronicleMapV = "3.19.40"
   val ChronoScalaV = "1.0.0"
-  val FicusV = "1.5.0"
+  val FicusV = "1.5.2"
   val GuavaV = "20.0"
   val H2V = "1.4.200"
   val JimFsV = "1.2"
   val JodaTimeV = "2.9.9"
-  val JSoupV = "1.14.1"
-  val LogbackClassicV = "1.2.3"
-  val MockServerV = "5.7.0"
+  val JSoupV = "1.14.3"
+  val LogbackClassicV = "1.2.10"
+  val MockServerV = "5.7.2"
   val ReactiveStreamsV = "1.0.2"
-  val RetryV = "0.3.3"
-  val Scala213V = "2.13.6"
-  val Scala212V = "2.12.14"
+  val RetryV = "0.3.5"
+  val Scala213V = "2.13.8"
+  val Scala212V = "2.12.16"
   val ScalaChartV = "0.7.1"
   val ScalaCheckV = "1.15.2"
-  val ScalaCsvV = "1.3.8"
+  val ScalaCsvV = "1.3.10"
   val ScalaParserCombinatorsV = "1.1.2"
   val ScalaXmlV = "1.2.0"
-  val ScallopV = "4.0.2"
+  val ScallopV = "4.1.0"
   val Slf4jV = "1.7.25"
   val SwcEngineV = "3.1.9"
   val TypesafeConfigV = "1.4.1"
@@ -62,7 +62,7 @@ object Dependencies {
 
     object Akka {
       val AkkaV = "2.5.32"
-      val AkkaHttpV = "10.1.14"
+      val AkkaHttpV = "10.1.15"
 
       val actor = "com.typesafe.akka" %% "akka-actor" % AkkaV
       val stream = "com.typesafe.akka" %% "akka-stream" % AkkaV
@@ -87,7 +87,7 @@ object Dependencies {
     }
 
     object Poi {
-      val PoiV = "5.0.0"
+      val PoiV = "5.2.2"
       val PoiXwpfV = "1.0.6"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
