@@ -17,7 +17,7 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
   var startTime: Long = 0
 
   def run(continue: Map[String, String] = Map("continue" -> ""),
-           pages: Seq[Page] = Seq.empty[Page],
+           pages: Seq[Page] = Seq.empty[Page], pageIds: Set[Long] = Set.empty,
            limit: Option[Long] = None): Future[Seq[Page]] = {
 
     val params = action.pairs ++ Seq("format" -> "json", "utf8" -> "") ++ continue
@@ -36,7 +36,7 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
 
         parser.parse(body) match {
           case Success(newPages) =>
-            val allPages = mergePages(pages, newPages)
+            val (allPages, allPageIds) = mergePages(pages, pageIds, newPages)
 
             val newContinue = parser.continue
             if (newContinue.isEmpty || limit.exists(_ <= allPages.size)) {
@@ -44,7 +44,7 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
               onProgress(allPages.size, done = true)
               Future.successful(allPages)
             } else {
-              run(newContinue, allPages, limit)
+              run(newContinue, allPages, allPageIds, limit)
             }
 
           case Failure(mwEx: MwException) =>
@@ -58,17 +58,17 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
     }
   }
 
-  def mergePages(pages: Seq[Page], newPages: Seq[Page]): Seq[Page] = {
-    val ids = pages.flatMap(_.id).toSet
+  def mergePages(pages: Seq[Page], pageIds: Set[Long], newPages: Seq[Page]): (Seq[Page], Set[Long]) = {
     val newById = Page.groupById(newPages)
+    val newIds = newById.keySet
 
-    val intersection = ids.intersect(newById.keySet)
-
-    pages.map { p =>
-      p.id.filter(intersection.contains).map { id =>
+    val allPages = pages.map { p =>
+      p.id.filter(newIds.contains).map { id =>
         p.appendLists(newById(id).head)
       }.getOrElse(p)
-    } ++ newPages.filterNot { p => p.id.exists(intersection.contains) }
+    } ++ newPages.filterNot { p => p.id.exists(pageIds.contains) }
+    val allIds = pageIds ++ newIds
+    (allPages, allIds)
   }
 
   def onProgress(pages: Long, done: Boolean = false) = {
