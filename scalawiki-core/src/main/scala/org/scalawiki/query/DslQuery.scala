@@ -49,10 +49,10 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
 
           case Failure(mwEx: MwException) =>
             val withParams = mwEx.copy(params = params.toMap)
-            bot.log.error(s"${bot.host} exception $withParams")
+            bot.log.error(s"${bot.host} exception $withParams, body: $body")
             Future.failed(withParams)
           case Failure(ex) =>
-            bot.log.error(s"${bot.host} exception $ex")
+            bot.log.error(s"${bot.host} exception $ex, body: $body")
             Future.failed(ex)
         }
     }

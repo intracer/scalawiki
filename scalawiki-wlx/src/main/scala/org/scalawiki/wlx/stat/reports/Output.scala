@@ -351,9 +351,10 @@ object Output {
 
     val wrongIdImages = imageDb.images
       .filterNot(image => image.monumentId.fold(false)(id => monumentDb.ids.contains(id)
-        || id.startsWith("99")
         || id.startsWith("88")
+        || id.startsWith("97")
         || id.startsWith("98")
+        || id.startsWith("99")
       ))
 
     val notObvious = wrongIdImages.filterNot(_.categories.exists(_.startsWith("Obviously ineligible")))

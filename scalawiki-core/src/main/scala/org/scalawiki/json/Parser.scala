@@ -15,7 +15,7 @@ class Parser(val action: Action) {
 
   var continue = Map.empty[String, String]
 
-  def parse(str: String): Try[Seq[Page]] =
+  def parse(str: String): Try[Seq[Page]] = {
     Try {
       val json = Json.parse(str)
       val jsonObj = json.asInstanceOf[JsObject]
@@ -33,6 +33,7 @@ class Parser(val action: Action) {
         case _ => Seq.empty
       }
     }
+  }
 
   def parseQueryAction(json: JsValue, queryChild: String): Seq[Page] = {
     val pagesJson = (json \ "query" \ queryChild).get
