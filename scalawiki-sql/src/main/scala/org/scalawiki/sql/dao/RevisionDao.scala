@@ -23,7 +23,7 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
   val db = mwDb.db
 
-  def insertAll(revisionSeq: Seq[Revision]): Seq[Option[Long]] = {
+  def insertAll(revisionSeq: Iterable[Revision]): Iterable[Option[Long]] = {
 
     val texts = revisionSeq.map(r => Text(None, r.content.getOrElse("")))
     val textIds = textDao.insertAll(texts)
@@ -95,7 +95,7 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     }
   }
 
-  def addUsers(revisionSeq: Seq[Revision]): Seq[Revision] = {
+  def addUsers(revisionSeq: Iterable[Revision]): Iterable[Revision] = {
     val toSet = revisionSeq.toSet
     val users = toSet.flatMap(r => r.user.map(u => u.asInstanceOf[User]))
 

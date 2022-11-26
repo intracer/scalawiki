@@ -5,6 +5,7 @@ import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.{MwException, Page}
 import org.scalawiki.json.Parser
 
+import scala.collection.mutable
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
@@ -17,8 +18,8 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
   var startTime: Long = 0
 
   def run(continue: Map[String, String] = Map("continue" -> ""),
-           pages: Seq[Page] = Seq.empty[Page], pageIds: Set[Long] = Set.empty,
-           limit: Option[Long] = None): Future[Seq[Page]] = {
+          pages: mutable.LinkedHashMap[Long, Page] = mutable.LinkedHashMap.empty,
+          limit: Option[Long] = None): Future[mutable.LinkedHashMap[Long, Page]] = {
 
     val params = action.pairs ++ Seq("format" -> "json", "utf8" -> "") ++ continue
 
@@ -29,14 +30,14 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
 
     implicit val success: retry.Success[String] = retry.Success[String](_ => true)
 
-      // TODO fix memory leak
+    // TODO fix memory leak
     retry.Backoff()(odelay.Timer.default)(() => bot.post(params.toMap)) flatMap {
       body =>
         val parser = new Parser(action)
 
         parser.parse(body) match {
           case Success(newPages) =>
-            val (allPages, allPageIds) = mergePages(pages, pageIds, newPages)
+            val allPages = mergePages(pages, newPages)
 
             val newContinue = parser.continue
             if (newContinue.isEmpty || limit.exists(_ <= allPages.size)) {
@@ -44,7 +45,7 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
               onProgress(allPages.size, done = true)
               Future.successful(allPages)
             } else {
-              run(newContinue, allPages, allPageIds, limit)
+              run(newContinue, allPages, limit)
             }
 
           case Failure(mwEx: MwException) =>
@@ -58,17 +59,14 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
     }
   }
 
-  def mergePages(pages: Seq[Page], pageIds: Set[Long], newPages: Seq[Page]): (Seq[Page], Set[Long]) = {
-    val newById = Page.groupById(newPages)
-    val newIds = newById.keySet
-
-    val allPages = pages.map { p =>
-      p.id.filter(newIds.contains).map { id =>
-        p.appendLists(newById(id).head)
-      }.getOrElse(p)
-    } ++ newPages.filterNot { p => p.id.exists(pageIds.contains) }
-    val allIds = pageIds ++ newIds
-    (allPages, allIds)
+  def mergePages(pages: mutable.LinkedHashMap[Long, Page], newPages: Seq[Page]): mutable.LinkedHashMap[Long, Page] = {
+    for (page <- newPages;
+         id <- page.id) {
+      pages(id) = pages.get(id)
+        .map(_.appendLists(page))
+        .getOrElse(page)
+    }
+    pages
   }
 
   def onProgress(pages: Long, done: Boolean = false) = {

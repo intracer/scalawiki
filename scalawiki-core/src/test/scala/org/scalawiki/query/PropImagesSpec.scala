@@ -8,6 +8,8 @@ import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class PropImagesSpec extends Specification with MockBotSpec {
 
   "get page images" should {
@@ -47,7 +49,7 @@ class PropImagesSpec extends Specification with MockBotSpec {
         Prop(Images())
       ))
 
-      val result = bot.run(action).await
+      val result = bot.run(action).map(_.toSeq).await
       result must have size 1
       val page = result(0)
       page === new Page(Some(736), Some(0), "Albert Einstein", images = Seq(

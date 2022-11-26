@@ -1,7 +1,6 @@
 package org.scalawiki.query
 
 import java.time.{ZoneOffset, ZonedDateTime}
-
 import org.scalawiki.Timestamp
 import org.scalawiki.dto.Page
 import org.scalawiki.util.{HttpStub, MockBotSpec}
@@ -13,6 +12,8 @@ import org.scalawiki.dto.cmd.query.prop.iiprop.{IiProp, Metadata}
 import org.scalawiki.util.TestUtils.resourceAsString
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class PropImageInfoSpec extends Specification with MockBotSpec {
 
@@ -90,7 +91,7 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
       val bot = getBot(commands: _*)
 
       val future = bot.page("Category:SomeCategory")
-        .imageInfoByGenerator("categorymembers", "cm", Set.empty, Set("timestamp", "user", "comment"))
+        .imageInfoByGenerator("categorymembers", "cm", Set.empty, Set("timestamp", "user", "comment")).map(_.toSeq)
 
       val result = future.await
 
@@ -118,7 +119,7 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
       val bot = getBot(commands: _*)
 
       val future = bot.page("Commons:SomePage")
-        .imageInfoByGenerator("images", "im", Set.empty, Set("timestamp", "user", "comment"))
+        .imageInfoByGenerator("images", "im", Set.empty, Set("timestamp", "user", "comment")).map(_.toSeq)
 
       val result = future.await
 

@@ -27,7 +27,7 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
 
   val db = mwDb.db
 
-  def insertAll(pageSeq: Seq[Page]): Seq[Option[Long]] = {
+  def insertAll(pageSeq: Iterable[Page]): Iterable[Option[Long]] = {
 
     val revisionSeq = pageSeq.flatMap(_.revisions.headOption)
     require(revisionSeq.size == pageSeq.size, "Pages should have revisions") // Fail on any absent for now
@@ -41,7 +41,7 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
       db.run(autoInc.forceInsertAll(pageSeq)).await
     }
 
-    val withPageIds: Seq[Revision] = revisionSeq.zip(pageIds).map {
+    val withPageIds: Iterable[Revision] = revisionSeq.zip(pageIds).map {
       case (rev, id) => rev.copy(pageId = id)
     }
     val revIds = revisionDao.insertAll(withPageIds)
@@ -58,7 +58,7 @@ class PageDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
   }
 
   // TODO batchUpdate or case/when/then
-  def updateLastRevision(pageIds: Seq[Option[Long]], revIds: Seq[Option[Long]]): Seq[Int] = {
+  def updateLastRevision(pageIds: Iterable[Option[Long]], revIds: Iterable[Option[Long]]): Iterable[Int] = {
     Future.traverse(pageIds.zip(revIds))({
       case (pageId, revId) =>
         db.run(pages.filter(_.id === pageId)

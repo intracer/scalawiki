@@ -16,7 +16,7 @@ case class Users(override val params: UsParam*)
 
 trait UsParam extends Parameter[Any]
 
-case class UsUsers(override val args: Seq[String]) extends StringListParameter("ususers",
+case class UsUsers(override val args: Iterable[String]) extends StringListParameter("ususers",
   "A list of user names to get information for.") with UsParam
 
 

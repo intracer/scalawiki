@@ -11,7 +11,7 @@ import scala.concurrent.Future
 class DbCachedBot(apiBot: MwBot, database: MwDatabase)
   extends MwBotImpl(apiBot.host, apiBot.asInstanceOf[MwBotImpl].http) {
 
-  override def run(action: Action, context: Map[String, String] = Map.empty, limit: Option[Long] = None): Future[Seq[Page]] = {
+  override def run(action: Action, context: Map[String, String] = Map.empty, limit: Option[Long] = None): Future[Iterable[Page]] = {
     new DslQueryDbCache(new DslQuery(action, apiBot), database).run()
   }
 }
@@ -30,22 +30,22 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
 
   val pageDao = database.pageDao
 
-  def run(): Future[Seq[Page]] = {
+  def run(): Future[Iterable[Page]] = {
     dslQuery.action.query.map {
       query =>
         if (cachingProvided(query)) {
           runWithCaching(query)
         } else {
-          dslQuery.run()
+          dslQuery.run().map(_.values)
         }
     }.getOrElse(Future.successful(Seq.empty))
   }
 
   def cachingProvided(query: Query): Boolean = query.revisions.exists(_.hasContent)
 
-  def runWithCaching(query: Query): Future[Seq[Page]] = {
+  def runWithCaching(query: Query): Future[Iterable[Page]] = {
 
-    idsOnlyApiQuery(query).run().flatMap {
+    idsOnlyApiQuery(query).run().map(_.values).flatMap {
       idsOnlyPages =>
 
         val pageIds = idsOnlyPages.flatMap(_.id).toSet
@@ -61,7 +61,7 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
     }
   }
 
-  def checkUnusualCases(pages: Seq[Page]): Unit = {
+  def checkUnusualCases(pages: Iterable[Page]): Unit = {
     val noRevs = pages.filter(p => p.revisions.isEmpty || p.revisions.head.id.isEmpty)
     if (noRevs.nonEmpty) {
       log.error("No revs pages" + noRevs.toBuffer)
@@ -74,7 +74,7 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
     new DslQuery(idsAction, dslQuery.bot)
   }
 
-  def mergePages(dbPages: Seq[Page], notInDbPages: Seq[Page]): Seq[Page] = {
+  def mergePages(dbPages: Iterable[Page], notInDbPages: Iterable[Page]): Iterable[Page] = {
     if (notInDbPages.nonEmpty) {
       val needNewRevPageIds = dbPages.filter(_.revisions.isEmpty).flatMap(_.id).toSet
 
@@ -92,7 +92,7 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
     dbPages.filter(_.revisions.nonEmpty) ++ notInDbPages
   }
 
-  def notInDb(query: Query, ids: Set[Long], dbPages: Seq[Page]): Future[Seq[Page]] = {
+  def notInDb(query: Query, ids: Set[Long], dbPages: Seq[Page]): Future[Iterable[Page]] = {
     val dbIds = dbPages.filter(_.revisions.nonEmpty).flatMap(_.id).toSet
     val notInDbIds = ids -- dbIds
 
@@ -109,7 +109,7 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
       }
       val notInDbQueries = notInDbQueryDtos.map(dto => new DslQuery(Action(dto), dslQuery.bot))
 
-      Future.traverse(notInDbQueries)(_.run()).map(seqs => seqs.flatten)
+      Future.traverse(notInDbQueries)(_.run()).map(seqs => seqs.flatMap(_.values))
     }
   }
 
@@ -150,7 +150,7 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
     * @param toDbPages         pages to save in Db. Can be either new pages or new page revisions
     * @param needNewRevPageIds ids of pages that are already in db but have new revisions to add
     */
-  def toDb(toDbPages: Seq[Page], needNewRevPageIds: Set[Long]) = {
+  def toDb(toDbPages: Iterable[Page], needNewRevPageIds: Set[Long]) = {
     val startTime = System.nanoTime()
     log.info(s"${bot.host} insert ${toDbPages.size} pages to db")
 

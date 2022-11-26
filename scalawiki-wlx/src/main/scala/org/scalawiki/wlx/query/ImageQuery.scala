@@ -12,25 +12,25 @@ import scala.concurrent.Future
 
 trait ImageQuery {
 
-  def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]]
+  def imagesFromCategoryAsync(category: String, contest: Contest): Future[Iterable[Image]]
 
-  def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]]
+  def imagesWithTemplateAsync(template: String, contest: Contest): Future[Iterable[Image]]
 
 }
 
 class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
 
-  override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Seq[Image]] = {
+  override def imagesFromCategoryAsync(category: String, contest: Contest): Future[Iterable[Image]] = {
     val generator: Generator = Generator(CategoryMembers(CmTitle(category), CmNamespace(Seq(Namespace.FILE)), CmLimit("400"))) // 5000 / 10
 
     imagesByGenerator(contest, generator)
   }
 
-  override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Seq[Image]] = {
+  override def imagesWithTemplateAsync(template: String, contest: Contest): Future[Iterable[Image]] = {
     imagesByGenerator(contest, generatorWithTemplate(template, Set(Namespace.FILE)))
   }
 
-  def imagesByGenerator(contest: Contest, generator: Generator): Future[Seq[Image]] = {
+  def imagesByGenerator(contest: Contest, generator: Generator): Future[Iterable[Image]] = {
     val specialNominationTemplates = SpecialNomination.nominations
       .filter(n => n.years.contains(contest.year)).flatMap(_.fileTemplate)
     for (pages <- bot.run(imagesByGenerator(generator))) yield {

@@ -5,6 +5,8 @@ import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class PropRevisionsSpec extends Specification with MockBotSpec {
 
   "get revisions text in generator with continue" should {
@@ -37,7 +39,7 @@ class PropRevisionsSpec extends Specification with MockBotSpec {
       val bot = getBot(commands: _*)
 
       val future = bot.page("Category:SomeCategory")
-        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "comment"))
+        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "comment")).map(_.toSeq)
 
       val result = future.await
 

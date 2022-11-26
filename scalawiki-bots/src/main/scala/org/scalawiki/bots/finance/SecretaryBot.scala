@@ -12,7 +12,7 @@ object SecretaryBot extends WithBot with QueryLibrary {
 
   def fetchResolutions(): Future[Seq[Resolution]] = {
     for (all <- bot.run(pageLinksGenerator("Рішення Правління (список)"))) yield {
-      all.flatMap(Resolution.fromPage).filter(r => r.year == 2016 || r.date == "28 грудня 2015").sorted
+      all.flatMap(Resolution.fromPage).filter(r => r.year == 2016 || r.date == "28 грудня 2015").toSeq.sorted
     }
   }
 

@@ -172,7 +172,7 @@ object Image {
     pageId = pageId,
     metadata = metadata.map(ImageMetadata.apply))
 
-  def gallery(images: Seq[String], descriptions: Seq[String] = Seq.empty): String =
+  def gallery(images: Iterable[String], descriptions: Iterable[String] = Seq.empty): String =
     Gallery.asWiki(images, descriptions)
 
   def resizedWidth(w: Int, h: Int, resizeToX: Int, resizeToY: Int): Int = {

@@ -8,7 +8,7 @@ import scala.concurrent.Future
 
 
 case class ImageDB(contest: Contest,
-                   images: Seq[Image],
+                   images: Iterable[Image],
                    monumentDb: Option[MonumentDB],
                    minMpx: Option[Float] = None) {
 
@@ -18,15 +18,15 @@ case class ImageDB(contest: Contest,
 
   lazy val _byMegaPixels: Grouping[Int, Image] = new Grouping("mpx", ImageGrouping.byMpx, images)
 
-  lazy val withCorrectIds: Seq[Image] = monumentDb.fold(images) {
+  lazy val withCorrectIds: Iterable[Image] = monumentDb.fold(images) {
     db => images.filter(_.monumentId.exists(db.ids.contains))
   }
 
-  lazy val sansIneligible: Seq[Image] = withCorrectIds
+  lazy val sansIneligible: Iterable[Image] = withCorrectIds
     .filterNot(_.categories.contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
     .filter(_.atLeastMpx(minMpx))
 
-  lazy val ineligible: Seq[Image] = withCorrectIds
+  lazy val ineligible: Iterable[Image] = withCorrectIds
     .filter(_.categories.contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
     .filterNot(_.atLeastMpx(minMpx))
 
@@ -48,7 +48,7 @@ case class ImageDB(contest: Contest,
     images => images.groupBy(_.author.getOrElse(""))
   }
 
-  def byMegaPixels(mp: Int): Seq[Image] = _byMegaPixels.by(mp)
+  def byMegaPixels(mp: Int): Iterable[Image] = _byMegaPixels.by(mp)
 
   def ids: Set[String] = _byId.keys
 
@@ -58,7 +58,7 @@ case class ImageDB(contest: Contest,
 
   def containsId(id: String) = _byId.contains(id)
 
-  def imagesByRegion(regId: String): Seq[Image] =
+  def imagesByRegion(regId: String): Iterable[Image] =
     if (regId.length == 2) {
       _byRegion.by(regId)
     } else {
@@ -89,14 +89,14 @@ case class ImageDB(contest: Contest,
 
   def imageCountById: Map[String, Int] = _byId.grouped.mapValues(_.size).toMap
 
-  def byNumberOfAuthors: Map[Int, Map[String, Seq[Image]]] = {
+  def byNumberOfAuthors: Map[Int, Map[String, Iterable[Image]]] = {
     _byId.grouped.groupBy {
       case (id, photos) =>
         photos.flatMap(_.author).toSet.size
     }.mapValues(_.toMap).toMap
   }
 
-  def byNumberOfPhotos: Map[Int, Map[String, Seq[Image]]] = {
+  def byNumberOfPhotos: Map[Int, Map[String, Iterable[Image]]] = {
     _byId.grouped.groupBy {
       case (id, photos) => photos.size
     }.mapValues(_.toMap).toMap
@@ -114,9 +114,9 @@ case class ImageDB(contest: Contest,
 
 }
 
-class Grouping[T, F](name: String, val f: F => T, data: Seq[F]) {
+class Grouping[T, F](name: String, val f: F => T, data: Iterable[F]) {
 
-  val grouped: Map[T, Seq[F]] = data.groupBy(f)
+  val grouped: Map[T, Seq[F]] = data.groupBy(f).mapValues(_.toSeq).toMap
 
   def by(key: T): Seq[F] = grouped.getOrElse(key, Seq.empty)
 
@@ -143,7 +143,7 @@ class NestedGrouping[T, F](val grouped: Map[T, Grouping[T, F]]) {
 
   def by(key: T): Grouping[T, F] = grouped.getOrElse(key, new Grouping[T, F]("", null, Seq.empty))
 
-  def by(key1: T, key2: T): Seq[F] = by(key1).by(key2)
+  def by(key1: T, key2: T): Iterable[F] = by(key1).by(key2)
 
   def headBy(key1: T, key2: T): F = by(key1).headBy(key2)
 

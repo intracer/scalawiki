@@ -163,7 +163,7 @@ object Output {
 
         val monuments = byRegion.getOrElse(region.code, Seq.empty)
 
-        val images = monuments.map(_.photo.get)
+        val images = monuments.flatMap(_.photo)
         val descriptions = monuments.map(m => s"[[${m.name}]], ${m.city.getOrElse("")}")
 
         val gallery = Image.gallery(images, descriptions)
@@ -416,7 +416,7 @@ object Output {
   }
 
   def missingGallery(monumentDB: MonumentDB) = {
-    val allMissing = monumentDB.allMonuments.filter(m => m.gallery.isEmpty && m.photo.nonEmpty)
+    val allMissing = monumentDB.allMonuments.toSeq.filter(m => m.gallery.isEmpty && m.photo.nonEmpty)
     val grouped = allMissing.groupBy(_.page).toSeq.sortBy(_._1)
     val text = s"Overall missing: ${allMissing.size}\n" + grouped.map { case (page, monuments) =>
       s"=== [[$page]] - ${monuments.size} ===\n" + monuments.sortBy(_.id).map { m =>

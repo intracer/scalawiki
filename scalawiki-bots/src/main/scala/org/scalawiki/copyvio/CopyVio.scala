@@ -45,7 +45,7 @@ object CopyVio extends WithBot with QueryLibrary {
 
   val host = MwBot.ukWiki
 
-  def pagesByIds(ids: Seq[Long]): Future[Seq[Page]] = {
+  def pagesByIds(ids: Iterable[Long]): Future[Iterable[Page]] = {
     import org.scalawiki.dto.cmd.query.prop.rvprop._
 
     val action = Action(Query(PageIdsParam(ids), Prop(Info(), Revisions(RvProp(Ids) /*,RvLimit("max")*/))))

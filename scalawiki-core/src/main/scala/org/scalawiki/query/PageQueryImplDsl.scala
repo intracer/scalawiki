@@ -22,7 +22,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
   override def withContext(context: Map[String, String]) =
     new PageQueryImplDsl(query, bot, context)
 
-  override def revisions(namespaces: Set[Int], props: Set[String], continueParam: Option[(String, String)]): Future[Seq[Page]] = {
+  override def revisions(namespaces: Set[Int], props: Set[String], continueParam: Option[(String, String)]): Future[Iterable[Page]] = {
 
     import org.scalawiki.dto.cmd.query.prop.rvprop._
 
@@ -52,7 +52,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
                                      props: Set[String],
                                      continueParam: Option[(String, String)],
                                      limit: String,
-                                     titlePrefix: Option[String]): Future[Seq[Page]] = {
+                                     titlePrefix: Option[String]): Future[Iterable[Page]] = {
 
     val pageId: Option[Long] = query.left.toOption.map(_.head)
     val title: Option[String] = query.right.toOption.map(_.head)
@@ -77,7 +77,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
                                      props: Set[String],
                                      continueParam: Option[(String, String)],
                                      limit: String,
-                                     titlePrefix: Option[String]): Future[Seq[Page]] = {
+                                     titlePrefix: Option[String]): Future[Iterable[Page]] = {
     import org.scalawiki.dto.cmd.query.prop.iiprop._
 
     val pageId: Option[Long] = query.left.toOption.map(_.head)
@@ -165,7 +165,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
     bot.postFile(uploadResponseReads, params, "file", filename)
   }
 
-  override def whatTranscludesHere(namespaces: Set[Int], continueParam: Option[(String, String)]): Future[Seq[Page]] = {
+  override def whatTranscludesHere(namespaces: Set[Int], continueParam: Option[(String, String)]): Future[Iterable[Page]] = {
     val pages = query.fold(
       ids => EiPageId(ids.head),
       titles => EiTitle(titles.head)
@@ -184,7 +184,7 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
     bot.run(action, context)
   }
 
-  override def categoryMembers(namespaces: Set[Int], continueParam: Option[(String, String)]): Future[Seq[Page]] = {
+  override def categoryMembers(namespaces: Set[Int], continueParam: Option[(String, String)]): Future[Iterable[Page]] = {
     val pages = query.fold(
       ids => CmPageId(ids.head),
       titles => CmTitle(titles.head)

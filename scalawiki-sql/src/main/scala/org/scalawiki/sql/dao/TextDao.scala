@@ -18,7 +18,7 @@ class TextDao(val mwDb: MwDatabase, val query: TableQuery[Texts], val driver: Jd
   def insert(text: Text): Option[Long] =
     db.run(autoInc += text).await
 
-  def insertAll(texts: Seq[Text]): Seq[Option[Long]] =
+  def insertAll(texts: Iterable[Text]): Seq[Option[Long]] =
     db.run(autoInc.forceInsertAll(texts)).await
 
   def list = db.run(query.result).await

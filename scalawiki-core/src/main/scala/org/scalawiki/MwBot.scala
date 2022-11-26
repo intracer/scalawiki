@@ -23,7 +23,7 @@ import scala.language.postfixOps
 
 trait ActionBot {
 
-  def run(action: Action, context: Map[String, String] = Map.empty, limit: Option[Long] = None): Future[Seq[Page]]
+  def run(action: Action, context: Map[String, String] = Map.empty, limit: Option[Long] = None): Future[Iterable[Page]]
 
 }
 
@@ -33,7 +33,7 @@ trait MwBot extends ActionBot {
 
   def login(user: String, password: String): Future[String]
 
-  def run(action: Action, context: Map[String, String] = Map.empty, limit: Option[Long] = None): Future[Seq[Page]]
+  def run(action: Action, context: Map[String, String] = Map.empty, limit: Option[Long] = None): Future[Iterable[Page]]
 
   def get(params: Map[String, String]): Future[String]
 
@@ -171,8 +171,8 @@ class MwBotImpl(val site: Site,
 
   override def run(action: Action,
                    context: Map[String, String] = Map.empty,
-                   limit: Option[Long] = None): Future[Seq[Page]] = {
-    new DslQuery(action, this, context).run(limit = limit).recover {
+                   limit: Option[Long] = None): Future[Iterable[Page]] = {
+    new DslQuery(action, this, context).run(limit = limit).map(_.values).recover {
       case t: Throwable =>
         log.error(t, s"Error ${t.getMessage} running action" + action)
         throw t

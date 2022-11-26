@@ -35,7 +35,7 @@ abstract class EnumParameter[ARG <: EnumArg[ARG]](val name: String, val summary:
 
 abstract class ListParameter[T] extends Parameter[T] {
 
-  def args: Seq[T]
+  def args: Iterable[T]
 
   override def pairs: Seq[(String, String)] = {
     Seq(name -> args.mkString("|"))

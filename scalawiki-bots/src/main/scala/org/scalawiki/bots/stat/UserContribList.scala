@@ -30,7 +30,7 @@ object UserContribList extends WithBot with QueryLibrary {
 
       val contribsFuture = Future.traverse(users) { user =>
         bot.run(
-          userContribs(user.name.get, TimeRange(Some(minEditsTo), None), minEdits.toString), limit = Some(minEdits))
+          userContribs(user.name.get, TimeRange(Some(minEditsTo), None), minEdits.toString), limit = Some(minEdits)).map(_.toSeq)
       }
 
       val eligible = for (pagesSeq <- contribsFuture) yield

@@ -35,7 +35,7 @@ case class ContestStat(contest: Contest,
   val imageDbsByYear = dbsByYear.groupBy(_.contest.year)
   val yearSeq = imageDbsByYear.keys.toSeq.sorted
 
-  lazy val oldImages: Seq[Image] = {
+  lazy val oldImages: Iterable[Image] = {
     for (total <- totalImageDb;
     current <- currentYearImageDb)
       yield {
