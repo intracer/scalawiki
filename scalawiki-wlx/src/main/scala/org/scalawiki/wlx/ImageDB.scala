@@ -4,8 +4,8 @@ import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.{Contest, Monument}
 import org.scalawiki.wlx.query.ImageQuery
 
+import scala.collection.MapView
 import scala.concurrent.Future
-
 
 case class ImageDB(contest: Contest,
                    images: Iterable[Image],
@@ -14,39 +14,53 @@ case class ImageDB(contest: Contest,
 
   def this(contest: Contest, images: Seq[Image]) = this(contest, images, None)
 
-  def this(contest: Contest, images: Seq[Image], monumentDb: MonumentDB) = this(contest, images, Some(monumentDb))
+  def this(contest: Contest, images: Seq[Image], monumentDb: MonumentDB) =
+    this(contest, images, Some(monumentDb))
 
-  lazy val _byMegaPixels: Grouping[Int, Image] = new Grouping("mpx", ImageGrouping.byMpx, images)
+  lazy val _byMegaPixels: Grouping[Int, Image] =
+    new Grouping("mpx", ImageGrouping.byMpx, images)
 
-  lazy val withCorrectIds: Iterable[Image] = monumentDb.fold(images) {
-    db => images.filter(_.monumentId.exists(db.ids.contains))
+  lazy val withCorrectIds: Iterable[Image] = monumentDb.fold(images) { db =>
+    images.filter(_.monumentId.exists(db.ids.contains))
   }
 
   lazy val sansIneligible: Iterable[Image] = withCorrectIds
-    .filterNot(_.categories.contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
+    .filterNot(
+      _.categories.contains(
+        s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
     .filter(_.atLeastMpx(minMpx))
 
   lazy val ineligible: Iterable[Image] = withCorrectIds
-    .filter(_.categories.contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
+    .filter(
+      _.categories.contains(
+        s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
     .filterNot(_.atLeastMpx(minMpx))
 
-  lazy val _byId: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byMonument, withCorrectIds)
+  lazy val _byId: Grouping[String, Image] =
+    new Grouping("monument", ImageGrouping.byMonument, withCorrectIds)
 
-  lazy val _byRegion: Grouping[String, Image] = new Grouping("monument", ImageGrouping.byRegion, withCorrectIds)
+  lazy val _byRegion: Grouping[String, Image] =
+    new Grouping("monument", ImageGrouping.byRegion, withCorrectIds)
 
-  lazy val _byAuthor: Grouping[String, Image] = new Grouping("author", ImageGrouping.byAuthor, sansIneligible)
+  lazy val _byAuthor: Grouping[String, Image] =
+    new Grouping("author", ImageGrouping.byAuthor, sansIneligible)
 
-  lazy val _byRegionAndId: NestedGrouping[String, Image] = _byRegion.compose(ImageGrouping.byMonument)
+  lazy val _byRegionAndId: NestedGrouping[String, Image] =
+    _byRegion.compose(ImageGrouping.byMonument)
 
-  lazy val _byRegionAndAuthor: NestedGrouping[String, Image] = _byRegion.compose(ImageGrouping.byAuthor)
+  lazy val _byRegionAndAuthor: NestedGrouping[String, Image] =
+    _byRegion.compose(ImageGrouping.byAuthor)
 
-  lazy val _byAuthorAndId: NestedGrouping[String, Image] = _byAuthor.compose(ImageGrouping.byMonument)
+  lazy val _byAuthorAndId: NestedGrouping[String, Image] =
+    _byAuthor.compose(ImageGrouping.byMonument)
 
-  lazy val _byAuthorAndRegion: NestedGrouping[String, Image] = _byAuthor.compose(ImageGrouping.byRegion)
+  lazy val _byAuthorAndRegion: NestedGrouping[String, Image] =
+    _byAuthor.compose(ImageGrouping.byRegion)
 
-  lazy val _byMegaPixelsAndAuthor = _byMegaPixels.grouped.mapValues {
-    images => images.groupBy(_.author.getOrElse(""))
-  }
+  lazy val _byMegaPixelsAndAuthor: MapView[Int, Map[String, Seq[Image]]] =
+    _byMegaPixels.grouped.mapValues { images =>
+      images.groupBy(_.author.getOrElse(""))
+    }
 
   def byMegaPixels(mp: Int): Iterable[Image] = _byMegaPixels.by(mp)
 
@@ -54,9 +68,9 @@ case class ImageDB(contest: Contest,
 
   def authors: Set[String] = _byAuthor.keys
 
-  def byId(id: String) = _byId.by(id)
+  def byId(id: String): Seq[Image] = _byId.by(id)
 
-  def containsId(id: String) = _byId.contains(id)
+  def containsId(id: String): Boolean = _byId.contains(id)
 
   def imagesByRegion(regId: String): Iterable[Image] =
     if (regId.length == 2) {
@@ -64,7 +78,8 @@ case class ImageDB(contest: Contest,
     } else {
       val parentId = regId.substring(0, 2)
       val topImages = _byRegion.by(parentId)
-      topImages.filter(_.monumentId.exists(_.replace("-", "").startsWith(regId)))
+      topImages.filter(
+        _.monumentId.exists(_.replace("-", "").startsWith(regId)))
     }
 
   def idsByRegion(regId: String): Set[String] = {
@@ -77,34 +92,50 @@ case class ImageDB(contest: Contest,
     }
   }
 
-  def idByAuthor(author: String) = _byAuthorAndId.by(author).keys
+  def idByAuthor(author: String): Set[String] = _byAuthorAndId.by(author).keys
 
-  def authorsByRegion(regId: String) = _byRegionAndAuthor.by(regId).keys
+  def authorsByRegion(regId: String): Set[String] = _byRegionAndAuthor.by(regId).keys
 
-  def byMegaPixelFilterAuthorMap(predicate: Int => Boolean): Map[String, Seq[Image]] = {
-    _byMegaPixels.grouped.filterKeys(mpx => mpx >= 0 && predicate(mpx)).values.flatten.toSeq.groupBy(_.author.getOrElse(""))
+  def byMegaPixelFilterAuthorMap(
+      predicate: Int => Boolean): Map[String, Seq[Image]] = {
+    _byMegaPixels.grouped
+      .filterKeys(mpx => mpx >= 0 && predicate(mpx))
+      .values
+      .flatten
+      .toSeq
+      .groupBy(_.author.getOrElse(""))
   }
 
-  def authorsCountById: Map[String, Int] = _byId.grouped.mapValues(_.flatMap(_.author).toSet.size).toMap
+  def authorsCountById: Map[String, Int] =
+    _byId.grouped.mapValues(_.flatMap(_.author).toSet.size).toMap
 
   def imageCountById: Map[String, Int] = _byId.grouped.mapValues(_.size).toMap
 
   def byNumberOfAuthors: Map[Int, Map[String, Iterable[Image]]] = {
-    _byId.grouped.groupBy {
-      case (id, photos) =>
-        photos.flatMap(_.author).toSet.size
-    }.mapValues(_.toMap).toMap
+    _byId.grouped
+      .groupBy {
+        case (id, photos) =>
+          photos.flatMap(_.author).toSet.size
+      }
+      .mapValues(_.toMap)
+      .toMap
   }
 
   def byNumberOfPhotos: Map[Int, Map[String, Iterable[Image]]] = {
-    _byId.grouped.groupBy {
-      case (id, photos) => photos.size
-    }.mapValues(_.toMap).toMap
+    _byId.grouped
+      .groupBy {
+        case (id, photos) => photos.size
+      }
+      .mapValues(_.toMap)
+      .toMap
   }
 
-  def subSet(monuments: Seq[Monument], withFalseIds: Boolean = false): ImageDB = {
-    val subSetMonumentDb = new MonumentDB(monumentDb.get.contest, monuments, withFalseIds)
-    val subSetImages = images.filter(_.monumentId.fold(false)(subSetMonumentDb.ids.contains))
+  def subSet(monuments: Seq[Monument],
+             withFalseIds: Boolean = false): ImageDB = {
+    val subSetMonumentDb =
+      new MonumentDB(monumentDb.get.contest, monuments, withFalseIds)
+    val subSetImages =
+      images.filter(_.monumentId.fold(false)(subSetMonumentDb.ids.contains))
     new ImageDB(contest, subSetImages, Some(subSetMonumentDb))
   }
 
@@ -128,7 +159,7 @@ class Grouping[T, F](name: String, val f: F => T, data: Iterable[F]) {
 
   def keys: Set[T] = grouped.keySet
 
-  def size = grouped.size
+  def size: Int = grouped.size
 
   def compose(g: F => T): NestedGrouping[T, F] =
     new NestedGrouping(
@@ -141,7 +172,8 @@ class NestedGrouping[T, F](val grouped: Map[T, Grouping[T, F]]) {
 
   val keys: Set[T] = grouped.keySet
 
-  def by(key: T): Grouping[T, F] = grouped.getOrElse(key, new Grouping[T, F]("", null, Seq.empty))
+  def by(key: T): Grouping[T, F] =
+    grouped.getOrElse(key, new Grouping[T, F]("", null, Seq.empty))
 
   def by(key1: T, key2: T): Iterable[F] = by(key1).by(key2)
 
@@ -153,13 +185,13 @@ class NestedGrouping[T, F](val grouped: Map[T, Grouping[T, F]]) {
 
 object ImageGrouping {
 
-  def byMpx = (i: Image) => i.mpx.map(_.toInt).getOrElse(-1)
+  def byMpx: Image => Int = (i: Image) => i.mpx.map(_.toInt).getOrElse(-1)
 
-  def byMonument = (i: Image) => i.monumentId.getOrElse("")
+  def byMonument: Image => String = (i: Image) => i.monumentId.getOrElse("")
 
-  def byRegion = (i: Image) => Monument.getRegionId(i.monumentId)
+  def byRegion: Image => String = (i: Image) => Monument.getRegionId(i.monumentId)
 
-  def byAuthor = (i: Image) => i.author.getOrElse("")
+  def byAuthor: Image => String = (i: Image) => i.author.getOrElse("")
 
 }
 
@@ -167,9 +199,13 @@ object ImageDB {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def create(contest: Contest, imageQuery: ImageQuery, monumentDb: Option[MonumentDB], minMpx: Option[Float] = None): Future[ImageDB] = {
-    imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest).map { images =>
-      new ImageDB(contest, images, monumentDb, minMpx)
+  def create(contest: Contest,
+             imageQuery: ImageQuery,
+             monumentDb: Option[MonumentDB],
+             minMpx: Option[Float] = None): Future[ImageDB] = {
+    imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest).map {
+      images =>
+        new ImageDB(contest, images, monumentDb, minMpx)
     }
   }
 }
