@@ -25,17 +25,17 @@ trait MonumentQuery {
 
   def byMonumentTemplateAsync(generatorTemplate: String = defaultListTemplate,
                               date: Option[ZonedDateTime] = None,
-                              listTemplate: Option[String] = None): Future[Seq[Monument]]
+                              listTemplate: Option[String] = None): Future[Iterable[Monument]]
 
-  def byPageAsync(page: String, template: String, date: Option[ZonedDateTime] = None): Future[Seq[Monument]]
+  def byPageAsync(page: String, template: String, date: Option[ZonedDateTime] = None): Future[Iterable[Monument]]
 
   final def byMonumentTemplate(generatorTemplate: String = defaultListTemplate,
                                date: Option[ZonedDateTime] = None,
-                               listTemplate: Option[String] = None): Seq[Monument] =
-    Await.result(byMonumentTemplateAsync(generatorTemplate, date, listTemplate), Timeout): Seq[Monument]
+                               listTemplate: Option[String] = None): Iterable[Monument] =
+    Await.result(byMonumentTemplateAsync(generatorTemplate, date, listTemplate), Timeout)
 
-  final def byPage(page: String, template: String): Seq[Monument] =
-    Await.result(byPageAsync(page, template), Timeout): Seq[Monument]
+  final def byPage(page: String, template: String): Iterable[Monument] =
+    Await.result(byPageAsync(page, template), Timeout)
 }
 
 class MonumentQueryApi(val contest: Contest, reportDifferentRegionIds: Boolean = false)(implicit val bot: MwBot)
@@ -49,7 +49,7 @@ class MonumentQueryApi(val contest: Contest, reportDifferentRegionIds: Boolean =
 
   override def byMonumentTemplateAsync(generatorTemplate: String,
                                        date: Option[ZonedDateTime] = None,
-                                       listTemplate: Option[String] = None): Future[Seq[Monument]] = {
+                                       listTemplate: Option[String] = None): Future[Iterable[Monument]] = {
     val differentRegionIds = new ArrayBuffer[String]()
 
     val title = if (generatorTemplate.startsWith("Template")) generatorTemplate else "Template:" + generatorTemplate
@@ -78,7 +78,7 @@ class MonumentQueryApi(val contest: Contest, reportDifferentRegionIds: Boolean =
     }
   }
 
-  override def byPageAsync(page: String, template: String, date: Option[ZonedDateTime] = None): Future[Seq[Monument]] = {
+  override def byPageAsync(page: String, template: String, date: Option[ZonedDateTime] = None): Future[Iterable[Monument]] = {
     val config = new OtherTemplateListConfig(template, defaultListConfig)
     if (!page.startsWith("Template")) {
       bot.page(page).revisions(Set.empty, Set("content", "timestamp", "user", "userid", "comment")).map { revs =>
@@ -90,7 +90,7 @@ class MonumentQueryApi(val contest: Contest, reportDifferentRegionIds: Boolean =
     }
   }
 
-  def monumentsByDate(page: String, template: String, date: ZonedDateTime): Future[Seq[Monument]] = {
+  def monumentsByDate(page: String, template: String, date: ZonedDateTime): Future[Iterable[Monument]] = {
     articlesWithTemplate(page).flatMap {
       ids =>
         Future.traverse(ids)(id => pageRevisions(id, date)).map {

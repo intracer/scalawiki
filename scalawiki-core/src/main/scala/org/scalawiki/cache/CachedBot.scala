@@ -52,7 +52,7 @@ class CachedBot(site: Site, name: String, persistent: Boolean, http: HttpClient 
 
   override def run(action: Action,
                    context: Map[String, String] = Map.empty,
-                   limit: Option[Long] = None): Future[Seq[Page]] = {
+                   limit: Option[Long] = None): Future[Iterable[Page]] = {
     val future = super.run(action, context, limit)
 
     future recoverWith {

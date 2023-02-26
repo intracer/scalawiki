@@ -42,7 +42,7 @@ trait QueryParam[+T] extends Parameter[T]
 case class TitlesParam(override val args: Seq[String])
   extends StringListParameter("titles", "A list of titles to work on") with QueryParam[String]
 
-case class PageIdsParam(override val args: Seq[Long])
+case class PageIdsParam(override val args: Iterable[Long])
   extends IdListParameter("pageids", "A list of page IDs to work on") with QueryParam[Long]
 
 case class RevIdsParam(override val args: Seq[Long])

@@ -85,9 +85,9 @@ object CatScan {
       bot.system.log.info(s"Category $title has ${pages.size} subcats")
 
       val noUkCats = pages.filter(!_.langLinks.contains("uk")).map(_.title)
-      noUkWikiCats.addAll(noUkCats.asJava)
+      noUkWikiCats.addAll(noUkCats.toSeq.asJava)
 
-      allCats.addAll(pages.map(_.title).asJava)
+      allCats.addAll(pages.map(_.title).toSeq.asJava)
 
       val futures = pages.map{
         page => getCountCached(bot, page.title)
@@ -106,7 +106,7 @@ object CatScan {
       total.addAll(titles.asJava)
 
       val noUk = articles.filter(!_.langLinks.contains("uk")).map(_.title)
-      noUkWiki.addAll(noUk.asJava)
+      noUkWiki.addAll(noUk.toSeq.asJava)
 
       val processed = categories.addAndGet(1)
 
@@ -128,7 +128,7 @@ object CatScan {
     Future.reduce(sum)((s1, s2) => s1 ++ s2)
   }
 
-  def catsWithLinks(title: String, namespaces: Set[Int], bot: MwBot): Future[Seq[Page]] = {
+  def catsWithLinks(title: String, namespaces: Set[Int], bot: MwBot): Future[Iterable[Page]] = {
     val action = Action(Query(
       Prop(
         LangLinks(LlLimit("max"))

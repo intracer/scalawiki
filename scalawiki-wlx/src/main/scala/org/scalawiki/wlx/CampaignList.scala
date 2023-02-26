@@ -14,25 +14,25 @@ import scala.concurrent.Future
 class CampaignList {
   self: HasBot =>
 
-  def categoryMembers(parent: String): Future[Seq[Page]] = {
+  def categoryMembers(parent: String): Future[Iterable[Page]] = {
     bot.run(Action(Query(ListParam(CategoryMembers(
       CmTitle(parent), CmNamespace(Seq(Namespace.CATEGORY)), CmLimit("max"))
     ))))
   }
 
-  def titles(pages: Seq[Seq[Page]]): Seq[String] = pages.flatten.map(_.title)
+  def titles(pages: Seq[Iterable[Page]]): Seq[String] = pages.flatten.map(_.title)
 
-  def getContests(hasImages: HasImagesCategory): Future[Seq[Contest]] =
+  def getContests(hasImages: HasImagesCategory): Future[Iterable[Contest]] =
     contestsFromCategory(hasImages.imagesCategory)
 
-  def contestsFromCategory(parent: String): Future[Seq[Contest]] = {
+  def contestsFromCategory(parent: String): Future[Iterable[Contest]] = {
     for (cats <- categoryMembers(parent)) yield
       for (cat <- cats;
            contest <- CountryParser.fromCategoryName(cat.title))
         yield contest
   }
 
-  def categoriesMembers(categories: Seq[String]): Future[Seq[Seq[Page]]] =
+  def categoriesMembers(categories: Seq[String]): Future[Seq[Iterable[Page]]] =
     Future.sequence(categories.map(categoryMembers))
 
 }

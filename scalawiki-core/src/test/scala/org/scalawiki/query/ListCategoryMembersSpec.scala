@@ -8,6 +8,8 @@ import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class ListCategoryMembersSpec extends Specification with MockBotSpec {
 
   "get category members with continue" should {
@@ -33,7 +35,7 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
 
       val bot = getBot(commands: _*)
 
-      val result = bot.page("Category:SomeCategory").categoryMembers().await
+      val result = bot.page("Category:SomeCategory").categoryMembers().map(_.toSeq).await
       result must have size 2
       result(0) === Page(569559, Some(1), "Talk:Welfare reform")
       result(1) === Page(4571809, Some(2), "User:Formator")
@@ -96,7 +98,7 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
       val query = Action(Query(TitlesParam(Seq("Albert Einstein", "Category:Foo", "Category:Infobox_templates", "NoSuchTitle")),
         Prop(CategoryInfo)))
 
-      val result = bot.run(query).await
+      val result = bot.run(query).map(_.toSeq).await
       result must have size 4
       result(0) === new Page(None, Some(0), "NoSuchTitle", missing = true)
       result(1) === Page(736, Some(0), "Albert Einstein")

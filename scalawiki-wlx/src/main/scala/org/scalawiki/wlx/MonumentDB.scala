@@ -14,14 +14,14 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
   val withArticles = allMonuments.filter(m => m.name.contains("[[")).groupBy(m => Monument.getRegionId(m.id))
   val country = contest.country
 
-  val _byId: Map[String, Seq[Monument]] = monuments.groupBy(_.id)
-  val _byRegion: Map[String, Seq[Monument]] = monuments.groupBy(m => Monument.getRegionId(m.id))
+  val _byId: Map[String, Iterable[Monument]] = monuments.groupBy(_.id)
+  val _byRegion: Map[String, Iterable[Monument]] = monuments.groupBy(m => Monument.getRegionId(m.id))
 
-  val _byType: Map[String, Seq[Monument]] = {
+  val _byType: Map[String, Iterable[Monument]] = {
     monuments.flatMap(m => m.types.map(t => (t, m))).groupBy(_._1).mapValues(seq => seq.map(_._2)).toMap
   }
 
-  val _byTypeAndRegion: Map[String, Map[String, Seq[Monument]]] = _byType.mapValues(_.groupBy(m => Monument.getRegionId(m.id))).toMap
+  val _byTypeAndRegion: Map[String, Map[String, Iterable[Monument]]] = _byType.mapValues(_.groupBy(m => Monument.getRegionId(m.id))).toMap
 
   def ids: Set[String] = _byId.keySet
 
@@ -104,7 +104,7 @@ class MonumentDB(val contest: Contest, val allMonuments: Seq[Monument], withFals
 
 }
 
-case class UnknownPlace(page: String, regionId: String, name: String, candidates: Seq[AdmDivision], monuments: Seq[Monument],
+case class UnknownPlace(page: String, regionId: String, name: String, candidates: Seq[AdmDivision], monuments: Iterable[Monument],
                         cityType: Option[String] = None) {
   def parents: Set[String] = candidates.map(_.parent().map(_.name).getOrElse("")).toSet
 
@@ -125,7 +125,7 @@ object MonumentDB {
       allMonuments = allMonuments.filter(_.page.contains("Природные памятники России"))
     }
 
-    new MonumentDB(contest, allMonuments)
+    new MonumentDB(contest, allMonuments.toSeq)
   }
 
   def getMonumentDb(contest: Contest, date: Option[ZonedDateTime]): MonumentDB =

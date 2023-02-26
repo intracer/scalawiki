@@ -17,7 +17,7 @@ object Dependencies {
   val MockServerV = "5.7.2"
   val ReactiveStreamsV = "1.0.2"
   val RetryV = "0.3.5"
-  val Scala213V = "2.13.8"
+  val Scala213V = "2.13.10"
   val Scala212V = "2.12.16"
   val ScalaChartV = "0.7.1"
   val ScalaCheckV = "1.15.2"
@@ -61,7 +61,7 @@ object Dependencies {
   object Library {
 
     object Akka {
-      val AkkaV = "2.5.32"
+      val AkkaV = "2.6.20"
       val AkkaHttpV = "10.1.15"
 
       val actor = "com.typesafe.akka" %% "akka-actor" % AkkaV
@@ -73,9 +73,9 @@ object Dependencies {
     object Play {
       def PlayJsonV(isScala213: Boolean) = {
         if (isScala213) {
-          "2.7.4"
+          "2.8.2"
         } else {
-          "2.6.14" // scala-steward:off
+          "2.7.4" // scala-steward:off
         }
       }
 

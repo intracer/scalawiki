@@ -26,7 +26,7 @@ object SubsetCreator {
     }
   }
 
-  def createSubset(monuments: Seq[Monument], contest: Contest, specialNomination: String, monumentFilter: Monument => Boolean) = {
+  def createSubset(monuments: Iterable[Monument], contest: Contest, specialNomination: String, monumentFilter: Monument => Boolean) = {
     val ukWiki = MwBot.fromHost("uk.wikipedia.org")
 
     val subset = monuments.filter(monumentFilter)
@@ -85,7 +85,7 @@ object SubsetCreator {
 
   }
 
-  def regionPerPage(ukWiki: MwBot, specialNomination: String, contest: Contest, byRegion: Map[String, Seq[Monument]], regionIds: SortedSet[String]) {
+  def regionPerPage(ukWiki: MwBot, specialNomination: String, contest: Contest, byRegion: Map[String, Iterable[Monument]], regionIds: SortedSet[String]) {
     for (regionId <- regionIds) {
 
       val regionTitle = contest.country.regionName(regionId)

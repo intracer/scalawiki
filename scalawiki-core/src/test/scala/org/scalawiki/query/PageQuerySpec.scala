@@ -9,6 +9,8 @@ import org.scalawiki.{MwBot, MwBotImpl}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class PageQuerySpec extends Specification {
 
   val host = "uk.wikipedia.org"
@@ -36,7 +38,7 @@ class PageQuerySpec extends Specification {
           "continue" -> "", "rvlimit" -> "max",
           "rvprop" -> "ids|content|user|comment"), response))
 
-      val future = bot.pagesById(Set(569559L, 4571809L)).revisions(Set.empty[Int], Set("ids", "content", "user", "comment"))
+      val future = bot.pagesById(Set(569559L, 4571809L)).revisions(Set.empty[Int], Set("ids", "content", "user", "comment")).map(_.toSeq)
       val result = future.await
       result must have size 2
       result(0) === Page(Some(569559), Some(1), "Talk:Welfare reform", Seq(Revision(1, 569559).withUser(1, "u1").withComment("c1").withText(pageText1)))

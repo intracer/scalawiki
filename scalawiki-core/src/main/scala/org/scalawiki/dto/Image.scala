@@ -3,10 +3,10 @@ package org.scalawiki.dto
 import java.nio.file.{Files, Paths}
 import java.time.{LocalDateTime, ZoneOffset, ZonedDateTime}
 import java.time.format.DateTimeFormatter
-
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Gallery
 import org.scalawiki.wikitext.TemplateParser
+import org.sweble.wikitext.engine.nodes.EngPage
 
 case class ImageMetadata(data: Map[String, String]) {
 
@@ -75,19 +75,19 @@ object Image {
 
   def fromPageRevision(page: Page, monumentIdTemplate: Option[String], specialNominationTemplates: Seq[String] = Nil): Option[Image] = {
     page.revisions.headOption.map { revision =>
-
       val content = revision.content.getOrElse("")
+      val parsedPage = TemplateParser.parsePage(content)
       val ids = monumentIdTemplate.toList.flatMap { template =>
-        TemplateParser.parse(content, template).flatMap(_.getParamOpt("1"))
+        TemplateParser.collectTemplates(parsedPage, template).flatMap(_.getParamOpt("1"))
       }
       val specialNominations = specialNominationTemplates.flatMap{ template =>
         Some(template).filter(_ => {
-          val value = TemplateParser.parse(content, template)
+          val value = TemplateParser.collectTemplates(parsedPage, template)
           value.nonEmpty
         })
       }
 
-      val author = getAuthorFromPage(content)
+      val author = getAuthorFromPage(parsedPage)
 
       // TODO category maps
       val categories = categoryRegex.findAllIn(content).matchData.map(_.group(1).intern()).toSet
@@ -116,7 +116,11 @@ object Image {
   }
 
   def getAuthorFromPage(content: String): String = {
-    val template = TemplateParser.parseOne(content, Some("Information"))
+    getAuthorFromPage(TemplateParser.parsePage(content))
+  }
+
+  def getAuthorFromPage(parsedPage: EngPage): String = {
+    val template = TemplateParser.getTemplate(parsedPage, Some("Information"))
     val authorValue = template.flatMap { t =>
       t.getParamOpt("author").orElse(t.getParamOpt("Author"))
     }.getOrElse("")
@@ -172,7 +176,7 @@ object Image {
     pageId = pageId,
     metadata = metadata.map(ImageMetadata.apply))
 
-  def gallery(images: Seq[String], descriptions: Seq[String] = Seq.empty): String =
+  def gallery(images: Iterable[String], descriptions: Iterable[String] = Seq.empty): String =
     Gallery.asWiki(images, descriptions)
 
   def resizedWidth(w: Int, h: Int, resizeToX: Int, resizeToY: Int): Int = {

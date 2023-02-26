@@ -58,14 +58,14 @@ class MessageBot(val conf: Config) extends ActionLibrary with QueryLibrary {
       processUsers(users, conf)
   }
 
-  def fetchUsers(userListPage: String): Future[Seq[User]] = {
+  def fetchUsers(userListPage: String): Future[Iterable[User]] = {
     for {
       userPages <- bot.run(pageLinks(userListPage, Namespace.USER))
       userInfos <- bot.run(userProps(userPagesToUserNames(userPages)))
     } yield pagesToUsers(userInfos).collect { case u: User => u }
   }
 
-  def processUsers(users: Seq[User], conf: Config) = {
+  def processUsers(users: Iterable[User], conf: Config) = {
 
     val pages = users.map(u => userCreatedPages(u.name.get, range))
     val folded = Future.fold(pages)(Seq.empty[(String, Set[String])])(_ :+ _).map(_.toMap)
@@ -85,13 +85,13 @@ class MessageBot(val conf: Config) extends ActionLibrary with QueryLibrary {
     }
   }
 
-  def logUsers(users: Seq[User], withEmail: Seq[User], withoutEmail: Seq[User]): Unit = {
+  def logUsers(users: Iterable[User], withEmail: Iterable[User], withoutEmail: Iterable[User]): Unit = {
     println("AllUsers: " + users.size)
     println("WithEmail: " + withEmail.size)
     println("WithoutEmail: " + withoutEmail.size)
   }
 
-  def messageUsers(withoutEmail: Seq[User], msg: Message): Unit = {
+  def messageUsers(withoutEmail: Iterable[User], msg: Message): Unit = {
     withoutEmail.foreach { u =>
       val username = u.name.get
       message(username, msg.subject, msg.body)
@@ -105,7 +105,7 @@ class MessageBot(val conf: Config) extends ActionLibrary with QueryLibrary {
     }
   }
 
-  def userPagesToUserNames(pages: Seq[Page]): Seq[String] =
+  def userPagesToUserNames(pages: Iterable[Page]): Iterable[String] =
     pages.head.links.map(_.titleWithoutNs)
 
 }

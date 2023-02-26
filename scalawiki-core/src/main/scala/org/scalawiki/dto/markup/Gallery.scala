@@ -4,7 +4,7 @@ import org.scalawiki.dto.Image
 
 object Gallery {
 
-  def asWiki(images: Seq[String], descriptions: Seq[String] = Seq.empty): String = {
+  def asWiki(images: Iterable[String], descriptions: Iterable[String] = Seq.empty): String = {
     val fill = if (descriptions.size < images.size) {
       Seq.fill(images.size - descriptions.size)("")
     } else

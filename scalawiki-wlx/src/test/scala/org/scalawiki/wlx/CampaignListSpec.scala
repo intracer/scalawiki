@@ -53,7 +53,7 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
     "return WLM years" in {
       val bot = categoryQueryBot("Category:Images from Wiki Loves Monuments", "/org/scalawiki/wlx/WLM_years.json")
 
-      val result = campaignList(bot).getContests(ContestType.WLM).await
+      val result = campaignList(bot).getContests(ContestType.WLM).map(_.toSeq).await
 
       result must have size 8
       result.map(_.year) === (2010 to 2017)
@@ -63,7 +63,7 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
     "return WLE years" in {
       val bot = categoryQueryBot("Category:Images from Wiki Loves Earth", "/org/scalawiki/wlx/WLE_years.json")
 
-      val result = campaignList(bot).getContests(ContestType.WLE).await
+      val result = campaignList(bot).getContests(ContestType.WLE).map(_.toSeq).await
       val byYear = result.sortBy(_.year)
 
       byYear must have size 5
@@ -90,7 +90,7 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
 
     val bot = mockedBot(title, categories)
 
-    val result = campaignList(bot).getContests(title).await
+    val result = campaignList(bot).getContests(title).map(_.toSeq).await
 
     result.map(_.year).distinct === Seq(2011)
     result.map(_.contestType).distinct === Seq(ContestType.WLM)
@@ -117,7 +117,7 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
 
     val bot = mockedBot(title, categories)
 
-    val result = campaignList(bot).getContests(title).await
+    val result = campaignList(bot).getContests(title).map(_.toSeq).await
 
     result.map(_.year).distinct === Seq(2012)
     result.map(_.contestType).distinct === Seq(ContestType.WLM)
@@ -138,7 +138,7 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
 
     val bot = mockedBot(title, categories)
 
-    val result = campaignList(bot).getContests(title).await
+    val result = campaignList(bot).getContests(title).map(_.toSeq).await
 
     result.map(_.year).distinct === Seq(2014)
     result.map(_.contestType).distinct === Seq(ContestType.WLE)
@@ -157,7 +157,7 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
 
     val bot = mockedBot(title, categories)
 
-    val result = campaignList(bot).getContests(title).await
+    val result = campaignList(bot).getContests(title).map(_.toSeq).await
 
     result.map(_.year).distinct === Seq(2016)
     result.map(_.contestType).distinct === Seq(ContestType.WLE)

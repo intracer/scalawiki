@@ -70,7 +70,7 @@ trait QueryLibrary {
     }
   }
 
-  def userProps(users: Seq[String]) = Action(Query(
+  def userProps(users: Iterable[String]) = Action(Query(
     ListParam(Users(
       UsUsers(users),
       UsProp(UsEmailable, UsGender)
@@ -138,16 +138,15 @@ trait QueryLibrary {
       generator))
   }
 
-  def articlesWithTemplate(template: String)(implicit bot: ActionBot): Future[Seq[Long]] = {
-    bot.run(pagesWithTemplate(template)).map {
-      pages =>
-        pages.map(p => p.subjectId.getOrElse(p.id.get))
+  def articlesWithTemplate(template: String)(implicit bot: ActionBot): Future[Iterable[Long]] = {
+    bot.run(pagesWithTemplate(template)).map { pages =>
+      pages.map(p => p.subjectId.getOrElse(p.id.get))
     }
   }
 
-  def pagesToUsers(pages: Seq[Page]): Seq[Contributor] = pages.flatMap(_.lastRevisionUser)
+  def pagesToUsers(pages: Iterable[Page]): Iterable[Contributor] = pages.flatMap(_.lastRevisionUser)
 
-  def getUsers(action: Action)(implicit bot: ActionBot): Future[Seq[Contributor]] =
+  def getUsers(action: Action)(implicit bot: ActionBot): Future[Iterable[Contributor]] =
     bot.run(action).map(pagesToUsers)
 }
 

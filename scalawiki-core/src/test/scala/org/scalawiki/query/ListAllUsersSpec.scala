@@ -9,6 +9,8 @@ import org.scalawiki.util.{HttpStub, MockBotSpec}
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class ListAllUsersSpec extends Specification with MockBotSpec {
 
   "get all users" should {
@@ -44,7 +46,7 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
           )
         )
 
-      val result = bot.run(action).await
+      val result = bot.run(action).map(_.toSeq).await
 
       result must have size 2
       val users = result.flatMap(_.lastRevisionUser)
@@ -94,7 +96,7 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
           )
         )
 
-      val result = bot.run(action).await
+      val result = bot.run(action).map(_.toSeq).await
 
       result must have size 2
       val users = result.flatMap(_.lastRevisionUser)
@@ -156,7 +158,7 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
           )
         )
 
-      val result = bot.run(action).await
+      val result = bot.run(action).map(_.toSeq).await
 
       result must have size 4
       val users = result.flatMap(_.lastRevisionUser)
