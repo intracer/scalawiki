@@ -90,7 +90,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
   def allYears() = {
     for (imageDb <- totalImageDb) {
       if (cfg.fillLists) {
-        ImageFiller.fillLists(monumentDb.get, new ImageDB(stat.contest, stat.oldImages, monumentDb))
+        ImageFiller.fillLists(monumentDb.get, imageDb)
       }
 
       if (cfg.regionalStat) {
