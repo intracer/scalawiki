@@ -1,7 +1,5 @@
 package org.scalawiki.sql
 
-import java.util.concurrent.TimeUnit
-
 import org.scalawiki.MwBot
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.{Page, Revision, User}
@@ -12,8 +10,7 @@ import slick.backend.DatabaseConfig
 import slick.driver.JdbcProfile
 import spray.util.pimpFuture
 
-import scala.concurrent.Await
-import scala.concurrent.duration.{Duration, _}
+import scala.concurrent.duration._
 
 class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with BeforeAfter {
 
@@ -318,9 +315,9 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
       val plus1Future = bot.page("Category:SomeCategory")
         .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "userid"))
 
-      val plus1 = plus1Future.await
+      val plus1 = plus1Future.await.toSeq
       plus1 must have size 1
-      plus1(0) === Page(Some(569559L), Some(1), "Talk:Welfare reform",
+      plus1.head === Page(Some(569559L), Some(1), "Talk:Welfare reform",
         Seq(Revision(Some(12L), Some(569559L), None, someUser2, None, None, Some(pageText2)))
       )
 
@@ -335,9 +332,9 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
 
       val resultFinal = futureFinal.await.toSeq
       resultFinal must have size 1
-      resultFinal(0) === Page(Some(569559L), Some(1), "Talk:Welfare reform",
+      resultFinal.head === Page(Some(569559L), Some(1), "Talk:Welfare reform",
         Seq(Revision(Some(12L), Some(569559L), Some(0), someUser2, None, None, Some(pageText2),
-          textId = resultFinal(0).revisions.head.textId))
+          textId = resultFinal.head.revisions.head.textId))
       )
     }
   }
