@@ -1,13 +1,11 @@
 package org.scalawiki.wlx.stat
 
-import java.time.ZonedDateTime
-
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
-import org.scalawiki.wlx.{ImageDB, MonumentDB}
 import org.scalawiki.wlx.dto._
 import org.scalawiki.wlx.dto.lists.ListConfig._
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
+import org.scalawiki.wlx.{ImageDB, MonumentDB}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.FutureMatchers
 import org.specs2.mock.Mockito

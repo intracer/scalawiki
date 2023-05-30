@@ -2,10 +2,9 @@ package org.scalawiki.query
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.{MwException, Page}
+import org.scalawiki.dto.{MwException, PageList}
 import org.scalawiki.json.Parser
 
-import scala.collection.mutable
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
@@ -18,8 +17,8 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
   var startTime: Long = 0
 
   def run(continue: Map[String, String] = Map("continue" -> ""),
-          pages: mutable.LinkedHashMap[Long, Page] = mutable.LinkedHashMap.empty,
-          limit: Option[Long] = None): Future[mutable.LinkedHashMap[Long, Page]] = {
+          pages: PageList = new PageList(),
+          limit: Option[Long] = None): Future[PageList] = {
 
     val params = action.pairs ++ Seq("format" -> "json", "utf8" -> "") ++ continue
 
@@ -37,15 +36,15 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
 
         parser.parse(body) match {
           case Success(newPages) =>
-            val allPages = mergePages(pages, newPages)
+            pages.addPages(newPages)
 
             val newContinue = parser.continue
-            if (newContinue.isEmpty || limit.exists(_ <= allPages.size)) {
+            if (newContinue.isEmpty || limit.exists(_ <= pages.size)) {
 
-              onProgress(allPages.size, done = true)
-              Future.successful(allPages)
+              onProgress(pages.size, done = true)
+              Future.successful(pages)
             } else {
-              run(newContinue, allPages, limit)
+              run(newContinue, pages, limit)
             }
 
           case Failure(mwEx: MwException) =>
@@ -59,17 +58,8 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
     }
   }
 
-  def mergePages(pages: mutable.LinkedHashMap[Long, Page], newPages: Seq[Page]): mutable.LinkedHashMap[Long, Page] = {
-    for (page <- newPages;
-         id <- page.id) {
-      pages(id) = pages.get(id)
-        .map(_.appendLists(page))
-        .getOrElse(page)
-    }
-    pages
-  }
 
-  def onProgress(pages: Long, done: Boolean = false) = {
+  def onProgress(pages: Long, done: Boolean = false): Unit = {
     if (done) {
       val estimatedTime = (System.nanoTime() - startTime) / Math.pow(10, 9)
 

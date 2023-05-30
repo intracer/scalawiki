@@ -14,7 +14,7 @@ object Dependencies {
   val JodaTimeV = "2.9.9"
   val JSoupV = "1.14.3"
   val LogbackClassicV = "1.2.10"
-  val MockServerV = "5.7.2"
+  val MockServerV = "5.15.0"
   val ReactiveStreamsV = "1.0.2"
   val RetryV = "0.3.5"
   val Scala213V = "2.13.10"
@@ -73,7 +73,7 @@ object Dependencies {
     object Play {
       def PlayJsonV(isScala213: Boolean) = {
         if (isScala213) {
-          "2.8.2"
+          "2.9.4"
         } else {
           "2.7.4" // scala-steward:off
         }
@@ -108,7 +108,7 @@ object Dependencies {
     }
 
     object Jackson {
-      val JacksonV = "2.9.2"
+      val JacksonV = "2.11.4"
 
       val core = "com.fasterxml.jackson.core" % "jackson-core" % JacksonV
       val annotations = "com.fasterxml.jackson.core" % "jackson-annotations" % JacksonV

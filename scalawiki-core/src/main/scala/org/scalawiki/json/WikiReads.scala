@@ -53,7 +53,7 @@ case class PageReads() extends WikiResponseReads with WikiReads[Page] {
     (__ \ "pageid").readNullable[Long] ~
       (__ \ "ns").readNullable[Int] ~
       (__ \ "title").read[String] ~
-      (__ \ "missing").readNullable[String] ~
+      (__ \ "missing").readNullable[String].map(_.isDefined) ~
       (__ \ "subjectid").readNullable[Long] ~
       (__ \ "talkid").readNullable[Long] ~
       (__ \ "invalidreason").readNullable[String]

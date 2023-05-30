@@ -36,7 +36,7 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
         if (cachingProvided(query)) {
           runWithCaching(query)
         } else {
-          dslQuery.run().map(_.values)
+          dslQuery.run().map(_.allPages)
         }
     }.getOrElse(Future.successful(Seq.empty))
   }
@@ -45,7 +45,7 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
 
   def runWithCaching(query: Query): Future[Iterable[Page]] = {
 
-    idsOnlyApiQuery(query).run().map(_.values).flatMap {
+    idsOnlyApiQuery(query).run().map(_.allPages).flatMap {
       idsOnlyPages =>
 
         val pageIds = idsOnlyPages.flatMap(_.id).toSet
@@ -109,7 +109,7 @@ class DslQueryDbCache(val dslQuery: DslQuery, val database: MwDatabase) {
       }
       val notInDbQueries = notInDbQueryDtos.map(dto => new DslQuery(Action(dto), dslQuery.bot))
 
-      Future.traverse(notInDbQueries)(_.run()).map(seqs => seqs.flatMap(_.values))
+      Future.traverse(notInDbQueries)(_.run()).map(seqs => seqs.flatMap(_.allPages))
     }
   }
 
