@@ -8,7 +8,7 @@ class PageList(existing: mutable.LinkedHashMap[Long, Page] =
 
   def addPages(newPages: Seq[Page]): Unit = {
     val (newMissing, newExisting) = newPages.partition(_.id.isEmpty)
-    missing.addAll(newMissing)
+    missing ++= newMissing
     for (page <- newExisting;
          id <- page.id) {
       existing(id) = existing
