@@ -24,7 +24,7 @@ class DesnaRegionSpec extends Specification {
       val rows = desna.places
       val places = rows.map(desna.getPlace)
       places.map(_.size).distinct === List(1, 2, 5, 3, 7)
-    }.pendingUntilFixed("fails under sbt")
+    }
 
     "Погреби" in {
       val places =
@@ -36,7 +36,7 @@ class DesnaRegionSpec extends Specification {
       val places = desna.getPlace(
         List("Чернігівська", "Чернігівський", "Остерська", "Остер"))
       places.size === 1
-    }.pendingUntilFixed("fails under sbt")
+    }
 
     "Новгород-Сіверський" in {
       val places = desna.getRaion(

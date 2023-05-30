@@ -40,7 +40,7 @@ class KoatuuToKatotthSpec extends Specification {
       mapping.size === 21
       mapping.flatMap(_.koatuu).toSet === Set("26103")
       mapping.flatMap(_.katotth.map(_.name)).toSet === Set("Бурштин")
-    }.pendingUntilFixed("Fails under sbt")
+    }
 
     //    "find Pereyaslav in koatuu" in {
     //      val kyivOblast = UkraineKoatuu.regions.find(_.name.startsWith("Київська")).get
