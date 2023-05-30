@@ -184,14 +184,14 @@ class MwBotImpl(val site: Site,
     }
   }
 
-  def getTokens = get(tokensReads, "action" -> "tokens")
+  def getTokens: Future[String] = get(tokensReads, "action" -> "tokens")
 
   override def run(action: Action,
                    context: Map[String, String] = Map.empty,
                    limit: Option[Long] = None): Future[Iterable[Page]] = {
     new DslQuery(action, this, context)
       .run(limit = limit)
-      .map(_.values)
+      .map(_.allPages)
       .recover {
         case t: Throwable =>
           log.error(t, s"Error ${t.getMessage} running action" + action)

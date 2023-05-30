@@ -3,6 +3,7 @@ package org.scalawiki.mockserver
 import org.scalawiki.query.QueryLibrary
 import org.scalawiki.util.TestUtils.resourceAsString
 import spray.util.pimpFuture
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class LongRevisionsMockServerSpec extends BaseMockServerSpec with QueryLibrary {
