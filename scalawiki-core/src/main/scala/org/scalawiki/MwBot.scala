@@ -1,6 +1,5 @@
 package org.scalawiki
 
-
 import akka.actor.ActorSystem
 import akka.event.LoggingAdapter
 import akka.http.caching.LfuCache
@@ -23,7 +22,9 @@ import scala.language.postfixOps
 
 trait ActionBot {
 
-  def run(action: Action, context: Map[String, String] = Map.empty, limit: Option[Long] = None): Future[Iterable[Page]]
+  def run(action: Action,
+          context: Map[String, String] = Map.empty,
+          limit: Option[Long] = None): Future[Iterable[Page]]
 
 }
 
@@ -33,7 +34,9 @@ trait MwBot extends ActionBot {
 
   def login(user: String, password: String): Future[String]
 
-  def run(action: Action, context: Map[String, String] = Map.empty, limit: Option[Long] = None): Future[Iterable[Page]]
+  def run(action: Action,
+          context: Map[String, String] = Map.empty,
+          limit: Option[Long] = None): Future[Iterable[Page]]
 
   def get(params: Map[String, String]): Future[String]
 
@@ -47,7 +50,10 @@ trait MwBot extends ActionBot {
 
   def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T]
 
-  def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String): Future[T]
+  def postFile[T](reads: Reads[T],
+                  params: Map[String, String],
+                  fileParam: String,
+                  filename: String): Future[T]
 
   def page(title: String): SinglePageQuery
 
@@ -87,8 +93,8 @@ object MediaWikiVersion {
 
 class MwBotImpl(val site: Site,
                 val http: HttpClient = HttpClient.get(MwBot.system),
-                val system: ActorSystem = MwBot.system
-               ) extends MwBot {
+                val system: ActorSystem = MwBot.system)
+    extends MwBot {
 
   def this(host: String) = this(Site.host(host))
 
@@ -102,7 +108,8 @@ class MwBotImpl(val site: Site,
 
   def host = site.domain
 
-  val baseUrl: String = site.protocol + "://" + host + site.portStr + site.scriptPath
+  val baseUrl
+    : String = site.protocol + "://" + host + site.portStr + site.scriptPath
 
   val indexUrl = baseUrl + "/index.php"
 
@@ -118,15 +125,20 @@ class MwBotImpl(val site: Site,
 
     log.info(s"$host login user: $user")
 
-    tryLogin(user, password).flatMap {
-      loginResponse =>
-        tryLogin(user, password, loginResponse.token).map(_.result)
+    tryLogin(user, password).flatMap { loginResponse =>
+      tryLogin(user, password, loginResponse.token).map(_.result)
     }
   }
 
-  def tryLogin(user: String, password: String, token: Option[String] = None): Future[LoginResponse] = {
+  def tryLogin(user: String,
+               password: String,
+               token: Option[String] = None): Future[LoginResponse] = {
     val loginParams = Map(
-      "action" -> "login", "lgname" -> user, "lgpassword" -> password, "format" -> "json", "utf8" -> ""
+      "action" -> "login",
+      "lgname" -> user,
+      "lgpassword" -> password,
+      "format" -> "json",
+      "utf8" -> ""
     ) ++ token.map("lgtoken" -> _)
 
     for (response <- http.post(apiUrl, loginParams);
@@ -152,7 +164,8 @@ class MwBotImpl(val site: Site,
 
   override lazy val token: String = await(getToken)
 
-  override lazy val mediaWikiVersion: MediaWikiVersion = await(getMediaWikiVersion)
+  override lazy val mediaWikiVersion: MediaWikiVersion = await(
+    getMediaWikiVersion)
 
   def getMediaWikiVersion: Future[MediaWikiVersion] =
     get(siteInfoReads, "action" -> "query", "meta" -> "siteinfo") map MediaWikiVersion.fromGenerator
@@ -163,56 +176,68 @@ class MwBotImpl(val site: Site,
     if (isMW_1_24) {
       get(tokenReads, "action" -> "query", "meta" -> "tokens")
     } else {
-      get(editTokenReads, "action" -> "query", "prop" -> "info", "intoken" -> "edit", "titles" -> "foo")
+      get(editTokenReads,
+          "action" -> "query",
+          "prop" -> "info",
+          "intoken" -> "edit",
+          "titles" -> "foo")
     }
   }
 
-  def getTokens = get(tokensReads, "action" -> "tokens")
+  def getTokens: Future[String] = get(tokensReads, "action" -> "tokens")
 
   override def run(action: Action,
                    context: Map[String, String] = Map.empty,
                    limit: Option[Long] = None): Future[Iterable[Page]] = {
-    new DslQuery(action, this, context).run(limit = limit).map(_.values).recover {
-      case t: Throwable =>
-        log.error(t, s"Error ${t.getMessage} running action" + action)
-        throw t
-    }
+    new DslQuery(action, this, context)
+      .run(limit = limit)
+      .map(_.allPages)
+      .recover {
+        case t: Throwable =>
+          log.error(t, s"Error ${t.getMessage} running action" + action)
+          throw t
+      }
   }
 
   def get[T](reads: Reads[T], params: (String, String)*): Future[T] =
-    http.get(getUri(params: _*)) map {
-      body =>
-        parseJson(reads, body).get
+    http.get(getUri(params: _*)) map { body =>
+      parseJson(reads, body).get
     }
 
   def parseJson[T](reads: Reads[T], body: String): JsResult[T] =
     Json.parse(body).validate(reads)
 
-  def parseResponse[T](reads: Reads[T], response: Future[HttpResponse]): Future[T] =
-    response flatMap http.getBody map {
-      body =>
-        parseJson(reads, body).getOrElse {
-          val exception = parseJson(errorReads, body).getOrElse(MwException("", body))
-          log.error(exception, "mediawiki error")
-          throw exception
-        }
+  def parseResponse[T](reads: Reads[T],
+                       response: Future[HttpResponse]): Future[T] =
+    response flatMap http.getBody map { body =>
+      parseJson(reads, body).getOrElse {
+        val exception =
+          parseJson(errorReads, body).getOrElse(MwException("", body))
+        log.error(exception, "mediawiki error")
+        throw exception
+      }
     }
 
   override def getByteArray(url: String): Future[Array[Byte]] =
-    http.getResponse(url) flatMap {
-      response => response.entity.toStrict(5 minutes).map(_.data.toArray)
+    http.getResponse(url) flatMap { response =>
+      response.entity.toStrict(5 minutes).map(_.data.toArray)
     }
 
   override def post[T](reads: Reads[T], params: (String, String)*): Future[T] =
     post(reads, params.toMap)
 
-  override def post[T](reads: Reads[T], params: Map[String, String]): Future[T] =
+  override def post[T](reads: Reads[T],
+                       params: Map[String, String]): Future[T] =
     parseResponse(reads, http.post(apiUrl, params))
 
-  override def postMultiPart[T](reads: Reads[T], params: Map[String, String]): Future[T] =
+  override def postMultiPart[T](reads: Reads[T],
+                                params: Map[String, String]): Future[T] =
     parseResponse(reads, http.postMultiPart(apiUrl, params))
 
-  override def postFile[T](reads: Reads[T], params: Map[String, String], fileParam: String, filename: String): Future[T] =
+  override def postFile[T](reads: Reads[T],
+                           params: Map[String, String],
+                           fileParam: String,
+                           filename: String): Future[T] =
     parseResponse(reads, http.postFile(apiUrl, params, fileParam, filename))
 
   def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)
@@ -229,10 +254,12 @@ class MwBotImpl(val site: Site,
   }
 
   def getIndexUri(params: (String, String)*) =
-    Uri(indexUrl) withQuery Query(params ++ Seq("format" -> "json", "utf8" -> ""): _*)
+    Uri(indexUrl) withQuery Query(
+      params ++ Seq("format" -> "json", "utf8" -> ""): _*)
 
   def getUri(params: (String, String)*) =
-    Uri(apiUrl) withQuery Query(params ++ Seq("format" -> "json", "utf8" -> ""): _*)
+    Uri(apiUrl) withQuery Query(
+      params ++ Seq("format" -> "json", "utf8" -> ""): _*)
 
   override def get(params: Map[String, String]): Future[String] = {
     val uri: Uri = getUri(params)
@@ -264,30 +291,28 @@ object MwBot {
 
   def create(site: Site,
              loginInfo: Option[LoginInfo],
-             http: HttpClient = HttpClient.get(MwBot.system)
-            ): MwBot = {
+             http: HttpClient = HttpClient.get(MwBot.system)): MwBot = {
     val bot = new MwBotImpl(site, http)
 
-    loginInfo.foreach {
-      info =>
-        bot.await(bot.login(info.login, info.password))
+    loginInfo.foreach { info =>
+      bot.await(bot.login(info.login, info.password))
     }
     bot
   }
 
   val cache: Cache[String, MwBot] = LfuCache(system)
 
-  def fromHost(host: String, protocol: String = "https", port: Option[Int] = None,
+  def fromHost(host: String,
+               protocol: String = "https",
+               port: Option[Int] = None,
                loginInfo: Option[LoginInfo] = LoginInfo.fromEnv(),
-               http: HttpClient = HttpClient.get(MwBot.system)
-              ): MwBot = {
+               http: HttpClient = HttpClient.get(MwBot.system)): MwBot = {
     fromSite(Site.host(host, protocol, port), loginInfo, http)
   }
 
   def fromSite(site: Site,
                loginInfo: Option[LoginInfo] = LoginInfo.fromEnv(),
-               http: HttpClient = HttpClient.get(MwBot.system)
-              ): MwBot = {
+               http: HttpClient = HttpClient.get(MwBot.system)): MwBot = {
     Await.result(cache(site.domain, { () =>
       Future {
         create(site, loginInfo, http)
@@ -300,5 +325,3 @@ object MwBot {
   val ukWiki: String = Site.ukWiki.domain
 
 }
-
-

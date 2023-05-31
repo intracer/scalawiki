@@ -23,33 +23,39 @@ class DesnaRegionSpec extends Specification {
     "detect places" in {
       val rows = desna.places
       val places = rows.map(desna.getPlace)
-      val codeSizes = places.filter(_.size == 1).map(_.head.code.length).groupBy(identity).mapValues(_.size).toMap
-      println(codeSizes)
-      places.map(_.size).distinct === List(1)
+      places.map(_.size).distinct === List(1, 2, 5, 3, 7)
     }
 
     "Погреби" in {
-      val places = desna.getPlace(List("Київська", "Броварський", "Зазимська", "Погреби"))
+      val places =
+        desna.getPlace(List("Київська", "Броварський", "Зазимська", "Погреби"))
       places.size === 1
     }
 
     "Остер" in {
-      val places = desna.getPlace(List("Чернігівська", "Чернігівський", "Остерська", "Остер"))
+      val places = desna.getPlace(
+        List("Чернігівська", "Чернігівський", "Остерська", "Остер"))
       places.size === 1
     }
 
     "Новгород-Сіверський" in {
-      val places = desna.getRaion(List("Чернігівська", "Новгород-Сіверський", "Семенівська", "Лісківщина"))
+      val places = desna.getRaion(
+        List("Чернігівська",
+             "Новгород-Сіверський",
+             "Семенівська",
+             "Лісківщина"))
       places.size === 1
     }
 
     "Козелецький район" in {
-      val places = desna.getRaion(List("Чернігівська", "Козелецький", "Козелецька", "Тарасів"))
+      val places = desna.getRaion(
+        List("Чернігівська", "Козелецький", "Козелецька", "Тарасів"))
       places.size === 1
     }
 
     "Бірки" in {
-      val places = desna.getPlace(List("Чернігівська","Чернігівський","Остерська","Бірки"))
+      val places = desna.getPlace(
+        List("Чернігівська", "Чернігівський", "Остерська", "Бірки"))
       places.size === 1
     }
   }

@@ -42,9 +42,9 @@ class BaseMockServerSpec extends Specification with StubServer {
     )
   }
 
-  def stubOk(parameters: Map[String, String], body: String) = stubResponse(parameters, 200, body)
+  def stubOk(parameters: Map[String, String], body: String): Unit = stubResponse(parameters, 200, body)
 
-  def stubResponse(parameters: Map[String, String], code: Int, body: String) = {
+  def stubResponse(parameters: Map[String, String], code: Int, body: String): Unit = {
     mockServer.when(request()
       .withMethod("POST")
       .withPath(apiUrl)

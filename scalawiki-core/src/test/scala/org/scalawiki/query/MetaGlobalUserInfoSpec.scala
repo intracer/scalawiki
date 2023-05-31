@@ -11,28 +11,37 @@ import spray.util.pimpFuture
 
 class MetaGlobalUserInfoSpec extends Specification with MockBotSpec {
 
-  val action = Action(Query(MetaParam(
-    GlobalUserInfo(
-      GuiProp(
-        Merged, Unattached, EditCount
-      ),
-      GuiUser("Ilya")
-    ))))
+  val action = Action(
+    Query(
+      MetaParam(
+        GlobalUserInfo(
+          GuiProp(
+            Merged,
+            Unattached,
+            EditCount
+          ),
+          GuiUser("Ilya")
+        ))))
 
-  def commands(response: String) = Seq(HttpStub(
-    Map("action" -> "query", "meta" -> "globaluserinfo",
-      "guiuser" -> "Ilya", "guiprop" -> "merged|unattached|editcount", "continue" -> ""),
-    response))
+  def commands(response: String) =
+    Seq(
+      HttpStub(Map("action" -> "query",
+                   "meta" -> "globaluserinfo",
+                   "guiuser" -> "Ilya",
+                   "guiprop" -> "merged|unattached|editcount",
+                   "continue" -> ""),
+               response))
 
   "globaluserinfo" should {
 
     "return no info" in {
 
-      val missingUser = """{"batchcomplete":"","query":{"globaluserinfo":{"missing":"","unattached":[]}}}"""
+      val missingUser =
+        """{"batchcomplete":"","query":{"globaluserinfo":{"missing":"","unattached":[]}}}"""
 
       val bot = getBot(commands(missingUser): _*)
 
-      val result = bot.run(action).await
+      val result = bot.run(action).await.toSeq
 
       result must have size 1
       val users = result.flatMap(_.lastRevisionUser.map(_.asInstanceOf[User]))
@@ -40,11 +49,12 @@ class MetaGlobalUserInfoSpec extends Specification with MockBotSpec {
     }
 
     "return properties" in {
-      val response = resourceAsString("/org/scalawiki/query/globaluserinfo.json")
+      val response =
+        resourceAsString("/org/scalawiki/query/globaluserinfo.json")
 
       val bot = getBot(commands(response): _*)
 
-      val result = bot.run(action).await
+      val result = bot.run(action).await.toSeq
       result must have size 1
       val users = result.flatMap(_.lastRevisionUser.map(_.asInstanceOf[User]))
       users must have size 1

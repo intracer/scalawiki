@@ -18,14 +18,14 @@ class MonumentsPicturedByRegionSpec extends Specification {
   def monuments(n: Int, regionId: String, namePrefix: String, startId: Int = 1): Seq[Monument] =
     (startId until startId + n).map(i => monument(s"$regionId-xxx-000$i", namePrefix + i))
 
-  def getStat(monuments: Seq[Monument], images: Seq[Seq[Image]] = Seq(Seq.empty)) = {
+  def getStat(monuments: Seq[Monument], images: Seq[Seq[Image]] = Seq(Seq.empty)): ContestStat = {
     val monumentDb = new MonumentDB(contest, monuments)
 
     def imageDb(images: Seq[Image]) = new ImageDB(contest, images, monumentDb)
 
     val imagesDbs = images.map(imageDb)
 
-    new ContestStat(contest, startYear,
+    ContestStat(contest, startYear,
       Some(monumentDb),
       imagesDbs.lastOption,
       Some(imageDb(images.flatten)),
@@ -107,7 +107,7 @@ class MonumentsPicturedByRegionSpec extends Specification {
         "2015 Objects", "2015 Pictures", "2015 newly pictured",
         "2014 Objects", "2014 Pictures")
       table.data === Seq(
-        Seq("Автономна Республіка Крим", "2", "1", "50") ++ Seq(Seq("1", "1"), Seq("0", "0")).reverse.flatten,
+        Seq("Автономна Республіка Крим", "2", "1", "50") ++ Seq(Seq("1", "1"), Seq("0", "0", "0")).reverse.flatten,
         Seq("Вінницька область", "5", "1", "20") ++ Seq(
           Seq("0", "0"),
           Seq("1", "1", "[[Commons:Wiki Loves Monuments 2015 in Ukraine/Monuments newly pictured by region in Вінницька область|1]]")
@@ -152,9 +152,9 @@ class MonumentsPicturedByRegionSpec extends Specification {
         Seq("1", "1"), Seq("0", "0"), Seq("0", "0"), Seq("1", "1", "[[Commons:Wiki Loves Monuments 2015 in Ukraine/Monuments newly pictured by region in Автономна Республіка Крим|1]]")
       ).reverse.flatten
       data(1) === Seq("Вінницька область", "5", "1", "20") ++ Seq(
-        Seq("0", "0"), Seq("1", "1"), Seq("0", "0"), Seq("0", "0")).reverse.flatten
+        Seq("0", "0"), Seq("1", "1"), Seq("0", "0"), Seq("0", "0", "0")).reverse.flatten
       data(2) === Seq("Волинська область", "7", "1", "14") ++ Seq(
-        Seq("0", "0"), Seq("0", "0"), Seq("1", "1"), Seq("0", "0")).reverse.flatten
+        Seq("0", "0"), Seq("0", "0"), Seq("1", "1"), Seq("0", "0", "0")).reverse.flatten
       data(3) === Seq("Total", "14", "4", "28") ++ Seq(
         Seq("1", "1"), Seq("1", "1"), Seq("1", "1"), Seq("1", "1", "1")).reverse.flatten
     }

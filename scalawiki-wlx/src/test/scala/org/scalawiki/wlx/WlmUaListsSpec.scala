@@ -22,23 +22,14 @@ class WlmUaListsSpec extends Specification {
   val monumentDb = MonumentDB.getMonumentDb(contest, monumentQuery)
   val all = monumentDb.allMonuments
 
-  println(s"all size: ${all.size}")
-
   "places" should {
     "be mostly detected" in {
       all must not(beEmpty)
 
       val notFound = monumentDb.unknownPlaces()
 
-      println(s"notFound size: ${notFound.size}")
-
-      notFound
-        .sortBy(-_.monuments.size)
-        .foreach(println)
-
       val percentage = notFound.map(_.monuments.size).sum * 100 / all.size
-      println(s"percentage: $percentage%")
-      percentage should be < 8 // less than 1%
+      percentage should be < 5
     }
 
     "not be just high level region" in {
@@ -46,14 +37,9 @@ class WlmUaListsSpec extends Specification {
       updater.raions.size === 490
 
       val highLevel = all.filter(m => updater.raionNames.contains(m.cityName) && m.place.exists(_.trim.nonEmpty))
-      println(s"highLevel size: ${highLevel.size}")
 
-      highLevel.groupBy(_.page).toSeq.sortBy(-_._2.size).foreach { case (page, monuments) =>
-        println(s"$page ${monuments.size} (${monuments.head.city.getOrElse("")})")
-      }
       val percentage = highLevel.size * 100 / all.size
-      println(s"percentage: $percentage%")
-      percentage should be <= 5 // less than 10%
+      percentage should be <= 5
     }
   }
 }
