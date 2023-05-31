@@ -391,7 +391,7 @@ object Output {
     bot.page(s"Commons:$contestPage/Images with multiple ids").edit(text, Some("updating"))
   }
 
-  def regionalStat(stat: ContestStat) {
+  def regionalStat(stat: ContestStat): Unit = {
     val bot = MwBot.fromHost(MwBot.commons)
 
     val contest = stat.contest
@@ -400,7 +400,7 @@ object Output {
 
     val authorsStat = new AuthorsStat()
 
-    val idsStat = monumentDb.map(_ => new MonumentsPicturedByRegion(stat, uploadImages = false).asText).getOrElse("")
+    val idsStat = monumentDb.map(_ => new MonumentsPicturedByRegion(stat, uploadImages = false, gallery = true).asText).getOrElse("")
 
     val authorsContributed = authorsStat.authorsContributed(stat.dbsByYear, stat.totalImageDb, monumentDb)
 

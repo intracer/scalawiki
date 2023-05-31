@@ -3,11 +3,13 @@ package org.scalawiki.mockserver
 import org.scalawiki.query.QueryLibrary
 import org.scalawiki.util.TestUtils.resourceAsString
 import spray.util.pimpFuture
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class LongRevisionsMockServerSpec extends BaseMockServerSpec with QueryLibrary  {
+class LongRevisionsMockServerSpec extends BaseMockServerSpec with QueryLibrary {
 
-  val response = resourceAsString("/org/scalawiki/query/longRevisionHistory.json")
+  val response = resourceAsString(
+    "/org/scalawiki/query/longRevisionHistory.json")
 
   "revisions" should {
     "succesfully get long response" in {
@@ -23,7 +25,7 @@ class LongRevisionsMockServerSpec extends BaseMockServerSpec with QueryLibrary  
 
       val bot = getBot
 
-      val future =  bot.run(pageRevisionsQuery(3126080)).map(_.headOption)
+      val future = bot.run(pageRevisionsQuery(3126080)).map(_.headOption)
       val pageOption = future.await
 
       pageOption should not(beNone)

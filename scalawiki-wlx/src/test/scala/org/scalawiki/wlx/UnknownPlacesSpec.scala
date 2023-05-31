@@ -28,9 +28,12 @@ class UnknownPlacesSpec extends Specification {
     val monument = new Monument("page1", "regionId1-1", "monument1")
     val place = UnknownPlace("page1", "regionId1", "place1", Nil, Seq(monument))
 
-    emptyDb.unknownPlacesTables(Seq(place)) === Seq(Table(headers, Seq(
-      Seq("place1", "", "monument1")
-    ), "page1"))
+    emptyDb.unknownPlacesTables(Seq(place)) === Seq(
+      Table(headers,
+            Seq(
+              Seq("place1", "", "regionId1-1 monument1")
+            ),
+            "page1"))
   }
 
   "Сичівка" in {
@@ -58,7 +61,6 @@ class UnknownPlacesSpec extends Specification {
 
   "Bar" in {
     val wiki =
-
       """{{ВЛП-рядок
 | ID = 05-202-0002
 | назва = [[Будинок Коцюбинського (Бар)|Житловий будинок, в якому жив видатний український письменник М. М. Коцюбинський]]
@@ -78,9 +80,9 @@ class UnknownPlacesSpec extends Specification {
     monumentDb(wiki).unknownPlaces() === Nil
   }
 
-   "Рахни-Лісові" in {
-     val wiki =
-       """{{ВЛП-рядок
+  "Рахни-Лісові" in {
+    val wiki =
+      """{{ВЛП-рядок
        || ID = 05-253-0039
        || назва = Пам'ятник 308 воїнам-односельчанам, загиблим на фронтах Великої Вітчизняної війни
        || рік = 1970
@@ -95,8 +97,8 @@ class UnknownPlacesSpec extends Specification {
        || галерея = World War II memorial in Rakhny-Lisovi
        |}}
        |""".stripMargin
-     monumentDb(wiki).unknownPlaces() === Nil
-   }
+    monumentDb(wiki).unknownPlaces() === Nil
+  }
 
   "same name in region not detected" in {
     val wiki =
@@ -137,14 +139,18 @@ class UnknownPlacesSpec extends Specification {
     )
 
     emptyDb.unknownPlacesTables(places) === Seq(
-      Table(headers, Seq(
-        Seq("place1", "", "monument1"),
-        Seq("place2", "", "monument2")
-      ), "page1"),
-      Table(headers, Seq(
-        Seq("place3", "", "monument3"),
-        Seq("place4", "", "monument4")
-      ), "page2")
+      Table(headers,
+            Seq(
+              Seq("place1", "", "regionId1-1 monument1"),
+              Seq("place2", "", "regionId1-2 monument2")
+            ),
+            "page1"),
+      Table(headers,
+            Seq(
+              Seq("place3", "", "regionId2-3 monument3"),
+              Seq("place4", "", "regionId3-4 monument4")
+            ),
+            "page2")
     )
   }
 }

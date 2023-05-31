@@ -31,7 +31,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
 
   def mostPopularMonuments: String = new MostPopularMonuments(stat).asText
 
-  def monumentsPictured: String = new MonumentsPicturedByRegion(stat).asText
+  def monumentsPictured: String = new MonumentsPicturedByRegion(stat, gallery = true).asText
 
   def withArticles: Option[String] = RR.withArticles(monumentDb)
 

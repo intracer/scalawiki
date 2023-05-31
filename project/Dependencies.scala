@@ -3,31 +3,31 @@ import sbt._
 object Dependencies {
 
   val AaltoXmlV = "1.3.2"
-  val BetterFilesV = "3.9.1"
+  val BetterFilesV = "3.9.2"
   val BlameApiV = "13.10.7"
-  val ChronicleMapV = "3.19.40"
+  val ChronicleMapV = "3.22.9"
   val ChronoScalaV = "1.0.0"
   val FicusV = "1.5.2"
-  val GuavaV = "20.0"
+  val GuavaV = "23.0"
   val H2V = "1.4.200"
   val JimFsV = "1.2"
-  val JodaTimeV = "2.9.9"
+  val JodaTimeV = "2.12.2"
   val JSoupV = "1.16.1"
-  val LogbackClassicV = "1.2.10"
-  val MockServerV = "5.7.2"
-  val ReactiveStreamsV = "1.0.2"
-  val RetryV = "0.3.5"
+  val LogbackClassicV = "1.3.7"
+  val MockServerV = "5.15.0"
+  val ReactiveStreamsV = "1.0.4"
+  val RetryV = "0.3.6"
   val Scala213V = "2.13.10"
   val Scala212V = "2.12.16"
-  val ScalaChartV = "0.7.1"
-  val ScalaCheckV = "1.15.2"
+  val ScalaChartV = "0.8.0"
+  val ScalaCheckV = "1.17.0"
   val ScalaCsvV = "1.3.10"
-  val ScalaParserCombinatorsV = "1.1.2"
-  val ScalaXmlV = "1.2.0"
+  val ScalaParserCombinatorsV = "2.2.0"
+  val ScalaXmlV = "2.1.0"
   val ScallopV = "4.1.0"
-  val Slf4jV = "1.7.25"
+  val Slf4jV = "2.0.5"
   val SwcEngineV = "3.1.9"
-  val TypesafeConfigV = "1.4.1"
+  val TypesafeConfigV = "1.4.2"
 
   val resolvers = Seq(
     "Typesafe Repo" at "https://repo.typesafe.com/typesafe/releases/",
@@ -73,7 +73,7 @@ object Dependencies {
     object Play {
       def PlayJsonV(isScala213: Boolean) = {
         if (isScala213) {
-          "2.8.2"
+          "2.9.4"
         } else {
           "2.7.4" // scala-steward:off
         }
@@ -108,7 +108,7 @@ object Dependencies {
     }
 
     object Jackson {
-      val JacksonV = "2.9.2"
+      val JacksonV = "2.11.4"
 
       val core = "com.fasterxml.jackson.core" % "jackson-core" % JacksonV
       val annotations = "com.fasterxml.jackson.core" % "jackson-annotations" % JacksonV

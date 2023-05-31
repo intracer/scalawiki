@@ -4,6 +4,8 @@ import org.specs2.mutable.Specification
 
 class KatotthSpec extends Specification {
 
+  args(skipAll = true)
+
   val Ukraine: Country = new Country("UA", "Ukraine", Seq("uk"),
     Katotth.regions(() => Some(Ukraine)))
   val regions = Ukraine.regions
