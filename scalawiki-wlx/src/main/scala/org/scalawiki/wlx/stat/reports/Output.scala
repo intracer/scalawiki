@@ -401,7 +401,7 @@ object Output {
 
     val authorsStat = new AuthorsStat()
 
-    val idsStat = monumentDb.map(_ => new MonumentsPicturedByRegion(stat, uploadImages = false).asText).getOrElse("")
+    val idsStat = monumentDb.map(_ => new MonumentsPicturedByRegion(stat, uploadImages = false, gallery = true).asText).getOrElse("")
 
     val authorsContributed = authorsStat.authorsContributed(stat.dbsByYear, stat.totalImageDb, monumentDb)
 
