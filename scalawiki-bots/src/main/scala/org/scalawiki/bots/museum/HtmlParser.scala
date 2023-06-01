@@ -2,7 +2,7 @@ package org.scalawiki.bots.museum
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document.OutputSettings
-import org.jsoup.safety.Whitelist
+import org.jsoup.safety.Safelist
 
 import scala.compat.Platform
 
@@ -34,11 +34,11 @@ object HtmlParser {
     */
   def htmlText(html: String): String = {
     val tags2Nl = Jsoup.clean(html, "",
-      Whitelist.none().addTags("p"),
+      Safelist.none().addTags("p"),
       new OutputSettings().prettyPrint(true)
     )
     Jsoup.clean(tags2Nl, "",
-      Whitelist.none(),
+      Safelist.none(),
       new OutputSettings().prettyPrint(false)
     ).split(Platform.EOL).map(_.trim).mkString(Platform.EOL)
   }

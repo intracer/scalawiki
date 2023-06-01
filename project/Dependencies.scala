@@ -4,7 +4,7 @@ object Dependencies {
 
   val AaltoXmlV = "1.3.2"
   val BetterFilesV = "3.9.2"
-  val BlameApiV = "13.10.7"
+  val BlameApiV = "13.10.11"
   val ChronicleMapV = "3.22.9"
   val ChronoScalaV = "1.0.0"
   val FicusV = "1.5.2"
@@ -12,13 +12,13 @@ object Dependencies {
   val H2V = "1.4.200"
   val JimFsV = "1.2"
   val JodaTimeV = "2.12.2"
-  val JSoupV = "1.14.3"
+  val JSoupV = "1.16.1"
   val LogbackClassicV = "1.3.7"
   val MockServerV = "5.15.0"
   val ReactiveStreamsV = "1.0.4"
   val RetryV = "0.3.6"
   val Scala213V = "2.13.10"
-  val Scala212V = "2.12.16"
+  val Scala212V = "2.12.17"
   val ScalaChartV = "0.8.0"
   val ScalaCheckV = "1.17.0"
   val ScalaCsvV = "1.3.10"
@@ -79,7 +79,7 @@ object Dependencies {
         }
       }
 
-      def TwirlV(isScala213: Boolean) = "1.5.1"
+      def TwirlV(isScala213: Boolean) = "1.5.2"
 
       def json(isScala213: Boolean) = "com.typesafe.play" %% "play-json" % PlayJsonV(isScala213)
 
@@ -87,7 +87,7 @@ object Dependencies {
     }
 
     object Poi {
-      val PoiV = "5.2.2"
+      val PoiV = "5.2.3"
       val PoiXwpfV = "1.0.6"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
@@ -97,7 +97,7 @@ object Dependencies {
 
     object Commons {
       val CommonsCodecV = "1.15"
-      val CommonsCompressV = "1.21"
+      val CommonsCompressV = "1.23.0"
       val CommonsLang3V = "3.7"
       val CommonsIoV = "2.6"
 
@@ -116,14 +116,14 @@ object Dependencies {
     }
 
     object Slick {
-      val SlickV = "3.3.3"
+      val SlickV = "3.4.1"
 
       val slick = "com.typesafe.slick" %% "slick" % SlickV
       val hikaricp = "com.typesafe.slick" %% "slick-hikaricp" % SlickV
     }
 
     object Specs2 {
-      val SpecsV = "4.10.6"
+      val SpecsV = "4.20.0"
 
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV
