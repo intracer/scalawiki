@@ -18,7 +18,7 @@ object Dependencies {
   val ReactiveStreamsV = "1.0.4"
   val RetryV = "0.3.6"
   val Scala213V = "2.13.11"
-  val Scala212V = "2.12.17"
+  val Scala212V = "2.12.18"
   val ScalaChartV = "0.8.0"
   val ScalaCheckV = "1.17.0"
   val ScalaCsvV = "1.3.10"
