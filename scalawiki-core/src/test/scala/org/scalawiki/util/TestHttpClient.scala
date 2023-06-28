@@ -1,26 +1,22 @@
 package org.scalawiki.util
 
-import java.nio.charset.StandardCharsets
-
 import akka.actor.ActorSystem
+import akka.http.scaladsl.model._
 import org.scalawiki.http.HttpClient
 import org.specs2.matcher.Matchers
-import akka.http.scaladsl.model._
-import akka.stream.ActorMaterializer
 
+import java.nio.charset.StandardCharsets
 import scala.collection.mutable
-import scala.collection.mutable.Buffer
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future, Promise}
 import scala.concurrent.duration._
+import scala.concurrent.{Future, Promise}
+import scala.language.postfixOps
 
 class TestHttpClient(val host: String, commandsParam: Seq[HttpStub]) extends Matchers with HttpClient {
 
-  implicit val sys = ActorSystem()
+  implicit val sys: ActorSystem = ActorSystem()
 
-  implicit val materializer = ActorMaterializer()
-
-  val commands = mutable.Queue(commandsParam.toSeq: _*)
+  private val commands = mutable.Queue(commandsParam: _*)
 
   override def getResponse(url: String): Future[HttpResponse] = getResponse(Uri(url))
 

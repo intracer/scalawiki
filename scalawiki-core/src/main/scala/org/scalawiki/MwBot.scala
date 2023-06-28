@@ -5,7 +5,6 @@ import akka.event.LoggingAdapter
 import akka.http.caching.LfuCache
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
-import akka.stream.ActorMaterializer
 import org.jsoup.Jsoup
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.{LoginResponse, MwException, Page, Site}
@@ -16,8 +15,6 @@ import play.api.libs.json._
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.util.control.NonFatal
-import java.lang.Throwable
 import scala.language.postfixOps
 
 trait ActionBot {
@@ -79,11 +76,11 @@ case class MediaWikiVersion(version: String) extends Ordered[MediaWikiVersion] {
 
 object MediaWikiVersion {
 
-  val UNKNOWN = MediaWikiVersion("(UNKNOWN)")
+  val UNKNOWN: MediaWikiVersion = MediaWikiVersion("(UNKNOWN)")
 
-  val MW_1_24 = MediaWikiVersion("1.24")
+  val MW_1_24: MediaWikiVersion = MediaWikiVersion("1.24")
 
-  def fromGenerator(generator: String) = {
+  def fromGenerator(generator: String): MediaWikiVersion = {
     "MediaWiki (\\d+\\.\\d+)".r
       .findFirstMatchIn(generator)
       .map(_.group(1))
@@ -100,24 +97,22 @@ class MwBotImpl(val site: Site,
 
   def this(host: String, http: HttpClient) = this(Site.host(host), http)
 
-  implicit val sys = system
-
-  implicit val materializer = ActorMaterializer()
+  implicit val sys: ActorSystem = system
 
   import system.dispatcher
 
-  def host = site.domain
+  override def host: String = site.domain
 
   val baseUrl
     : String = site.protocol + "://" + host + site.portStr + site.scriptPath
 
-  val indexUrl = baseUrl + "/index.php"
+  val indexUrl: String = baseUrl + "/index.php"
 
-  val apiUrl = baseUrl + "/api.php"
+  val apiUrl: String = baseUrl + "/api.php"
 
   def encodeTitle(title: String): String = MwUtils.normalize(title)
 
-  override def log = system.log
+  override def log: LoggingAdapter = system.log
 
   override def login(user: String, password: String): Future[String] = {
     require(user != null, "User is null")
@@ -240,24 +235,24 @@ class MwBotImpl(val site: Site,
                            filename: String): Future[T] =
     parseResponse(reads, http.postFile(apiUrl, params, fileParam, filename))
 
-  def pagesByTitle(titles: Set[String]) = PageQuery.byTitles(titles, this)
+  def pagesByTitle(titles: Set[String]): PageQuery = PageQuery.byTitles(titles, this)
 
-  def pagesById(ids: Set[Long]) = PageQuery.byIds(ids, this)
+  def pagesById(ids: Set[Long]): PageQuery = PageQuery.byIds(ids, this)
 
-  override def page(title: String) = PageQuery.byTitle(title, this)
+  override def page(title: String): SinglePageQuery = PageQuery.byTitle(title, this)
 
-  override def page(id: Long) = PageQuery.byId(id, this)
+  override def page(id: Long): SinglePageQuery = PageQuery.byId(id, this)
 
   override def pageText(title: String): Future[String] = {
     val url = getIndexUri("title" -> encodeTitle(title), "action" -> "raw")
     http.get(url)
   }
 
-  def getIndexUri(params: (String, String)*) =
+  def getIndexUri(params: (String, String)*): Uri =
     Uri(indexUrl) withQuery Query(
       params ++ Seq("format" -> "json", "utf8" -> ""): _*)
 
-  def getUri(params: (String, String)*) =
+  def getUri(params: (String, String)*): Uri =
     Uri(apiUrl) withQuery Query(
       params ++ Seq("format" -> "json", "utf8" -> ""): _*)
 
@@ -274,10 +269,10 @@ class MwBotImpl(val site: Site,
     http.postUri(uri, params ++ Map("format" -> "json")) flatMap http.getBody
   }
 
-  def getUri(params: Map[String, String]) =
+  def getUri(params: Map[String, String]): Uri =
     Uri(apiUrl) withQuery Query(params ++ Map("format" -> "json"))
 
-  override def await[T](future: Future[T]) = Await.result(future, http.timeout)
+  override def await[T](future: Future[T]): T = Await.result(future, http.timeout)
 }
 
 object MwBot {
@@ -287,7 +282,7 @@ object MwBot {
   import scala.concurrent.ExecutionContext.Implicits.global
   import scala.concurrent._
 
-  val system = ActorSystem()
+  val system: ActorSystem = ActorSystem()
 
   def create(site: Site,
              loginInfo: Option[LoginInfo],
