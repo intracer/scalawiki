@@ -205,8 +205,9 @@ class NumberOfAuthorsBonus(val stat: ContestStat, val rateRanges: RateRanges) ex
   }
 
   override def disqualify(monumentId: String, author: String): Boolean = {
-    Set("Петро Халява", "SnizhokAM").contains(author) &&
-      authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)
+    false
+//    Set("Петро Халява", "SnizhokAM").contains(author) &&
+//      authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)
   }
 }
 

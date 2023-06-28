@@ -302,7 +302,7 @@ class DslQueryDbCacheBlackBoxSpec extends Specification with MockBotSpec with Be
       val result = future.await.toSeq
 
       result must have size 1
-      result(0) === Page(Some(569559L), Some(1), "Talk:Welfare reform",
+      result.head === Page(Some(569559L), Some(1), "Talk:Welfare reform",
         Seq(Revision(Some(11L), Some(569559L), None, someUser2, None, None, Some(pageText1)))
       )
 
