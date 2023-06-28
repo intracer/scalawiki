@@ -24,7 +24,7 @@ trait WithDocker extends BeforeAfterAll {
       "mysql", "--user=root", "--password=root_pass", "-s", "-e", "use my_wiki") ! ProcessLogger(_ => (), _ => ())
   }
 
-  override def beforeAll: Unit = {
+  override def beforeAll(): Unit = {
     if (dockerTestEnabled) {
       s"docker-compose rm -fsv" !
 
@@ -39,7 +39,7 @@ trait WithDocker extends BeforeAfterAll {
     }
   }
 
-  override def afterAll: Unit = {
+  override def afterAll(): Unit = {
     if (dockerTestEnabled) {
       s"docker-compose down" !
     }
