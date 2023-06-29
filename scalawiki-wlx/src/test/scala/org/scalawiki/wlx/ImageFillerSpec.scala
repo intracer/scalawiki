@@ -7,10 +7,10 @@ import org.specs2.mutable.Specification
 
 class ImageFillerSpec extends Specification {
 
-  val contest = Contest.WLMUkraine(2015)
-  val uploadConfig = contest.uploadConfigs.head
-  val listConfig = uploadConfig.listConfig
-  val host = MwBot.ukWiki
+  private val contest = Contest.WLMUkraine(2015)
+  private val uploadConfig = contest.uploadConfigs.head
+  private val listConfig = uploadConfig.listConfig
+  private val host = MwBot.ukWiki
 
   "ListFiller" should {
     "select bestImage" in {

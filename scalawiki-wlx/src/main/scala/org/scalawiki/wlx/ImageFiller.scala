@@ -10,7 +10,13 @@ object ImageFiller {
   }
 
   def bestImage(images: Seq[Image]): Image =
-    images.maxBy(image => image.size.get + image.width.get * image.height.get)
+    images.maxBy { image =>
+      (for {
+        size <- image.size
+        width <- image.width
+        height <- image.height
+      } yield size + width * height).getOrElse(0L)
+    }
 }
 
 class ImageFillerUpdater(imageDb: ImageDB) extends MonumentUpdater {
