@@ -346,12 +346,13 @@ object Output {
     ukWiki.page(s"Вікіпедія:Вікі любить пам'ятки/notFoundPlaces-${monumentDb.contest.year}").edit(text, Some("updating"))
   }
 
-  def wrongIds(imageDb: ImageDB, monumentDb: MonumentDB) {
+  def wrongIds(imageDb: ImageDB, monumentDb: MonumentDB): Unit = {
     val bot = MwBot.fromHost(MwBot.commons)
 
     val wrongIdImages = imageDb.images
       .filterNot(image => image.monumentId.fold(false)(id => monumentDb.ids.contains(id)
         || id.startsWith("88")
+        || id.startsWith("95")
         || id.startsWith("97")
         || id.startsWith("98")
         || id.startsWith("99")
@@ -366,7 +367,7 @@ object Output {
     bot.page(s"Commons:$contestPage/Images with bad ids").edit(text, Some("updating"))
   }
 
-  def missingIds(imageDb: ImageDB, monumentDb: MonumentDB) {
+  def missingIds(imageDb: ImageDB, monumentDb: MonumentDB): Unit = {
     val bot = MwBot.fromHost(MwBot.commons)
 
     val images = imageDb.images.filter(_.monumentIds.isEmpty)
@@ -380,7 +381,7 @@ object Output {
     bot.page(s"Commons:$contestPage/Images with missing ids").edit(text, Some("updating"))
   }
 
-  def multipleIds(imageDb: ImageDB, monumentDb: MonumentDB) {
+  def multipleIds(imageDb: ImageDB, monumentDb: MonumentDB): Unit = {
     val bot = MwBot.fromHost(MwBot.commons)
 
     val images = imageDb.images.filter(image => image.monumentIds.size > 1)
