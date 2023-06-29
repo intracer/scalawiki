@@ -13,12 +13,12 @@ object Dependencies {
   val JimFsV = "1.2"
   val JodaTimeV = "2.12.2"
   val JSoupV = "1.16.1"
-  val LogbackClassicV = "1.3.7"
+  val LogbackClassicV = "1.3.8"
   val MockServerV = "5.15.0"
   val ReactiveStreamsV = "1.0.4"
   val RetryV = "0.3.6"
-  val Scala213V = "2.13.10"
-  val Scala212V = "2.12.17"
+  val Scala213V = "2.13.11"
+  val Scala212V = "2.12.18"
   val ScalaChartV = "0.8.0"
   val ScalaCheckV = "1.17.0"
   val ScalaCsvV = "1.3.10"
@@ -96,7 +96,7 @@ object Dependencies {
     }
 
     object Commons {
-      val CommonsCodecV = "1.15"
+      val CommonsCodecV = "1.16.0"
       val CommonsCompressV = "1.23.0"
       val CommonsLang3V = "3.7"
       val CommonsIoV = "2.6"

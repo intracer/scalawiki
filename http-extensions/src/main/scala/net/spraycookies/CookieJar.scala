@@ -18,7 +18,7 @@ class CookieJar(blacklist: EffectiveTldList) {
         None, Some(src.domain), Some(src.path), src.secure, src.httpOnly, None)
     }
 
-    implicit def toStoredCookie(src: HttpCookie)(implicit uri: Uri) = {
+    implicit def toStoredCookie(src: HttpCookie)(implicit uri: Uri): StoredCookie = {
       val domain = src.domain.getOrElse(uri.authority.host.address)
       val path = src.path.getOrElse(uri.path.toString)
       val expiration = src.expires match {

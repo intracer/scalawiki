@@ -50,7 +50,7 @@ object Katotth {
   }
 
   def readCsv(filename: String): Seq[List[String]] = {
-    val csv = CSVReader.open(new InputStreamReader(getClass.getResourceAsStream(s"/$filename.csv")))
+    val csv = CSVReader.open(new InputStreamReader(getClass.getResourceAsStream(s"/$filename.csv"), "UTF-8"))
     csv.all().tail
   }
 
