@@ -118,8 +118,7 @@ lazy val sql = Project("scalawiki-sql", file("scalawiki-sql"))
   .settings(libraryDependencies ++= Seq(
     Library.Slick.slick,
     Library.Slick.hikaricp,
-    "com.h2database" % "h2" % H2V,
-    "com.github.jsqlparser" % "jsqlparser" % "4.6"
+    "com.h2database" % "h2" % H2V
   ))
 
 lazy val `http-extensions` = (project in file("http-extensions"))
