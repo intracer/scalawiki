@@ -4,7 +4,6 @@ import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.{Contest, Monument}
 import org.scalawiki.wlx.query.ImageQuery
 
-import scala.collection.MapView
 import scala.concurrent.Future
 
 case class ImageDB(contest: Contest,
@@ -57,7 +56,7 @@ case class ImageDB(contest: Contest,
   lazy val _byAuthorAndRegion: NestedGrouping[String, Image] =
     _byAuthor.compose(ImageGrouping.byRegion)
 
-  lazy val _byMegaPixelsAndAuthor: MapView[Int, Map[String, Seq[Image]]] =
+  lazy val _byMegaPixelsAndAuthor =
     _byMegaPixels.grouped.mapValues { images =>
       images.groupBy(_.author.getOrElse(""))
     }
