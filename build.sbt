@@ -83,8 +83,11 @@ lazy val bots = Project("scalawiki-bots", file("scalawiki-bots"))
     "com.github.pathikrit" %% "better-files" % BetterFilesV,
     "org.rogach" %% "scallop" % ScallopV,
     "org.xwiki.commons" % "xwiki-commons-blame-api" % BlameApiV,
+    Library.Commons.io,
     Library.Poi.scratchpad,
     Library.Poi.ooxml,
+    Library.Poi.ooxmlFull,
+    Library.Poi.poi,
     Library.Poi.converter,
     Library.Play.twirlApi(isScala213.value),
     "com.github.tototoshi" %% "scala-csv" % ScalaCsvV

@@ -49,13 +49,17 @@ object Dependencies {
     Library.Commons.lang,
     "com.typesafe" % "config" % TypesafeConfigV,
     Library.Poi.ooxml,
+    Library.Poi.poi,
+    Library.Poi.ooxmlFull,
     Library.Jackson.core,
     Library.Jackson.annotations,
     Library.Jackson.databind,
     "joda-time" % "joda-time" % JodaTimeV,
     "org.slf4j" % "slf4j-api" % Slf4jV,
     "ch.qos.logback" % "logback-classic" % LogbackClassicV,
-    "javax.xml.bind" % "jaxb-api" % "2.3.1"
+    "javax.xml.bind" % "jaxb-api" % "2.3.1",
+    "org.apache.logging" % "log4j:log4j-core" % "2.18.1",
+    "org.apache.logging" % "log4j:log4j-api" % "2.18.1"
   )
 
   object Library {
@@ -81,25 +85,30 @@ object Dependencies {
 
       def TwirlV(isScala213: Boolean) = "1.5.2"
 
-      def json(isScala213: Boolean) = "com.typesafe.play" %% "play-json" % PlayJsonV(isScala213)
+      def json(isScala213: Boolean) =
+        "com.typesafe.play" %% "play-json" % PlayJsonV(isScala213)
 
-      def twirlApi(isScala213: Boolean) = "com.typesafe.play" %% "twirl-api" % TwirlV(isScala213)
+      def twirlApi(isScala213: Boolean) =
+        "com.typesafe.play" %% "twirl-api" % TwirlV(isScala213)
     }
 
     object Poi {
       val PoiV = "5.2.3"
-      val PoiXwpfV = "1.0.6"
+      val PoiXwpfV = "2.0.4"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
+      val poi = "org.apache.poi" % "poi" % PoiV
       val ooxml = "org.apache.poi" % "poi-ooxml" % PoiV
-      val converter = "fr.opensagres.xdocreport" % "org.apache.poi.xwpf.converter.xhtml" % PoiXwpfV
+      val ooxmlFull = "org.apache.poi" % "poi-ooxml-full" % PoiV
+
+      val converter = "fr.opensagres.xdocreport" % "fr.opensagres.xdocreport.converter.docx.xwpf" % PoiXwpfV
     }
 
     object Commons {
       val CommonsCodecV = "1.16.0"
       val CommonsCompressV = "1.23.0"
       val CommonsLang3V = "3.7"
-      val CommonsIoV = "2.6"
+      val CommonsIoV = "2.7"
 
       val codec = "commons-codec" % "commons-codec" % CommonsCodecV
       val io = "commons-io" % "commons-io" % CommonsIoV
