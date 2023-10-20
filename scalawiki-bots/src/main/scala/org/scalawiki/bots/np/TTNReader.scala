@@ -92,11 +92,19 @@ object TTNReader {
       .zipWithIndex
       .map(_.swap)
 
-    println("nonWlmTtns: " + nonWlmTtns.size)
+    println("no wWlm ttns: " + nonWlmTtns.size)
     //    nonWlmTtns.foreach(println)
 //    val receivers = ttnsLastMonth.map(_.receiverContact).distinct.sorted
 //    println("receivers: " + receivers.size)
 //    receivers.foreach(println)
+
+//    ttns2023
+//      .filter(x => x.receiverContact.contains("380683381211") && x.year == "2023")
+//      .sortBy(_.yyMmDd).zipWithIndex
+//      .foreach { case (t, i) =>
+//        println(s"${i+1}. ${t.date}, ${t.description}, ${t.mass}, ${t.cost}, ${t.receiverContact}")
+//      }
+
   }
 
   private def readDir(dir: File): Seq[TTN] = {
