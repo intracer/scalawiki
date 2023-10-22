@@ -92,7 +92,7 @@ object TTNReader {
       .zipWithIndex
       .map(_.swap)
 
-    println("no wWlm ttns: " + nonWlmTtns.size)
+    println("not wlm ttns: " + nonWlmTtns.size)
     //    nonWlmTtns.foreach(println)
 //    val receivers = ttnsLastMonth.map(_.receiverContact).distinct.sorted
 //    println("receivers: " + receivers.size)
