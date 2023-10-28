@@ -59,7 +59,7 @@ class DslQuery(val action: Action,
             Future.failed(withParams)
           case Failure(ex) =>
             bot.log.error(s"${bot.host} exception $ex, body: $body")
-            Future.failed(ex)
+            Future.failed(MwException(ex.getMessage, ex.getMessage, params.toMap))
         }
     }
   }
