@@ -12,7 +12,7 @@ object Dependencies {
   val H2V = "1.4.200"
   val JimFsV = "1.3.0"
   val JodaTimeV = "2.12.2"
-  val JSoupV = "1.16.1"
+  val JSoupV = "1.16.2"
   val LogbackClassicV = "1.3.14"
   val MockServerV = "5.15.0"
   val ReactiveStreamsV = "1.0.4"
@@ -24,10 +24,10 @@ object Dependencies {
   val ScalaCsvV = "1.3.10"
   val ScalaParserCombinatorsV = "2.2.0"
   val ScalaXmlV = "2.1.0"
-  val ScallopV = "5.0.0"
+  val ScallopV = "5.0.1"
   val Slf4jV = "2.0.5"
   val SwcEngineV = "3.1.9"
-  val TypesafeConfigV = "1.4.2"
+  val TypesafeConfigV = "1.4.3"
 
   val resolvers = Seq(
     "Typesafe Repo" at "https://repo.typesafe.com/typesafe/releases/",
@@ -87,7 +87,7 @@ object Dependencies {
     }
 
     object Poi {
-      val PoiV = "5.2.3"
+      val PoiV = "5.2.5"
       val PoiXwpfV = "1.0.6"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
@@ -97,7 +97,7 @@ object Dependencies {
 
     object Commons {
       val CommonsCodecV = "1.16.0"
-      val CommonsCompressV = "1.24.0"
+      val CommonsCompressV = "1.25.0"
       val CommonsLang3V = "3.7"
       val CommonsIoV = "2.6"
 
