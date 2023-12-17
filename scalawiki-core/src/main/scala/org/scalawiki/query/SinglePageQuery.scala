@@ -6,26 +6,37 @@ import scala.concurrent.Future
 
 trait SinglePageQuery {
 
-  def whatTranscludesHere(namespaces: Set[Int] = Set.empty, continueParam: Option[(String, String)] = None): Future[Iterable[Page]]
+  def whatTranscludesHere(
+      namespaces: Set[Int] = Set.empty,
+      continueParam: Option[(String, String)] = None): Future[Iterable[Page]]
 
-  def categoryMembers(namespaces: Set[Int] = Set.empty, continueParam: Option[(String, String)] = None): Future[Iterable[Page]]
+  def categoryMembers(
+      namespaces: Set[Int] = Set.empty,
+      continueParam: Option[(String, String)] = None): Future[Iterable[Page]]
 
-  def revisions(namespaces: Set[Int] = Set.empty, props: Set[String] = Set.empty, continueParam: Option[(String, String)] = None): Future[Iterable[Page]]
+  def revisions(
+      namespaces: Set[Int] = Set.empty,
+      props: Set[String] = Set.empty,
+      continueParam: Option[(String, String)] = None): Future[Iterable[Page]]
 
   def revisionsByGenerator(
-                            generator: String, generatorPrefix: String,
-                            namespaces: Set[Int] = Set.empty, props: Set[String] = Set.empty,
-                            continueParam: Option[(String, String)] = None,
-                            limit: String = "max",
-                            titlePrefix: Option[String] = None): Future[Iterable[Page]]
+      generator: String,
+      generatorPrefix: String,
+      namespaces: Set[Int] = Set.empty,
+      props: Set[String] = Set.empty,
+      continueParam: Option[(String, String)] = None,
+      limit: String = "max",
+      titlePrefix: Option[String] = None): Future[Iterable[Page]]
 
   def imageInfoByGenerator(
-                            generator: String, generatorPrefix: String,
-                            namespaces: Set[Int] = Set(),
-                            props: Set[String] = Set("timestamp", "user", "size", "url" /*, "extmetadata"*/),
-                            continueParam: Option[(String, String)] = None,
-                            limit: String = "max",
-                            titlePrefix: Option[String] = None): Future[Iterable[Page]]
+      generator: String,
+      generatorPrefix: String,
+      namespaces: Set[Int] = Set(),
+      props: Set[String] =
+        Set("timestamp", "user", "size", "url" /*, "extmetadata"*/ ),
+      continueParam: Option[(String, String)] = None,
+      limit: String = "max",
+      titlePrefix: Option[String] = None): Future[Iterable[Page]]
 
   def edit(text: String,
            summary: Option[String] = None,

@@ -51,7 +51,7 @@ class MessageBot(val conf: Config) extends ActionLibrary with QueryLibrary {
     */
   val talkPageMessage = conf.as[Message]("talk-page")
 
-  implicit lazy val bot = MwBot.fromHost(host)
+  implicit lazy val bot: MwBot = MwBot.fromHost(host)
 
   def run() = {
     for (users <- fetchUsers(userListPage))

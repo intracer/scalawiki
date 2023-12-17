@@ -410,6 +410,7 @@ object Output {
     val regionalStat = toc + idsStat + authorsContributed + category
 
     bot.page(s"Commons:$categoryName/Regional statistics").edit(regionalStat, Some("updating"))
+    authorsStat.authorsContributedPerRegion(stat.totalImageDb.get, bot)
   }
 
   def newMonuments(stat: ContestStat) = {

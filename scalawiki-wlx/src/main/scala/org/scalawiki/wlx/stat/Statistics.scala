@@ -79,9 +79,9 @@ class Statistics(contest: Contest,
            config: Option[StatConfig] = None) =
     this(contest, startYear, monumentQuery, imageQuery, imageQueryWiki, bot, config.getOrElse(StatConfig(contest.campaign)))
 
-  val currentYear = contest.year
+  private val currentYear = contest.year
 
-  val contests = (startYear.getOrElse(currentYear) to currentYear).map(y => contest.copy(year = y))
+  private val contests = (startYear.getOrElse(currentYear) to currentYear).map(y => contest.copy(year = y))
 
   /**
     * Fetches contest data
@@ -138,11 +138,11 @@ class Statistics(contest: Contest,
     }.failed.map(println)
   }
 
-  def articleStatistics(monumentDb: MonumentDB) = {
+  def articleStatistics(monumentDb: MonumentDB): Unit = {
     println(Stats.withArticles(monumentDb).asWiki("Article Statistics").asWiki)
   }
 
-  def toMassMessage(users: Iterable[String]) = {
+  def toMassMessage(users: Iterable[String]): Iterable[String] = {
     users.map(name => s"{{#target:User talk:$name}}")
   }
 
@@ -164,7 +164,7 @@ object Statistics {
     )
   }
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     val cfg = StatParams.parse(args)
     val contest = getContest(cfg)
 
