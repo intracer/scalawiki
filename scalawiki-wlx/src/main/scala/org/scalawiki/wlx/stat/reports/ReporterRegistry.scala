@@ -39,7 +39,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
    * Outputs current year reports.
    *
    */
-  def currentYear() = {
+  def currentYear(): Unit = {
     for (imageDb <- currentYearImageDb) {
 
       if (cfg.regionalGallery && stat.totalImageDb.isEmpty) {
@@ -87,7 +87,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
     }
   }
 
-  def allYears() = {
+  def allYears(): Unit = {
     for (imageDb <- totalImageDb) {
       if (cfg.fillLists) {
         ImageFiller.fillLists(monumentDb.get, imageDb)

@@ -14,14 +14,25 @@ class AuthorsContributedSpec extends Specification {
   def monument(id: String, name: String) =
     new Monument(id = id, name = name, listConfig = Some(WlmUa))
 
-  def monuments(n: Int, regionId: String, namePrefix: String, startId: Int = 1): Seq[Monument] =
-    (startId until startId + n).map(i => monument(s"$regionId-xxx-000$i", namePrefix + i))
+  def monuments(
+      n: Int,
+      regionId: String,
+      namePrefix: String,
+      startId: Int = 1
+  ): Seq[Monument] =
+    (startId until startId + n).map(i =>
+      monument(s"$regionId-xxx-000$i", namePrefix + i)
+    )
 
   "authorsContributed" should {
     "work on no monuments" in {
       val output = new AuthorsStat
       val monumentDb = new MonumentDB(contest, Seq.empty)
-      val table = output.authorsContributedTable(Seq.empty, Some(new ImageDB(contest, Seq.empty, monumentDb)), Some(monumentDb))
+      val table = output.authorsContributedTable(
+        Seq.empty,
+        Some(new ImageDB(contest, Seq.empty, monumentDb)),
+        Some(monumentDb)
+      )
 
       table.headers === Seq("Region", "0 years total")
       table.data === Seq(Seq("Total", "0"))
@@ -30,13 +41,19 @@ class AuthorsContributedSpec extends Specification {
     "work on no images" in {
       val output = new AuthorsStat
 
-      val monumentDb = new MonumentDB(contest,
+      val monumentDb = new MonumentDB(
+        contest,
         monuments(2, "01", "Crimea") ++
           monuments(5, "05", "Podillya") ++
           monuments(7, "07", "Volyn")
       )
 
-      val table = output.authorsContributedTable(Seq.empty, Some(new ImageDB(contest, Seq.empty, monumentDb)), Some(monumentDb))
+      val table = output.authorsContributedTable(
+        Seq.empty,
+        Some(new ImageDB(contest, Seq.empty, monumentDb)),
+        Some(monumentDb),
+        listAuthors = false
+      )
 
       table.headers === Seq("Region", "0 years total")
       table.data === Seq(
@@ -51,20 +68,46 @@ class AuthorsContributedSpec extends Specification {
       val output = new AuthorsStat
 
       val images = Seq(
-        Image("File:Img11.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimea")),
-        Image("File:Img51.jpg", monumentIds = List("05-xxx-0001"), author = Some("FromPodillya1")),
-        Image("File:Img52.jpg", monumentIds = List("05-xxx-0001"), author = Some("FromPodillya2")),
-        Image("File:Img71.jpg", monumentIds = List("07-xxx-0001"), author = Some("FromVolyn")),
-        Image("File:Img12.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimea"))
+        Image(
+          "File:Img11.jpg",
+          monumentIds = List("01-xxx-0001"),
+          author = Some("FromCrimea")
+        ),
+        Image(
+          "File:Img51.jpg",
+          monumentIds = List("05-xxx-0001"),
+          author = Some("FromPodillya1")
+        ),
+        Image(
+          "File:Img52.jpg",
+          monumentIds = List("05-xxx-0001"),
+          author = Some("FromPodillya2")
+        ),
+        Image(
+          "File:Img71.jpg",
+          monumentIds = List("07-xxx-0001"),
+          author = Some("FromVolyn")
+        ),
+        Image(
+          "File:Img12.jpg",
+          monumentIds = List("01-xxx-0001"),
+          author = Some("FromCrimea")
+        )
       )
 
-      val monumentDb = new MonumentDB(contest,
+      val monumentDb = new MonumentDB(
+        contest,
         monuments(2, "01", "Crimea") ++
           monuments(5, "05", "Podillya") ++
           monuments(7, "07", "Volyn")
       )
 
-      val table = output.authorsContributedTable(Seq.empty, Some(new ImageDB(contest, images, monumentDb)), Some(monumentDb))
+      val table = output.authorsContributedTable(
+        Seq.empty,
+        Some(new ImageDB(contest, images, monumentDb)),
+        Some(monumentDb),
+        listAuthors = false
+      )
 
       table.headers === Seq("Region", "0 years total")
       table.data === Seq(
@@ -79,38 +122,83 @@ class AuthorsContributedSpec extends Specification {
       val output = new AuthorsStat
 
       val images1 = Seq(
-        Image("File:Img11y1f1.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimea")),
-        Image("File:Img11y1f2.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimea")),
-        Image("File:Img51y1f1.jpg", monumentIds = List("05-xxx-0001"), author = Some("FromPodillya1")),
-        Image("File:Img51y1f2.jpg", monumentIds = List("05-xxx-0001"), author = Some("FromPodillya2")),
-        Image("File:Img71y1f1.jpg", monumentIds = List("07-xxx-0001"), author = Some("FromVolyn"))
+        Image(
+          "File:Img11y1f1.jpg",
+          monumentIds = List("01-xxx-0001"),
+          author = Some("FromCrimea")
+        ),
+        Image(
+          "File:Img11y1f2.jpg",
+          monumentIds = List("01-xxx-0001"),
+          author = Some("FromCrimea")
+        ),
+        Image(
+          "File:Img51y1f1.jpg",
+          monumentIds = List("05-xxx-0001"),
+          author = Some("FromPodillya1")
+        ),
+        Image(
+          "File:Img51y1f2.jpg",
+          monumentIds = List("05-xxx-0001"),
+          author = Some("FromPodillya2")
+        ),
+        Image(
+          "File:Img71y1f1.jpg",
+          monumentIds = List("07-xxx-0001"),
+          author = Some("FromVolyn")
+        )
       )
 
       val images2 = Seq(
-        Image("File:Img11y2f1.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimea1")),
-        Image("File:Img12y2f1.jpg", monumentIds = List("01-xxx-0002"), author = Some("FromCrimea2")),
-        Image("File:Img52y2f1.jpg", monumentIds = List("05-xxx-0002"), author = Some("FromPodillya1")),
-        Image("File:Img52y2f1.jpg", monumentIds = List("05-xxx-0002"), author = Some("FromPodillya2")),
-        Image("File:Img72y2f1.jpg", monumentIds = List("07-xxx-0002"), author = Some("FromVolyn"))
+        Image(
+          "File:Img11y2f1.jpg",
+          monumentIds = List("01-xxx-0001"),
+          author = Some("FromCrimea1")
+        ),
+        Image(
+          "File:Img12y2f1.jpg",
+          monumentIds = List("01-xxx-0002"),
+          author = Some("FromCrimea2")
+        ),
+        Image(
+          "File:Img52y2f1.jpg",
+          monumentIds = List("05-xxx-0002"),
+          author = Some("FromPodillya1")
+        ),
+        Image(
+          "File:Img52y2f1.jpg",
+          monumentIds = List("05-xxx-0002"),
+          author = Some("FromPodillya2")
+        ),
+        Image(
+          "File:Img72y2f1.jpg",
+          monumentIds = List("07-xxx-0002"),
+          author = Some("FromVolyn")
+        )
       )
 
-      val monumentDb = new MonumentDB(contest,
+      val monumentDb = new MonumentDB(
+        contest,
         monuments(2, "01", "Crimea") ++
           monuments(5, "05", "Podillya") ++
           monuments(7, "07", "Volyn")
       )
 
       val table = output.authorsContributedTable(
-        Seq(images1, images2).zipWithIndex.map { case (images, i) => new ImageDB(Contest.WLMUkraine(2014 + i), images, monumentDb) },
+        Seq(images1, images2).zipWithIndex.map { case (images, i) =>
+          new ImageDB(Contest.WLMUkraine(2014 + i), images, monumentDb)
+        },
         Some(new ImageDB(contest, images1 ++ images2, monumentDb)),
-        Some(monumentDb))
+        Some(monumentDb),
+        listAuthors = false
+      )
 
       table.headers === Seq("Region", "2 years total", "2015", "2014")
       table.data === Seq(
         Seq("Автономна Республіка Крим", "3") ++ Seq("1", "2").reverse,
-        Seq("Вінницька область", "2") ++ Seq( "2", "2").reverse,
-        Seq("Волинська область", "1") ++ Seq( "1", "1").reverse,
-        Seq("Total", "6") ++ Seq( "4", "5").reverse
+        Seq("Вінницька область", "2") ++ Seq("2", "2").reverse,
+        Seq("Волинська область", "1") ++ Seq("1", "1").reverse,
+        Seq("Total", "6") ++ Seq("4", "5").reverse
       )
     }
   }

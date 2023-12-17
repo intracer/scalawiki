@@ -8,9 +8,15 @@ import org.scalawiki.json.Parser
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-case class QueryProgress(pages: Long, done: Boolean, action: Action, bot: MwBot, context: Map[String, String] = Map.empty)
+case class QueryProgress(pages: Long,
+                         done: Boolean,
+                         action: Action,
+                         bot: MwBot,
+                         context: Map[String, String] = Map.empty)
 
-class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] = Map.empty) {
+class DslQuery(val action: Action,
+               val bot: MwBot,
+               context: Map[String, String] = Map.empty) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -27,9 +33,9 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
 
     onProgress(pages.size)
 
-    implicit val success: retry.Success[String] = retry.Success[String](_ => true)
+    implicit val success: retry.Success[String] =
+      retry.Success[String](_ => true)
 
-    // TODO fix memory leak
     retry.Backoff()(odelay.Timer.default)(() => bot.post(params.toMap)) flatMap {
       body =>
         val parser = new Parser(action)
@@ -53,17 +59,17 @@ class DslQuery(val action: Action, val bot: MwBot, context: Map[String, String] 
             Future.failed(withParams)
           case Failure(ex) =>
             bot.log.error(s"${bot.host} exception $ex, body: $body")
-            Future.failed(ex)
+            Future.failed(MwException(ex.getMessage, ex.getMessage, params.toMap))
         }
     }
   }
-
 
   def onProgress(pages: Long, done: Boolean = false): Unit = {
     if (done) {
       val estimatedTime = (System.nanoTime() - startTime) / Math.pow(10, 9)
 
-      bot.log.info(s"${bot.host} Action completed with $pages pages in $estimatedTime seconds,  $action.pairs")
+      bot.log.info(
+        s"${bot.host} Action completed with $pages pages in $estimatedTime seconds,  $action.pairs")
     } else {
       bot.log.info(s"${bot.host} pages: $pages action: $action.pairs")
     }

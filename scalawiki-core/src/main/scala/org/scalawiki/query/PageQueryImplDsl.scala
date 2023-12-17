@@ -17,12 +17,17 @@ import scala.concurrent.Future
 
 class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
                        bot: MwBot,
-                       context: Map[String, String] = Map.empty) extends PageQuery with SinglePageQuery {
+                       context: Map[String, String] = Map.empty)
+    extends PageQuery
+    with SinglePageQuery {
 
   override def withContext(context: Map[String, String]) =
     new PageQueryImplDsl(query, bot, context)
 
-  override def revisions(namespaces: Set[Int], props: Set[String], continueParam: Option[(String, String)]): Future[Iterable[Page]] = {
+  override def revisions(
+      namespaces: Set[Int],
+      props: Set[String],
+      continueParam: Option[(String, String)]): Future[Iterable[Page]] = {
 
     import org.scalawiki.dto.cmd.query.prop.rvprop._
 
@@ -31,59 +36,63 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
       titles => TitlesParam(titles.toSeq)
     )
 
-    val action = Action(Query(
-      pages,
-      Prop(
-        Info(),
-        Revisions(
-          RvProp(RvPropArgs.byNames(props.toSeq): _*),
-          RvLimit("max")
+    val action = Action(
+      Query(
+        pages,
+        Prop(
+          Info(),
+          Revisions(
+            RvProp(RvPropArgs.byNames(props.toSeq): _*),
+            RvLimit("max")
+          )
         )
-      )
-    ))
+      ))
 
     bot.run(action, context)
   }
 
   override def revisionsByGenerator(
-                                     generator: String,
-                                     generatorPrefix: String,
-                                     namespaces: Set[Int],
-                                     props: Set[String],
-                                     continueParam: Option[(String, String)],
-                                     limit: String,
-                                     titlePrefix: Option[String]): Future[Iterable[Page]] = {
+      generator: String,
+      generatorPrefix: String,
+      namespaces: Set[Int],
+      props: Set[String],
+      continueParam: Option[(String, String)],
+      limit: String,
+      titlePrefix: Option[String]): Future[Iterable[Page]] = {
 
     val pageId: Option[Long] = query.left.toOption.map(_.head)
     val title: Option[String] = query.right.toOption.map(_.head)
 
-    val generatorArg = ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit))
+    val generatorArg =
+      ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit))
     val queryParams = pagesParam(pageId, title, generatorArg) ++ Seq(
       Prop(
         Info(),
         Revisions(RvProp(RvPropArgs.byNames(props.toSeq): _*))
       ),
-      Generator(ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)).get)
+      Generator(
+        ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)).get)
     )
 
-    val action = Action(Query(queryParams:_*))
+    val action = Action(Query(queryParams: _*))
     bot.run(action, context)
   }
 
   override def imageInfoByGenerator(
-                                     generator: String,
-                                     generatorPrefix: String,
-                                     namespaces: Set[Int],
-                                     props: Set[String],
-                                     continueParam: Option[(String, String)],
-                                     limit: String,
-                                     titlePrefix: Option[String]): Future[Iterable[Page]] = {
+      generator: String,
+      generatorPrefix: String,
+      namespaces: Set[Int],
+      props: Set[String],
+      continueParam: Option[(String, String)],
+      limit: String,
+      titlePrefix: Option[String]): Future[Iterable[Page]] = {
     import org.scalawiki.dto.cmd.query.prop.iiprop._
 
     val pageId: Option[Long] = query.left.toOption.map(_.head)
     val title: Option[String] = query.right.toOption.map(_.head)
 
-    val generatorArg = ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit))
+    val generatorArg =
+      ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit))
     val queryParams = pagesParam(pageId, title, generatorArg) ++ Seq(
       Prop(
         ImageInfo(
@@ -93,38 +102,52 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
       Generator(generatorArg.get)
     )
 
-    val action = Action(Query(queryParams:_*))
+    val action = Action(Query(queryParams: _*))
     bot.run(action, context)
   }
 
-  private def pagesParam(pageId: Option[Long], title: Option[String], generatorArg: Option[GeneratorArg]) = {
-    val pagesInGenerator = generatorArg.exists(_.pairs.map(_._1).exists(p => p.endsWith("title") || p.endsWith("pageid")))
-    if (pagesInGenerator) Seq.empty[QueryParam[String]] else {
-      title.map(t => TitlesParam(Seq(t))).toSeq ++ pageId.map(id => PageIdsParam(Seq(id))).toSeq
+  private def pagesParam(pageId: Option[Long],
+                         title: Option[String],
+                         generatorArg: Option[GeneratorArg]) = {
+    val pagesInGenerator = generatorArg.exists(
+      _.pairs
+        .map(_._1)
+        .exists(p => p.endsWith("title") || p.endsWith("pageid")))
+    if (pagesInGenerator) Seq.empty[QueryParam[String]]
+    else {
+      title.map(t => TitlesParam(Seq(t))).toSeq ++ pageId
+        .map(id => PageIdsParam(Seq(id)))
+        .toSeq
     }
   }
 
-  override def edit(text: String, summary: Option[String] = None, section: Option[String] = None, token: Option[String] = None, multi: Boolean = false) = {
+  override def edit(text: String,
+                    summary: Option[String] = None,
+                    section: Option[String] = None,
+                    token: Option[String] = None,
+                    multi: Boolean = false) = {
 
     val page = query.fold(
       ids => PageId(ids.head),
       titles => Title(titles.head)
     )
 
-    val action = Action(Edit(
-      page,
-      Text(text),
-      Token(token.fold(bot.token)(identity))
-    ))
+    val action = Action(
+      Edit(
+        page,
+        Text(text),
+        Token(token.fold(bot.token)(identity))
+      ))
 
     val params = action.pairs.toMap ++
       Map("action" -> "edit",
-        "format" -> "json",
-        "utf8" -> "",
-        "bot" -> "x",
-        "assert" -> "user",
-        "assert" -> "bot") ++ section.map(s => "section" -> s).toSeq ++ summary.map(s => "summary" -> s).toSeq
-
+          "format" -> "json",
+          "utf8" -> "",
+          "bot" -> "x",
+          "assert" -> "user",
+          "assert" -> "bot") ++ section
+      .map(s => "section" -> s)
+      .toSeq ++ summary.map(s => "summary" -> s).toSeq
 
     import scala.concurrent.ExecutionContext.Implicits.global
     def performEdit(): Future[String] = {
@@ -157,7 +180,8 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
       "comment" -> "update",
       "filesize" -> fileContents.size.toString,
       "assert" -> "user",
-      "assert" -> "bot") ++
+      "assert" -> "bot"
+    ) ++
       text.map("text" -> _) ++
       comment.map("comment" -> _) ++
       (if (ignoreWarnings) Seq("ignorewarnings" -> "true") else Seq.empty)
@@ -165,44 +189,53 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
     bot.postFile(uploadResponseReads, params, "file", filename)
   }
 
-  override def whatTranscludesHere(namespaces: Set[Int], continueParam: Option[(String, String)]): Future[Iterable[Page]] = {
+  override def whatTranscludesHere(
+      namespaces: Set[Int],
+      continueParam: Option[(String, String)]): Future[Iterable[Page]] = {
     val pages = query.fold(
       ids => EiPageId(ids.head),
       titles => EiTitle(titles.head)
     )
 
-    val action = Action(Query(
-      ListParam(
-        EmbeddedIn(
-          pages,
-          EiLimit("max"),
-          EiNamespace(namespaces.toSeq)
+    val action = Action(
+      Query(
+        ListParam(
+          EmbeddedIn(
+            pages,
+            EiLimit("max"),
+            EiNamespace(namespaces.toSeq)
+          )
         )
-      )
-    ))
+      ))
 
     bot.run(action, context)
   }
 
-  override def categoryMembers(namespaces: Set[Int], continueParam: Option[(String, String)]): Future[Iterable[Page]] = {
+  override def categoryMembers(
+      namespaces: Set[Int],
+      continueParam: Option[(String, String)]): Future[Iterable[Page]] = {
     val pages = query.fold(
       ids => CmPageId(ids.head),
       titles => CmTitle(titles.head)
     )
 
-    val cmTypes = namespaces.filter(_ == Namespace.CATEGORY).map(_ => CmTypeSubCat) ++
+    val cmTypes = namespaces
+      .filter(_ == Namespace.CATEGORY)
+      .map(_ => CmTypeSubCat) ++
       namespaces.filter(_ == Namespace.FILE).map(_ => CmTypeFile)
 
-    val cmParams = Seq(pages,
-      CmLimit("max"),
-      CmNamespace(namespaces.toSeq)
-    ) ++ (if (cmTypes.nonEmpty) Seq(CmType(cmTypes.toSeq: _*)) else Seq.empty)
+    val cmParams = Seq(pages, CmLimit("max"), CmNamespace(namespaces.toSeq)) ++ (if (cmTypes.nonEmpty)
+                                                                                   Seq(CmType(
+                                                                                     cmTypes.toSeq: _*))
+                                                                                 else
+                                                                                   Seq.empty)
 
-    val action = Action(Query(
-      ListParam(
-        CategoryMembers(cmParams: _*)
-      )
-    ))
+    val action = Action(
+      Query(
+        ListParam(
+          CategoryMembers(cmParams: _*)
+        )
+      ))
 
     bot.run(action, context)
   }
