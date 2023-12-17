@@ -18,9 +18,11 @@ class AuthorsStat(val uploadImages: Boolean = false) {
       .updateWiki(bot)
   }
 
-  def authorsContributed(imageDbs: Seq[ImageDB],
-                         totalImageDb: Option[ImageDB],
-                         monumentDb: Option[MonumentDB]): String = {
+  def authorsContributed(
+      imageDbs: Seq[ImageDB],
+      totalImageDb: Option[ImageDB],
+      monumentDb: Option[MonumentDB]
+  ): String = {
 
     val table = authorsContributedTable(imageDbs, totalImageDb, monumentDb)
 
@@ -40,7 +42,8 @@ class AuthorsStat(val uploadImages: Boolean = false) {
             .sorted
             .map(_.replace("Участник:", ""))
             .filterNot(_.isBlank)
-        val listPage = "Commons:Wiki Loves Monuments in Ukraine/Автори " + regionName
+        val listPage =
+          "Commons:Wiki Loves Monuments in Ukraine/Автори " + regionName
         val text = authors
           .map(author => s"# {{#target:User_talk:$author|}}")
           .mkString("\n")
@@ -49,9 +52,12 @@ class AuthorsStat(val uploadImages: Boolean = false) {
     }
   }
 
-  def authorsContributedTable(imageDbs: Seq[ImageDB],
-                              totalImageDb: Option[ImageDB],
-                              monumentDb: Option[MonumentDB]): Table = {
+  def authorsContributedTable(
+      imageDbs: Seq[ImageDB],
+      totalImageDb: Option[ImageDB],
+      monumentDb: Option[MonumentDB],
+      listAuthors: Boolean = true
+  ): Table = {
     val contest = monumentDb.map(_.contest).getOrElse(imageDbs.head.contest)
     val categoryName = contest.imagesCategory
 
@@ -80,18 +86,22 @@ class AuthorsStat(val uploadImages: Boolean = false) {
           .replaceAll("область", "")
           .replaceAll("Автономна Республіка", "АР")
 
-        yearDbs.zipWithIndex.foreach {
-          case (yearDb, i) =>
-            dataset.addValue(yearDb.authorsByRegion(regionId).size,
-                             yearSeq(i),
-                             shortRegionName)
+        yearDbs.zipWithIndex.foreach { case (yearDb, i) =>
+          dataset.addValue(
+            yearDb.authorsByRegion(regionId).size,
+            yearSeq(i),
+            shortRegionName
+          )
         }
 
         Seq(regionName) ++
           totalImageDb.map { db =>
             val count = db.authorsByRegion(regionId).size.toString
-            val listPage = "Commons:Wiki Loves Monuments in Ukraine/Автори " + regionName
-            s"[[$listPage|$count]]"
+            if (listAuthors) {
+              val listPage =
+                "Commons:Wiki Loves Monuments in Ukraine/Автори " + regionName
+              s"[[$listPage|$count]]"
+            } else count
           } ++
           yearDbs.map(_.authorsByRegion(regionId).size.toString)
       }
@@ -107,30 +117,37 @@ class AuthorsStat(val uploadImages: Boolean = false) {
     val idsSize = ids.map(_.size)
 
     userImages = Some(
-      authorsStatImages(filenamePrefix,
-                        categoryName,
-                        yearSeq,
-                        dataset,
-                        ids,
-                        idsSize,
-                        uploadImages))
+      authorsStatImages(
+        filenamePrefix,
+        categoryName,
+        yearSeq,
+        dataset,
+        ids,
+        idsSize,
+        uploadImages
+      )
+    )
 
     new Table(columns, rows, "Authors contributed")
   }
 
-  def authorsImages(byAuthor: Map[String, Seq[Image]],
-                    monumentDb: Option[MonumentDB]): String = {
+  def authorsImages(
+      byAuthor: Map[String, Seq[Image]],
+      monumentDb: Option[MonumentDB]
+  ): String = {
 
     val sections = byAuthor
       .mapValues(images =>
         monumentDb.fold(images)(db =>
-          images.filter(_.monumentId.fold(false)(db.ids.contains))))
+          images.filter(_.monumentId.fold(false)(db.ids.contains))
+        )
+      )
       .collect {
         case (user, images) if images.nonEmpty =>
           val userLink = s"[[User:$user|$user]]"
           val header = s"== $userLink ==\n"
-          val descriptions = images.map(i =>
-            i.mpx + " МПкс (" + i.resolution.getOrElse("") + ")")
+          val descriptions = images
+            .map(i => i.mpx + " МПкс (" + i.resolution.getOrElse("") + ")")
 
           header + Image.gallery(images.map(_.title), descriptions)
       }
@@ -172,12 +189,14 @@ class AuthorsStat(val uploadImages: Boolean = false) {
       MwBot.fromHost(MwBot.commons).page(chartTotalFile).upload(chartTotalFile)
 
       val intersectionFile = filenamePrefix + "AuthorsByYearPie"
-      charts.intersectionDiagram("Унікальність авторів за роками",
-                                 intersectionFile,
-                                 yearSeq,
-                                 ids,
-                                 900,
-                                 800)
+      charts.intersectionDiagram(
+        "Унікальність авторів за роками",
+        intersectionFile,
+        yearSeq,
+        ids,
+        900,
+        800
+      )
       MwBot
         .fromHost(MwBot.commons)
         .page(intersectionFile + ".png")
