@@ -1,12 +1,9 @@
 package org.scalawiki.bots.np
 
-import org.apache.poi.ss.usermodel.{Cell, CellType}
-
-import java.io.File
-import scala.jdk.CollectionConverters._
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
-import java.io.FileInputStream
+import java.io.{File, FileInputStream}
+import scala.jdk.CollectionConverters._
 
 case class Person(contact: String, ttns: Seq[TTN])
 
