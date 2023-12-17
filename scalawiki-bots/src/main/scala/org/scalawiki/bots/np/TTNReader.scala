@@ -96,7 +96,7 @@ object TTNReader {
 //    receivers.foreach(println)
 
 //    ttns2023
-//      .filter(x => x.receiverContact.contains("380683381211") && x.year == "2023")
+//      .filter(x => x.receiverContact.contains("380681234567") && x.year == "2023")
 //      .sortBy(_.yyMmDd).zipWithIndex
 //      .foreach { case (t, i) =>
 //        println(s"${i+1}. ${t.date}, ${t.description}, ${t.mass}, ${t.cost}, ${t.receiverContact}")
