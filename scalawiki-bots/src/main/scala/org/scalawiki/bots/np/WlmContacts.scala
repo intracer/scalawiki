@@ -1,12 +1,8 @@
 package org.scalawiki.bots.np
 
-import scala.io.Source
-import scala.util.matching.Regex
-
 object WlmContacts {
 
   private val Number = """[ +][\d\-()\s]{10,}""".r
-  private val Lengths = Set(10, 12)
 
   def main(args: Array[String]): Unit = {
     println(getNumbers.size)
@@ -14,8 +10,17 @@ object WlmContacts {
   }
 
   def getLines: Seq[String] = {
-    val source = Source.fromFile("c:\\wmua\\np\\progress.txt")
-    source.getLines().toSeq
+    Seq(
+      " 0931234567",
+      " 380671234567",
+      " 063-123-45-67",
+      " 097 123-45-67",
+      " 095 123 45 67",
+      " 095-1234567",
+      " (097)1234567",
+      " 380 (63) 123 45 67",
+      " 38 050 123 45 67"
+    )
   }
 
   def getNumbers: Seq[String] = {
