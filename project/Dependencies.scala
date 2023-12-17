@@ -12,22 +12,22 @@ object Dependencies {
   val H2V = "1.4.200"
   val JimFsV = "1.3.0"
   val JodaTimeV = "2.12.2"
-  val JSoupV = "1.16.1"
-  val LogbackClassicV = "1.3.8"
+  val JSoupV = "1.16.2"
+  val LogbackClassicV = "1.3.11"
   val MockServerV = "5.15.0"
   val ReactiveStreamsV = "1.0.4"
   val RetryV = "0.3.6"
-  val Scala213V = "2.13.11"
+  val Scala213V = "2.13.12"
   val Scala212V = "2.12.18"
   val ScalaChartV = "0.8.0"
   val ScalaCheckV = "1.17.0"
   val ScalaCsvV = "1.3.10"
   val ScalaParserCombinatorsV = "2.2.0"
   val ScalaXmlV = "2.1.0"
-  val ScallopV = "5.0.0"
+  val ScallopV = "5.0.1"
   val Slf4jV = "2.0.5"
   val SwcEngineV = "3.1.9"
-  val TypesafeConfigV = "1.4.2"
+  val TypesafeConfigV = "1.4.3"
 
   val resolvers = Seq(
     "Typesafe Repo" at "https://repo.typesafe.com/typesafe/releases/",
@@ -93,7 +93,7 @@ object Dependencies {
     }
 
     object Poi {
-      val PoiV = "5.2.3"
+      val PoiV = "5.2.5"
       val PoiXwpfV = "2.0.4"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
@@ -106,7 +106,7 @@ object Dependencies {
 
     object Commons {
       val CommonsCodecV = "1.16.0"
-      val CommonsCompressV = "1.23.0"
+      val CommonsCompressV = "1.25.0"
       val CommonsLang3V = "3.7"
       val CommonsIoV = "2.7"
 
@@ -132,7 +132,7 @@ object Dependencies {
     }
 
     object Specs2 {
-      val SpecsV = "4.20.0"
+      val SpecsV = "4.20.2"
 
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV
