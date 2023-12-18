@@ -8,7 +8,7 @@ lazy val isScala213 = settingKey[Boolean]("Is the scala version 2.13.")
 lazy val commonSettings = Seq(
   organization := "org.scalawiki",
   version := "0.7.0-SNAPSHOT",
-  crossScalaVersions := Seq(Scala212V, Scala213V),
+  crossScalaVersions := Seq(Scala213V),
   scalaVersion := crossScalaVersions.value.last,
   isScala213 := scalaVersion.value.startsWith("2.13."),
   Global / excludeLintKeys += isScala213,
@@ -83,8 +83,11 @@ lazy val bots = Project("scalawiki-bots", file("scalawiki-bots"))
     "com.github.pathikrit" %% "better-files" % BetterFilesV,
     "org.rogach" %% "scallop" % ScallopV,
     "org.xwiki.commons" % "xwiki-commons-blame-api" % BlameApiV,
+    Library.Commons.io,
     Library.Poi.scratchpad,
     Library.Poi.ooxml,
+    Library.Poi.ooxmlFull,
+    Library.Poi.poi,
     Library.Poi.converter,
     Library.Play.twirlApi(isScala213.value),
     "com.github.tototoshi" %% "scala-csv" % ScalaCsvV

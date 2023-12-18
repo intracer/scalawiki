@@ -1,12 +1,12 @@
 package org.scalawiki.bots.museum
 
-import java.io.{ByteArrayOutputStream, File, FileInputStream}
+import fr.opensagres.poi.xwpf.converter.core.FileURIResolver
+import fr.opensagres.poi.xwpf.converter.xhtml.{XHTMLConverter, XHTMLOptions}
 
+import java.io.{ByteArrayOutputStream, File, FileInputStream}
 import org.apache.poi.ooxml.POIXMLDocument
 import org.apache.poi.hwpf.converter.WordToHtmlConverter
 import org.apache.poi.hwpf.extractor.WordExtractor
-import org.apache.poi.xwpf.converter.core.FileURIResolver
-import org.apache.poi.xwpf.converter.xhtml.{XHTMLConverter, XHTMLOptions}
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor
 import org.apache.poi.xwpf.usermodel.XWPFDocument
 import better.files.{File => SFile}

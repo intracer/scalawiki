@@ -35,7 +35,7 @@ class StatParamsSpec extends Specification {
     }
 
     "start year" in {
-      val cfg = StatParams.parse(Seq("--campaign", "wle-ua", "-y", "2017", "--startyear", "2012"))
+      val cfg = StatParams.parse(Seq("--campaign", "wle-ua", "-y", "2017", "--start-year", "2012"))
       cfg === StatConfig("wle-ua", 2012 to 2017)
     }
 

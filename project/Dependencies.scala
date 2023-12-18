@@ -12,22 +12,21 @@ object Dependencies {
   val H2V = "1.4.200"
   val JimFsV = "1.3.0"
   val JodaTimeV = "2.12.2"
-  val JSoupV = "1.16.1"
-  val LogbackClassicV = "1.3.11"
+  val JSoupV = "1.16.2"
+  val LogbackClassicV = "1.4.11"
   val MockServerV = "5.15.0"
   val ReactiveStreamsV = "1.0.4"
   val RetryV = "0.3.6"
   val Scala213V = "2.13.12"
-  val Scala212V = "2.12.18"
   val ScalaChartV = "0.8.0"
   val ScalaCheckV = "1.17.0"
   val ScalaCsvV = "1.3.10"
   val ScalaParserCombinatorsV = "2.2.0"
   val ScalaXmlV = "2.1.0"
-  val ScallopV = "5.0.0"
+  val ScallopV = "5.0.1"
   val Slf4jV = "2.0.5"
   val SwcEngineV = "3.1.9"
-  val TypesafeConfigV = "1.4.2"
+  val TypesafeConfigV = "1.4.3"
 
   val resolvers = Seq(
     "Typesafe Repo" at "https://repo.typesafe.com/typesafe/releases/",
@@ -49,13 +48,17 @@ object Dependencies {
     Library.Commons.lang,
     "com.typesafe" % "config" % TypesafeConfigV,
     Library.Poi.ooxml,
+    Library.Poi.poi,
+    Library.Poi.ooxmlFull,
     Library.Jackson.core,
     Library.Jackson.annotations,
     Library.Jackson.databind,
     "joda-time" % "joda-time" % JodaTimeV,
     "org.slf4j" % "slf4j-api" % Slf4jV,
     "ch.qos.logback" % "logback-classic" % LogbackClassicV,
-    "javax.xml.bind" % "jaxb-api" % "2.3.1"
+    "javax.xml.bind" % "jaxb-api" % "2.3.1",
+    "org.apache.logging" % "log4j:log4j-core" % "2.18.1",
+    "org.apache.logging" % "log4j:log4j-api" % "2.18.1"
   )
 
   object Library {
@@ -81,25 +84,30 @@ object Dependencies {
 
       def TwirlV(isScala213: Boolean) = "1.5.2"
 
-      def json(isScala213: Boolean) = "com.typesafe.play" %% "play-json" % PlayJsonV(isScala213)
+      def json(isScala213: Boolean) =
+        "com.typesafe.play" %% "play-json" % PlayJsonV(isScala213)
 
-      def twirlApi(isScala213: Boolean) = "com.typesafe.play" %% "twirl-api" % TwirlV(isScala213)
+      def twirlApi(isScala213: Boolean) =
+        "com.typesafe.play" %% "twirl-api" % TwirlV(isScala213)
     }
 
     object Poi {
-      val PoiV = "5.2.3"
-      val PoiXwpfV = "1.0.6"
+      val PoiV = "5.2.5"
+      val PoiXwpfV = "2.0.4"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
+      val poi = "org.apache.poi" % "poi" % PoiV
       val ooxml = "org.apache.poi" % "poi-ooxml" % PoiV
-      val converter = "fr.opensagres.xdocreport" % "org.apache.poi.xwpf.converter.xhtml" % PoiXwpfV
+      val ooxmlFull = "org.apache.poi" % "poi-ooxml-full" % PoiV
+
+      val converter = "fr.opensagres.xdocreport" % "fr.opensagres.xdocreport.converter.docx.xwpf" % PoiXwpfV
     }
 
     object Commons {
       val CommonsCodecV = "1.16.0"
-      val CommonsCompressV = "1.24.0"
+      val CommonsCompressV = "1.25.0"
       val CommonsLang3V = "3.7"
-      val CommonsIoV = "2.6"
+      val CommonsIoV = "2.7"
 
       val codec = "commons-codec" % "commons-codec" % CommonsCodecV
       val io = "commons-io" % "commons-io" % CommonsIoV

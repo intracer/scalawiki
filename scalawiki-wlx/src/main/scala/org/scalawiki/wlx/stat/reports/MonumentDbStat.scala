@@ -10,7 +10,15 @@ class MonumentDbStat {
   val format = NumberFormat.getPercentInstance
 
   val columns = Seq(
-    "country", 	"lang", 	"total", 	"name", "address",	"coordinates", 	"image", 	"commonscat", 	"article"
+    "country",
+    "lang",
+    "total",
+    "name",
+    "address",
+    "coordinates",
+    "image",
+    "commonscat",
+    "article"
   )
 
   def getStat(monumentDbs: Seq[MonumentDB]) = {
@@ -32,7 +40,10 @@ class MonumentDbStat {
       def withPercentage(value: Int) =
         s"$value <small>(${format.format(value.toDouble / total.toDouble)})</small>"
 
-      Seq(country, lang, total.toString,
+      Seq(
+        country,
+        lang,
+        total.toString,
         withPercentage(name),
         withPercentage(address),
         withPercentage(coordinates),
@@ -48,5 +59,3 @@ class MonumentDbStat {
   }
 
 }
-
-
