@@ -4,7 +4,7 @@ object Dependencies {
 
   val AaltoXmlV = "1.3.2"
   val BetterFilesV = "3.9.2"
-  val BlameApiV = "15.10"
+  val BlameApiV = "15.10.1"
   val ChronicleMapV = "3.22.9"
   val ChronoScalaV = "1.0.0"
   val FicusV = "1.5.2"
@@ -12,7 +12,7 @@ object Dependencies {
   val H2V = "1.4.200"
   val JimFsV = "1.3.0"
   val JodaTimeV = "2.12.2"
-  val JSoupV = "1.16.2"
+  val JSoupV = "1.17.1"
   val LogbackClassicV = "1.4.14"
   val MockServerV = "5.15.0"
   val ReactiveStreamsV = "1.0.4"
@@ -108,7 +108,7 @@ object Dependencies {
       val CommonsCodecV = "1.16.0"
       val CommonsCompressV = "1.25.0"
       val CommonsLang3V = "3.7"
-      val CommonsIoV = "2.7"
+      val CommonsIoV = "2.15.1"
 
       val codec = "commons-codec" % "commons-codec" % CommonsCodecV
       val io = "commons-io" % "commons-io" % CommonsIoV
@@ -135,7 +135,7 @@ object Dependencies {
     }
 
     object Specs2 {
-      val SpecsV = "4.20.2"
+      val SpecsV = "4.20.3"
 
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV
