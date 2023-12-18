@@ -13,7 +13,7 @@ object Dependencies {
   val JimFsV = "1.3.0"
   val JodaTimeV = "2.12.2"
   val JSoupV = "1.16.2"
-  val LogbackClassicV = "1.4.11"
+  val LogbackClassicV = "1.4.14"
   val MockServerV = "5.15.0"
   val ReactiveStreamsV = "1.0.4"
   val RetryV = "0.3.6"
@@ -100,7 +100,8 @@ object Dependencies {
       val ooxml = "org.apache.poi" % "poi-ooxml" % PoiV
       val ooxmlFull = "org.apache.poi" % "poi-ooxml-full" % PoiV
 
-      val converter = "fr.opensagres.xdocreport" % "fr.opensagres.xdocreport.converter.docx.xwpf" % PoiXwpfV
+      val converter =
+        "fr.opensagres.xdocreport" % "fr.opensagres.xdocreport.converter.docx.xwpf" % PoiXwpfV
     }
 
     object Commons {
@@ -112,15 +113,18 @@ object Dependencies {
       val codec = "commons-codec" % "commons-codec" % CommonsCodecV
       val io = "commons-io" % "commons-io" % CommonsIoV
       val lang = "org.apache.commons" % "commons-lang3" % CommonsLang3V
-      val compress = "org.apache.commons" % "commons-compress" % CommonsCompressV
+      val compress =
+        "org.apache.commons" % "commons-compress" % CommonsCompressV
     }
 
     object Jackson {
       val JacksonV = "2.11.4"
 
       val core = "com.fasterxml.jackson.core" % "jackson-core" % JacksonV
-      val annotations = "com.fasterxml.jackson.core" % "jackson-annotations" % JacksonV
-      val databind = "com.fasterxml.jackson.core" % "jackson-databind" % JacksonV
+      val annotations =
+        "com.fasterxml.jackson.core" % "jackson-annotations" % JacksonV
+      val databind =
+        "com.fasterxml.jackson.core" % "jackson-databind" % JacksonV
     }
 
     object Slick {
