@@ -9,7 +9,7 @@ object Dependencies {
   val ChronoScalaV = "1.0.0"
   val FicusV = "1.5.2"
   val GuavaV = "23.0"
-  val H2V = "1.4.200"
+  val H2V = "2.2.224"
   val JimFsV = "1.3.0"
   val JodaTimeV = "2.12.2"
   val JSoupV = "1.16.2"
@@ -100,7 +100,8 @@ object Dependencies {
       val ooxml = "org.apache.poi" % "poi-ooxml" % PoiV
       val ooxmlFull = "org.apache.poi" % "poi-ooxml-full" % PoiV
 
-      val converter = "fr.opensagres.xdocreport" % "fr.opensagres.xdocreport.converter.docx.xwpf" % PoiXwpfV
+      val converter =
+        "fr.opensagres.xdocreport" % "fr.opensagres.xdocreport.converter.docx.xwpf" % PoiXwpfV
     }
 
     object Commons {
@@ -112,15 +113,18 @@ object Dependencies {
       val codec = "commons-codec" % "commons-codec" % CommonsCodecV
       val io = "commons-io" % "commons-io" % CommonsIoV
       val lang = "org.apache.commons" % "commons-lang3" % CommonsLang3V
-      val compress = "org.apache.commons" % "commons-compress" % CommonsCompressV
+      val compress =
+        "org.apache.commons" % "commons-compress" % CommonsCompressV
     }
 
     object Jackson {
       val JacksonV = "2.11.4"
 
       val core = "com.fasterxml.jackson.core" % "jackson-core" % JacksonV
-      val annotations = "com.fasterxml.jackson.core" % "jackson-annotations" % JacksonV
-      val databind = "com.fasterxml.jackson.core" % "jackson-databind" % JacksonV
+      val annotations =
+        "com.fasterxml.jackson.core" % "jackson-annotations" % JacksonV
+      val databind =
+        "com.fasterxml.jackson.core" % "jackson-databind" % JacksonV
     }
 
     object Slick {
