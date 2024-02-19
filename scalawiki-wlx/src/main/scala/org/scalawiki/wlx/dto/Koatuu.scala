@@ -5,9 +5,12 @@ import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 
-case class RegionType(code: String, names: Seq[String],
-                      nameSuffix: Option[String] = None,
-                      noSuffix: Set[String] = Set.empty)
+case class RegionType(
+    code: String,
+    names: Seq[String],
+    nameSuffix: Option[String] = None,
+    noSuffix: Set[String] = Set.empty
+)
 
 trait RegionTypes {
 
@@ -15,9 +18,11 @@ trait RegionTypes {
 
   def codeToType: Map[String, RegionType]
 
-  def groupTypes(types: Seq[RegionType]): Map[String, RegionType] = types.groupBy(_.code).mapValues(_.head).toMap
+  def groupTypes(types: Seq[RegionType]): Map[String, RegionType] =
+    types.groupBy(_.code).mapValues(_.head).toMap
 
-  def nameToType(name: String): Seq[RegionType] = regionTypes.filter(_.names.exists(name.toLowerCase.contains))
+  def nameToType(name: String): Seq[RegionType] =
+    regionTypes.filter(_.names.exists(name.toLowerCase.contains))
 
 }
 
@@ -37,34 +42,53 @@ object KoatuuTypes extends RegionTypes {
 
 object Koatuu {
 
-  def regions(parent: () => Option[AdmDivision] = () => None) = regionsNew(parent)
+  def regions(parent: () => Option[AdmDivision] = () => None) = regionsNew(
+    parent
+  )
 
-  def regionsNew(parent: () => Option[AdmDivision] = () => None, size: Int = 1): Seq[AdmDivision] = {
+  def regionsNew(
+      parent: () => Option[AdmDivision] = () => None,
+      size: Int = 1
+  ): Seq[AdmDivision] = {
     val stream = getClass.getResourceAsStream("/koatuu_new.json")
     val json = Json.parse(stream)
     AdmDivisionFlat.makeHierarchy(parse(json), parent)
   }
 
-  def regionReads(level: Int, parent: () => Option[AdmDivision] = () => None): Reads[AdmDivision] = (
+  def regionReads(
+      level: Int,
+      parent: () => Option[AdmDivision] = () => None
+  ): Reads[AdmDivision] = (
     (__ \ "code").read[String].map(c => shortCode(c, level)) and
       (__ \ "name").read[String].map(betterName) and
       (__ \ ("level" + level))
         .lazyReadNullable(Reads.seq[AdmDivision](regionReads(level + 1)))
-        .map(_.getOrElse(Nil)).map(skipGroups) and
+        .map(_.getOrElse(Nil))
+        .map(skipGroups) and
       Reads.pure(parent) and
-      (__ \ "type").readNullable[String].map(_.flatMap(KoatuuTypes.codeToType.get))
-    ) (AdmDivision.apply(_, _, _, _, _, level))
+      (__ \ "type")
+        .readNullable[String]
+        .map(_.flatMap(KoatuuTypes.codeToType.get))
+  )(AdmDivision.apply(_, _, _, _, _, level))
 
-  val groupNames = Seq("Міста обласного підпорядкування", "Міста", "Райони", "Селища міського типу", "Населені пункти", "Сільради")
+  val groupNames = Seq(
+    "Міста обласного підпорядкування",
+    "Міста",
+    "Райони",
+    "Селища міського типу",
+    "Населені пункти",
+    "Сільради"
+  )
     .map(_.toUpperCase)
 
-  def groupPredicate(r: AdmDivision) = groupNames.exists(r.name.toUpperCase.startsWith)
+  def groupPredicate(r: AdmDivision) =
+    groupNames.exists(r.name.toUpperCase.startsWith)
 
   def skipGroups(regions: Seq[AdmDivision]): Seq[AdmDivision] = {
     regions flatMap {
       _ match {
         case r if groupPredicate(r) => skipGroups(r.regions)
-        case r => Seq(r)
+        case r                      => Seq(r)
       }
     }
   }
@@ -81,9 +105,15 @@ object Koatuu {
     val s1 = s.split("/").head.toLowerCase.capitalize
 
     s1
-      .split("-").map(_.capitalize).mkString("-")
-      .split(" ").map(_.capitalize).mkString(" ")
-      .split("[Мм]\\.[ ]?").map(_.capitalize).mkString("м. ")
+      .split("-")
+      .map(_.capitalize)
+      .mkString("-")
+      .split(" ")
+      .map(_.capitalize)
+      .mkString(" ")
+      .split("[Мм]\\.[ ]?")
+      .map(_.capitalize)
+      .mkString("м. ")
       .replaceFirst("^[Мм]\\.[ ]?", "")
       .replaceAll("Область$", "область")
       .replaceAll("Район$", "район")

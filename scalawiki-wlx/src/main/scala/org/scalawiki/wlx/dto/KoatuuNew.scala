@@ -7,7 +7,8 @@ import play.api.libs.json._
 
 object KoatuuNew {
 
-  val readStringFromLong: Reads[String] = implicitly[Reads[Long]].map(x => x.toString)
+  val readStringFromLong: Reads[String] =
+    implicitly[Reads[Long]].map(x => x.toString)
 
   def stringOrLong(name: String): Reads[String] = {
     (__ \ name).read[String] or
@@ -20,8 +21,10 @@ object KoatuuNew {
       stringOrLong("Третій рівень") and
       stringOrLong("Четвертий рівень") and
       (__ \ "Назва об'єкта українською мовою").read[String].map(betterName) and
-      (__ \ "Категорія").readNullable[String].map(_.flatMap(KoatuuTypes.codeToType.get))
-    ) (AdmDivisionFlat.apply(_, _, _, _, _, _))
+      (__ \ "Категорія")
+        .readNullable[String]
+        .map(_.flatMap(KoatuuTypes.codeToType.get))
+  )(AdmDivisionFlat.apply(_, _, _, _, _, _))
 
   def parse(json: JsValue): Seq[AdmDivisionFlat] = {
     json.as[Seq[AdmDivisionFlat]]

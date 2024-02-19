@@ -24,8 +24,7 @@ class HtmlParserSpec extends Specification {
 
     "htmlText" should {
       "join new lines" in {
-        HtmlParser.htmlText(
-          """ line1
+        HtmlParser.htmlText(""" line1
             | line2
             |
             | line3
@@ -33,11 +32,13 @@ class HtmlParserSpec extends Specification {
       }
 
       "preserve html paragraphs" in {
-        HtmlParser.htmlText(
-          """<p>line1
+        HtmlParser
+          .htmlText("""<p>line1
             |line2</p>
             |<p>line3</p>
-          """.stripMargin).split("\r?\n").map(_.trim) ===
+          """.stripMargin)
+          .split("\r?\n")
+          .map(_.trim) ===
           """line1 line2
             |line3""".stripMargin.split("\r?\n").map(_.trim)
 

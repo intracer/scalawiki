@@ -22,7 +22,8 @@ class MonumentDbStat {
   )
 
   def getStat(monumentDbs: Seq[MonumentDB]) = {
-    val title = monumentDbs.head.contest.contestType.name + " database statistics"
+    val title =
+      monumentDbs.head.contest.contestType.name + " database statistics"
 
     val data = monumentDbs.map { db =>
       val country = db.contest.country.code

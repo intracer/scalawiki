@@ -21,4 +21,3 @@ object NameConfig extends ListConfig {
   override val templateName = "templateName"
 
 }
-

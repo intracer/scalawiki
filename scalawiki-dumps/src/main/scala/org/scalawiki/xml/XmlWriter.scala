@@ -31,7 +31,7 @@ class XmlWriter(writer: XMLStreamWriter) {
     writer.flush()
     writer match {
       case stax2Writer: XMLStreamWriter2 => stax2Writer.closeCompletely()
-      case _ => writer.close()
+      case _                             => writer.close()
     }
   }
 
@@ -78,7 +78,11 @@ class XmlWriter(writer: XMLStreamWriter) {
     writeElement("model", "wikitext")
     writeElement("format", "text/x-wiki")
 
-    writeElement("text", rev.content.getOrElse(""), Seq("xml:space" -> "preserve"))
+    writeElement(
+      "text",
+      rev.content.getOrElse(""),
+      Seq("xml:space" -> "preserve")
+    )
     rev.sha1.foreach(writeElement("sha1", _))
 
     writer.writeEndElement()
@@ -88,7 +92,11 @@ class XmlWriter(writer: XMLStreamWriter) {
     writer.writeEmptyElement(name)
   }
 
-  def writeElement(name: String, value: Any, attrs: Seq[(String, String)] = Seq.empty) = {
+  def writeElement(
+      name: String,
+      value: Any,
+      attrs: Seq[(String, String)] = Seq.empty
+  ) = {
     writer.writeStartElement(name)
     for ((k, v) <- attrs)
       writer.writeAttribute(k, v)
@@ -101,19 +109,23 @@ class XmlWriter(writer: XMLStreamWriter) {
 
 object XmlWriter {
 
-  val outputFactory = XMLOutputFactory.newFactory().asInstanceOf[XMLOutputFactory2]
+  val outputFactory =
+    XMLOutputFactory.newFactory().asInstanceOf[XMLOutputFactory2]
   outputFactory.configureForSpeed()
 
   def create(w: Writer) = {
-    val writer = new IndentingXMLStreamWriter(XmlWriter.outputFactory.createXMLStreamWriter(w))
+    val writer = new IndentingXMLStreamWriter(
+      XmlWriter.outputFactory.createXMLStreamWriter(w)
+    )
     new XmlWriter(writer)
   }
 
   def create(os: OutputStream) = {
-    val writer = new IndentingXMLStreamWriter(XmlWriter.outputFactory.createXMLStreamWriter(os))
+    val writer = new IndentingXMLStreamWriter(
+      XmlWriter.outputFactory.createXMLStreamWriter(os)
+    )
     new XmlWriter(writer)
   }
-
 
   //  def createWriter(): XMLStreamWriter =
   //    xmlOutputFactory.createXMLStreamWriter(System.out)
@@ -130,8 +142,7 @@ object XmlWriter {
     "xmlns:xsi" -> "http://www.w3.org/2001/XMLSchema-instance",
     "xsi:schemaLocation" -> (ns + " " + schema),
     "version" -> version,
-    "xml:lang" -> "en" //TODO lang
+    "xml:lang" -> "en" // TODO lang
   )
-
 
 }

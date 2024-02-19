@@ -1,8 +1,7 @@
 package org.scalawiki.xml
 
-
 case class PageIndex(offset: Long, id: Long, title: String) {
-  
+
   override def toString = s"$offset:$id:$title"
 
 }

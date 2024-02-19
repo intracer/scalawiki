@@ -28,10 +28,14 @@ class TestHttpClient(val host: String, commandsParam: Seq[HttpStub])
   override def getResponse(url: Uri): Future[HttpResponse] =
     getResponse(url, url.query().toMap)
 
-  def getResponse(url: Uri,
-                  params: Map[String, String]): Future[HttpResponse] = {
-    require(commands.nonEmpty,
-            "Unexpected query: " + url.toString() + " with params:\n" + params)
+  def getResponse(
+      url: Uri,
+      params: Map[String, String]
+  ): Future[HttpResponse] = {
+    require(
+      commands.nonEmpty,
+      "Unexpected query: " + url.toString() + " with params:\n" + params
+    )
 
     val command = commands.dequeue()
 
@@ -43,35 +47,43 @@ class TestHttpClient(val host: String, commandsParam: Seq[HttpStub])
     require(matchResult.isSuccess, matchResult.message)
 
     val pageResponse = Option(command.response)
-      .fold(HttpResponse(StatusCodes.NotFound))(
-        text =>
-          HttpResponse(
-            StatusCodes.OK,
-            entity = HttpEntity(command.contentType,
-                                text.getBytes(StandardCharsets.UTF_8))
+      .fold(HttpResponse(StatusCodes.NotFound))(text =>
+        HttpResponse(
+          StatusCodes.OK,
+          entity = HttpEntity(
+            command.contentType,
+            text.getBytes(StandardCharsets.UTF_8)
+          )
         )
       )
 
     Promise.successful(pageResponse).future
   }
 
-  override def post(url: String,
-                    params: Map[String, String]): Future[HttpResponse] =
+  override def post(
+      url: String,
+      params: Map[String, String]
+  ): Future[HttpResponse] =
     getResponse(url, params)
 
-  override def postUri(url: Uri,
-                       params: Map[String, String]): Future[HttpResponse] =
+  override def postUri(
+      url: Uri,
+      params: Map[String, String]
+  ): Future[HttpResponse] =
     getResponse(url, params)
 
   override def postMultiPart(
       url: String,
-      params: Map[String, String]): Future[HttpResponse] =
+      params: Map[String, String]
+  ): Future[HttpResponse] =
     getResponse(url, params)
 
-  override def postFile(url: String,
-                        params: Map[String, String],
-                        fileParam: String,
-                        filename: String): Future[HttpResponse] = ???
+  override def postFile(
+      url: String,
+      params: Map[String, String],
+      fileParam: String,
+      filename: String
+  ): Future[HttpResponse] = ???
 
   override def get(url: String): Future[String] =
     getResponse(url) flatMap getBody
@@ -83,6 +95,7 @@ class TestHttpClient(val host: String, commandsParam: Seq[HttpStub])
 
   override def postMultiPart(
       url: Uri,
-      params: Map[String, String]): Future[HttpResponse] = ???
+      params: Map[String, String]
+  ): Future[HttpResponse] = ???
 
 }

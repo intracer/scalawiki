@@ -29,13 +29,14 @@ class Charts extends WithBot {
     ChartUtilities.saveChartAsPNG(new File(filename), chart, width, height)
   }
 
-  /**
-   * Creates a chart.
-   *
-   * @param dataset  the dataset.
-   *
-   * @return A chart.
-   */
+  /** Creates a chart.
+    *
+    * @param dataset
+    *   the dataset.
+    *
+    * @return
+    *   A chart.
+    */
   def createPieChart(dataset: PieDataset, title: String) = {
 
     val chart = ChartFactory.createPieChart(
@@ -45,7 +46,6 @@ class Charts extends WithBot {
       true,
       false
     )
-
 
     val plot = chart.getPlot.asInstanceOf[PiePlot]
     plot.setLabelFont(new Font("SansSerif", Font.BOLD, 14))
@@ -62,9 +62,13 @@ class Charts extends WithBot {
     plot.setSectionPaint("2014 & 2015", blend(color2013, color2014))
     plot.setSectionPaint("2015", color2014)
     plot.setSectionPaint("2013 & 2015", blend(color2012, color2014))
-    plot.setSectionPaint("2013 & 2014 & 2015", new Color(0x99CC00))
+    plot.setSectionPaint("2013 & 2014 & 2015", new Color(0x99cc00))
 
-    val gen = new StandardPieSectionLabelGenerator("{0}:\n{1} ({2})", new DecimalFormat("0"), new DecimalFormat("0%"))
+    val gen = new StandardPieSectionLabelGenerator(
+      "{0}:\n{1} ({2})",
+      new DecimalFormat("0"),
+      new DecimalFormat("0%")
+    )
     plot.setLabelGenerator(gen)
     chart
   }
@@ -77,29 +81,31 @@ class Charts extends WithBot {
     new Color(r.toInt, g.toInt, b.toInt)
   }
 
-  /**
-   * Returns a sample dataset.
-   *
-   * @return The dataset.
-   */
+  /** Returns a sample dataset.
+    *
+    * @return
+    *   The dataset.
+    */
   def createTotalDataset(years: Seq[Int], values: Seq[Int]) = {
     val category1 = "Всього"
     val dataset = new DefaultCategoryDataset()
-    years.zip(values).foreach { case (year, value) => dataset.addValue(value, year, category1) }
+    years.zip(values).foreach { case (year, value) =>
+      dataset.addValue(value, year, category1)
+    }
     dataset
   }
 
-
-  /**
-   * Creates a sample chart.
-   *
-   * @param dataset  the dataset.
-   *
-   * @return The chart.
-   */
+  /** Creates a sample chart.
+    *
+    * @param dataset
+    *   the dataset.
+    *
+    * @return
+    *   The chart.
+    */
   def createChart(dataset: CategoryDataset, rangeAxisLabel: String) = {
 
-    //ChartFactory.setChartTheme(StandardChartTheme.createDarknessTheme());
+    // ChartFactory.setChartTheme(StandardChartTheme.createDarknessTheme());
 
     // create the chart...
     val chart = ChartFactory.createBarChart(
@@ -121,7 +127,9 @@ class Charts extends WithBot {
     plot.setBackgroundPaint(Color.white)
     //    plot.setDomainGridlinePaint(Color.white)
     //    plot.setRangeGridlinePaint(Color.white)
-    plot.getRenderer.asInstanceOf[BarRenderer].setBarPainter(new StandardBarPainter())
+    plot.getRenderer
+      .asInstanceOf[BarRenderer]
+      .setBarPainter(new StandardBarPainter())
 
     plot.setDomainGridlinePaint(Color.lightGray)
     plot.setRangeGridlinePaint(Color.lightGray)
@@ -147,15 +155,24 @@ class Charts extends WithBot {
   }
 
   // up to 3 years
-  def intersectionDiagram(title: String, filename: String, years: Seq[Int], idsSeq: Seq[Set[String]], width: Int, height: Int) {
+  def intersectionDiagram(
+      title: String,
+      filename: String,
+      years: Seq[Int],
+      idsSeq: Seq[Set[String]],
+      width: Int,
+      height: Int
+  ) {
     val pieDataset = intersectionDataSet(years, idsSeq)
 
     val pieChart = createPieChart(pieDataset, title)
     saveCharts(pieChart, filename, width, height)
   }
 
-
-  def intersectionDataSet(years: Seq[Int], idsSeq: Seq[Set[String]]): DefaultPieDataset = {
+  def intersectionDataSet(
+      years: Seq[Int],
+      idsSeq: Seq[Set[String]]
+  ): DefaultPieDataset = {
     require(years.nonEmpty, "years should not be empty")
     require(idsSeq.nonEmpty, "idsSeq should not be empty")
     require(years.size == idsSeq.size, "years and idsSeq should have same size")
@@ -163,41 +180,41 @@ class Charts extends WithBot {
     val intersectAll = idsSeq.reduce(_ intersect _)
     val unionAll = idsSeq.reduce(_ ++ _)
 
-    val yearsCounts = unionAll.map { id => id -> idsSeq.count(_.contains(id)) }.toMap
-
-    val only = idsSeq.zipWithIndex.map {
-      case (ids, i) => ids -- removeByIndex(idsSeq, i).foldLeft(Set.empty[String])(_ ++ _)
-    }
-
-    val idsMap = unionAll.map {
-      id =>
-        id -> years.zip(idsSeq).flatMap {
-          case (year, set) =>
-            if (set.contains(id)) Some(year) else None
-        }
+    val yearsCounts = unionAll.map { id =>
+      id -> idsSeq.count(_.contains(id))
     }.toMap
 
-    val yearsMap = idsMap.mapValues(_.mkString(" & ")).groupBy(_._2).mapValues(_.map(_._1))
+    val only = idsSeq.zipWithIndex.map { case (ids, i) =>
+      ids -- removeByIndex(idsSeq, i).foldLeft(Set.empty[String])(_ ++ _)
+    }
+
+    val idsMap = unionAll.map { id =>
+      id -> years.zip(idsSeq).flatMap { case (year, set) =>
+        if (set.contains(id)) Some(year) else None
+      }
+    }.toMap
+
+    val yearsMap =
+      idsMap.mapValues(_.mkString(" & ")).groupBy(_._2).mapValues(_.map(_._1))
 
     val pieDataset = new DefaultPieDataset()
 
-    years.zipWithIndex.foreach {
-      case (year, i) =>
+    years.zipWithIndex.foreach { case (year, i) =>
+      pieDataset.setValue(year.toString, only(i).size)
 
-        pieDataset.setValue(year.toString, only(i).size)
-
-        (i + 1).until(years.size).foreach { j =>
-          val intersection = (idsSeq(i) intersect idsSeq(j)).filter { id => yearsCounts(id) == 2 }
-          pieDataset.setValue(s"$year & ${years(j)}", intersection.size)
+      (i + 1).until(years.size).foreach { j =>
+        val intersection = (idsSeq(i) intersect idsSeq(j)).filter { id =>
+          yearsCounts(id) == 2
         }
+        pieDataset.setValue(s"$year & ${years(j)}", intersection.size)
+      }
     }
 
     if (years.size > 3) {
-      years.zipWithIndex.foreach {
-        case (year, i) =>
-          val withoutOne = removeByIndex(years, i)
-          val key = withoutOne.mkString(" & ")
-          pieDataset.setValue(key, yearsMap(key).size)
+      years.zipWithIndex.foreach { case (year, i) =>
+        val withoutOne = removeByIndex(years, i)
+        val key = withoutOne.mkString(" & ")
+        pieDataset.setValue(key, yearsMap(key).size)
       }
     }
 
@@ -208,13 +225,13 @@ class Charts extends WithBot {
     pieDataset
   }
 
-  def removeByIndex[T](seq: Seq[T], i: Int): Seq[T] = seq.take(i) ++ seq.drop(i + 1)
+  def removeByIndex[T](seq: Seq[T], i: Int): Seq[T] =
+    seq.take(i) ++ seq.drop(i + 1)
 
   def saveCharts(chart: JFreeChart, name: String, width: Int, height: Int) {
-    //charts.saveAsJPEG(chart, name + ".jpg", width, height)
+    // charts.saveAsJPEG(chart, name + ".jpg", width, height)
     saveAsPNG(chart, name + ".png", width, height)
-    //charts.saveAsSVG(chart, name + ".svg", width, height)
+    // charts.saveAsSVG(chart, name + ".svg", width, height)
   }
-
 
 }

@@ -3,8 +3,14 @@ package org.scalawiki.compress
 import java.io.{InputStream, OutputStream}
 import java.nio.file.{Files, Path}
 
-import org.apache.commons.compress.compressors.bzip2.{BZip2CompressorInputStream, BZip2CompressorOutputStream}
-import org.apache.commons.compress.compressors.gzip.{GzipCompressorInputStream, GzipCompressorOutputStream}
+import org.apache.commons.compress.compressors.bzip2.{
+  BZip2CompressorInputStream,
+  BZip2CompressorOutputStream
+}
+import org.apache.commons.compress.compressors.gzip.{
+  GzipCompressorInputStream,
+  GzipCompressorOutputStream
+}
 
 abstract class Compression(val ext: String) {
   def inputStream(in: InputStream): InputStream
@@ -15,13 +21,16 @@ abstract class Compression(val ext: String) {
 object Bz2 extends Compression("bz2") {
   override def inputStream(in: InputStream) = new BZip2CompressorInputStream(in)
 
-  override def outputStream(out: OutputStream) = new BZip2CompressorOutputStream(out)
+  override def outputStream(out: OutputStream) =
+    new BZip2CompressorOutputStream(out)
 }
 
 object Gz extends Compression("gz") {
   override def inputStream(in: InputStream) = new GzipCompressorInputStream(in)
 
-  override def outputStream(out: OutputStream) = new GzipCompressorOutputStream(out)
+  override def outputStream(out: OutputStream) = new GzipCompressorOutputStream(
+    out
+  )
 }
 
 object SevenZ extends Compression("7z") {
@@ -46,8 +55,10 @@ object Compression {
     compressions.find(_.ext == ext).getOrElse(NoCompression)
   }
 
-  def inputStream(path: Path) = get(path).inputStream(Files.newInputStream(path))
+  def inputStream(path: Path) =
+    get(path).inputStream(Files.newInputStream(path))
 
-  def outputStream(path: Path) = get(path).outputStream(Files.newOutputStream(path))
+  def outputStream(path: Path) =
+    get(path).outputStream(Files.newOutputStream(path))
 
 }

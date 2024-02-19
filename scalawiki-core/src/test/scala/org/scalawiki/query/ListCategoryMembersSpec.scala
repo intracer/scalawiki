@@ -26,16 +26,35 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
           | { "categorymembers": [{"pageid": 4571809, "ns": 2, "title": "User:Formator"}] }}""".stripMargin
 
       val commands = Seq(
-        HttpStub(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max",
-          "cmtitle" -> "Category:SomeCategory", "cmnamespace" -> "", "continue" -> ""), response1),
-        HttpStub(Map("action" -> "query", "list" -> queryType, "cmlimit" -> "max",
-          "cmtitle" -> "Category:SomeCategory", "cmnamespace" -> "",
-          "continue" -> "-||", "cmcontinue" -> "10|Stub|6674690"), response2)
+        HttpStub(
+          Map(
+            "action" -> "query",
+            "list" -> queryType,
+            "cmlimit" -> "max",
+            "cmtitle" -> "Category:SomeCategory",
+            "cmnamespace" -> "",
+            "continue" -> ""
+          ),
+          response1
+        ),
+        HttpStub(
+          Map(
+            "action" -> "query",
+            "list" -> queryType,
+            "cmlimit" -> "max",
+            "cmtitle" -> "Category:SomeCategory",
+            "cmnamespace" -> "",
+            "continue" -> "-||",
+            "cmcontinue" -> "10|Stub|6674690"
+          ),
+          response2
+        )
       )
 
       val bot = getBot(commands: _*)
 
-      val result = bot.page("Category:SomeCategory").categoryMembers().map(_.toSeq).await
+      val result =
+        bot.page("Category:SomeCategory").categoryMembers().map(_.toSeq).await
       result must have size 2
       result.head === Page(569559, Some(1), "Talk:Welfare reform")
       result(1) === Page(4571809, Some(2), "User:Formator")
@@ -85,16 +104,33 @@ class ListCategoryMembersSpec extends Specification with MockBotSpec {
           |    }
           |}""".stripMargin
 
-
       val commands = Seq(
-        HttpStub(Map("action" -> "query", "prop" -> "categoryinfo",
-          "titles" -> "Albert Einstein|Category:Foo|Category:Infobox_templates|NoSuchTitle", "continue" -> ""), response1)
+        HttpStub(
+          Map(
+            "action" -> "query",
+            "prop" -> "categoryinfo",
+            "titles" -> "Albert Einstein|Category:Foo|Category:Infobox_templates|NoSuchTitle",
+            "continue" -> ""
+          ),
+          response1
+        )
       )
 
       val bot = getBot(commands: _*)
 
-      val query = Action(Query(TitlesParam(Seq("Albert Einstein", "Category:Foo", "Category:Infobox_templates", "NoSuchTitle")),
-        Prop(CategoryInfo)))
+      val query = Action(
+        Query(
+          TitlesParam(
+            Seq(
+              "Albert Einstein",
+              "Category:Foo",
+              "Category:Infobox_templates",
+              "NoSuchTitle"
+            )
+          ),
+          Prop(CategoryInfo)
+        )
+      )
 
       val result = bot.run(query).map(_.toSeq).await
       result must have size 4

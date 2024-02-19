@@ -30,19 +30,48 @@ class PageQuerySpec extends Specification {
                           "revisions": [{ "revid": 2, "userid": 2, "user": "u2", "comment": "c2", "*": "$pageText2"}]}
             }}}"""
 
-      val bot = getBot(HttpStub(
-        Map(
-          "pageids" -> "569559|4571809",
-          "action" -> "query",
-          "prop" -> "info|revisions",
-          "continue" -> "", "rvlimit" -> "max",
-          "rvprop" -> "ids|content|user|comment"), response))
+      val bot = getBot(
+        HttpStub(
+          Map(
+            "pageids" -> "569559|4571809",
+            "action" -> "query",
+            "prop" -> "info|revisions",
+            "continue" -> "",
+            "rvlimit" -> "max",
+            "rvprop" -> "ids|content|user|comment"
+          ),
+          response
+        )
+      )
 
-      val future = bot.pagesById(Set(569559L, 4571809L)).revisions(Set.empty[Int], Set("ids", "content", "user", "comment")).map(_.toSeq)
+      val future = bot
+        .pagesById(Set(569559L, 4571809L))
+        .revisions(Set.empty[Int], Set("ids", "content", "user", "comment"))
+        .map(_.toSeq)
       val result = future.await
       result must have size 2
-      result(0) === Page(Some(569559), Some(1), "Talk:Welfare reform", Seq(Revision(1, 569559).withUser(1, "u1").withComment("c1").withText(pageText1)))
-      result(1) === Page(Some(4571809), Some(2), "User:Formator", Seq(Revision(2, 4571809).withUser(2, "u2").withComment("c2").withText(pageText2)))
+      result(0) === Page(
+        Some(569559),
+        Some(1),
+        "Talk:Welfare reform",
+        Seq(
+          Revision(1, 569559)
+            .withUser(1, "u1")
+            .withComment("c1")
+            .withText(pageText1)
+        )
+      )
+      result(1) === Page(
+        Some(4571809),
+        Some(2),
+        "User:Formator",
+        Seq(
+          Revision(2, 4571809)
+            .withUser(2, "u2")
+            .withComment("c2")
+            .withText(pageText2)
+        )
+      )
     }
   }
 
@@ -61,28 +90,44 @@ class PageQuerySpec extends Specification {
                      |    }
                      |}""".stripMargin
 
-    val bot = getBot(HttpStub(
-      Map(
-        "titles" -> "Absent",
-        "action" -> "query",
-        "prop" -> "info|revisions",
-        "continue" -> "", "rvlimit" -> "max",
-        "rvprop" -> "ids|content|user|comment"), response))
+    val bot = getBot(
+      HttpStub(
+        Map(
+          "titles" -> "Absent",
+          "action" -> "query",
+          "prop" -> "info|revisions",
+          "continue" -> "",
+          "rvlimit" -> "max",
+          "rvprop" -> "ids|content|user|comment"
+        ),
+        response
+      )
+    )
 
-    val future = bot.pagesByTitle(Set("Absent")).revisions(Set.empty[Int], Set("ids", "content", "user", "comment"))
+    val future = bot
+      .pagesByTitle(Set("Absent"))
+      .revisions(Set.empty[Int], Set("ids", "content", "user", "comment"))
     val result = future.await
     result must have size 1
     result.head === Page(None, Some(0), "Absent", missing = true)
   }
 
   "invalid page title" in {
-    val response = """{"batchcomplete":"","query":{"pages":{"-1":{"title":"[[Page]]","invalidreason":"The requested page title contains invalid characters: \"[\".","invalid":""}}}}""".stripMargin
+    val response =
+      """{"batchcomplete":"","query":{"pages":{"-1":{"title":"[[Page]]","invalidreason":"The requested page title contains invalid characters: \"[\".","invalid":""}}}}""".stripMargin
     val action = Action(Query(TitlesParam(Seq("[[Page]]"))))
-    val bot = getBot(HttpStub((action.pairs ++ Seq("continue" -> "")).toMap, response))
+    val bot =
+      getBot(HttpStub((action.pairs ++ Seq("continue" -> "")).toMap, response))
 
     val result = bot.run(action).await
     result must have size 1
-    result.head === Page(None, None, "[[Page]]", invalidReason = Some("""The requested page title contains invalid characters: "["."""))
+    result.head === Page(
+      None,
+      None,
+      "[[Page]]",
+      invalidReason =
+        Some("""The requested page title contains invalid characters: "[".""")
+    )
   }
 
   def getBot(commands: HttpStub*) = {

@@ -18,11 +18,19 @@ class EntrySpec extends Specification {
     }
 
     "get dir, article and wlmId" in {
-      Entry.fromRow(Seq("dir", "article", "wlmId")) === Entry("dir", Some("article"), Some("wlmId"))
+      Entry.fromRow(Seq("dir", "article", "wlmId")) === Entry(
+        "dir",
+        Some("article"),
+        Some("wlmId")
+      )
     }
 
     "get dir, article, wlmId and extra column" in {
-      Entry.fromRow(Seq("dir", "article", "wlmId", "something else")) === Entry("dir", Some("article"), Some("wlmId"))
+      Entry.fromRow(Seq("dir", "article", "wlmId", "something else")) === Entry(
+        "dir",
+        Some("article"),
+        Some("wlmId")
+      )
     }
 
     "get dir, empty article and empty wlmId" in {
@@ -30,7 +38,10 @@ class EntrySpec extends Specification {
     }
 
     "get dir, article and empty wlmId" in {
-      Entry.fromRow(Seq("dir", "article", " ")) === Entry("dir", Some("article"))
+      Entry.fromRow(Seq("dir", "article", " ")) === Entry(
+        "dir",
+        Some("article")
+      )
     }
   }
 
@@ -40,7 +51,8 @@ class EntrySpec extends Specification {
     }
 
     "default article to dir" in {
-      Entry("dir",
+      Entry(
+        "dir",
         images = Seq(
           EntryImage("image", Some("description"))
         )
@@ -55,7 +67,8 @@ class EntrySpec extends Specification {
     }
 
     "use article" in {
-      Entry("dir",
+      Entry(
+        "dir",
         Some("article"),
         images = Seq(
           EntryImage("image", Some("description"))
@@ -71,7 +84,8 @@ class EntrySpec extends Specification {
     }
 
     "use parent wlm id" in {
-      Entry("dir",
+      Entry(
+        "dir",
         Some("article"),
         images = Seq(
           EntryImage("image", Some("description"))
@@ -88,11 +102,16 @@ class EntrySpec extends Specification {
     }
 
     "override parent wlm id" in {
-      val entry = Entry("dir",
+      val entry = Entry(
+        "dir",
         Some("article"),
         images = Seq(
           EntryImage("image1", Some("description1"), wlmId = None),
-          EntryImage("image2", Some("description2"), wlmId = Some("specific-wlm-id"))
+          EntryImage(
+            "image2",
+            Some("description2"),
+            wlmId = Some("specific-wlm-id")
+          )
         ),
         wlmId = Some("parent-wlm-id")
       ).genImageFields
@@ -136,39 +155,54 @@ class EntrySpec extends Specification {
     }
 
     "read image" in {
-      val entry = entry0.copy(
-        images = Seq(
-          EntryImage("image", Some("description"))
-        )).genImageFields
+      val entry = entry0
+        .copy(
+          images = Seq(
+            EntryImage("image", Some("description"))
+          )
+        )
+        .genImageFields
 
       roundTrip(entry, "dir") === entry
     }
 
     "read parent wlmId" in {
-      val entry = entry0.copy(wlmId = Some("wlm-id"),
-        images = Seq(
-          EntryImage("image", Some("description"))
-        )).genImageFields
+      val entry = entry0
+        .copy(
+          wlmId = Some("wlm-id"),
+          images = Seq(
+            EntryImage("image", Some("description"))
+          )
+        )
+        .genImageFields
 
       roundTrip(entry, "dir") === entry
     }
 
     "read entry and image wlmId" in {
-      val entry = entry0.copy(wlmId = Some("parent-wlm-id"),
-        images = Seq(
-          EntryImage("image", Some("description"), wlmId = Some("image-wlm"))
-        )).genImageFields
+      val entry = entry0
+        .copy(
+          wlmId = Some("parent-wlm-id"),
+          images = Seq(
+            EntryImage("image", Some("description"), wlmId = Some("image-wlm"))
+          )
+        )
+        .genImageFields
 
       roundTrip(entry, "dir") === entry
     }
 
     "read uploadTitle" in {
-      val origEntry = Entry("dir", article = Some("article"),
+      val origEntry = Entry(
+        "dir",
+        article = Some("article"),
         images = Seq(
           EntryImage("image1", Some("description1"))
-        )).genImageFields
+        )
+      ).genImageFields
 
-      val str = origEntry.toConfig.root().render().replace("article 1", "article 2")
+      val str =
+        origEntry.toConfig.root().render().replace("article 1", "article 2")
       val cfg = ConfigFactory.parseString(str)
       val entry = Entry.fromConfig(cfg, "dir")
       val image = entry.images.head
@@ -176,12 +210,18 @@ class EntrySpec extends Specification {
     }
 
     "read wiki-description" in {
-      val origEntry = Entry("dir", article = Some("article"),
+      val origEntry = Entry(
+        "dir",
+        article = Some("article"),
         images = Seq(
           EntryImage("image1", Some("description1"))
-        )).genImageFields
+        )
+      ).genImageFields
 
-      val str = origEntry.toConfig.root().render().replace("{{uk|description1", "{{uk|description2")
+      val str = origEntry.toConfig
+        .root()
+        .render()
+        .replace("{{uk|description1", "{{uk|description2")
       val cfg = ConfigFactory.parseString(str)
       val entry = Entry.fromConfig(cfg, "dir")
       val image = entry.images.head
@@ -192,7 +232,8 @@ class EntrySpec extends Specification {
   "diff reporter" should {
 
     "be quite" in {
-      val image = EntryImage("image", Some("description1"), Some("wiki-description1"))
+      val image =
+        EntryImage("image", Some("description1"), Some("wiki-description1"))
       val entry = entry0.copy(wlmId = Some("wlm-id"), images = Seq(image))
 
       entry.diff(entry) === Seq.empty
@@ -200,26 +241,52 @@ class EntrySpec extends Specification {
 
     "tell image entry field change" in {
 
-      val image = EntryImage("image", Some("description1"), wikiDescription = Some("wiki-description1"))
+      val image = EntryImage(
+        "image",
+        Some("description1"),
+        wikiDescription = Some("wiki-description1")
+      )
       val entry = entry0.copy(wlmId = Some("wlm-id"), images = Seq(image))
 
-      val changed = entry.copy(images = Seq(image.copy(wikiDescription = Some("wiki-description2"))))
+      val changed = entry.copy(images =
+        Seq(image.copy(wikiDescription = Some("wiki-description2")))
+      )
 
-      entry.diff(changed) === Seq(Diff("images[0].wikiDescription", Some("wiki-description1"), Some("wiki-description2")))
+      entry.diff(changed) === Seq(
+        Diff(
+          "images[0].wikiDescription",
+          Some("wiki-description1"),
+          Some("wiki-description2")
+        )
+      )
     }
 
     "tell entry field change" in {
       val entry = entry0.copy(wlmId = Some("wlm-id1"))
       val changed = entry.copy(wlmId = Some("wlm-id2"))
-      entry.diff(changed) === Seq(Diff("wlmId", Some("wlm-id1"), Some("wlm-id2")))
+      entry.diff(changed) === Seq(
+        Diff("wlmId", Some("wlm-id1"), Some("wlm-id2"))
+      )
     }
 
     "tell all fields change" in {
 
-      val image1 = EntryImage("image1", Some("description1"), Some("upload-title1"), Some("wiki-description1"), Some("wlm-id11"))
+      val image1 = EntryImage(
+        "image1",
+        Some("description1"),
+        Some("upload-title1"),
+        Some("wiki-description1"),
+        Some("wlm-id11")
+      )
       val entry1 = Entry("dir1", Some("article1"), Some("wlm-id1"), Seq(image1))
 
-      val image2 = EntryImage("image2", Some("description2"), Some("upload-title2"), Some("wiki-description2"), Some("wlm-id12"))
+      val image2 = EntryImage(
+        "image2",
+        Some("description2"),
+        Some("upload-title2"),
+        Some("wiki-description2"),
+        Some("wlm-id12")
+      )
       val entry2 = Entry("dir2", Some("article2"), Some("wlm-id2"), Seq(image2))
 
       entry1.diff(entry2) === Seq(
@@ -227,9 +294,21 @@ class EntrySpec extends Specification {
         Diff("article", Some("article1"), Some("article2")),
         Diff("wlmId", Some("wlm-id1"), Some("wlm-id2")),
         Diff("images[0].filePath", "image1", "image2"),
-        Diff("images[0].uploadTitle", Some("upload-title1"), Some("upload-title2")),
-        Diff("images[0].sourceDescription", Some("description1"), Some("description2")),
-        Diff("images[0].wikiDescription", Some("wiki-description1"), Some("wiki-description2")),
+        Diff(
+          "images[0].uploadTitle",
+          Some("upload-title1"),
+          Some("upload-title2")
+        ),
+        Diff(
+          "images[0].sourceDescription",
+          Some("description1"),
+          Some("description2")
+        ),
+        Diff(
+          "images[0].wikiDescription",
+          Some("wiki-description1"),
+          Some("wiki-description2")
+        ),
         Diff("images[0].wlmId", Some("wlm-id11"), Some("wlm-id12"))
       )
     }
@@ -239,10 +318,22 @@ class EntrySpec extends Specification {
 
     "change nothing" in {
 
-      val image1 = EntryImage("image1", Some("description1"), Some("upload-title1"), Some("wiki-description1"), Some("wlm-id11"))
+      val image1 = EntryImage(
+        "image1",
+        Some("description1"),
+        Some("upload-title1"),
+        Some("wiki-description1"),
+        Some("wlm-id11")
+      )
       val entry1 = Entry("dir1", Some("article1"), Some("wlm-id1"), Seq(image1))
 
-      val image2 = EntryImage("image2", Some("description2"), Some("upload-title2"), Some("wiki-description2"), Some("wlm-id12"))
+      val image2 = EntryImage(
+        "image2",
+        Some("description2"),
+        Some("upload-title2"),
+        Some("wiki-description2"),
+        Some("wlm-id12")
+      )
       val entry2 = Entry("dir2", Some("article2"), Some("wlm-id2"), Seq(image2))
 
       val updated = entry1.updateFrom(
@@ -255,16 +346,34 @@ class EntrySpec extends Specification {
 
     "change all" in {
 
-      val image1 = EntryImage("image1", Some("description1"), Some("upload-title1"), Some("wiki-description1"), Some("wlm-id11"))
+      val image1 = EntryImage(
+        "image1",
+        Some("description1"),
+        Some("upload-title1"),
+        Some("wiki-description1"),
+        Some("wlm-id11")
+      )
       val entry1 = Entry("dir1", Some("article1"), Some("wlm-id1"), Seq(image1))
 
-      val image2 = EntryImage("image2", Some("description2"), Some("upload-title2"), Some("wiki-description2"), Some("wlm-id12"))
+      val image2 = EntryImage(
+        "image2",
+        Some("description2"),
+        Some("upload-title2"),
+        Some("wiki-description2"),
+        Some("wlm-id12")
+      )
       val entry2 = Entry("dir2", Some("article2"), Some("wlm-id2"), Seq(image2))
 
       val updated = entry1.updateFrom(
         entry2,
         Set("dir", "article", "wlmId"),
-        Set("filePath", "uploadTitle", "sourceDescription", "wikiDescription", "wlmId")
+        Set(
+          "filePath",
+          "uploadTitle",
+          "sourceDescription",
+          "wikiDescription",
+          "wlmId"
+        )
       )
       updated === entry2
     }

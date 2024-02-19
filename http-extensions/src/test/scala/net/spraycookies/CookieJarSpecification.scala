@@ -22,7 +22,8 @@ object CookieJarSpecification extends Properties("CookieHandling") {
 
   val genToken = {
     val separators = List(
-      '(', ')', '<', '>', '@', ',', ';', ':', '\\', '"', '/', '[', ']', '?', '=', '{', '}', ' ', '\t'
+      '(', ')', '<', '>', '@', ',', ';', ':', '\\', '"', '/', '[', ']', '?',
+      '=', '{', '}', ' ', '\t'
     )
     val allowedChars = Range(32, 126).map(_.toChar).toSet -- separators
     val genTokenChar = Gen.oneOf(allowedChars.toSeq)
@@ -30,14 +31,19 @@ object CookieJarSpecification extends Properties("CookieHandling") {
   }
 
   val genCookieValue = {
-    val genCookieValueChar = Gen.oneOf(
-      Gen.choose(0x21, 0x21),
-      Gen.choose(0x23, 0x2B),
-      Gen.choose(0x2D, 0x3A),
-      Gen.choose(0x3C, 0x5B),
-      Gen.choose(0x5D, 0x7E)
-    ).map(i ⇒ i.toChar)
-    Gen.containerOf[List, Char](genCookieValueChar).suchThat(_ != Nil).map(_.mkString)
+    val genCookieValueChar = Gen
+      .oneOf(
+        Gen.choose(0x21, 0x21),
+        Gen.choose(0x23, 0x2b),
+        Gen.choose(0x2d, 0x3a),
+        Gen.choose(0x3c, 0x5b),
+        Gen.choose(0x5d, 0x7e)
+      )
+      .map(i ⇒ i.toChar)
+    Gen
+      .containerOf[List, Char](genCookieValueChar)
+      .suchThat(_ != Nil)
+      .map(_.mkString)
   }
 
   val genBareCookie = for {
@@ -47,43 +53,60 @@ object CookieJarSpecification extends Properties("CookieHandling") {
 
   val genBareCookieList = Gen.containerOf[List, HttpCookie](genBareCookie)
 
-  property("withCookies") = forAll(genBareCookieList) { cookies ⇒ {
-    val jar = new CookieJar(emptyTldlist)
+  property("withCookies") = forAll(genBareCookieList) { cookies ⇒
+    {
+      val jar = new CookieJar(emptyTldlist)
 
-    val addingPipeline = (req: HttpRequest) ⇒ {
-      val resp = HttpResponse()
-      Future {
-        val setCookieHeaders = cookies.map(`Set-Cookie`(_))
-        resp.withHeaders(setCookieHeaders)
+      val addingPipeline = (req: HttpRequest) ⇒ {
+        val resp = HttpResponse()
+        Future {
+          val setCookieHeaders = cookies.map(`Set-Cookie`(_))
+          resp.withHeaders(setCookieHeaders)
+        }
       }
-    }
 
-    val testingPipeline = (req: HttpRequest) ⇒ {
-      Future {
-        val httpCookies = req.headers.collect({ case Cookie(httpCookies) ⇒ httpCookies }).flatten
-        if (httpCookies.length > cookies.length) throw new Exception("received more cookies than expected")
-        else if (!cookies.forall(expected ⇒ httpCookies.exists(received ⇒ received.name == expected.name)))
-          throw new Exception("reponse didn't contain cookies for all names")
-        else if (!httpCookies.forall(received ⇒ cookies.exists(testcookie ⇒ testcookie.name == received.name)))
-          throw new Exception("reponse contained a cookie with a name that is not expected")
-        else HttpResponse()
+      val testingPipeline = (req: HttpRequest) ⇒ {
+        Future {
+          val httpCookies = req.headers
+            .collect({ case Cookie(httpCookies) ⇒ httpCookies })
+            .flatten
+          if (httpCookies.length > cookies.length)
+            throw new Exception("received more cookies than expected")
+          else if (
+            !cookies.forall(expected ⇒
+              httpCookies.exists(received ⇒ received.name == expected.name)
+            )
+          )
+            throw new Exception("reponse didn't contain cookies for all names")
+          else if (
+            !httpCookies.forall(received ⇒
+              cookies.exists(testcookie ⇒ testcookie.name == received.name)
+            )
+          )
+            throw new Exception(
+              "reponse contained a cookie with a name that is not expected"
+            )
+          else HttpResponse()
+        }
       }
-    }
 
-    val cookiedPipeline = CookieHandling.withCookies(None, Some(jar))(addingPipeline)
-    Await.result(cookiedPipeline(emptyRequest), 10.seconds)
-    val cookiedTestPipeline = CookieHandling.withCookies(Some(jar), None)(testingPipeline)
-    val fTestResult = cookiedTestPipeline(HttpRequest())
-    val testResult = try {
-      Await.result(fTestResult, 10.seconds)
-      true
-    } catch {
-      case t: Exception ⇒
-        println(s"test failed $t")
-        false
-    }
+      val cookiedPipeline =
+        CookieHandling.withCookies(None, Some(jar))(addingPipeline)
+      Await.result(cookiedPipeline(emptyRequest), 10.seconds)
+      val cookiedTestPipeline =
+        CookieHandling.withCookies(Some(jar), None)(testingPipeline)
+      val fTestResult = cookiedTestPipeline(HttpRequest())
+      val testResult =
+        try {
+          Await.result(fTestResult, 10.seconds)
+          true
+        } catch {
+          case t: Exception ⇒
+            println(s"test failed $t")
+            false
+        }
 
-    testResult
-  }
+      testResult
+    }
   }
 }

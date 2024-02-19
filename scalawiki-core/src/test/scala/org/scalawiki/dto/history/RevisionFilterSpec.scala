@@ -9,7 +9,7 @@ import jp.ne.opt.chronoscala.Imports._
 
 class RevisionFilterSpec extends Specification {
 
-  "revision filter by date"  should {
+  "revision filter by date" should {
 
     val now: ZonedDateTime = ZonedDateTime.now
 
@@ -19,7 +19,7 @@ class RevisionFilterSpec extends Specification {
 
       val rf = new RevisionFilterDateAndUser(from = Some(now - 1.month))
 
-      val filtered = rf(Seq(r1,r2))
+      val filtered = rf(Seq(r1, r2))
 
       filtered.size === 1
       filtered.head.revId === Some(2)
@@ -31,7 +31,7 @@ class RevisionFilterSpec extends Specification {
 
       val rf = new RevisionFilterDateAndUser(to = Some(now - 1.month))
 
-      val filtered = rf(Seq(r1,r2))
+      val filtered = rf(Seq(r1, r2))
 
       filtered.size === 1
       filtered.head.revId === Some(1)
@@ -43,9 +43,12 @@ class RevisionFilterSpec extends Specification {
       val r3 = Revision(3, 1).withTimeStamp(now - 1.months)
       val r4 = Revision(4, 1).withTimeStamp(now)
 
-      val rf = new RevisionFilterDateAndUser(from = Some(now - 2.month), to = Some(now - 1.month))
+      val rf = new RevisionFilterDateAndUser(
+        from = Some(now - 2.month),
+        to = Some(now - 1.month)
+      )
 
-      val filtered = rf(Seq(r1,r2, r3, r4))
+      val filtered = rf(Seq(r1, r2, r3, r4))
 
       filtered.size === 2
       filtered.map(_.revId) === Seq(2, 3).map(Option.apply)

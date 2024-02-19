@@ -12,7 +12,8 @@ class KoatuuToKatotthSpec extends Specification {
     "UA",
     "Ukraine",
     Seq("uk"),
-    Katotth.regions(() => Some(UkraineKatotth)))
+    Katotth.regions(() => Some(UkraineKatotth))
+  )
   val regionsKatotth = UkraineKatotth.regions
   val katotthMap = UkraineKatotth.mapByCode
 
@@ -20,7 +21,8 @@ class KoatuuToKatotthSpec extends Specification {
     "UA",
     "Ukraine",
     Seq("uk"),
-    Koatuu.regionsNew(() => Some(UkraineKoatuu)))
+    Koatuu.regionsNew(() => Some(UkraineKoatuu))
+  )
   val regionsKoatuu = UkraineKoatuu.regions
   val koatuuMap = UkraineKoatuu.mapByCode
 

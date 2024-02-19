@@ -17,7 +17,8 @@ class CountrySpec extends Specification {
 
       Switzerland.code === "CH"
       Switzerland.name === "Switzerland"
-      Switzerland.languageCodes.toSet.intersect( Set("fr", "de", "it")) === Set("fr", "de", "it")
+      Switzerland.languageCodes.toSet
+        .intersect(Set("fr", "de", "it")) === Set("fr", "de", "it")
     }
   }
 

@@ -20,8 +20,17 @@ trait WithDocker extends BeforeAfterAll {
     "--server http://localhost:8080 --scriptpath="
 
   def checkMysql() = {
-    Seq("docker", "exec", "scalawiki_database_1",
-      "mysql", "--user=root", "--password=root_pass", "-s", "-e", "use my_wiki") ! ProcessLogger(_ => (), _ => ())
+    Seq(
+      "docker",
+      "exec",
+      "scalawiki_database_1",
+      "mysql",
+      "--user=root",
+      "--password=root_pass",
+      "-s",
+      "-e",
+      "use my_wiki"
+    ) ! ProcessLogger(_ => (), _ => ())
   }
 
   override def beforeAll(): Unit = {

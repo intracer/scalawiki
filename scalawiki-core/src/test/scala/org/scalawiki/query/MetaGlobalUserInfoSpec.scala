@@ -21,16 +21,24 @@ class MetaGlobalUserInfoSpec extends Specification with MockBotSpec {
             EditCount
           ),
           GuiUser("Ilya")
-        ))))
+        )
+      )
+    )
+  )
 
   def commands(response: String) =
     Seq(
-      HttpStub(Map("action" -> "query",
-                   "meta" -> "globaluserinfo",
-                   "guiuser" -> "Ilya",
-                   "guiprop" -> "merged|unattached|editcount",
-                   "continue" -> ""),
-               response))
+      HttpStub(
+        Map(
+          "action" -> "query",
+          "meta" -> "globaluserinfo",
+          "guiuser" -> "Ilya",
+          "guiprop" -> "merged|unattached|editcount",
+          "continue" -> ""
+        ),
+        response
+      )
+    )
 
   "globaluserinfo" should {
 

@@ -17,27 +17,25 @@ object MwReads {
       (__ \ "login" \ "lgusername").readNullable[String] and
       (__ \ "login" \ "cookieprefix").readNullable[String] and
       (__ \ "login" \ "sessionid").readNullable[String]
-    )(LoginResponse.apply _)
+  )(LoginResponse.apply _)
 
-  def tokenReads: Reads[String] = (__ \ "query" \ "tokens" \ "csrftoken").read[String]
+  def tokenReads: Reads[String] =
+    (__ \ "query" \ "tokens" \ "csrftoken").read[String]
 
   def tokensReads: Reads[String] = (__ \ "tokens" \ "edittoken").read[String]
 
   def editResponseReads: Reads[String] = (__ \ "edit" \ "result").read[String]
 
-  def uploadResponseReads: Reads[String] = (__ \ "upload" \ "result").read[String]
+  def uploadResponseReads: Reads[String] =
+    (__ \ "upload" \ "result").read[String]
 
-  def siteInfoReads: Reads[String] = (__ \ "query" \ "general" \ "generator").read[String]
+  def siteInfoReads: Reads[String] =
+    (__ \ "query" \ "general" \ "generator").read[String]
 
   def editTokenReads: Reads[String] = (__ \\ "edittoken").read[String]
 
   def errorReads: Reads[MwException] = (
     (__ \ "error" \ "code").read[String] and
       (__ \ "error" \ "info").read[String]
-    )(
-      (code, info) => MwException.apply(code, info)
-    )
+  )((code, info) => MwException.apply(code, info))
 }
-
-
-

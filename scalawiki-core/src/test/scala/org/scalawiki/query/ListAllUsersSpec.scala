@@ -32,14 +32,17 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
           }}"""
 
       val commands = Seq(
-        HttpStub(Map("action" -> "query",
-                     "list" -> queryType,
-                     "continue" -> "",
-                     "format" -> "json",
-                     "utf8" -> "",
+        HttpStub(
+          Map(
+            "action" -> "query",
+            "list" -> queryType,
+            "continue" -> "",
+            "format" -> "json",
+            "utf8" -> ""
 //                     "auprop" -> "registration|editcount|blockinfo"
-        ),
-                 response1)
+          ),
+          response1
+        )
       )
 
       val bot = getBot(commands: _*)
@@ -88,10 +91,12 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
                 ]
           }}"""
 
-      val query = Map("action" -> "query",
-                      "list" -> queryType,
-                      "auprop" -> "registration|editcount|blockinfo",
-                      "continue" -> "")
+      val query = Map(
+        "action" -> "query",
+        "list" -> queryType,
+        "auprop" -> "registration|editcount|blockinfo",
+        "continue" -> ""
+      )
 
       val bot = getBot(Seq(HttpStub(query, response1)): _*)
 
@@ -108,16 +113,20 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
 
       result must have size 2
       val users = result.flatMap(_.lastRevisionUser)
-      users(0) === new User(Some(3634417),
-                            Some("Y"),
-                            Some(13892),
-                            Some(Timestamp.parse("2007-02-22T03:19:08Z")),
-                            Some(true))
-      users(1) === new User(Some(53928),
-                            Some("Y (usurped)"),
-                            Some(0),
-                            None,
-                            Some(false))
+      users(0) === new User(
+        Some(3634417),
+        Some("Y"),
+        Some(13892),
+        Some(Timestamp.parse("2007-02-22T03:19:08Z")),
+        Some(true)
+      )
+      users(1) === new User(
+        Some(53928),
+        Some("Y (usurped)"),
+        Some(0),
+        None,
+        Some(false)
+      )
     }
 
     "return users with continue" in {
@@ -160,8 +169,10 @@ class ListAllUsersSpec extends Specification with MockBotSpec {
 
       val commands = Seq(
         HttpStub(query + ("continue" -> ""), response1),
-        HttpStub(query ++ Map("aufrom" -> "! ! !", "continue" -> "-||"),
-                 response2)
+        HttpStub(
+          query ++ Map("aufrom" -> "! ! !", "continue" -> "-||"),
+          response2
+        )
       )
 
       val bot = getBot(commands: _*)

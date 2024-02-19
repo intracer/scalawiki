@@ -31,7 +31,8 @@ class TableWikiSpec extends Specification {
     }
 
     "make table with 3 columns headers" in {
-      val table = new Table(Seq("header1", "header2", "header3"), Seq.empty, "", "")
+      val table =
+        new Table(Seq("header1", "header2", "header3"), Seq.empty, "", "")
       table.asWiki === "{|\n! header1 !! header2 !! header3\n|}"
     }
 
@@ -46,7 +47,8 @@ class TableWikiSpec extends Specification {
     }
 
     "make table with 1 data column and 2 rows" in {
-      val table = new Table(Seq.empty, Seq(Seq("data11"), Seq("data21")), "", "")
+      val table =
+        new Table(Seq.empty, Seq(Seq("data11"), Seq("data21")), "", "")
       table.asWiki === "{|\n|-\n| data11\n|-\n| data21\n|}"
     }
 

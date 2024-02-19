@@ -11,7 +11,13 @@ class MwBotSpec extends Specification with MockBotSpec with Mockito {
     "return a page text" in {
       val pageText = "some vandalism"
 
-      val bot = getBot(HttpStub(Map("title" -> "PageTitle", "action" -> "raw"), pageText, "/w/index.php"))
+      val bot = getBot(
+        HttpStub(
+          Map("title" -> "PageTitle", "action" -> "raw"),
+          pageText,
+          "/w/index.php"
+        )
+      )
 
       bot.pageText("pageTitle").await === pageText
     }
@@ -20,7 +26,13 @@ class MwBotSpec extends Specification with MockBotSpec with Mockito {
   "get missing page text" should {
     "return error" in {
 
-      val bot = getBot(HttpStub(Map("title" -> "PageTitle", "action" -> "raw"), null, "/w/index.php"))
+      val bot = getBot(
+        HttpStub(
+          Map("title" -> "PageTitle", "action" -> "raw"),
+          null,
+          "/w/index.php"
+        )
+      )
 
       bot.pageText("pageTitle").await === "" // TODO error
     }
@@ -37,7 +49,9 @@ class MwBotSpec extends Specification with MockBotSpec with Mockito {
     }
 
     "parse out Debian suffix" in {
-      fromGenerator("MediaWiki 1.19.20+dfsg-0+deb7u3") === MediaWikiVersion("1.19")
+      fromGenerator("MediaWiki 1.19.20+dfsg-0+deb7u3") === MediaWikiVersion(
+        "1.19"
+      )
     }
 
     "parse custom to unknow" in {

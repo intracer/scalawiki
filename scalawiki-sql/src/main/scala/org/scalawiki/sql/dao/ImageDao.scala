@@ -8,7 +8,11 @@ import spray.util.pimpFuture
 
 import scala.language.higherKinds
 
-class ImageDao(val mwDb: MwDatabase, val query: TableQuery[Images], val driver: JdbcProfile) {
+class ImageDao(
+    val mwDb: MwDatabase,
+    val query: TableQuery[Images],
+    val driver: JdbcProfile
+) {
 
   import driver.api._
 
@@ -28,4 +32,3 @@ class ImageDao(val mwDb: MwDatabase, val query: TableQuery[Images], val driver: 
     db.run(query.filter(_.name === name).result.headOption).await
 
 }
-

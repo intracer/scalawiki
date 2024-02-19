@@ -3,10 +3,15 @@ package org.scalawiki.dto.cmd.query.list
 import org.scalawiki.dto.cmd.query.GeneratorArg
 import org.scalawiki.dto.cmd.query.prop.{ImLimit, Images}
 
-
 object ListArgs {
 
-  def toDsl(module: String, title: Option[String], pageId: Option[Long], namespaces:Set[Int], limit: Option[String]): Option[GeneratorArg] = {
+  def toDsl(
+      module: String,
+      title: Option[String],
+      pageId: Option[Long],
+      namespaces: Set[Int],
+      limit: Option[String]
+  ): Option[GeneratorArg] = {
 
     val f = Seq(title.toSeq, pageId.toSeq, namespaces).flatten
 

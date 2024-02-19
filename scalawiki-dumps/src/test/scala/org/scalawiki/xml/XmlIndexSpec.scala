@@ -53,7 +53,8 @@ class XmlIndexSpec extends Specification {
           |5004:3:File:Some image.jpg
           |""".stripMargin
 
-      val pages = XmlIndex.fromInputStream(new ByteArrayInputStream(index.getBytes)).toSeq
+      val pages =
+        XmlIndex.fromInputStream(new ByteArrayInputStream(index.getBytes)).toSeq
 
       pages.size === 3
 

@@ -5,7 +5,6 @@ import org.scalawiki.dto.cmd.query.prop.rvprop.{Content, Ids, RvProp}
 import org.scalawiki.dto.cmd.query.prop.{Info, Prop, Revisions}
 import org.specs2.mutable.Specification
 
-
 class QuerySpec extends Specification {
 
   "revision" should {
@@ -26,7 +25,8 @@ class QuerySpec extends Specification {
         Prop(
           Info(),
           Revisions(RvProp(Ids, Content))
-        ))
+        )
+      )
 
       query.props === Seq(Info(), Revisions(RvProp(Ids, Content)))
       val revisions = query.revisions.get

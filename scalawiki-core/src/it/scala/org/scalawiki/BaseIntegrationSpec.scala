@@ -24,9 +24,12 @@ class BaseIntegrationSpec extends Specification {
     await(wiki.login(username, passwd))
 
   def login(wiki: MwBot): String = {
-    LoginInfo.fromEnv().map { loginInfo =>
-      await(wiki.login(loginInfo.login, loginInfo.password))
-    }.getOrElse("No LoginInfo")
+    LoginInfo
+      .fromEnv()
+      .map { loginInfo =>
+        await(wiki.login(loginInfo.login, loginInfo.password))
+      }
+      .getOrElse("No LoginInfo")
   }
 
   def await[T](future: Future[T]): T = Await.result(future, http.timeout)

@@ -10,7 +10,8 @@ class EditTokensIntegrationTest extends BaseIntegrationSpec {
       val result = login(bot)
       result === "Success"
 
-      val response = await(bot.page("User:IlyaBot/test").edit("text1", Some("comment")))
+      val response =
+        await(bot.page("User:IlyaBot/test").edit("text1", Some("comment")))
       response === "Success"
     }
   }

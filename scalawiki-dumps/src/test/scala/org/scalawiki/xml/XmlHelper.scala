@@ -18,10 +18,12 @@ object XmlHelper {
       {content}
     </mediawiki>.toString()
 
-  def pageXml(title: String = "Page title",
-              ns: Int = 0,
-              id: Long = 1,
-              revisions: NodeSeq): Node =
+  def pageXml(
+      title: String = "Page title",
+      ns: Int = 0,
+      id: Long = 1,
+      revisions: NodeSeq
+  ): Node =
     <page>
       <title>{title}</title>
       <ns>{ns}</ns>
@@ -29,7 +31,16 @@ object XmlHelper {
       {revisions}
     </page>
 
-  def revisionXml(revId: Long, parentId: Long, timestamp: ZonedDateTime, user: String, userId: Int, comment: String, text: String, sha1: String): Node =
+  def revisionXml(
+      revId: Long,
+      parentId: Long,
+      timestamp: ZonedDateTime,
+      user: String,
+      userId: Int,
+      comment: String,
+      text: String,
+      sha1: String
+  ): Node =
     <revision>
       <id>{revId}</id>
       <parentid>{parentId}</parentid>

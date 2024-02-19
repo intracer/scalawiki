@@ -38,7 +38,8 @@ class ParserSpec extends Specification {
   }
 
   "New Multipage query" should {
-    val queryContinueStr = s"""{$queryStr, "continue": {"continue": "-||", "eicontinue": "qcValue"}}"""
+    val queryContinueStr =
+      s"""{$queryStr, "continue": {"continue": "-||", "eicontinue": "qcValue"}}"""
     val parser = new Parser(emptyAction)
     val pagesOpt = parser.parse(queryContinueStr).toOption
 
@@ -53,7 +54,8 @@ class ParserSpec extends Specification {
 
   "Legacy Multipage query" should {
     // TODO query-continue is not supported, but we should report it then
-    val queryContinueStr = s"""{"query-continue": {"$queryType": {"$queryContinue": "qcValue" }}, $queryStr}"""
+    val queryContinueStr =
+      s"""{"query-continue": {"$queryType": {"$queryContinue": "qcValue" }}, $queryStr}"""
 
     val parser = new Parser(emptyAction)
     val pagesOpt = parser.parse(queryContinueStr).toOption
@@ -68,10 +70,11 @@ class ParserSpec extends Specification {
   }
 
   def checkPages(pagesOpt: Option[Seq[Page]]): MatchResult[Any] = {
-    pagesOpt.map { pages =>
-      pages must have size 1
-      checkPage(pages(0))
-    }
+    pagesOpt
+      .map { pages =>
+        pages must have size 1
+        checkPage(pages(0))
+      }
       .getOrElse(pagesOpt must beSome)
   }
 
@@ -89,12 +92,14 @@ class ParserSpec extends Specification {
     "parse page with lang links" in {
       val s = resourceAsString("/org/scalawiki/query/langLinks.json")
 
-      val action = Action(Query(
-        Prop(
-          LangLinks(LlLimit("max"))
-        ),
-        TitlesParam(Seq("Article"))
-      ))
+      val action = Action(
+        Query(
+          Prop(
+            LangLinks(LlLimit("max"))
+          ),
+          TitlesParam(Seq("Article"))
+        )
+      )
 
       val parser = new Parser(action)
       val page = parser.parse(s).get.head
@@ -108,17 +113,21 @@ class ParserSpec extends Specification {
         "fr" -> "Article",
         "it" -> "Articolo",
         "nl" -> "Artikel",
-        "pt" -> "Artigo")
+        "pt" -> "Artigo"
+      )
     }
 
     "parse mwerror" in {
-      val action = Action(Query(Prop(Revisions()),
-        TitlesParam(Seq("PageTitle")),
-        PageIdsParam(Seq(123456))
-      ))
+      val action = Action(
+        Query(
+          Prop(Revisions()),
+          TitlesParam(Seq("PageTitle")),
+          PageIdsParam(Seq(123456))
+        )
+      )
 
       val json =
-      """{
+        """{
         "servedby": "mw1202",
         "error": {
           "code": "multisource",
@@ -131,7 +140,7 @@ class ParserSpec extends Specification {
       val result = parser.parse(json)
 
       result.isFailure === true
-      val mw = result match { case Failure(mw:MwException) => mw }
+      val mw = result match { case Failure(mw: MwException) => mw }
       mw.code === "multisource"
       mw.info === "Cannot use 'pageids' at the same time as 'titles'"
     }

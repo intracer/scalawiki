@@ -10,23 +10,25 @@ class MonumentDbSpec extends Specification {
   val contest = Contest.WLMUkraine(2014)
 
   val monuments = Ukraine.regionIds.flatMap { regionId =>
-      (1 to regionId.toInt).map { i =>
-        Monument(
-          id = regionId + "-001-" + f"$i%04d",
-          name = "Monument in " + Ukraine.regionName(regionId),
-          listConfig = Some(ListConfig.WleUa)
-        )
-      }
-  }
-
-  def specialNominationMonuments(prefix: String) = Ukraine.regionIds.flatMap { regionId =>
     (1 to regionId.toInt).map { i =>
       Monument(
-        id = prefix + "-" + regionId + "1-" + f"$i%04d",
-        name = "Special Nomination Monument in " + Ukraine.regionName(regionId),
-        listConfig = Some(ListConfig.WlmUa)
+        id = regionId + "-001-" + f"$i%04d",
+        name = "Monument in " + Ukraine.regionName(regionId),
+        listConfig = Some(ListConfig.WleUa)
       )
     }
+  }
+
+  def specialNominationMonuments(prefix: String) = Ukraine.regionIds.flatMap {
+    regionId =>
+      (1 to regionId.toInt).map { i =>
+        Monument(
+          id = prefix + "-" + regionId + "1-" + f"$i%04d",
+          name =
+            "Special Nomination Monument in " + Ukraine.regionName(regionId),
+          listConfig = Some(ListConfig.WlmUa)
+        )
+      }
   }
 
   "monument db" should {

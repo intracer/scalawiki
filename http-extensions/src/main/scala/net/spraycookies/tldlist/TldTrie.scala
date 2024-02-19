@@ -4,14 +4,16 @@ private[tldlist] sealed trait TldTrie {
   def contains(list: List[String]): Boolean = {
     list match {
       case Nil ⇒ true
-      case head :: tail ⇒ this match {
-        case Leaf                ⇒ false
-        case Wildcard(negations) ⇒ tail == Nil && !negations.contains(head)
-        case Node(m) ⇒ m.get(head) match {
-          case None           ⇒ false
-          case Some(trieTail) ⇒ trieTail.contains(tail)
+      case head :: tail ⇒
+        this match {
+          case Leaf ⇒ false
+          case Wildcard(negations) ⇒ tail == Nil && !negations.contains(head)
+          case Node(m) ⇒
+            m.get(head) match {
+              case None ⇒ false
+              case Some(trieTail) ⇒ trieTail.contains(tail)
+            }
         }
-      }
     }
   }
   def merge(that: TldTrie): TldTrie
@@ -20,9 +22,11 @@ private[tldlist] sealed trait TldTrie {
 private case class Node(map: Map[String, TldTrie]) extends TldTrie {
   def merge(that: TldTrie): TldTrie = {
     that match {
-      case Node(thatMap) ⇒ Node(TldTrie.mapMerge(map, thatMap, (_: TldTrie).merge(_: TldTrie)))
-      case Leaf          ⇒ this
-      case x: Wildcard   ⇒ throw new Exception(s"tries $x and $this not mergeable")
+      case Node(thatMap) ⇒
+        Node(TldTrie.mapMerge(map, thatMap, (_: TldTrie).merge(_: TldTrie)))
+      case Leaf ⇒ this
+      case x: Wildcard ⇒
+        throw new Exception(s"tries $x and $this not mergeable")
     }
   }
 }
@@ -33,18 +37,22 @@ private case object Leaf extends TldTrie {
 
 private case class Wildcard(whitelist: Set[String]) extends TldTrie {
   def merge(that: TldTrie) = that match {
-    case Leaf                    ⇒ this
+    case Leaf ⇒ this
     case Wildcard(thatWhitelist) ⇒ Wildcard(whitelist ++ thatWhitelist)
-    case x: Node                 ⇒ throw new Exception(s"tries $x and $this not mergeable")
+    case x: Node ⇒ throw new Exception(s"tries $x and $this not mergeable")
   }
 }
 
 private[tldlist] object TldTrie {
 
-  def mapMerge[T, U](left: Map[T, U], right: Map[T, U], merge: (U, U) ⇒ U): Map[T, U] = {
+  def mapMerge[T, U](
+      left: Map[T, U],
+      right: Map[T, U],
+      merge: (U, U) ⇒ U
+  ): Map[T, U] = {
     left.foldLeft(right)((nm, kvp) ⇒ {
       nm.get(kvp._1) match {
-        case None       ⇒ nm + kvp
+        case None ⇒ nm + kvp
         case Some(val2) ⇒ nm + (kvp._1 -> merge(val2, kvp._2))
       }
     })

@@ -6,12 +6,14 @@ import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.util.Try
 
-case class ArticlesEvent(name: String,
-                         start: ZonedDateTime,
-                         end: ZonedDateTime,
-                         newTemplate: String,
-                         improvedTemplate: String,
-                         id: Option[String] = None)
+case class ArticlesEvent(
+    name: String,
+    start: ZonedDateTime,
+    end: ZonedDateTime,
+    newTemplate: String,
+    improvedTemplate: String,
+    id: Option[String] = None
+)
 
 object Events {
 

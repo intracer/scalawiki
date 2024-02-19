@@ -42,7 +42,7 @@ class ImageTemplateSpec extends Specification {
       val params = Map(
         "title" -> "Archaeological Museum interior",
         "description" -> "Archaeological Museum interior description",
-      "location" -> "Archaeological Museum"
+        "location" -> "Archaeological Museum"
       )
       val resolved = ImageTemplate.resolve(params)
       resolved.isResolved === true
@@ -52,7 +52,7 @@ class ImageTemplateSpec extends Specification {
     "should makeInfoPage" in {
       ImageTemplate.makeInfoPage(
         title = "Archaeological Museum interior",
-        description =  "Archaeological Museum interior description",
+        description = "Archaeological Museum interior description",
         location = "Archaeological Museum"
       ) === expected
     }

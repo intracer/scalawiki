@@ -11,10 +11,9 @@ class PageUpdater(task: PageUpdateTask) extends WithBot {
 
   def update() = {
     val titles = task.titles
-    val results = titles.zipWithIndex.map {
-      case (title, index) =>
-        println(s"Processing page: $title, $index of ${titles.size}")
-        updatePage(title)
+    val results = titles.zipWithIndex.map { case (title, index) =>
+      println(s"Processing page: $title, $index of ${titles.size}")
+      updatePage(title)
     }
 
     for (seq <- Future.sequence(results.toSeq)) {

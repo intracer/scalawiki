@@ -38,7 +38,8 @@ class PageFromFileBotSpec extends Specification {
     }
 
     "support windows newlines" in {
-      val pages = PageFromFileBot.pages(docExample.replaceAll("\n", "\r\n")).toBuffer
+      val pages =
+        PageFromFileBot.pages(docExample.replaceAll("\n", "\r\n")).toBuffer
       pages.size === 2
       pages.map(_.title) === titles
       pages.flatMap(_.text) === texts.map(_.replaceAll("\n", "\r\n"))
@@ -56,7 +57,12 @@ class PageFromFileBotSpec extends Specification {
           |Another text
           |yyyy""".stripMargin.replaceAll("\r?\n", "\n")
 
-      val pages = PageFromFileBot.pages(docExampleOwnDelimiter, PageFromFileFormat(start = "xxxx", end = "yyyy")).toBuffer
+      val pages = PageFromFileBot
+        .pages(
+          docExampleOwnDelimiter,
+          PageFromFileFormat(start = "xxxx", end = "yyyy")
+        )
+        .toBuffer
       pages.size === 2
       pages.map(_.title) === titles
       pages.flatMap(_.text) === texts
@@ -70,17 +76,15 @@ class PageFromFileBotSpec extends Specification {
     }
 
     "join title in page text" in {
-      val pages = titles.zip(texts) map {
-        case (title, text) =>
-          Page(title).withText(text)
+      val pages = titles.zip(texts) map { case (title, text) =>
+        Page(title).withText(text)
       }
       PageFromFileBot.join(pages, includeTitle = false) === docExample
     }
 
     "join include title" in {
-      val pages = titles.zip(textsWithoutTitles) map {
-        case (title, text) =>
-          Page(title).withText(text)
+      val pages = titles.zip(textsWithoutTitles) map { case (title, text) =>
+        Page(title).withText(text)
       }
       PageFromFileBot.join(pages, includeTitle = true) === docExample
     }
@@ -93,12 +97,16 @@ class PageFromFileBotSpec extends Specification {
       val words = 50
       val lines = 10
       val articles = Math.min(5000, 5000 * (maxMemMB / 400)).toInt
-      println(s"$maxMemMB MB heap should be enough to process at least $articles articles")
+      println(
+        s"$maxMemMB MB heap should be enough to process at least $articles articles"
+      )
 
       new StringBuilder().append()
-      val text = Array.fill(lines) {
-        Array.fill(words)("wikitext").mkString(" ")
-      }.mkString("{{-start-}}\n'''PageName''' ", "\n", "\n{{-end-}}")
+      val text = Array
+        .fill(lines) {
+          Array.fill(words)("wikitext").mkString(" ")
+        }
+        .mkString("{{-start-}}\n'''PageName''' ", "\n", "\n{{-end-}}")
 
       val chunk = Array.fill(articles)(text).mkString("\n")
 

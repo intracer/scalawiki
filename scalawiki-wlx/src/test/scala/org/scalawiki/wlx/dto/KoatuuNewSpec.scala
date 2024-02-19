@@ -4,8 +4,12 @@ import org.specs2.mutable.Specification
 
 class KoatuuNewSpec extends Specification {
 
-  val Ukraine: Country = new Country("UA", "Ukraine", Seq("uk"),
-    Koatuu.regionsNew(() => Some(Ukraine)))
+  val Ukraine: Country = new Country(
+    "UA",
+    "Ukraine",
+    Seq("uk"),
+    Koatuu.regionsNew(() => Some(Ukraine))
+  )
   val regions = Ukraine.regions
 
   "level1" should {
@@ -41,7 +45,9 @@ class KoatuuNewSpec extends Specification {
     )
 
     "contain country parent" in {
-      regions.flatMap(_.parent().map(_.name)) === List.fill(topRegions.size)(Country.Ukraine.name)
+      regions.flatMap(_.parent().map(_.name)) === List.fill(topRegions.size)(
+        Country.Ukraine.name
+      )
     }
 
     "have 27 elements" in {
@@ -73,20 +79,35 @@ class KoatuuNewSpec extends Specification {
   "level2" should {
 
     "have 490 raions" in {
-      val withoutCities = Country.Ukraine.regions.filter(adm => !Set("Київ", "Севастополь").contains(adm.name))
+      val withoutCities = Country.Ukraine.regions.filter(adm =>
+        !Set("Київ", "Севастополь").contains(adm.name)
+      )
       withoutCities.size === 25
 
-      val raions = withoutCities.flatMap(_.regions).filter(_.name.endsWith("район"))
+      val raions =
+        withoutCities.flatMap(_.regions).filter(_.name.endsWith("район"))
       raions.size === 490
     }
 
     "contain Kyiv raions" in {
-      val regionNames = Seq("Голосіївський", "Дарницький", "Деснянський", "Дніпровський",
-        "Оболонський", "Печерський", "Подільський", "Святошинський", "Солом'янський", "Шевченківський")
+      val regionNames = Seq(
+        "Голосіївський",
+        "Дарницький",
+        "Деснянський",
+        "Дніпровський",
+        "Оболонський",
+        "Печерський",
+        "Подільський",
+        "Святошинський",
+        "Солом'янський",
+        "Шевченківський"
+      )
       val kyiv = regions.find(_.name == "Київ").get
       val kyivRegions = kyiv.regions
       kyivRegions.map(_.name) === regionNames
-      kyivRegions.flatMap(_.parent().map(_.name)) === List.fill(regionNames.size)("Київ")
+      kyivRegions.flatMap(_.parent().map(_.name)) === List.fill(
+        regionNames.size
+      )("Київ")
     }
 
     "find Kyiv raions by code" in {
@@ -103,7 +124,8 @@ class KoatuuNewSpec extends Specification {
         "80-391" -> "Шевченківський"
       )
 
-      val regionToIds = Ukraine.byRegion(idToName.keySet).mapValues(_.head).toMap
+      val regionToIds =
+        Ukraine.byRegion(idToName.keySet).mapValues(_.head).toMap
       regionToIds.keySet.flatMap(_.parent().map(_.name)) === Set("Київ")
 
       regionToIds.map(_.swap).mapValues(_.name).toMap === idToName
@@ -112,47 +134,135 @@ class KoatuuNewSpec extends Specification {
     "contain Kyiv oblast regions" in {
       val ko = regions.find(_.name == "Київська область").get
       val koRegionNames = Seq(
-        "Баришівський", "Білоцерківський", "Богуславський", "Бориспільський", "Бородянський", "Броварський",
-        "Васильківський", "Вишгородський", "Володарський", "Згурівський", "Іванківський", "Кагарлицький", "Києво-Святошинський",
-        "Макарівський", "Миронівський", "Обухівський", "Переяслав-Хмельницький", "Поліський", "Рокитнянський", "Сквирський",
-        "Ставищенський", "Таращанський", "Тетіївський", "Фастівський", "Яготинський"
+        "Баришівський",
+        "Білоцерківський",
+        "Богуславський",
+        "Бориспільський",
+        "Бородянський",
+        "Броварський",
+        "Васильківський",
+        "Вишгородський",
+        "Володарський",
+        "Згурівський",
+        "Іванківський",
+        "Кагарлицький",
+        "Києво-Святошинський",
+        "Макарівський",
+        "Миронівський",
+        "Обухівський",
+        "Переяслав-Хмельницький",
+        "Поліський",
+        "Рокитнянський",
+        "Сквирський",
+        "Ставищенський",
+        "Таращанський",
+        "Тетіївський",
+        "Фастівський",
+        "Яготинський"
       ).map(_ + " район")
 
-      val koCities = Seq("Біла Церква", "Березань", "Бориспіль", "Бровари", "Буча", "Васильків", "Ірпінь", "Обухів", "Переяслав",
-        "Прип'ять", "Ржищів", "Славутич", "Фастів")
+      val koCities = Seq(
+        "Біла Церква",
+        "Березань",
+        "Бориспіль",
+        "Бровари",
+        "Буча",
+        "Васильків",
+        "Ірпінь",
+        "Обухів",
+        "Переяслав",
+        "Прип'ять",
+        "Ржищів",
+        "Славутич",
+        "Фастів"
+      )
 
       val names = Seq() ++ koCities ++ koRegionNames
       val koRegions = ko.regions
       koRegions.map(_.name).sorted === names.sorted
-      koRegions.flatMap(_.parent().map(_.name)) === List.fill(names.size)("Київська область")
+      koRegions.flatMap(_.parent().map(_.name)) === List.fill(names.size)(
+        "Київська область"
+      )
     }
 
     "contain Crimea regions" in {
       val crimea = regions.find(_.name == "Автономна Республіка Крим").get
       val regionNames = Seq(
-        "Сімферополь", "Алушта", "Джанкой", "Євпаторія", "Керч",
-        "Красноперекопськ", "Саки", "Армянськ", "Феодосія", "Судак", "Ялта",
-        "Бахчисарайський район", "Білогірський район", "Джанкойський район", "Кіровський район", "Красногвардійський район",
-        "Красноперекопський район", "Ленінський район", "Нижньогірський район", "Первомайський район", "Роздольненський район",
-        "Сакський район", "Сімферопольський район", "Совєтський район", "Чорноморський район")
+        "Сімферополь",
+        "Алушта",
+        "Джанкой",
+        "Євпаторія",
+        "Керч",
+        "Красноперекопськ",
+        "Саки",
+        "Армянськ",
+        "Феодосія",
+        "Судак",
+        "Ялта",
+        "Бахчисарайський район",
+        "Білогірський район",
+        "Джанкойський район",
+        "Кіровський район",
+        "Красногвардійський район",
+        "Красноперекопський район",
+        "Ленінський район",
+        "Нижньогірський район",
+        "Первомайський район",
+        "Роздольненський район",
+        "Сакський район",
+        "Сімферопольський район",
+        "Совєтський район",
+        "Чорноморський район"
+      )
       crimea.regions.map(_.name) === regionNames
 
-      crimea.regions.flatMap(_.parent().map(_.name)) === List.fill(regionNames.size)("Автономна Республіка Крим")
+      crimea.regions.flatMap(_.parent().map(_.name)) === List.fill(
+        regionNames.size
+      )("Автономна Республіка Крим")
     }
 
     "contain Vinnytsya oblast regions" in {
       val vinnytsyaRegion = regions.find(_.name == "Вінницька область").get
       val regionNames = Seq(
-        "Вінниця", "Жмеринка", "Могилів-Подільський", "Козятин", "Ладижин", "Хмільник",
-        "Барський район", "Бершадський район", "Вінницький район", "Гайсинський район", "Жмеринський район",
-        "Іллінецький район", "Козятинський район", "Калинівський район", "Крижопільський район", "Липовецький район",
-        "Літинський район", "Могилів-Подільський район", "Мурованокуриловецький район", "Немирівський район",
-        "Оратівський район", "Піщанський район", "Погребищенський район", "Теплицький район", "Томашпільський район",
-        "Тростянецький район", "Тульчинський район", "Тиврівський район", "Хмільницький район", "Чернівецький район",
-        "Чечельницький район", "Шаргородський район", "Ямпільський район")
+        "Вінниця",
+        "Жмеринка",
+        "Могилів-Подільський",
+        "Козятин",
+        "Ладижин",
+        "Хмільник",
+        "Барський район",
+        "Бершадський район",
+        "Вінницький район",
+        "Гайсинський район",
+        "Жмеринський район",
+        "Іллінецький район",
+        "Козятинський район",
+        "Калинівський район",
+        "Крижопільський район",
+        "Липовецький район",
+        "Літинський район",
+        "Могилів-Подільський район",
+        "Мурованокуриловецький район",
+        "Немирівський район",
+        "Оратівський район",
+        "Піщанський район",
+        "Погребищенський район",
+        "Теплицький район",
+        "Томашпільський район",
+        "Тростянецький район",
+        "Тульчинський район",
+        "Тиврівський район",
+        "Хмільницький район",
+        "Чернівецький район",
+        "Чечельницький район",
+        "Шаргородський район",
+        "Ямпільський район"
+      )
       vinnytsyaRegion.regions.map(_.name) === regionNames
 
-      vinnytsyaRegion.regions.flatMap(_.parent().map(_.name)) === List.fill(regionNames.size)("Вінницька область")
+      vinnytsyaRegion.regions.flatMap(_.parent().map(_.name)) === List.fill(
+        regionNames.size
+      )("Вінницька область")
     }
 
     "lookup regions by monumentId" in {
@@ -199,8 +309,15 @@ class KoatuuNewSpec extends Specification {
     "contain Simferopol regions" in {
       val simferopol = Ukraine.byMonumentId("01-101").get
       simferopol.name === "Сімферополь"
-      simferopol.regions.map(_.name) === Seq("Залізничний", "Київський", "Центральний", "Аерофлотський", "Гресівський",
-        "Комсомольське", "Аграрне")
+      simferopol.regions.map(_.name) === Seq(
+        "Залізничний",
+        "Київський",
+        "Центральний",
+        "Аерофлотський",
+        "Гресівський",
+        "Комсомольське",
+        "Аграрне"
+      )
 
       val hresivskyi = simferopol.regions.find(_.name == "Гресівський").get
       hresivskyi.regions.map(_.name) === Seq("Бітумне")
@@ -216,7 +333,10 @@ class KoatuuNewSpec extends Specification {
     "differentiate types" in {
       val smt = Ukraine.byIdAndName("14-215", "смт Андріївка")
       val village1 = Ukraine.byIdAndName("14-215", "село Андріївка")
-      val village2 = Ukraine.byIdAndName("14-215", "[[Андріївка (Волноваський район, село)|Андріївка (село)]]")
+      val village2 = Ukraine.byIdAndName(
+        "14-215",
+        "[[Андріївка (Волноваський район, село)|Андріївка (село)]]"
+      )
       smt.size === 1
       smt.head.regionType === Some(KoatuuTypes.codeToType("Т"))
       village1.size === 1
@@ -227,7 +347,7 @@ class KoatuuNewSpec extends Specification {
 
     "contain lesser regions" in {
       Ukraine.byIdAndName("18-240", "Новоград-Волинський район").size === 1
-      Ukraine.byIdAndName("14-224", "Іванопільська").size === 1  // сільська рада
+      Ukraine.byIdAndName("14-224", "Іванопільська").size === 1 // сільська рада
       Ukraine.byIdAndName("18-211", "Хорошівський район").size === 1
       Ukraine.byIdAndName("35-236", "Новоархангельський район").size === 1
       Ukraine.byIdAndName("18-254", "Пулинський район").size === 1

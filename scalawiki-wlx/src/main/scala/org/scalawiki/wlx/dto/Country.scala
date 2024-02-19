@@ -11,9 +11,11 @@ trait AdmDivision {
 
   def name: String
 
-  lazy val namesList: Seq[String] = parent().map(_.namesList).getOrElse(Nil) :+ fullName
+  lazy val namesList: Seq[String] =
+    parent().map(_.namesList).getOrElse(Nil) :+ fullName
 
-  lazy val shortNamesList: Seq[String] = parent().map(_.shortNamesList).getOrElse(Nil) :+ name
+  lazy val shortNamesList: Seq[String] =
+    parent().map(_.shortNamesList).getOrElse(Nil) :+ name
 
   def regionType: Option[RegionType]
 
@@ -60,33 +62,43 @@ trait AdmDivision {
   def byName(name: String, level: Int, max: Int): Seq[AdmDivision] = {
     Seq(this).filter(_.name.toLowerCase == name.toLowerCase) ++
       (if (level < max) {
-        regions.flatMap(_.byName(name, level + 1, max))
-      } else Nil)
+         regions.flatMap(_.byName(name, level + 1, max))
+       } else Nil)
   }
 
-
   def byRegion(monumentIds: Set[String]): Map[AdmDivision, Set[String]] = {
-    val entries = monumentIds.flatMap(id => byMonumentId(id).map(adm => id -> adm))
+    val entries =
+      monumentIds.flatMap(id => byMonumentId(id).map(adm => id -> adm))
 
     entries
       .groupBy { case (id, adm) => adm }
-      .mapValues(_.toMap.keySet).toMap
+      .mapValues(_.toMap.keySet)
+      .toMap
   }
 
-  def byIdAndName(regionId: String, rawName: String, cityType: Option[String] = None): Seq[AdmDivision] = {
+  def byIdAndName(
+      regionId: String,
+      rawName: String,
+      cityType: Option[String] = None
+  ): Seq[AdmDivision] = {
     val cleanName = AdmDivision.cleanName(rawName)
 
-    val candidates = byMonumentId(regionId).map { region =>
-      val here = region.byName(cleanName)
-      if (here.isEmpty) {
-        region.parent().map(_.byName(cleanName)).getOrElse(Nil)
-      } else {
-        here
+    val candidates = byMonumentId(regionId)
+      .map { region =>
+        val here = region.byName(cleanName)
+        if (here.isEmpty) {
+          region.parent().map(_.byName(cleanName)).getOrElse(Nil)
+        } else {
+          here
+        }
       }
-    }.getOrElse(Nil)
+      .getOrElse(Nil)
 
-    val types = cityType.fold(KoatuuTypes.nameToType(rawName).toSet.filterNot(_.code == "Р")) { code =>
-      KoatuuTypes.codeToType.get(code)
+    val types = cityType.fold(
+      KoatuuTypes.nameToType(rawName).toSet.filterNot(_.code == "Р")
+    ) { code =>
+      KoatuuTypes.codeToType
+        .get(code)
         .map(Set(_))
         .getOrElse(KoatuuTypes.nameToType(code).toSet.filterNot(_.code == "Р"))
     }
@@ -126,13 +138,18 @@ trait AdmDivision {
 }
 
 trait AdmRegion extends AdmDivision {
-  lazy val regionIds: SortedSet[String] = SortedSet(regions.map(_.shortCode): _*)
+  lazy val regionIds: SortedSet[String] = SortedSet(
+    regions.map(_.shortCode): _*
+  )
 
-  lazy val regionNames: Seq[String] = regions.sortBy(_.shortCode).map(_.fullName)
+  lazy val regionNames: Seq[String] =
+    regions.sortBy(_.shortCode).map(_.fullName)
 
-  lazy val regionById: Map[String, AdmDivision] = regions.groupBy(_.shortCode).mapValues(_.head).toMap
+  lazy val regionById: Map[String, AdmDivision] =
+    regions.groupBy(_.shortCode).mapValues(_.head).toMap
 
-  override def regionName(regId: String) = byMonumentId(regId).map(_.fullName).getOrElse("")
+  override def regionName(regId: String) =
+    byMonumentId(regId).map(_.fullName).getOrElse("")
 
   override def byMonumentId(monumentId: String): Option[AdmDivision] = {
     regionById.get(regionId(monumentId)).flatMap { region =>
@@ -141,15 +158,15 @@ trait AdmRegion extends AdmDivision {
   }
 }
 
-
 object NoAdmDivision extends Country("", "")
 
-case class Country(code: String,
-                   name: String,
-                   val languageCodes: Seq[String] = Nil,
-                   var regions: Seq[AdmDivision] = Nil,
-                   val codeToRegion: Map[String, AdmDivision] = Map.empty
-                  ) extends AdmRegion {
+case class Country(
+    code: String,
+    name: String,
+    val languageCodes: Seq[String] = Nil,
+    var regions: Seq[AdmDivision] = Nil,
+    val codeToRegion: Map[String, AdmDivision] = Map.empty
+) extends AdmRegion {
 
   val parent: () => Option[AdmDivision] = () => None
 
@@ -159,7 +176,9 @@ case class Country(code: String,
     monumentId.take(2)
   }
 
-  override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
+  override def withParents(
+      parent: () => Option[AdmDivision] = () => None
+  ): AdmDivision = {
     regions = regionsWithParents()
     this
   }
@@ -169,14 +188,18 @@ case class Country(code: String,
   override def level: Int = 0
 }
 
-case class Region(code: String, name: String,
-                  var regions: Seq[AdmDivision] = Nil,
-                  var parent: () => Option[AdmDivision] = () => None,
-                  regionType: Option[RegionType] = None,
-                  level: Int = 0)
-  extends AdmRegion {
+case class Region(
+    code: String,
+    name: String,
+    var regions: Seq[AdmDivision] = Nil,
+    var parent: () => Option[AdmDivision] = () => None,
+    regionType: Option[RegionType] = None,
+    level: Int = 0
+) extends AdmRegion {
 
-  override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
+  override def withParents(
+      parent: () => Option[AdmDivision] = () => None
+  ): AdmDivision = {
     this.parent = parent
     this.regions = regionsWithParents()
     this
@@ -184,17 +207,23 @@ case class Region(code: String, name: String,
 
   override def fullName: String = name + regionType
     .filterNot(_.noSuffix.contains(name))
-    .flatMap(_.nameSuffix).getOrElse("")
+    .flatMap(_.nameSuffix)
+    .getOrElse("")
 }
 
-case class NoRegions(code: String, name: String,
-                     var parent: () => Option[AdmDivision] = () => None,
-                     regionType: Option[RegionType] = None, level: Int = 0)
-  extends AdmDivision {
+case class NoRegions(
+    code: String,
+    name: String,
+    var parent: () => Option[AdmDivision] = () => None,
+    regionType: Option[RegionType] = None,
+    level: Int = 0
+) extends AdmDivision {
 
   val regions: Seq[AdmDivision] = Nil
 
-  override def withParents(parent: () => Option[AdmDivision] = () => None): AdmDivision = {
+  override def withParents(
+      parent: () => Option[AdmDivision] = () => None
+  ): AdmDivision = {
     this.parent = parent
     this
   }
@@ -202,10 +231,14 @@ case class NoRegions(code: String, name: String,
 }
 
 object AdmDivision {
-  def apply(code: String, name: String,
-            regions: Seq[AdmDivision],
-            parent: () => Option[AdmDivision],
-            regionType: Option[RegionType], level: Int = 0): AdmDivision = {
+  def apply(
+      code: String,
+      name: String,
+      regions: Seq[AdmDivision],
+      parent: () => Option[AdmDivision],
+      regionType: Option[RegionType],
+      level: Int = 0
+  ): AdmDivision = {
     if (regions.isEmpty) {
       NoRegions(code, name, parent, regionType, level)
     } else {
@@ -238,8 +271,10 @@ object AdmDivision {
       .replace(",", "")
       .replace("’", "'")
       .replace("”", "'")
-      .split("\\(").head
-      .split("\\|").head
+      .split("\\(")
+      .head
+      .split("\\|")
+      .head
       .trim
   }
 
@@ -249,22 +284,20 @@ object Country {
 
   val Azerbaijan = new Country("AZ", "Azerbaijan", Seq("az"))
 
-  val Ukraine: Country = new Country("UA", "Ukraine", Seq("uk"), Koatuu.regions(() => Some(Ukraine)))
+  val Ukraine: Country =
+    new Country("UA", "Ukraine", Seq("uk"), Koatuu.regions(() => Some(Ukraine)))
 
   val customCountries = Seq(Ukraine)
 
   def langMap: Map[String, Seq[String]] = {
     Locale.getAvailableLocales
       .groupBy(_.getCountry)
-      .map {
-        case (countryCode, locales) =>
-
-          val langs = locales.toSeq.flatMap {
-            locale =>
-              Option(locale.getLanguage)
-                .filter(_.nonEmpty)
-          }
-          countryCode -> langs
+      .map { case (countryCode, locales) =>
+        val langs = locales.toSeq.flatMap { locale =>
+          Option(locale.getLanguage)
+            .filter(_.nonEmpty)
+        }
+        countryCode -> langs
       }
   }
 
@@ -272,27 +305,33 @@ object Country {
 
     val countryLangs = langMap
 
-    val fromJava = Locale.getISOCountries.map { countryCode =>
+    val fromJava = Locale.getISOCountries
+      .map { countryCode =>
+        val langCodes = countryLangs.getOrElse(countryCode, Seq.empty)
 
-      val langCodes = countryLangs.getOrElse(countryCode, Seq.empty)
+        val locales =
+          langCodes.map(langCode => new Locale(langCode, countryCode))
 
-      val locales = langCodes.map(langCode => new Locale(langCode, countryCode))
+        val locale = locales.headOption.getOrElse(new Locale("", countryCode))
 
-      val locale = locales.headOption.getOrElse(new Locale("", countryCode))
+        val langs = locales.map(_.getDisplayLanguage(Locale.ENGLISH)).distinct
 
-      val langs = locales.map(_.getDisplayLanguage(Locale.ENGLISH)).distinct
-
-      new Country(locale.getCountry,
-        locale.getDisplayCountry(Locale.ENGLISH),
-        langCodes
-      )
-    }.filterNot(_.code == "ua")
+        new Country(
+          locale.getCountry,
+          locale.getDisplayCountry(Locale.ENGLISH),
+          langCodes
+        )
+      }
+      .filterNot(_.code == "ua")
 
     Seq(Ukraine) ++ fromJava
   }
 
   lazy val countryMap: Map[String, Country] =
-    (fromJavaLocales ++ customCountries).groupBy(_.code.toLowerCase).mapValues(_.head).toMap
+    (fromJavaLocales ++ customCountries)
+      .groupBy(_.code.toLowerCase)
+      .mapValues(_.head)
+      .toMap
 
   def byCode(code: String): Option[Country] = countryMap.get(code.toLowerCase)
 }

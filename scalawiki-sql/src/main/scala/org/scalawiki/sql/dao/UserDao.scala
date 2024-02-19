@@ -8,7 +8,11 @@ import spray.util.pimpFuture
 
 import scala.language.higherKinds
 
-class UserDao(val mwDb: MwDatabase, val query: TableQuery[Users], val driver: JdbcProfile) {
+class UserDao(
+    val mwDb: MwDatabase,
+    val query: TableQuery[Users],
+    val driver: JdbcProfile
+) {
 
   import driver.api._
 
@@ -24,8 +28,7 @@ class UserDao(val mwDb: MwDatabase, val query: TableQuery[Users], val driver: Jd
     if (user.id.isDefined) {
       db.run(query.forceInsert(user)).await
       user.id
-    }
-    else {
+    } else {
       db.run(autoInc += user).await
     }
   }

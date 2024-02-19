@@ -13,13 +13,19 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class Caller(fn: String => String) extends java.util.function.Function[String, String] {
+class Caller(fn: String => String)
+    extends java.util.function.Function[String, String] {
   override def apply(t: String): String = {
     fn.apply(t)
   }
 }
 
-class Cache(name: String, entries: Int = 12 * 1024, valueSize: Int = 128 * 1024, persistent: Boolean = true) {
+class Cache(
+    name: String,
+    entries: Int = 12 * 1024,
+    valueSize: Int = 128 * 1024,
+    persistent: Boolean = true
+) {
 
   private val builder: ChronicleMapBuilder[String, String] = ChronicleMap
     .of(classOf[String], classOf[String])
@@ -38,28 +44,34 @@ class Cache(name: String, entries: Int = 12 * 1024, valueSize: Int = 128 * 1024,
 
   def remove(key: String): String = cache.remove(key)
 
-  def computeIfAbsent(key: String, fn: String => String): String = cache.computeIfAbsent(key, new Caller(fn))
+  def computeIfAbsent(key: String, fn: String => String): String =
+    cache.computeIfAbsent(key, new Caller(fn))
 
 }
 
 // TODO async compute, do not enter twice
-class CachedBot(site: Site, name: String, persistent: Boolean, http: HttpClient = HttpClient.get(MwBot.system),
-                entries: Int = 12 * 1024,
-                valueSize: Int = 128 * 1024)
-  extends MwBotImpl(site) {
+class CachedBot(
+    site: Site,
+    name: String,
+    persistent: Boolean,
+    http: HttpClient = HttpClient.get(MwBot.system),
+    entries: Int = 12 * 1024,
+    valueSize: Int = 128 * 1024
+) extends MwBotImpl(site) {
 
   val cache = new Cache(name + ".cache", entries, valueSize, persistent)
 
-  override def run(action: Action,
-                   context: Map[String, String] = Map.empty,
-                   limit: Option[Long] = None): Future[Iterable[Page]] = {
+  override def run(
+      action: Action,
+      context: Map[String, String] = Map.empty,
+      limit: Option[Long] = None
+  ): Future[Iterable[Page]] = {
     val future = super.run(action, context, limit)
 
-    future recoverWith {
-      case ex: MwException =>
-        val key = paramsKey(ex.params)
-        cache.remove(key)
-        super.run(action, context, limit)
+    future recoverWith { case ex: MwException =>
+      val key = paramsKey(ex.params)
+      cache.remove(key)
+      super.run(action, context, limit)
     }
   }
 
@@ -108,7 +120,9 @@ object CachedBot {
 
     println("keys: " + keys.size)
     if (valueSizes.nonEmpty) {
-      println(s"values: total size: ${valueSizes.sum / (1024 * 1024)} MB, avg size: ${valueSizes.sum / (valueSizes.size * 1024)} KB")
+      println(
+        s"values: total size: ${valueSizes.sum / (1024 * 1024)} MB, avg size: ${valueSizes.sum / (valueSizes.size * 1024)} KB"
+      )
     }
   }
 }

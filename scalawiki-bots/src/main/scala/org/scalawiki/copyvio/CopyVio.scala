@@ -19,17 +19,25 @@ class CopyVio(val http: HttpClient) {
     ((__ \ "url").read[String] ~
       (__ \ "confidence").read[Double] ~
       (__ \ "violation").read[String] ~
-      (__ \ "skipped").read[Boolean]) (CopyVioSource.apply _)
+      (__ \ "skipped").read[Boolean])(CopyVioSource.apply _)
 
   val sourcesReads = (__ \ "sources").read[Seq[CopyVioSource]]
 
   def baseUrl(project: String = "wikipedia", lang: String = "uk") =
     s"https://tools.wmflabs.org/copyvios/api.json?version=1&action=search&project=$project&lang=$lang"
 
-  def search(title: String, lang: String = "uk", project: String = "wikipedia") =
+  def search(
+      title: String,
+      lang: String = "uk",
+      project: String = "wikipedia"
+  ) =
     http.get(baseUrl(project, lang) + s"&title=$title") map parseResponse
 
-  def searchByRevId(revId: Long, lang: String = "uk", project: String = "wikipedia") =
+  def searchByRevId(
+      revId: Long,
+      lang: String = "uk",
+      project: String = "wikipedia"
+  ) =
     http.get(baseUrl(project, lang) + s"&oldid=$revId") map parseResponse
 
   def searchByPage(page: Page) = {
@@ -48,7 +56,12 @@ object CopyVio extends WithBot with QueryLibrary {
   def pagesByIds(ids: Iterable[Long]): Future[Iterable[Page]] = {
     import org.scalawiki.dto.cmd.query.prop.rvprop._
 
-    val action = Action(Query(PageIdsParam(ids), Prop(Info(), Revisions(RvProp(Ids) /*,RvLimit("max")*/))))
+    val action = Action(
+      Query(
+        PageIdsParam(ids),
+        Prop(Info(), Revisions(RvProp(Ids) /*,RvLimit("max")*/ ))
+      )
+    )
 
     bot.run(action)
   }
@@ -56,12 +69,16 @@ object CopyVio extends WithBot with QueryLibrary {
   def main(args: Array[String]) {
     val copyVio = new CopyVio(HttpClient.get())
 
-    for (revIds <- articlesWithTemplate("Вікіпедія любить пам'ятки");
-         pages <- pagesByIds(revIds);
-         page <- pages;
-         sources <- copyVio.searchByPage(page);
-         suspected <- sources.filter(_.isPossible)) {
-      println(s"## url: [${suspected.url}], violation ${suspected.violation}, confidence ${suspected.confidence}")
+    for (
+      revIds <- articlesWithTemplate("Вікіпедія любить пам'ятки");
+      pages <- pagesByIds(revIds);
+      page <- pages;
+      sources <- copyVio.searchByPage(page);
+      suspected <- sources.filter(_.isPossible)
+    ) {
+      println(
+        s"## url: [${suspected.url}], violation ${suspected.violation}, confidence ${suspected.confidence}"
+      )
     }
   }
 }
