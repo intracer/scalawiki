@@ -23,7 +23,12 @@ trait MonumentUpdater {
   def updatedParams(m: Monument): Map[String, String]
 }
 
-class ListUpdaterTask(val host: String, monumentDb: MonumentDB, monumentUpdater: MonumentUpdater) extends PageUpdateTask with SwebleParser {
+class ListUpdaterTask(
+    val host: String,
+    monumentDb: MonumentDB,
+    monumentUpdater: MonumentUpdater
+) extends PageUpdateTask
+    with SwebleParser {
 
   val config: WikiConfig = DefaultConfigEnWp.generate
 
@@ -55,7 +60,11 @@ class ListUpdaterTask(val host: String, monumentDb: MonumentDB, monumentUpdater:
       .replace("<!--", "<x-comment>")
       .replace("-->", "</x-comment>")
 
-    val newText = replace(noComments, { case t: WtTemplate if getTemplateName(t) == template => t }, mapper)
+    val newText = replace(
+      noComments,
+      { case t: WtTemplate if getTemplateName(t) == template => t },
+      mapper
+    )
 
     val withComments = newText
       .replace("<x-comment>", "<!--")
@@ -79,4 +88,3 @@ class ListUpdaterTask(val host: String, monumentDb: MonumentDB, monumentUpdater:
     titles
   }
 }
-

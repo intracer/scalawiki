@@ -38,7 +38,12 @@ class ListUserContribsSpec extends Specification with MockBotSpec {
                 }
            }"""
 
-      val query = Map("action" -> "query", "list" -> queryType, "ucuser" -> "Catrope", "continue" -> "")
+      val query = Map(
+        "action" -> "query",
+        "list" -> queryType,
+        "ucuser" -> "Catrope",
+        "continue" -> ""
+      )
       val commands = Seq(
         HttpStub(query, response1)
       )
@@ -59,9 +64,22 @@ class ListUserContribsSpec extends Specification with MockBotSpec {
       result must have size 1
       val user = User(4587601, "Catrope")
 
-      val rev = new Revision(Some(136629050), Some(11650099), Some(0), Some(user),
-        Some(Timestamp.parse("2007-06-07T16:45:30Z")), Some("Creation; directing to BW"), None, Some(119))
-      result.head === new Page(Some(11650099), Some(3), "User talk:Catrope", revisions = Seq(rev))
+      val rev = new Revision(
+        Some(136629050),
+        Some(11650099),
+        Some(0),
+        Some(user),
+        Some(Timestamp.parse("2007-06-07T16:45:30Z")),
+        Some("Creation; directing to BW"),
+        None,
+        Some(119)
+      )
+      result.head === new Page(
+        Some(11650099),
+        Some(3),
+        "User talk:Catrope",
+        revisions = Seq(rev)
+      )
     }
   }
 

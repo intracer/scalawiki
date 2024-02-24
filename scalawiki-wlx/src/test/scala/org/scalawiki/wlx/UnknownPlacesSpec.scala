@@ -29,11 +29,14 @@ class UnknownPlacesSpec extends Specification {
     val place = UnknownPlace("page1", "regionId1", "place1", Nil, Seq(monument))
 
     emptyDb.unknownPlacesTables(Seq(place)) === Seq(
-      Table(headers,
-            Seq(
-              Seq("place1", "", "regionId1-1 monument1")
-            ),
-            "page1"))
+      Table(
+        headers,
+        Seq(
+          Seq("place1", "", "regionId1-1 monument1")
+        ),
+        "page1"
+      )
+    )
   }
 
   "Сичівка" in {
@@ -139,18 +142,22 @@ class UnknownPlacesSpec extends Specification {
     )
 
     emptyDb.unknownPlacesTables(places) === Seq(
-      Table(headers,
-            Seq(
-              Seq("place1", "", "regionId1-1 monument1"),
-              Seq("place2", "", "regionId1-2 monument2")
-            ),
-            "page1"),
-      Table(headers,
-            Seq(
-              Seq("place3", "", "regionId2-3 monument3"),
-              Seq("place4", "", "regionId3-4 monument4")
-            ),
-            "page2")
+      Table(
+        headers,
+        Seq(
+          Seq("place1", "", "regionId1-1 monument1"),
+          Seq("place2", "", "regionId1-2 monument2")
+        ),
+        "page1"
+      ),
+      Table(
+        headers,
+        Seq(
+          Seq("place3", "", "regionId2-3 monument3"),
+          Seq("place4", "", "regionId3-4 monument4")
+        ),
+        "page2"
+      )
     )
   }
 }

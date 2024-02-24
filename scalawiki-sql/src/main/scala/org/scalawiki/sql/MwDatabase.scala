@@ -10,7 +10,10 @@ import spray.util.pimpFuture
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class MwDatabase(val dc: DatabaseConfig[JdbcProfile], val dbName: Option[String] = None) {
+class MwDatabase(
+    val dc: DatabaseConfig[JdbcProfile],
+    val dbName: Option[String] = None
+) {
 
   val db = dc.db
 
@@ -20,23 +23,24 @@ class MwDatabase(val dc: DatabaseConfig[JdbcProfile], val dbName: Option[String]
 
   def prefixed(tableName: String) = dbName.fold("")(_ + "_") + tableName
 
-  val categories = TableQuery[Categories](
-    (tag: Tag) => new Categories(tag, prefixed("category")))
+  val categories = TableQuery[Categories]((tag: Tag) =>
+    new Categories(tag, prefixed("category"))
+  )
 
-  val images = TableQuery[Images](
-    (tag: Tag) => new Images(tag, prefixed("image")))
+  val images =
+    TableQuery[Images]((tag: Tag) => new Images(tag, prefixed("image")))
 
-  val pages = TableQuery[Pages](
-    (tag: Tag) => new Pages(tag, prefixed("page"), dbName))
+  val pages =
+    TableQuery[Pages]((tag: Tag) => new Pages(tag, prefixed("page"), dbName))
 
-  val revisions = TableQuery[Revisions](
-    (tag: Tag) => new Revisions(tag, prefixed("revision"), dbName))
+  val revisions = TableQuery[Revisions]((tag: Tag) =>
+    new Revisions(tag, prefixed("revision"), dbName)
+  )
 
-  val texts = TableQuery[Texts](
-    (tag: Tag) => new Texts(tag, prefixed("text")))
+  val texts = TableQuery[Texts]((tag: Tag) => new Texts(tag, prefixed("text")))
 
-  val users = TableQuery[Users](
-    (tag: Tag) => new Users(tag, prefixed("user"), dbName))
+  val users =
+    TableQuery[Users]((tag: Tag) => new Users(tag, prefixed("user"), dbName))
 
   val imageDao = new ImageDao(this, images, driver)
   val textDao = new TextDao(this, texts, driver)
@@ -59,18 +63,17 @@ class MwDatabase(val dc: DatabaseConfig[JdbcProfile], val dbName: Option[String]
   }
 
   def existingTables(existing: Boolean) = {
-    db.run(MTable.getTables).map {
-      dbTables =>
-        val dbTableNames = dbTables.map(_.name.name).toSet
-        tables.filter { t =>
-          val tableName = t.baseTableRow.tableName
-          val contains = dbTableNames.contains(tableName)
+    db.run(MTable.getTables).map { dbTables =>
+      val dbTableNames = dbTables.map(_.name.name).toSet
+      tables.filter { t =>
+        val tableName = t.baseTableRow.tableName
+        val contains = dbTableNames.contains(tableName)
 
-          if (existing)
-            contains
-          else
-            !contains
-        }
+        if (existing)
+          contains
+        else
+          !contains
+      }
     }
   }
 
@@ -101,8 +104,8 @@ object MwDatabase {
   def dbName(host: String): String = {
     host.split("\\.").toList match {
       case "commons" :: "wikimedia" :: xs => "commonswiki_p"
-      case x :: "wikipedia" :: xs => x + "wiki_p"
-      case x1 :: x2 :: xs => x1 + x2
+      case x :: "wikipedia" :: xs         => x + "wiki_p"
+      case x1 :: x2 :: xs                 => x1 + x2
     }
   }
 }

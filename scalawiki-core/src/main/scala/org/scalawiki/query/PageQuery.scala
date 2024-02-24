@@ -10,7 +10,8 @@ trait PageQuery {
   def revisions(
       namespaces: Set[Int] = Set.empty,
       props: Set[String] = Set.empty,
-      continueParam: Option[(String, String)] = None): Future[Iterable[Page]]
+      continueParam: Option[(String, String)] = None
+  ): Future[Iterable[Page]]
 
 }
 

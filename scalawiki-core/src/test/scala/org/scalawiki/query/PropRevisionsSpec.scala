@@ -26,30 +26,80 @@ class PropRevisionsSpec extends Specification with MockBotSpec {
           |"revisions": [{"revid": 2, "user": "u2", "comment": "c2", "*": "$pageText2"}]} }}}""".stripMargin
 
       val commands = Seq(
-        HttpStub(Map("action" -> "query",
-          "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids|content|user|comment",
-          "continue" -> ""), response1),
-        HttpStub(Map("action" -> "query",
-          "generator" -> "categorymembers", "gcmtitle" -> "Category:SomeCategory", "gcmlimit" -> "max",
-          "prop" -> "info|revisions", "rvprop" -> "ids|content|user|comment",
-          "continue" -> "gcmcontinue||", "gcmcontinue" -> "10|Stub|6674690"), response2)
+        HttpStub(
+          Map(
+            "action" -> "query",
+            "generator" -> "categorymembers",
+            "gcmtitle" -> "Category:SomeCategory",
+            "gcmlimit" -> "max",
+            "prop" -> "info|revisions",
+            "rvprop" -> "ids|content|user|comment",
+            "continue" -> ""
+          ),
+          response1
+        ),
+        HttpStub(
+          Map(
+            "action" -> "query",
+            "generator" -> "categorymembers",
+            "gcmtitle" -> "Category:SomeCategory",
+            "gcmlimit" -> "max",
+            "prop" -> "info|revisions",
+            "rvprop" -> "ids|content|user|comment",
+            "continue" -> "gcmcontinue||",
+            "gcmcontinue" -> "10|Stub|6674690"
+          ),
+          response2
+        )
       )
 
       val bot = getBot(commands: _*)
 
-      val future = bot.page("Category:SomeCategory")
-        .revisionsByGenerator("categorymembers", "cm", Set.empty, Set("ids", "content", "user", "comment")).map(_.toSeq)
+      val future = bot
+        .page("Category:SomeCategory")
+        .revisionsByGenerator(
+          "categorymembers",
+          "cm",
+          Set.empty,
+          Set("ids", "content", "user", "comment")
+        )
+        .map(_.toSeq)
 
       val result = future.await
 
       result must have size 2
 
-      result(0) === Page(Some(569559L), Some(1), "Talk:Welfare reform",
-        Seq(Revision(Some(1L), Some(569559L), None, Some(User(None, Some("u1"))), None, Some("c1"), Some(pageText1)))
+      result(0) === Page(
+        Some(569559L),
+        Some(1),
+        "Talk:Welfare reform",
+        Seq(
+          Revision(
+            Some(1L),
+            Some(569559L),
+            None,
+            Some(User(None, Some("u1"))),
+            None,
+            Some("c1"),
+            Some(pageText1)
+          )
+        )
       )
-      result(1) === Page(Some(4571809L), Some(2), "User:Formator",
-        Seq(Revision(Some(2L), Some(4571809L), None, Some(User(None, Some("u2"))), None, Some("c2"), Some(pageText2)))
+      result(1) === Page(
+        Some(4571809L),
+        Some(2),
+        "User:Formator",
+        Seq(
+          Revision(
+            Some(2L),
+            Some(4571809L),
+            None,
+            Some(User(None, Some("u2"))),
+            None,
+            Some("c2"),
+            Some(pageText2)
+          )
+        )
       )
     }
   }

@@ -3,44 +3,90 @@ package org.scalawiki.dto.cmd.query.prop
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.query.Module
 
-/**
- *  ?action=query&amp;prop=info
- *
- */
-case class Info(override val params:InfoParam*) extends Module[PropArg]("in", "info", "Get basic page information.") with PropArg with ArgWithParams[InfoParam, PropArg]
+/** ?action=query&amp;prop=info
+  */
+case class Info(override val params: InfoParam*)
+    extends Module[PropArg]("in", "info", "Get basic page information.")
+    with PropArg
+    with ArgWithParams[InfoParam, PropArg]
 
-
-/**
- * Marker trait for parameters used with prop=info
- */
+/** Marker trait for parameters used with prop=info
+  */
 trait InfoParam extends Parameter[AnyRef]
 
+/** ?action=query&amp;prop=info&amp;inprop=
+  */
+case class InProp(override val args: InPropArg*)
+    extends EnumParameter[InPropArg](
+      "inprop",
+      "Which additional properties to get:"
+    )
+    with InfoParam
 
-/**
- *  ?action=query&amp;prop=info&amp;inprop=
- *
- */
-case class InProp(override val args: InPropArg*) extends EnumParameter[InPropArg]("inprop", "Which additional properties to get:") with InfoParam
-
-
-/**
- *  Trait for inprop= arguments
- *
- */
+/** Trait for inprop= arguments
+  */
 
 trait InPropArg extends EnumArg[InPropArg] { val param = InProp }
 
-/**
- *  inprop= arguments
- *
- */
-object Protection extends EnumArgument[InPropArg]("protection", "List the protection level of each page.") with InPropArg
-object TalkId extends EnumArgument[InPropArg]("talkid", "The page ID of the talk page for each non-talk page.") with InPropArg
-object Watched extends EnumArgument[InPropArg]("watched", "List the watched status of each page.") with InPropArg
-object Watchers extends EnumArgument[InPropArg]("watchers", "The page ID of the talk page for each non-talk page.") with InPropArg
-object NotificationTimestamp extends EnumArgument[InPropArg]("notificationtimestamp", "The watchlist notification timestamp of each page.") with InPropArg
-object SubjectId extends EnumArgument[InPropArg]("subjectid", "The page ID of the parent page for each talk page.") with InPropArg
-object Url extends EnumArgument[InPropArg]("url", "Gives a full URL, an edit URL, and the canonical URL for each page.") with InPropArg
-object Readable extends EnumArgument[InPropArg]("readable", "Whether the user can read this page.") with InPropArg
-object Preload extends EnumArgument[InPropArg]("preload", "Gives the text returned by EditFormPreloadText.") with InPropArg
-object DisplayTitle extends EnumArgument[InPropArg]("displaytitle", "Gives the way the page title is actually displayed.") with InPropArg
+/** inprop= arguments
+  */
+object Protection
+    extends EnumArgument[InPropArg](
+      "protection",
+      "List the protection level of each page."
+    )
+    with InPropArg
+object TalkId
+    extends EnumArgument[InPropArg](
+      "talkid",
+      "The page ID of the talk page for each non-talk page."
+    )
+    with InPropArg
+object Watched
+    extends EnumArgument[InPropArg](
+      "watched",
+      "List the watched status of each page."
+    )
+    with InPropArg
+object Watchers
+    extends EnumArgument[InPropArg](
+      "watchers",
+      "The page ID of the talk page for each non-talk page."
+    )
+    with InPropArg
+object NotificationTimestamp
+    extends EnumArgument[InPropArg](
+      "notificationtimestamp",
+      "The watchlist notification timestamp of each page."
+    )
+    with InPropArg
+object SubjectId
+    extends EnumArgument[InPropArg](
+      "subjectid",
+      "The page ID of the parent page for each talk page."
+    )
+    with InPropArg
+object Url
+    extends EnumArgument[InPropArg](
+      "url",
+      "Gives a full URL, an edit URL, and the canonical URL for each page."
+    )
+    with InPropArg
+object Readable
+    extends EnumArgument[InPropArg](
+      "readable",
+      "Whether the user can read this page."
+    )
+    with InPropArg
+object Preload
+    extends EnumArgument[InPropArg](
+      "preload",
+      "Gives the text returned by EditFormPreloadText."
+    )
+    with InPropArg
+object DisplayTitle
+    extends EnumArgument[InPropArg](
+      "displaytitle",
+      "Gives the way the page title is actually displayed."
+    )
+    with InPropArg

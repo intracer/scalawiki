@@ -3,22 +3,24 @@ package org.scalawiki.dto.cmd.query.prop
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.query.Module
 
-/**
- * ?action=query&amp;prop=images
- *
- */
+/** ?action=query&amp;prop=images
+  */
 case class Images(override val params: ImagesParam[Any]*)
-  extends Module[PropArg]("im", "images", "Gets a list of all images used on the provided pages.")
-  with PropArg with ArgWithParams[ImagesParam[Any], PropArg]
+    extends Module[PropArg](
+      "im",
+      "images",
+      "Gets a list of all images used on the provided pages."
+    )
+    with PropArg
+    with ArgWithParams[ImagesParam[Any], PropArg]
 
-/**
- * Marker trait for parameters used with prop=langlinks
- */
+/** Marker trait for parameters used with prop=langlinks
+  */
 trait ImagesParam[+T] extends Parameter[T]
 
-case class ImLimit(override val arg: String) extends StringParameter("imlimit",
-  "How many images to return") with ImagesParam[String]
-
+case class ImLimit(override val arg: String)
+    extends StringParameter("imlimit", "How many images to return")
+    with ImagesParam[String]
 
 ///**
 // *  ?action=query&amp;prop=info&amp;llprop=

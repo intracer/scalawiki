@@ -16,8 +16,12 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
       val response = """{ "query": { "embeddedin": [] }}"""
 
       val query = Map(
-        "action" -> "query", "list" -> queryType, "eilimit" -> "max",
-        "eititle" -> "Template:SomeTemplate", "einamespace" -> "", "continue" -> ""
+        "action" -> "query",
+        "list" -> queryType,
+        "eilimit" -> "max",
+        "eititle" -> "Template:SomeTemplate",
+        "einamespace" -> "",
+        "continue" -> ""
       )
       val bot = getBot(HttpStub(query, response))
 
@@ -36,8 +40,12 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
           }}"""
 
       val query = Map(
-        "action" -> "query", "list" -> queryType, "eilimit" -> "max",
-        "eititle" -> "Template:SomeTemplate", "einamespace" -> "", "continue" -> ""
+        "action" -> "query",
+        "list" -> queryType,
+        "eilimit" -> "max",
+        "eititle" -> "Template:SomeTemplate",
+        "einamespace" -> "",
+        "continue" -> ""
       )
 
       val bot = getBot(HttpStub(query, response))
@@ -59,14 +67,21 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
           ]}}"""
 
       val query = Map(
-        "action" -> "query", "list" -> queryType, "eilimit" -> "max",
+        "action" -> "query",
+        "list" -> queryType,
+        "eilimit" -> "max",
         "eititle" -> "Template:SomeTemplate",
-        "einamespace" -> "", "continue" -> ""
+        "einamespace" -> "",
+        "continue" -> ""
       )
 
       val bot = getBot(HttpStub(query, response))
 
-      val result = bot.page("Template:SomeTemplate").whatTranscludesHere().map(_.toSeq).await
+      val result = bot
+        .page("Template:SomeTemplate")
+        .whatTranscludesHere()
+        .map(_.toSeq)
+        .await
       result must have size 2
       result(0) === Page(569559, Some(1), "Talk:Welfare reform")
       result(1) === Page(4571809, Some(2), "User:Formator")
@@ -84,19 +99,32 @@ class PropEmbeddedInSpec extends Specification with MockBotSpec {
            "continue":
            { "continue":"-||", "eicontinue": "10|Stub|6674690" }
           }"""
-      val response2 = """{ "query": { "embeddedin": [{"pageid": 4571809, "ns": 2, "title": "User:Formator" }] }}"""
+      val response2 =
+        """{ "query": { "embeddedin": [{"pageid": 4571809, "ns": 2, "title": "User:Formator" }] }}"""
 
-      val query = Map("action" -> "query", "list" -> queryType, "eilimit" -> "max",
-        "eititle" -> "Template:SomeTemplate", "einamespace" -> "")
+      val query = Map(
+        "action" -> "query",
+        "list" -> queryType,
+        "eilimit" -> "max",
+        "eititle" -> "Template:SomeTemplate",
+        "einamespace" -> ""
+      )
 
       val commands = Seq(
         HttpStub(query + ("continue" -> ""), response1),
-        HttpStub(query ++ Map("continue" -> "-||", "eicontinue" -> "10|Stub|6674690"), response2)
+        HttpStub(
+          query ++ Map("continue" -> "-||", "eicontinue" -> "10|Stub|6674690"),
+          response2
+        )
       )
 
       val bot = getBot(commands: _*)
 
-      val result = bot.page("Template:SomeTemplate").whatTranscludesHere().map(_.toSeq).await
+      val result = bot
+        .page("Template:SomeTemplate")
+        .whatTranscludesHere()
+        .map(_.toSeq)
+        .await
       result must have size 2
       result(0) === Page(569559, Some(1), "Talk:Welfare reform")
       result(1) === Page(4571809, Some(2), "User:Formator")

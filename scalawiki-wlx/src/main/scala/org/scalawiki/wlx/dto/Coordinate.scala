@@ -6,6 +6,8 @@ case class Coordinate(lat: String, lon: String) {
 }
 
 object Coordinate {
-  def apply(latOpt:Option[String], lonOpt:Option[String]) = for (lat<-latOpt; lon <-lonOpt)
+  def apply(latOpt: Option[String], lonOpt: Option[String]) = for (
+    lat <- latOpt; lon <- lonOpt
+  )
     yield new Coordinate(lat, lon)
 }

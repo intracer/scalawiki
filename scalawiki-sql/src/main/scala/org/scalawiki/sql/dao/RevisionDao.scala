@@ -35,8 +35,7 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     val revIds = if (hasIds) {
       db.run(revisions.forceInsertAll(withTextIds)).await
       revisionSeq.map(_.id)
-    }
-    else {
+    } else {
       db.run(autoInc.forceInsertAll(withTextIds)).await
     }
     revIds
@@ -49,10 +48,10 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
         if (e)
           Future.successful(revision.id)
         else
-          db.run(revisions.forceInsert(addUser(addText(revision)))).map(_ => revision.id)
+          db.run(revisions.forceInsert(addUser(addText(revision))))
+            .map(_ => revision.id)
       }
-    }
-    else {
+    } else {
       db.run(autoInc += addUser(addText(revision)))
     }
     revId.map(_.get).await
@@ -78,7 +77,9 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
           if (dbUser.isDefined) {
             revision.copy(user = dbUser)
           } else {
-            throw new IllegalArgumentException(s"No user with id $userId exists")
+            throw new IllegalArgumentException(
+              s"No user with id $userId exists"
+            )
           }
         } else if (user.name.isDefined) {
           val username = user.name.get
@@ -86,7 +87,9 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
           if (dbUser.isDefined) {
             revision.copy(user = dbUser)
           } else {
-            throw new IllegalArgumentException(s"No user with name $username exists")
+            throw new IllegalArgumentException(
+              s"No user with name $username exists"
+            )
           }
         } else {
           revision
@@ -106,7 +109,6 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
     revisionSeq
   }
 
-
   def list = db.run(revisions.result).await
 
   def count = db.run(revisions.length.result).await
@@ -120,10 +122,12 @@ class RevisionDao(val mwDb: MwDatabase, val driver: JdbcProfile) {
   //    get(id).recover { case _ => false }.map(_ => true)
 
   def withText(id: Long): Future[Revision] =
-    db.run((revisions.filter(_.id === id)
-      join texts on (_.textId === _.id)).result).map { rows =>
-      rows.map {
-        case (r, t) => r.copy(content = Some(t.text))
+    db.run(
+      (revisions.filter(_.id === id)
+        join texts on (_.textId === _.id)).result
+    ).map { rows =>
+      rows.map { case (r, t) =>
+        r.copy(content = Some(t.text))
       }.head
     }
 }

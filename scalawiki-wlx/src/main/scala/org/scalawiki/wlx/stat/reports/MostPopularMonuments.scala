@@ -6,9 +6,11 @@ import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 class MostPopularMonuments(val stat: ContestStat) extends Reporter {
 
-  def this(imageDbs: Seq[ImageDB],
-           totalImageDb: Option[ImageDB],
-           monumentDb: MonumentDB) = {
+  def this(
+      imageDbs: Seq[ImageDB],
+      totalImageDb: Option[ImageDB],
+      monumentDb: MonumentDB
+  ) = {
     this(
       ContestStat(
         monumentDb.contest,
@@ -18,8 +20,9 @@ class MostPopularMonuments(val stat: ContestStat) extends Reporter {
         Some(monumentDb),
         imageDbs.lastOption.orElse(totalImageDb),
         totalImageDb,
-        imageDbs //.headOption.map(_ => imageDbs.init).getOrElse(Seq.empty)
-      ))
+        imageDbs // .headOption.map(_ => imageDbs.init).getOrElse(Seq.empty)
+      )
+    )
   }
 
   val name = "Most photographed objects"
@@ -28,13 +31,17 @@ class MostPopularMonuments(val stat: ContestStat) extends Reporter {
     contest.contestType.name + " in " + contest.country.name
 
   def table: Table =
-    mostPopularMonumentsTable(stat.dbsByYear,
-                              stat.totalImageDb,
-                              stat.monumentDb.get)
+    mostPopularMonumentsTable(
+      stat.dbsByYear,
+      stat.totalImageDb,
+      stat.monumentDb.get
+    )
 
-  def mostPopularMonumentsTable(imageDbs: Seq[ImageDB],
-                                totalImageDb: Option[ImageDB],
-                                monumentDb: MonumentDB): Table = {
+  def mostPopularMonumentsTable(
+      imageDbs: Seq[ImageDB],
+      totalImageDb: Option[ImageDB],
+      monumentDb: MonumentDB
+  ): Table = {
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
     val yearSeq = imageDbsByYear.keys.toSeq.sorted
 
@@ -46,28 +53,32 @@ class MostPopularMonuments(val stat: ContestStat) extends Reporter {
 
     val topAuthors = topN(100, authorsCountTotal)
 
-    val rows = topAuthors.zipWithIndex.map {
-      case (id, index) =>
-        val monument = monumentDb.byId(id).get
-        Seq(
-          (index + 1).toString,
-          s"{{nobr|$id}}",
-          monument.name.replaceAll("\\[\\[", "[[:uk:"),
-          monument.galleryLink
-        ) ++ Seq(authorsCountTotal.getOrElse(id, 0).toString,
-                 photosCountTotal.getOrElse(id, 0).toString)
+    val rows = topAuthors.zipWithIndex.map { case (id, index) =>
+      val monument = monumentDb.byId(id).get
+      Seq(
+        (index + 1).toString,
+        s"{{nobr|$id}}",
+        monument.name.replaceAll("\\[\\[", "[[:uk:"),
+        monument.galleryLink
+      ) ++ Seq(
+        authorsCountTotal.getOrElse(id, 0).toString,
+        photosCountTotal.getOrElse(id, 0).toString
+      )
     }
 
     val yearsStr = Seq(yearSeq.headOption, yearSeq.lastOption).flatten
       .mkString("(", " - ", ")")
-    Table(authorsColumns,
-          rows,
-          name + s" in ${stat.imageDbsByYear.size} year(s) $yearsStr")
+    Table(
+      authorsColumns,
+      rows,
+      name + s" in ${stat.imageDbsByYear.size} year(s) $yearsStr"
+    )
   }
 
   def mostPopularMonumentsInRegions(
       totalImageDb: ImageDB,
-      monumentDb: MonumentDB): Map[String, Table] = {
+      monumentDb: MonumentDB
+  ): Map[String, Table] = {
     val authorsColumns = Seq("N", "Id", "Name", "Category") ++
       Seq("authors", "photos")
 
@@ -79,25 +90,28 @@ class MostPopularMonuments(val stat: ContestStat) extends Reporter {
         .replaceAll("область", "")
         .replaceAll("Автономна Республіка", "АР")
 
-      val imageDb = ImageDB(totalImageDb.contest,
-                            totalImageDb.imagesByRegion(regionId),
-                            Some(monumentDb))
+      val imageDb = ImageDB(
+        totalImageDb.contest,
+        totalImageDb.imagesByRegion(regionId),
+        Some(monumentDb)
+      )
 
       val photosCountTotal = imageDb.imageCountById
       val authorsCountTotal = imageDb.authorsCountById
 
       val topAuthors = topN(5, authorsCountTotal)
 
-      val rows = topAuthors.zipWithIndex.map {
-        case (id, index) =>
-          val monument = monumentDb.byId(id).get
-          Seq(
-            (index + 1).toString,
-            s"{{nobr|$id}}",
-            monument.name.replaceAll("\\[\\[", "[[:uk:"),
-            monument.galleryLink
-          ) ++ Seq(authorsCountTotal.getOrElse(id, 0).toString,
-                   photosCountTotal.getOrElse(id, 0).toString)
+      val rows = topAuthors.zipWithIndex.map { case (id, index) =>
+        val monument = monumentDb.byId(id).get
+        Seq(
+          (index + 1).toString,
+          s"{{nobr|$id}}",
+          monument.name.replaceAll("\\[\\[", "[[:uk:"),
+          monument.galleryLink
+        ) ++ Seq(
+          authorsCountTotal.getOrElse(id, 0).toString,
+          photosCountTotal.getOrElse(id, 0).toString
+        )
       }
 
       shortRegionName -> Table(authorsColumns, rows)
@@ -109,12 +123,13 @@ class MostPopularMonuments(val stat: ContestStat) extends Reporter {
 
     val categoryText = s"\n[[Category:$category]]"
 
-    val byRegions = mostPopularMonumentsInRegions(stat.totalImageDb.get,
-                                                  stat.monumentDb.get).toSeq
+    val byRegions = mostPopularMonumentsInRegions(
+      stat.totalImageDb.get,
+      stat.monumentDb.get
+    ).toSeq
       .sortBy(_._1)
-      .map {
-        case (name, table) =>
-          s"\n==$name==\n" + table.asWiki
+      .map { case (name, table) =>
+        s"\n==$name==\n" + table.asWiki
       }
       .mkString
 

@@ -4,17 +4,22 @@ import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.collection.JavaConverters._
 
-
 object ImageTemplate {
 
   val parsed = ConfigFactory.parseResources("art-photo.conf")
 
-  def makeInfoPage(title: String, description: String, location: String): String = {
-    val cfg = resolve(Map(
-      "title" -> title,
-      "description" -> description,
-      "location" -> location
-    ))
+  def makeInfoPage(
+      title: String,
+      description: String,
+      location: String
+  ): String = {
+    val cfg = resolve(
+      Map(
+        "title" -> title,
+        "description" -> description,
+        "location" -> location
+      )
+    )
 
     cfg.getString("template")
   }

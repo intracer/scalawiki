@@ -6,7 +6,8 @@ import org.specs2.mutable.Specification
 class ImageSpec extends Specification {
 
   def makeTemplate(author: String, description: String = "") =
-    new Template("Information",
+    new Template(
+      "Information",
       Map(
         "description" -> description,
         "date" -> "",
@@ -29,7 +30,9 @@ class ImageSpec extends Specification {
     }
 
     "get author from link" in {
-      val wiki = makeTemplate("[http://wikimapia.org/#show=/user/2246978/ Alexander Savitsky]")
+      val wiki = makeTemplate(
+        "[http://wikimapia.org/#show=/user/2246978/ Alexander Savitsky]"
+      )
       Image.getAuthorFromPage(wiki) === "Alexander Savitsky"
     }
 
@@ -37,9 +40,13 @@ class ImageSpec extends Specification {
 
   "fromPageRevision" should {
     "parse author and id" in {
-      val wiki = makeTemplate("[[User:PhotoMaster|PhotoMaster]]", "{{Monument|nature-park-id}}")
+      val wiki = makeTemplate(
+        "[[User:PhotoMaster|PhotoMaster]]",
+        "{{Monument|nature-park-id}}"
+      )
 
-      val page = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(wiki)))
+      val page =
+        Page("File:Image.jpg").copy(revisions = Seq(Revision.one(wiki)))
       val image = Image.fromPageRevision(page, Some("Monument")).get
 
       image.author === Some("PhotoMaster")
@@ -47,9 +54,13 @@ class ImageSpec extends Specification {
     }
 
     "parse two monuments" in {
-      val wiki = makeTemplate("[[User:PhotoMaster|PhotoMaster]]", "{{Monument|id1}}{{Monument|id2}}")
+      val wiki = makeTemplate(
+        "[[User:PhotoMaster|PhotoMaster]]",
+        "{{Monument|id1}}{{Monument|id2}}"
+      )
 
-      val page = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(wiki)))
+      val page =
+        Page("File:Image.jpg").copy(revisions = Seq(Revision.one(wiki)))
       val image = Image.fromPageRevision(page, Some("Monument")).get
 
       image.author === Some("PhotoMaster")
@@ -59,26 +70,37 @@ class ImageSpec extends Specification {
 
     "parse categories" in {
 
-      val page = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(withCategories)))
+      val page = Page("File:Image.jpg").copy(revisions =
+        Seq(Revision.one(withCategories))
+      )
 
       val image = Image.fromPageRevision(page, Some("Monument")).get
 
-      image.categories === Set("Wiki loves monuments in Ukraine 2018 - Quality",
+      image.categories === Set(
+        "Wiki loves monuments in Ukraine 2018 - Quality",
         "Uploaded via Campaign:wlm-ua",
         "Obviously ineligible submissions for WLM 2018 in Ukraine",
-        "Saint Nicholas Church on Water")
+        "Saint Nicholas Church on Water"
+      )
     }
   }
 
   "parse special nomination template" in {
 
-    val page1 = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(withSpecialNominations)))
-    val image1 = Image.fromPageRevision(page1, Some("Monument"), Seq("WLM2021-UA-Aero")).get
+    val page1 = Page("File:Image.jpg").copy(revisions =
+      Seq(Revision.one(withSpecialNominations))
+    )
+    val image1 = Image
+      .fromPageRevision(page1, Some("Monument"), Seq("WLM2021-UA-Aero"))
+      .get
 
     image1.specialNominations === Set("WLM2021-UA-Aero")
 
-    val page2 = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(withCategories)))
-    val image2 = Image.fromPageRevision(page2, Some("Monument"), Seq("WLM2021-UA-Aero")).get
+    val page2 =
+      Page("File:Image.jpg").copy(revisions = Seq(Revision.one(withCategories)))
+    val image2 = Image
+      .fromPageRevision(page2, Some("Monument"), Seq("WLM2021-UA-Aero"))
+      .get
 
     image2.specialNominations === Set.empty
   }

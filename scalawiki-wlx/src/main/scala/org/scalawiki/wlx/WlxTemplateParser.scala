@@ -5,8 +5,7 @@ import org.scalawiki.wikitext.TemplateParser
 import org.scalawiki.wlx.dto.Monument
 import org.scalawiki.wlx.dto.lists.ListConfig
 
-/**
-  * Parses list of monuments in monument info templates format
+/** Parses list of monuments in monument info templates format
   *
   * @param config
   */
@@ -38,13 +37,17 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
   }
 
   def templateToMonument(template: Template): Monument = {
-    def byName(name: Option[String]) = name.flatMap(template.getParamOpt).filter(_.trim.nonEmpty)
+    def byName(name: Option[String]) =
+      name.flatMap(template.getParamOpt).filter(_.trim.nonEmpty)
 
     val otherParamNames = template.params.keySet -- config.namesMap.values
 
-    val otherParams = otherParamNames.map { name => name -> template.getParam(name) }.toMap
+    val otherParams = otherParamNames.map { name =>
+      name -> template.getParam(name)
+    }.toMap
 
-    new Monument(page = page,
+    new Monument(
+      page = page,
       id = removeComments(byName(id).getOrElse(1.toString)).trim,
       name = byName(name).getOrElse(""),
       year = byName(year),
@@ -63,7 +66,8 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
       subType = byName(subType),
       resolution = byName(resolution),
       otherParams = otherParams,
-      listConfig = Some(config))
+      listConfig = Some(config)
+    )
   }
 
   def removeComments(s: String): String = {
@@ -73,8 +77,7 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
       val end = s.indexOf("-->", start + 4)
       if (end > 0) {
         removeComments(s.substring(0, start) + s.substring(end + 3, s.length))
-      }
-      else s.substring(0, start)
+      } else s.substring(0, start)
     } else {
       s
     }

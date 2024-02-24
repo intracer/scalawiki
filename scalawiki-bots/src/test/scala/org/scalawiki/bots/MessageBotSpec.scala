@@ -51,7 +51,10 @@ class MessageBotSpec extends Specification {
 
       val bot = new MessageBot(config)
 
-      bot.range === TimeRange(Some(ZonedDateTime.of(2016, 1, 29, 0, 0, 0, 0, ZoneOffset.UTC)), None)
+      bot.range === TimeRange(
+        Some(ZonedDateTime.of(2016, 1, 29, 0, 0, 0, 0, ZoneOffset.UTC)),
+        None
+      )
     }
 
   }

@@ -78,17 +78,28 @@ class ChartsSpec extends Specification {
 
       val ids = Seq(
         Set("2_only") ++ twoAndThree ++ twoAndFour ++ intersection,
-        Set("3_only1", "3_only2") ++ twoAndThree ++ threeAndFour ++ intersection,
-        Set("4_only1", "4_only2", "4_only3") ++ twoAndFour ++ threeAndFour ++ intersection
+        Set(
+          "3_only1",
+          "3_only2"
+        ) ++ twoAndThree ++ threeAndFour ++ intersection,
+        Set(
+          "4_only1",
+          "4_only2",
+          "4_only3"
+        ) ++ twoAndFour ++ threeAndFour ++ intersection
       )
 
       val dataset = charts.intersectionDataSet(years, ids)
 
       dataset.getKeys.asScala === Seq(
-        "2012", "2012 & 2013", "2012 & 2014",
-        "2013", "2013 & 2014",
+        "2012",
+        "2012 & 2013",
+        "2012 & 2014",
+        "2013",
+        "2013 & 2014",
         "2014",
-        "2012 & 2013 & 2014")
+        "2012 & 2013 & 2014"
+      )
 
       dataset.getValue("2012") === 1
       dataset.getValue("2012 & 2013") === 6
@@ -135,15 +146,22 @@ class ChartsSpec extends Specification {
       val dataset = charts.intersectionDataSet(years, ids)
 
       dataset.getKeys.asScala === Seq(
-        "2012", "2012 & 2013", "2012 & 2014", "2012 & 2015",
-        "2013", "2013 & 2014", "2013 & 2015",
-        "2014", "2014 & 2015",
+        "2012",
+        "2012 & 2013",
+        "2012 & 2014",
+        "2012 & 2015",
+        "2013",
+        "2013 & 2014",
+        "2013 & 2015",
+        "2014",
+        "2014 & 2015",
         "2015",
         "2013 & 2014 & 2015",
         "2012 & 2014 & 2015",
         "2012 & 2013 & 2015",
         "2012 & 2013 & 2014",
-        "2012 & 2013 & 2014 & 2015")
+        "2012 & 2013 & 2014 & 2015"
+      )
 
       dataset.getValue("2012") === 2
       dataset.getValue("2012 & 2013") === 6

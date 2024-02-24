@@ -24,7 +24,7 @@ abstract class OpTable() {
 
   def toDouble(s: String) = s match {
     case x if x.nonEmpty => x.toDouble
-    case _ => 0.0
+    case _               => 0.0
   }
 
   lazy val byDate = ops.groupBy(opDate)
@@ -37,29 +37,38 @@ abstract class OpTable() {
 
   def sumPlus = ops.map(opAmount).filter(_ > 0).sum
 
-  def sumByDate: Map[String, Double] = byDate.mapValues(_.map(opAmount).filter(_ > 0).sum).toMap
+  def sumByDate: Map[String, Double] =
+    byDate.mapValues(_.map(opAmount).filter(_ > 0).sum).toMap
 
   def diffByDate(that: OpTable) = {
     val thisMap = this.sumByDate
     val thatMap = that.sumByDate
     val allKeys = (thisMap.keySet ++ thatMap.keySet).toSeq.sorted
 
-    allKeys.map {
-      date =>
+    allKeys
+      .map { date =>
         val thisV = thisMap.getOrElse(date, 0.0)
         val thatV = thatMap.getOrElse(date, 0.0)
 
         if (thisV - thatV <= 0.01)
-          "" //s"the same: $thisV"
+          "" // s"the same: $thisV"
         else {
           val tab = List.fill(10)(" ").mkString("")
           s"$date Diff: ${thisV - thatV}; $name :$thisV; ${that.name}: $thatV \n" +
             this.name + ":\n" +
-            this.byDate.getOrElse(date, Nil).map(op => tab + opDescr(op)).mkString("\n") + "\n" +
+            this.byDate
+              .getOrElse(date, Nil)
+              .map(op => tab + opDescr(op))
+              .mkString("\n") + "\n" +
             that.name + ":\n" +
-            that.byDate.getOrElse(date, Nil).map(op => tab + that.opDescr(op)).mkString("\n")
+            that.byDate
+              .getOrElse(date, Nil)
+              .map(op => tab + that.opDescr(op))
+              .mkString("\n")
         }
-    }.filter(_.nonEmpty).mkString("\n")
+      }
+      .filter(_.nonEmpty)
+      .mkString("\n")
   }
 
   def diff[T](f: OpTable => Double, that: OpTable) = {
@@ -84,7 +93,7 @@ class AppOps(val rows: Seq[Seq[String]]) extends OpTable() {
   override val amountCol = indexOf("Amount")
   override val descrCol = indexOf("Description")
 
-  override val ops = rows.tail.sortBy(_ (dateCol))
+  override val ops = rows.tail.sortBy(_(dateCol))
 
 }
 
@@ -105,7 +114,7 @@ class BankOps(val rows: Seq[Seq[String]]) extends OpTable() {
 
   override val ops = mapDates(rows.tail)
 
-  val byDate2 = ops.groupBy(_ (dateCol2))
+  val byDate2 = ops.groupBy(_(dateCol2))
 
   private def mapDates(rows: Seq[Seq[String]]) = {
     def dateConv(s: String) =
@@ -123,8 +132,11 @@ class BankOps(val rows: Seq[Seq[String]]) extends OpTable() {
   def rate(op: Seq[String]): Option[Exchange] = {
     val uah = credit(op)
     val descr = op(descrCol)
-    for (usd <- "(\\d+\\.\\d+) USD".r.findFirstMatchIn(descr).map(_.group(1).toDouble)) yield
-      Exchange(op(dateCol), uah, usd, uah/usd)
+    for (
+      usd <- "(\\d+\\.\\d+) USD".r
+        .findFirstMatchIn(descr)
+        .map(_.group(1).toDouble)
+    ) yield Exchange(op(dateCol), uah, usd, uah / usd)
   }
 
   def rates = ops.flatMap(rate)
@@ -135,7 +147,9 @@ object CsvComparator {
     override val delimiter = ';'
   }
 
-  val bankRaw = CSVReader.open("/mnt/mint/home/ilya/wmua-finance/2016-2202.csv", "cp1251")(UA_CSV).all()
+  val bankRaw = CSVReader
+    .open("/mnt/mint/home/ilya/wmua-finance/2016-2202.csv", "cp1251")(UA_CSV)
+    .all()
   //    val appRaw = CSVReader.open("/home/ilya/Downloads/2016-2202-app.csv").all()
   val appRaw = CSVReader.open("/home/ilya/Downloads/wmua_fin (5).csv").all()
 

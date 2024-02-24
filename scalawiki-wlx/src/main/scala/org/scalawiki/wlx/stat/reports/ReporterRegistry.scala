@@ -8,7 +8,9 @@ import org.scalawiki.wlx.{ImageDB, ImageFiller, MonumentDB}
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 
-class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: ExecutionContext) {
+class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
+    ec: ExecutionContext
+) {
 
   import org.scalawiki.wlx.stat.reports.{ReporterRegistry => RR}
 
@@ -23,22 +25,23 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
   //  def authorsMonuments: String =
   //    RR.authorsMonuments(stat.currentYearImageDb.get)
 
-  def authorsImages: String = RR.authorsImages(currentYearImageDb.get, monumentDb)
+  def authorsImages: String =
+    RR.authorsImages(currentYearImageDb.get, monumentDb)
 
-  def authorsContributed: String = RR.authorsContributed(stat.dbsByYear, totalImageDb, monumentDb)
+  def authorsContributed: String =
+    RR.authorsContributed(stat.dbsByYear, totalImageDb, monumentDb)
 
   def specialNominations(): String = RR.specialNominations(stat)
 
   def mostPopularMonuments: String = new MostPopularMonuments(stat).asText
 
-  def monumentsPictured: String = new MonumentsPicturedByRegion(stat, gallery = true).asText
+  def monumentsPictured: String =
+    new MonumentsPicturedByRegion(stat, gallery = true).asText
 
   def withArticles: Option[String] = RR.withArticles(monumentDb)
 
-  /**
-   * Outputs current year reports.
-   *
-   */
+  /** Outputs current year reports.
+    */
   def currentYear(): Unit = {
     for (imageDb <- currentYearImageDb) {
 
@@ -68,7 +71,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
         }
 
         if (cfg.fillLists && cfg.years.size == 1) {
-            ImageFiller.fillLists(mDb, imageDb)
+          ImageFiller.fillLists(mDb, imageDb)
         }
 
         if (cfg.missingGallery) {
@@ -81,7 +84,9 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
         }
 
         if (cfg.mostPopularMonuments) {
-          new MostPopularMonuments(stat).updateWiki(MwBot.fromHost(MwBot.commons))
+          new MostPopularMonuments(stat).updateWiki(
+            MwBot.fromHost(MwBot.commons)
+          )
         }
       }
     }
@@ -127,15 +132,24 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit ec: Executio
 
 }
 
-class NumberOfMonumentsByNumberOfPictures(val stat: ContestStat, val imageDb: ImageDB) extends Reporter {
-  val picturesPerMonument = imageDb.images.flatMap(_.monumentIds).groupBy(identity).values.map(_.size)
-  val numberOfMonumentsByNumberOfPictures = picturesPerMonument.groupBy(identity).mapValues(_.size).toSeq
+class NumberOfMonumentsByNumberOfPictures(
+    val stat: ContestStat,
+    val imageDb: ImageDB
+) extends Reporter {
+  val picturesPerMonument =
+    imageDb.images.flatMap(_.monumentIds).groupBy(identity).values.map(_.size)
+  val numberOfMonumentsByNumberOfPictures = picturesPerMonument
+    .groupBy(identity)
+    .mapValues(_.size)
+    .toSeq
     .sortBy { case (pictures, monuments) => -pictures }
 
   override val table =
     Table(
       Seq("pictures", "monuments"),
-      numberOfMonumentsByNumberOfPictures.map { case (pictures, monuments) => Seq(pictures.toString, monuments.toString) }
+      numberOfMonumentsByNumberOfPictures.map { case (pictures, monuments) =>
+        Seq(pictures.toString, monuments.toString)
+      }
     )
 
   override def name: String = "Number Of monuments by number of pictures"
@@ -152,15 +166,17 @@ object ReporterRegistry {
   def authorsImages(imageDb: ImageDB, monumentDb: Option[MonumentDB]): String =
     new AuthorsStat().authorsImages(imageDb._byAuthor.grouped, monumentDb)
 
-  def authorsContributed(imageDbs: Seq[ImageDB], totalImageDb: Option[ImageDB], monumentDb: Option[MonumentDB]): String =
+  def authorsContributed(
+      imageDbs: Seq[ImageDB],
+      totalImageDb: Option[ImageDB],
+      monumentDb: Option[MonumentDB]
+  ): String =
     new AuthorsStat().authorsContributed(imageDbs, totalImageDb, monumentDb)
 
   def specialNominations(stat: ContestStat): String =
-    new SpecialNominations(stat, stat.currentYearImageDb.get).specialNomination()
+    new SpecialNominations(stat, stat.currentYearImageDb.get)
+      .specialNomination()
 
   def withArticles(monumentDb: Option[MonumentDB]): Option[String] =
     monumentDb.map(db => Stats.withArticles(db).asWiki("").asWiki)
 }
-
-
-

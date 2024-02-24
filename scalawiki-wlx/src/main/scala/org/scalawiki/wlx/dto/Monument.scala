@@ -9,37 +9,40 @@ import org.scalawiki.wlx.dto.lists.ListConfig
 import scala.collection.immutable.ListMap
 import scala.util.Try
 
-case class Monument(page: String = "",
-                    id: String,
-                    name: String,
-                    year: Option[String] = None,
-                    description: Option[String] = None,
-                    article: Option[String] = None,
-                    city: Option[String] = None,
-                    cityType: Option[String] = None,
-                    place: Option[String] = None,
-                    user: Option[String] = None,
-                    area: Option[String] = None,
-                    //                    coordinate: Option[Coordinate],
-                    lat: Option[String] = None,
-                    lon: Option[String] = None,
-                    typ: Option[String] = None,
-                    subType: Option[String] = None,
-                    photo: Option[String] = None,
-                    gallery: Option[String] = None,
-                    resolution: Option[String] = None,
-                    stateId: Option[String] = None,
-                    contest: Option[Long] = None,
-                    source: Option[String] = None,
-                    otherParams: Map[String, String] = Map.empty,
-                    listConfig: Option[ListConfig] = None
-                   ) extends Ordered[Monument] {
+case class Monument(
+    page: String = "",
+    id: String,
+    name: String,
+    year: Option[String] = None,
+    description: Option[String] = None,
+    article: Option[String] = None,
+    city: Option[String] = None,
+    cityType: Option[String] = None,
+    place: Option[String] = None,
+    user: Option[String] = None,
+    area: Option[String] = None,
+    //                    coordinate: Option[Coordinate],
+    lat: Option[String] = None,
+    lon: Option[String] = None,
+    typ: Option[String] = None,
+    subType: Option[String] = None,
+    photo: Option[String] = None,
+    gallery: Option[String] = None,
+    resolution: Option[String] = None,
+    stateId: Option[String] = None,
+    contest: Option[Long] = None,
+    source: Option[String] = None,
+    otherParams: Map[String, String] = Map.empty,
+    listConfig: Option[ListConfig] = None
+) extends Ordered[Monument] {
 
   val cityName = AdmDivision.cleanName(city.getOrElse(""))
 
   def toUrls = Monument.wikiLinkToUrl(name + " * " + place, "uk.wikipedia.org")
 
-  def galleryLink = gallery.fold("") { title => s" [[:Category:$title|$title]]" }
+  def galleryLink = gallery.fold("") { title =>
+    s" [[:Category:$title|$title]]"
+  }
 
   def regionId = Monument.getRegionId(id)
 
@@ -72,21 +75,29 @@ case class Monument(page: String = "",
       "subType" -> subType,
       "photo" -> photo,
       "gallery" -> gallery,
-      "resolution" -> resolution)
+      "resolution" -> resolution
+    )
 
-    val names = listConfig.fold(paramValues.filter(_._2.nonEmpty).keys)(_.namesMap.values.toSeq)
-    val namesMap = listConfig.map(_.namesMap).getOrElse(names.map(name => name -> name).toMap)
+    val names = listConfig
+      .fold(paramValues.filter(_._2.nonEmpty).keys)(_.namesMap.values.toSeq)
+    val namesMap = listConfig
+      .map(_.namesMap)
+      .getOrElse(names.map(name => name -> name).toMap)
     val longest = names.map(_.length).max
 
-    val namesMapPadded = if (pad) namesMap.mapValues(_.padTo(longest, ' ')) else namesMap
+    val namesMapPadded =
+      if (pad) namesMap.mapValues(_.padTo(longest, ' ')) else namesMap
 
     val params =
-      namesMapPadded.toSeq.map {
-        case (englName, mappedName) => mappedName -> paramValues.get(englName).flatten.getOrElse("")
+      namesMapPadded.toSeq.map { case (englName, mappedName) =>
+        mappedName -> paramValues.get(englName).flatten.getOrElse("")
       } ++
         otherParams.toSeq
 
-    val template = Template(templateName.orElse(listConfig.map(_.templateName)).get, ListMap(params: _*))
+    val template = Template(
+      templateName.orElse(listConfig.map(_.templateName)).get,
+      ListMap(params: _*)
+    )
 
     template.text + "\n"
   }
@@ -114,25 +125,34 @@ object Monument {
     wikiText.fold("") { t => wikiLinkToUrl(t, host) }
 
   def wikiLinkToUrl(wikiText: String, host: String): String = {
-    val r1 = "\\[\\[([^|]*?)\\]\\]".r.replaceAllIn(wikiText, {
-      m =>
+    val r1 = "\\[\\[([^|]*?)\\]\\]".r.replaceAllIn(
+      wikiText,
+      { m =>
         val url = URLEncoder.encode(m.group(1).replaceAll(" ", "_"), "UTF-8")
         val title = m.group(1)
         s"""<a href='https://$host/wiki/$url'>$title</a>"""
-    })
+      }
+    )
 
-    val r2 = "\\[\\[(.*?)\\|(.*?)\\]\\]".r.replaceAllIn(r1, {
-      m =>
+    val r2 = "\\[\\[(.*?)\\|(.*?)\\]\\]".r.replaceAllIn(
+      r1,
+      { m =>
         val url = URLEncoder.encode(m.group(1).replaceAll(" ", "_"), "UTF-8")
         val title = m.group(2)
         s"""<a href='https://$host/wiki/$url'>$title</a>"""
-    })
+      }
+    )
 
     r2
   }
 
-  def monumentsFromText(text: String, page: String, template: String, listConfig: ListConfig): Iterable[Monument] =
-    init(text, page, listConfig) //.toSet
+  def monumentsFromText(
+      text: String,
+      page: String,
+      template: String,
+      listConfig: ListConfig
+  ): Iterable[Monument] =
+    init(text, page, listConfig) // .toSet
 
   def getRegionId(monumentId: String): String = {
     val parts = monumentId.split("\\-")
@@ -143,7 +163,7 @@ object Monument {
       .getOrElse("")
   }
 
-  def getRegionId(monumentId: Option[String]): String = monumentId.fold("")(getRegionId)
+  def getRegionId(monumentId: Option[String]): String =
+    monumentId.fold("")(getRegionId)
 
 }
-

@@ -10,15 +10,13 @@ class DataDumpSpec extends Specification with BeforeEach {
 
   val filename = "ukwiki-20150311-pages-articles-multistream.xml.bz2"
 
-  override def before = {
-
-  }
+  override def before = {}
 
   "data dump" should {
     "fill data from filesystem" in {
       val fs = Jimfs.newFileSystem(Configuration.unix())
       val path = "/path/to"
-      val fullname =  path + "/" + filename
+      val fullname = path + "/" + filename
 
       val dd = new DumpFileInfo(fs.getPath(fullname))
 
@@ -39,7 +37,7 @@ class DataDumpSpec extends Specification with BeforeEach {
 
       val dd = DumpFile.get(dumpPath).get.asInstanceOf[PagesDump]
 
-      dd.findIndexFile.map(_.toString) ===  Some(indexPath.toString)
+      dd.findIndexFile.map(_.toString) === Some(indexPath.toString)
     }
 
     "find uncompressed index" in {
@@ -51,7 +49,7 @@ class DataDumpSpec extends Specification with BeforeEach {
 
       val dd = DumpFile.get(dumpPath).get.asInstanceOf[PagesDump]
 
-      dd.findIndexFile.map(_.toString) ===  Some(indexPath.toString)
+      dd.findIndexFile.map(_.toString) === Some(indexPath.toString)
     }
 
     "do not find index with wrong date" in {
@@ -68,7 +66,10 @@ class DataDumpSpec extends Specification with BeforeEach {
 
   }
 
-  def newInMemoryDirectory(path: String = "/foo", configuration: Configuration = Configuration.unix()): Path = {
+  def newInMemoryDirectory(
+      path: String = "/foo",
+      configuration: Configuration = Configuration.unix()
+  ): Path = {
     val fs = Jimfs.newFileSystem(configuration)
     val dir = fs.getPath(path)
     Files.createDirectory(dir)

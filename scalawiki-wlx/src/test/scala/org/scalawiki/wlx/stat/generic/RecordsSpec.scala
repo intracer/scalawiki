@@ -2,7 +2,6 @@ package org.scalawiki.wlx.stat.generic
 
 import org.specs2.mutable.Specification
 
-
 class RecordsSpec extends Specification {
 
   "test" should {
@@ -43,7 +42,6 @@ class RecordsSpec extends Specification {
         Seq(0, (0 + 9) * 5)
       )
     }
-
 
   }
 

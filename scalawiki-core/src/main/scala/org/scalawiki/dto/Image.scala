@@ -23,22 +23,23 @@ object ImageMetadata {
   val df = DateTimeFormatter.ofPattern(pattern)
 }
 
-case class Image(title: String,
-                 url: Option[String] = None,
-                 pageUrl: Option[String] = None,
-                 size: Option[Long] = None,
-                 width: Option[Int] = None,
-                 height: Option[Int] = None,
-                 author: Option[String] = None,
-                 uploader: Option[User] = None,
-                 year: Option[String] = None,
-                 date: Option[ZonedDateTime] = None,
-                 monumentIds: Seq[String] = Nil,
-                 pageId: Option[Long] = None,
-                 metadata: Option[ImageMetadata] = None,
-                 categories: Set[String] = Set.empty,
-                 specialNominations: Set[String] = Set.empty)
-    extends Ordered[Image] {
+case class Image(
+    title: String,
+    url: Option[String] = None,
+    pageUrl: Option[String] = None,
+    size: Option[Long] = None,
+    width: Option[Int] = None,
+    height: Option[Int] = None,
+    author: Option[String] = None,
+    uploader: Option[User] = None,
+    year: Option[String] = None,
+    date: Option[ZonedDateTime] = None,
+    monumentIds: Seq[String] = Nil,
+    pageId: Option[Long] = None,
+    metadata: Option[ImageMetadata] = None,
+    categories: Set[String] = Set.empty,
+    specialNominations: Set[String] = Set.empty
+) extends Ordered[Image] {
 
   def compare(that: Image): Int = title.compareTo(that.title)
 
@@ -81,7 +82,8 @@ object Image {
   def fromPageRevision(
       page: Page,
       monumentIdTemplate: Option[String],
-      specialNominationTemplates: Seq[String] = Nil): Option[Image] = {
+      specialNominationTemplates: Seq[String] = Nil
+  ): Option[Image] = {
     page.revisions.headOption.map { revision =>
       val content = revision.content.getOrElse("")
       val parsedPage = TemplateParser.parsePage(content)
@@ -118,20 +120,29 @@ object Image {
     }
   }
 
-  def fromPage(page: Page,
-               monumentIdTemplate: Option[String],
-               specialNominationTemplates: Seq[String] = Nil): Option[Image] = {
-    for (fromImage <- Image.fromPageImages(page);
-         fromRev <- Image.fromPageRevision(page,
-                                           monumentIdTemplate,
-                                           specialNominationTemplates))
+  def fromPage(
+      page: Page,
+      monumentIdTemplate: Option[String],
+      specialNominationTemplates: Seq[String] = Nil
+  ): Option[Image] = {
+    for (
+      fromImage <- Image.fromPageImages(page);
+      fromRev <- Image.fromPageRevision(
+        page,
+        monumentIdTemplate,
+        specialNominationTemplates
+      )
+    )
       yield {
         val renamedAuthor = fromRev.author.map(author =>
-          AuthorsMap.renames.getOrElse(author, author))
-        fromImage.copy(monumentIds = fromRev.monumentIds,
-                       author = renamedAuthor,
-                       categories = fromRev.categories,
-                       specialNominations = fromRev.specialNominations)
+          AuthorsMap.renames.getOrElse(author, author)
+        )
+        fromImage.copy(
+          monumentIds = fromRev.monumentIds,
+          author = renamedAuthor,
+          categories = fromRev.categories,
+          specialNominations = fromRev.specialNominations
+        )
       }
   }
 
@@ -177,16 +188,18 @@ object Image {
     }
   }
 
-  def basic(title: String,
-            timestamp: Option[ZonedDateTime],
-            uploader: Option[String],
-            size: Option[Long],
-            width: Option[Int],
-            height: Option[Int],
-            url: Option[String],
-            pageUrl: Option[String],
-            pageId: Option[Long],
-            metadata: Option[Map[String, String]] = None) =
+  def basic(
+      title: String,
+      timestamp: Option[ZonedDateTime],
+      uploader: Option[String],
+      size: Option[Long],
+      width: Option[Int],
+      height: Option[Int],
+      url: Option[String],
+      pageUrl: Option[String],
+      pageId: Option[Long],
+      metadata: Option[Map[String, String]] = None
+  ) =
     new Image(
       title = title,
       date = timestamp,
@@ -200,8 +213,10 @@ object Image {
       metadata = metadata.map(ImageMetadata.apply)
     )
 
-  def gallery(images: Iterable[String],
-              descriptions: Iterable[String] = Seq.empty): String =
+  def gallery(
+      images: Iterable[String],
+      descriptions: Iterable[String] = Seq.empty
+  ): String =
     Gallery.asWiki(images, descriptions)
 
   def resizedWidth(w: Int, h: Int, resizeToX: Int, resizeToY: Int): Int = {

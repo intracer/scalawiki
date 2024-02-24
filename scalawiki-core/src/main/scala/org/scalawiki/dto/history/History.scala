@@ -16,12 +16,14 @@ class History(val revisions: Seq[Revision]) {
 
   def delta(revisionFilter: RevisionFilter): Option[Long] = {
     val filtered = revisionFilter.apply(revisions)
-    val sum = for (
-      oldest <- filtered.lastOption;
-      newest <- filtered.headOption;
-      d1 <- delta(oldest);
-      d2 <- delta(oldest, newest))
-      yield d1 + d2
+    val sum =
+      for (
+        oldest <- filtered.lastOption;
+        newest <- filtered.headOption;
+        d1 <- delta(oldest);
+        d2 <- delta(oldest, newest)
+      )
+        yield d1 + d2
     sum
   }
 
@@ -30,19 +32,21 @@ class History(val revisions: Seq[Revision]) {
       if (parentId == 0)
         revision.size
       else
-        revisions.find(_.revId.contains(parentId)).flatMap {
-          parent => delta(parent, revision)
+        revisions.find(_.revId.contains(parentId)).flatMap { parent =>
+          delta(parent, revision)
         }
     }
 
   def delta(from: Revision, to: Revision): Option[Long] =
     for (fromSize <- from.size; toSize <- to.size) yield toSize - fromSize
 
-  def created: Option[ZonedDateTime] = revisions.lastOption.filter(_.parentId.forall(_ == 0)).flatMap(_.timestamp)
+  def created: Option[ZonedDateTime] =
+    revisions.lastOption.filter(_.parentId.forall(_ == 0)).flatMap(_.timestamp)
 
   def updated: Option[ZonedDateTime] = revisions.headOption.flatMap(_.timestamp)
 
-  def createdAfter(from: Option[ZonedDateTime]) = created.exists(rev => from.forall(rev.isAfter))
+  def createdAfter(from: Option[ZonedDateTime]) =
+    created.exists(rev => from.forall(rev.isAfter))
 
   def editedIn(revisionFilter: RevisionFilter) =
     revisionFilter.apply(revisions).nonEmpty

@@ -11,11 +11,17 @@ class RaterSpec extends Specification {
     val contest = Contest(ContestType.WLM, Country.Ukraine, 2020)
     val monumentDb = Some(new MonumentDB(contest, Nil))
     val imageDb = new ImageDB(contest, Nil, monumentDb)
-    val contestStat = ContestStat(contest = contest, startYear = 2019, monumentDb = monumentDb,
-      currentYearImageDb = Some(imageDb), totalImageDb = Some(imageDb))
+    val contestStat = ContestStat(
+      contest = contest,
+      startYear = 2019,
+      monumentDb = monumentDb,
+      currentYearImageDb = Some(imageDb),
+      totalImageDb = Some(imageDb)
+    )
 
     "parse wlm 2020" in {
-      val rater = Rater.fromConfig(contestStat, ConfigFactory.load("wlm_ua.conf"))
+      val rater =
+        Rater.fromConfig(contestStat, ConfigFactory.load("wlm_ua.conf"))
       rater must beAnInstanceOf[RateSum]
       val rateSum = rater.asInstanceOf[RateSum]
       val raters = rateSum.raters
@@ -24,15 +30,20 @@ class RaterSpec extends Specification {
       raters.find(_.isInstanceOf[NumberOfAuthorsBonus]) must beSome
       raters.find(_.isInstanceOf[NumberOfImagesInPlaceBonus]) must beSome
 
-      val numberOfAuthorsBonus = raters.collect { case r: NumberOfAuthorsBonus => r }.head
+      val numberOfAuthorsBonus = raters.collect {
+        case r: NumberOfAuthorsBonus => r
+      }.head
       numberOfAuthorsBonus.rateRanges.sameAuthorZeroBonus === false
 
-      val numberOfImagesInPlaceBonus = raters.collect { case r: NumberOfImagesInPlaceBonus => r }.head
+      val numberOfImagesInPlaceBonus = raters.collect {
+        case r: NumberOfImagesInPlaceBonus => r
+      }.head
       numberOfImagesInPlaceBonus.rateRanges.sameAuthorZeroBonus === false
     }
 
     "parse wle 2020" in {
-      val rater = Rater.fromConfig(contestStat, ConfigFactory.load("wle_ua.conf"))
+      val rater =
+        Rater.fromConfig(contestStat, ConfigFactory.load("wle_ua.conf"))
       rater must beAnInstanceOf[RateSum]
       val rateSum = rater.asInstanceOf[RateSum]
       val raters = rateSum.raters
@@ -47,7 +58,6 @@ class RaterSpec extends Specification {
       )
       bonusRater.rateRanges.sameAuthorZeroBonus === true
     }
-
 
 //    "05-101-0380" in {
 //      val monumentId = "05-101-0380"

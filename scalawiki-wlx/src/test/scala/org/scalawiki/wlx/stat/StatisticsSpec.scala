@@ -14,7 +14,10 @@ import spray.util.pimpFuture
 
 import scala.concurrent.Future
 
-class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mockito with FutureMatchers {
+class StatisticsSpec(implicit ee: ExecutionEnv)
+    extends Specification
+    with Mockito
+    with FutureMatchers {
 
   val contest = Contest.WLEUkraine(2016)
 
@@ -23,7 +26,10 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     val monumentQuery = mock[MonumentQuery]
     val imageQuery = mock[ImageQuery]
 
-    imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest) returns Future.successful(images)
+    imageQuery.imagesFromCategoryAsync(
+      contest.imagesCategory,
+      contest
+    ) returns Future.successful(images)
     monumentQuery.byMonumentTemplate(date = None) returns monuments
 
     val cfg = StatConfig(campaign = contest.campaign)
@@ -46,7 +52,8 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
   }
 
   "give some stat" in {
-    val images = Seq(Image("image1.jpg", author = Some("user"), monumentIds = List("123")))
+    val images =
+      Seq(Image("image1.jpg", author = Some("user"), monumentIds = List("123")))
     val monuments = Seq(new Monument(id = "123", name = "123 monument"))
 
     val stat = mockedStat(monuments, images)
@@ -67,10 +74,14 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
     val monumentQuery = mock[MonumentQuery]
     val imageQuery = mock[ImageQuery]
 
-    imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest) returns Future.failed(new RuntimeException("Error 123"))
+    imageQuery.imagesFromCategoryAsync(
+      contest.imagesCategory,
+      contest
+    ) returns Future.failed(new RuntimeException("Error 123"))
     monumentQuery.byMonumentTemplate(date = None) returns monuments
 
-    val stat = new Statistics(contest, None, monumentQuery, imageQuery, None, bot)
+    val stat =
+      new Statistics(contest, None, monumentQuery, imageQuery, None, bot)
 
     stat.gatherData(false) must throwA[RuntimeException].await
   }
@@ -78,38 +89,73 @@ class StatisticsSpec(implicit ee: ExecutionEnv) extends Specification with Mocki
   def monument(id: String, name: String) =
     new Monument(id = id, name = name, listConfig = Some(WlmUa))
 
-  def monuments(n: Int, regionId: String, namePrefix: String, startId: Int = 1): Seq[Monument] =
-    (startId until startId + n).map(i => monument(s"$regionId-xxx-000$i", namePrefix + i))
+  def monuments(
+      n: Int,
+      regionId: String,
+      namePrefix: String,
+      startId: Int = 1
+  ): Seq[Monument] =
+    (startId until startId + n).map(i =>
+      monument(s"$regionId-xxx-000$i", namePrefix + i)
+    )
 
   "getOldImagesMonumentDb" should {
     val bot = mock[MwBot]
     val monumentQuery = mock[MonumentQuery]
     val imageQuery = mock[ImageQuery]
-    val stat = new Statistics(contest, None, monumentQuery, imageQuery, None, bot)
+    val stat =
+      new Statistics(contest, None, monumentQuery, imageQuery, None, bot)
 
     "be empty" in {
-      stat.getOldImagesMonumentDb(None, None, None, new ImageDB(contest, Seq.empty)) === None
+      stat.getOldImagesMonumentDb(
+        None,
+        None,
+        None,
+        new ImageDB(contest, Seq.empty)
+      ) === None
 
       val mDb = new MonumentDB(contest, Seq.empty)
-      stat.getOldImagesMonumentDb(Some(mDb), None, None, new ImageDB(contest, Seq.empty)) === None
+      stat.getOldImagesMonumentDb(
+        Some(mDb),
+        None,
+        None,
+        new ImageDB(contest, Seq.empty)
+      ) === None
     }
 
     "have images from old monument db" in {
 
-      val images1 = Seq(Image("File:Img11y1f1.jpg", monumentIds = List("01-xxx-0001"), author = Some("FromCrimea")))
+      val images1 = Seq(
+        Image(
+          "File:Img11y1f1.jpg",
+          monumentIds = List("01-xxx-0001"),
+          author = Some("FromCrimea")
+        )
+      )
 
-      val images2 = Seq(Image("File:Img11y2f1.jpg", monumentIds = List("01-xxx-0002"), author = Some("FromCrimeaOld")))
+      val images2 = Seq(
+        Image(
+          "File:Img11y2f1.jpg",
+          monumentIds = List("01-xxx-0002"),
+          author = Some("FromCrimeaOld")
+        )
+      )
 
       val withoutPhotos = monuments(3, "01", "Crimea")
-      val withPhotos = withoutPhotos.head.copy(photo = Some(images1.head.title)) +: withoutPhotos.tail
+      val withPhotos = withoutPhotos.head.copy(photo =
+        Some(images1.head.title)
+      ) +: withoutPhotos.tail
       val mDb = new MonumentDB(contest, withPhotos)
 
-      val oldMdb = stat.getOldImagesMonumentDb(Some(mDb), Some(mDb), None, new ImageDB(contest, images2))
+      val oldMdb = stat.getOldImagesMonumentDb(
+        Some(mDb),
+        Some(mDb),
+        None,
+        new ImageDB(contest, images2)
+      )
 
       oldMdb.map(_.monuments) === Some(Seq(withPhotos.head))
     }
 
   }
 }
-
-

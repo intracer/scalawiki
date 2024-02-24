@@ -15,20 +15,33 @@ class CampaignList {
   self: HasBot =>
 
   def categoryMembers(parent: String): Future[Iterable[Page]] = {
-    bot.run(Action(Query(ListParam(CategoryMembers(
-      CmTitle(parent), CmNamespace(Seq(Namespace.CATEGORY)), CmLimit("max"))
-    ))))
+    bot.run(
+      Action(
+        Query(
+          ListParam(
+            CategoryMembers(
+              CmTitle(parent),
+              CmNamespace(Seq(Namespace.CATEGORY)),
+              CmLimit("max")
+            )
+          )
+        )
+      )
+    )
   }
 
-  def titles(pages: Seq[Iterable[Page]]): Seq[String] = pages.flatten.map(_.title)
+  def titles(pages: Seq[Iterable[Page]]): Seq[String] =
+    pages.flatten.map(_.title)
 
   def getContests(hasImages: HasImagesCategory): Future[Iterable[Contest]] =
     contestsFromCategory(hasImages.imagesCategory)
 
   def contestsFromCategory(parent: String): Future[Iterable[Contest]] = {
-    for (cats <- categoryMembers(parent)) yield
-      for (cat <- cats;
-           contest <- CountryParser.fromCategoryName(cat.title))
+    for (cats <- categoryMembers(parent))
+      yield for (
+        cat <- cats;
+        contest <- CountryParser.fromCategoryName(cat.title)
+      )
         yield contest
   }
 
@@ -41,16 +54,21 @@ object CampaignList extends CampaignList with WithBot {
 
   override def host = MwBot.commons
 
-  def yearsContests(types: Seq[ContestType] = ContestType.all): Future[Seq[Contest]] = {
+  def yearsContests(
+      types: Seq[ContestType] = ContestType.all
+  ): Future[Seq[Contest]] = {
     for (yearsCats <- categoriesMembers(types.map(_.imagesCategory)))
-      yield for (contest <- titles(yearsCats).flatMap(CountryParser.fromCategoryName))
+      yield for (
+        contest <- titles(yearsCats).flatMap(CountryParser.fromCategoryName)
+      )
         yield contest
   }
 
-
   def main(args: Array[String]): Unit = {
     for (yearContests <- yearsContests()) {
-      for (campaignCats <- categoriesMembers(yearContests.map(_.imagesCategory))) {
+      for (
+        campaignCats <- categoriesMembers(yearContests.map(_.imagesCategory))
+      ) {
         titles(campaignCats).foreach(println)
       }
     }

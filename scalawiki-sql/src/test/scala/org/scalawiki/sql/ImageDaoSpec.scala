@@ -27,7 +27,7 @@ class ImageDaoSpec extends Specification with BeforeAfter {
   }
 
   override def after = {
-    //mwDb.db.close()
+    // mwDb.db.close()
   }
 
   "image" should {
@@ -38,8 +38,11 @@ class ImageDaoSpec extends Specification with BeforeAfter {
       val title = "Image.jpg"
       val image = new Image(
         title,
-        Some("http://Image.jpg"), None,
-        Some(1000 * 1000), Some(800), Some(600)
+        Some("http://Image.jpg"),
+        None,
+        Some(1000 * 1000),
+        Some(800),
+        Some(600)
       )
 
       imageDao.insert(image)
@@ -55,9 +58,13 @@ class ImageDaoSpec extends Specification with BeforeAfter {
       val title = "Image.jpg"
       val image = new Image(
         title,
-        Some("http://Image.jpg"), None,
-        Some(1000 * 1000), Some(800), Some(600),
-        user.name, Some(user)
+        Some("http://Image.jpg"),
+        None,
+        Some(1000 * 1000),
+        Some(800),
+        Some(600),
+        user.name,
+        Some(user)
       )
 
       imageDao.insert(image)
@@ -72,8 +79,11 @@ class ImageDaoSpec extends Specification with BeforeAfter {
       val title = "Image.jpg"
       val image = new Image(
         title,
-        Some("http://Image.jpg"), None,
-        Some(1000 * 1000), Some(800), Some(600)
+        Some("http://Image.jpg"),
+        None,
+        Some(1000 * 1000),
+        Some(800),
+        Some(600)
       )
       val image2 = image.copy()
 

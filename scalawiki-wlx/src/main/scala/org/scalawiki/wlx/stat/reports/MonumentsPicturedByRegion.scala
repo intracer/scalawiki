@@ -7,15 +7,18 @@ import org.scalawiki.wlx.dto.AdmDivision
 import org.scalawiki.wlx.stat.ContestStat
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
-class MonumentsPicturedByRegion(val stat: ContestStat,
-                                uploadImages: Boolean = false,
-                                regionParam: Option[AdmDivision] = None,
-                                gallery: Boolean = false)
-    extends Reporter {
+class MonumentsPicturedByRegion(
+    val stat: ContestStat,
+    uploadImages: Boolean = false,
+    regionParam: Option[AdmDivision] = None,
+    gallery: Boolean = false
+) extends Reporter {
 
-  def this(imageDbs: Seq[ImageDB],
-           totalImageDb: Option[ImageDB],
-           monumentDb: MonumentDB) = {
+  def this(
+      imageDbs: Seq[ImageDB],
+      totalImageDb: Option[ImageDB],
+      monumentDb: MonumentDB
+  ) = {
     this(
       ContestStat(
         monumentDb.contest,
@@ -26,7 +29,8 @@ class MonumentsPicturedByRegion(val stat: ContestStat,
         imageDbs.lastOption.orElse(totalImageDb),
         totalImageDb,
         imageDbs
-      ))
+      )
+    )
   }
 
   val yearSeq: Seq[Int] = stat.yearSeq.reverse
@@ -64,19 +68,23 @@ class MonumentsPicturedByRegion(val stat: ContestStat,
     }
 
     (if (parentRegion == contest.country) {
-       Seq("Region",
-           "Objects in lists",
-           s"$numYears years total",
-           s"$numYears years percentage")
+       Seq(
+         "Region",
+         "Objects in lists",
+         s"$numYears years total",
+         s"$numYears years percentage"
+       )
      } else {
        Seq("Region (KOATUU)", "Objects in lists", "Total", s"Total percentage")
      }) ++ yearsColumns
   }
 
-  def regionData(regionId: String,
-                 regionalDetails: Boolean = regionalDetails,
-                 totalImageDb: Option[ImageDB],
-                 monumentDb: MonumentDB): Seq[String] = {
+  def regionData(
+      regionId: String,
+      regionalDetails: Boolean = regionalDetails,
+      totalImageDb: Option[ImageDB],
+      monumentDb: MonumentDB
+  ): Seq[String] = {
     val picturedMonumentsInRegionSet = totalImageDb
       .map(_.idsByRegion(regionId))
       .getOrElse(Set.empty) ++
@@ -113,7 +121,8 @@ class MonumentsPicturedByRegion(val stat: ContestStat,
       .flatten
 
     val newImagesDb = stat.currentYearImageDb.get.subSet(i =>
-      i.monumentIds.exists(newIds.contains))
+      i.monumentIds.exists(newIds.contains)
+    )
 
     if (gallery) {
       bot
@@ -135,15 +144,19 @@ class MonumentsPicturedByRegion(val stat: ContestStat,
       val child = new MonumentsPicturedByRegion(
         stat,
         false,
-        parentRegion.byMonumentId(regionId), gallery)
+        parentRegion.byMonumentId(regionId),
+        gallery
+      )
       child.updateWiki(bot)
     }
 
     columnData
   }
 
-  def monumentsPicturedTable(totalImageDb: Option[ImageDB],
-                             monumentDb: MonumentDB): Table = {
+  def monumentsPicturedTable(
+      totalImageDb: Option[ImageDB],
+      monumentDb: MonumentDB
+  ): Table = {
     val regionIds = parentRegion.regions.map(_.code)
     val rows = regionIds
       .map(regionData(_, regionalDetails, totalImageDb, monumentDb))
@@ -157,26 +170,30 @@ class MonumentsPicturedByRegion(val stat: ContestStat,
     val ids = stat.mapYears(_.ids).reverse
     val photoSize = stat.mapYears(_.images.size).reverse
 
-    val totalByYear = ids.zip(photoSize).zipWithIndex.flatMap {
-      case ((ids, photos), index) =>
+    val totalByYear =
+      ids.zip(photoSize).zipWithIndex.flatMap { case ((ids, photos), index) =>
         Seq(ids.size, photos) ++ (if (index == 0)
                                     Seq(
                                       (ids -- oldImagesMonumentIds).size
                                     )
                                   else Nil)
-    }
+      }
 
     val totalData = if (parentRegion == contest.country) {
       Seq(
-        Seq("Total",
-            allMonuments.toString,
-            picturedMonuments.toString,
-            (if (allMonuments != 0) 100 * picturedMonuments / allMonuments
-             else 0).toString) ++ totalByYear.map(_.toString))
+        Seq(
+          "Total",
+          allMonuments.toString,
+          picturedMonuments.toString,
+          (if (allMonuments != 0) 100 * picturedMonuments / allMonuments
+           else 0).toString
+        ) ++ totalByYear.map(_.toString)
+      )
     } else {
       Seq(
         Seq("Sum") ++ rows.head.indices.tail.map(i =>
-          rows.map(_(i).toInt).sum.toString),
+          rows.map(_(i).toInt).sum.toString
+        ),
         regionData(parentRegion.code, false, totalImageDb, monumentDb)
       )
     }
@@ -208,8 +225,8 @@ class MonumentsPicturedByRegion(val stat: ContestStat,
         val shortRegionName = regionName
           .replaceAll("область", "")
           .replaceAll("Автономна Республіка", "АР")
-        picturedIds.zipWithIndex.foreach {
-          case (n, i) => dataset.addValue(n, yearSeq(i), shortRegionName)
+        picturedIds.zipWithIndex.foreach { case (n, i) =>
+          dataset.addValue(n, yearSeq(i), shortRegionName)
         }
       }
 
@@ -220,23 +237,28 @@ class MonumentsPicturedByRegion(val stat: ContestStat,
       val filenamePrefix = contest.name.replace("_", "")
 
       Some(
-        regionalStatImages(filenamePrefix,
-                           categoryName,
-                           yearSeq,
-                           dataset,
-                           ids,
-                           idsSize,
-                           uploadImages))
+        regionalStatImages(
+          filenamePrefix,
+          categoryName,
+          yearSeq,
+          dataset,
+          ids,
+          idsSize,
+          uploadImages
+        )
+      )
     } else None
   }
 
-  def regionalStatImages(filenamePrefix: String,
-                         categoryName: String,
-                         yearSeq: Seq[Int],
-                         dataset: DefaultCategoryDataset,
-                         ids: Seq[Set[String]],
-                         idsSize: Seq[Int],
-                         uploadImages: Boolean = false): String = {
+  def regionalStatImages(
+      filenamePrefix: String,
+      categoryName: String,
+      yearSeq: Seq[Int],
+      dataset: DefaultCategoryDataset,
+      ids: Seq[Set[String]],
+      idsSize: Seq[Int],
+      uploadImages: Boolean = false
+  ): String = {
     val images =
       s"\n[[File:${filenamePrefix}PicturedByYearTotal.png|$categoryName, monuments pictured by year overall|left]]" +
         s"\n[[File:${filenamePrefix}PicturedByYearPie.png|$categoryName, monuments pictured by year pie chart|left]]" +
@@ -259,12 +281,14 @@ class MonumentsPicturedByRegion(val stat: ContestStat,
       bot.page(chartTotalFile).upload(chartTotalFile)
 
       val intersectionFile = filenamePrefix + "PicturedByYearPie"
-      charts.intersectionDiagram("Унікальність фотографій пам'яток за роками",
-                                 intersectionFile,
-                                 yearSeq,
-                                 ids,
-                                 900,
-                                 800)
+      charts.intersectionDiagram(
+        "Унікальність фотографій пам'яток за роками",
+        intersectionFile,
+        yearSeq,
+        ids,
+        900,
+        800
+      )
       bot.page(intersectionFile + ".png").upload(intersectionFile + ".png")
     }
     images

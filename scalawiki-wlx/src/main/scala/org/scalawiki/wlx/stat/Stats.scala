@@ -14,7 +14,8 @@ object Stats {
       columnAggregations = Seq(
         All,
         MonumentsWithArticles,
-        new PercentageAggregation("%", MonumentsWithArticles)),
+        new PercentageAggregation("%", MonumentsWithArticles)
+      ),
       rowOrdering = new StringColumnOrdering(0),
       rowKeyMapping = Some(new RegionNameById(monumentDb.contest.country))
     )
@@ -22,12 +23,16 @@ object Stats {
 
 }
 
-object MonumentsByRegion extends Grouping[Monument, String](
-  "Region KOATUU code", _.regionId)
+object MonumentsByRegion
+    extends Grouping[Monument, String]("Region KOATUU code", _.regionId)
 
-object MonumentsWithArticles extends Aggregation[Monument, Int](
-  "With Articles", _.count(_.name.contains("[[")))
+object MonumentsWithArticles
+    extends Aggregation[Monument, Int](
+      "With Articles",
+      _.count(_.name.contains("[["))
+    )
 
 object All extends Aggregation[Any, Int]("All", _.size)
 
-class RegionNameById(country: AdmDivision) extends Mapping[String, String]("Region name", country.regionName)
+class RegionNameById(country: AdmDivision)
+    extends Mapping[String, String]("Region name", country.regionName)

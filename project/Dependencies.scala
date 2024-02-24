@@ -4,7 +4,7 @@ object Dependencies {
 
   val AaltoXmlV = "1.3.2"
   val BetterFilesV = "3.9.2"
-  val BlameApiV = "15.10.5"
+  val BlameApiV = "15.10.6"
   val ChronicleMapV = "3.22.9"
   val ChronoScalaV = "1.0.0"
   val FicusV = "1.5.2"
@@ -13,7 +13,7 @@ object Dependencies {
   val JimFsV = "1.3.0"
   val JodaTimeV = "2.12.2"
   val JSoupV = "1.17.2"
-  val LogbackClassicV = "1.4.14"
+  val LogbackClassicV = "1.5.0"
   val MockServerV = "5.15.0"
   val ReactiveStreamsV = "1.0.4"
   val RetryV = "0.3.6"
@@ -106,7 +106,7 @@ object Dependencies {
 
     object Commons {
       val CommonsCodecV = "1.16.1"
-      val CommonsCompressV = "1.25.0"
+      val CommonsCompressV = "1.26.0"
       val CommonsLang3V = "3.7"
       val CommonsIoV = "2.15.1"
 

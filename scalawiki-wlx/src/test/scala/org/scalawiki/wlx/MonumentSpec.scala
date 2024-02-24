@@ -115,12 +115,21 @@ class MonumentSpec extends Specification {
   "asWiki" should {
 
     "output default fields" in {
-      val m = new Monument("page1", "id1", "name1", photo = Some("Image.jpg"), gallery = Some("category1"), listConfig = None)
+      val m = new Monument(
+        "page1",
+        "id1",
+        "name1",
+        photo = Some("Image.jpg"),
+        gallery = Some("category1"),
+        listConfig = None
+      )
 
       val longest = WleUa.namesMap.values.map(_.length).max
 
       val names = WleUa.namesMap.mapValues(_.padTo(longest, ' '))
-      val keys = names.filterKeys(Set("ID", "name", "year", "description", "photo", "gallery").contains)
+      val keys = names.filterKeys(
+        Set("ID", "name", "year", "description", "photo", "gallery").contains
+      )
       val text = m.asWiki(Some("WLE-row"), pad = false)
       val lines = text.split("\\n", -1).toSeq
       lines ===
@@ -136,12 +145,21 @@ class MonumentSpec extends Specification {
     }
 
     "output WLE fields" in {
-      val m = new Monument("page1", "id1", "name1", photo = Some("Image.jpg"), gallery = Some("category1"), listConfig = Some(WleUa))
+      val m = new Monument(
+        "page1",
+        "id1",
+        "name1",
+        photo = Some("Image.jpg"),
+        gallery = Some("category1"),
+        listConfig = Some(WleUa)
+      )
 
       val longest = WleUa.namesMap.values.map(_.length).max
 
       val names = WleUa.namesMap.mapValues(_.padTo(longest, ' '))
-      val keys = names.filterKeys(Set("ID", "name", "year", "description", "photo", "gallery").contains)
+      val keys = names.filterKeys(
+        Set("ID", "name", "year", "description", "photo", "gallery").contains
+      )
       val text = m.asWiki()
       val lines = text.split("\\n", -1).toSeq
       lines ===
@@ -165,7 +183,14 @@ class MonumentSpec extends Specification {
     }
 
     "output WLM fields" in {
-      val m = new Monument("page1", "id1", "name1", photo = Some("Image.jpg"), gallery = Some("category1"), listConfig = Some(WlmUa))
+      val m = new Monument(
+        "page1",
+        "id1",
+        "name1",
+        photo = Some("Image.jpg"),
+        gallery = Some("category1"),
+        listConfig = Some(WlmUa)
+      )
 
       val longest = WlmUa.namesMap.values.map(_.length).max
 
@@ -195,7 +220,6 @@ class MonumentSpec extends Specification {
 
   }
 
-
   //  @Test def testSetResolution1 {
   //    val m: Monument = Monument.init(withResolution1)
   //    m.addResolution
@@ -206,14 +230,23 @@ class MonumentSpec extends Specification {
 
   "monuments" should {
     "parse" in {
-      val list = Monument.monumentsFromText(listText, "page", "ВЛП-рядок", listConfig = WlmUa).toSeq
+      val list = Monument
+        .monumentsFromText(listText, "page", "ВЛП-рядок", listConfig = WlmUa)
+        .toSeq
       list.size === 2
       list(0).id === "05-105-0001"
       list(1).id === "05-105-0012"
     }
 
     "parse with rubbish" in {
-      val list = Monument.monumentsFromText("abcd\n" + listText + "\ndef", "page", "ВЛП-рядок", listConfig = WlmUa).toSeq
+      val list = Monument
+        .monumentsFromText(
+          "abcd\n" + listText + "\ndef",
+          "page",
+          "ВЛП-рядок",
+          listConfig = WlmUa
+        )
+        .toSeq
       list.size === 2
       list(0).id === "05-105-0001"
       list(1).id === "05-105-0012"

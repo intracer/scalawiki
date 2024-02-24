@@ -37,12 +37,12 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
 
   def getEntries: Future[Seq[Entry]] = {
     for (entries <- fromWikiTable(tablePage)) yield entries.map { entry =>
-
       val objDir = homeDir / entry.dir
       val files = list(objDir, isImage)
       val paths = files.map(_.pathAsString)
 
-      val descriptions = getImagesDescr(objDir, paths).map(Option.apply).padTo(paths.size, None)
+      val descriptions =
+        getImagesDescr(objDir, paths).map(Option.apply).padTo(paths.size, None)
       val images = files.zip(descriptions).map { case (f, d) =>
         EntryImage(f.pathAsString, d, size = Some(f.size))
       }
@@ -64,7 +64,8 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
     descFile.flatMap { file =>
       val content = file.contentAsString
       val lines = HtmlParser.trimmedLines(content)
-      val filenames = files.map(path => SFile(path).nameWithoutExtension.toLowerCase)
+      val filenames =
+        files.map(path => SFile(path).nameWithoutExtension.toLowerCase)
       lines.filter { line =>
         filenames.exists(line.toLowerCase.startsWith) || line.head.isDigit
       }
@@ -93,26 +94,24 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
   }
 
   def makeUploadFiles(entries: Seq[Entry]): Unit = {
-    entries.foreach {
-      entry =>
-        val file = homeDir / entry.dir / "upload.conf"
-        val text = entry.toConfigString
-        if (!file.exists) {
-          println(s"Creating ${file.pathAsString}")
-          file.overwrite(text)
-        }
+    entries.foreach { entry =>
+      val file = homeDir / entry.dir / "upload.conf"
+      val text = entry.toConfigString
+      if (!file.exists) {
+        println(s"Creating ${file.pathAsString}")
+        file.overwrite(text)
+      }
     }
   }
 
   def readUploadFiles(entries: Seq[Entry]): Seq[Entry] = {
-    entries.flatMap {
-      entry =>
-        val file = homeDir / entry.dir / "upload.conf"
-        if (file.exists) {
-          val cfg = ConfigFactory.parseFile(file.toJava)
-          val loaded = Entry.fromConfig(cfg, entry.dir)
-          Some(loaded)
-        } else None
+    entries.flatMap { entry =>
+      val file = homeDir / entry.dir / "upload.conf"
+      if (file.exists) {
+        val cfg = ConfigFactory.parseFile(file.toJava)
+        val loaded = Entry.fromConfig(cfg, entry.dir)
+        Some(loaded)
+      } else None
     }
   }
 
@@ -143,7 +142,6 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
   def run() = {
 
     getEntries.map { original =>
-
       val genOrinal = original.map(_.genImageFields)
 
       val loaded = readUploadFiles(original)
@@ -157,34 +155,37 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
       val images = genLoaded.flatMap(_.images)
       val count = images.size
 
-      images.zipWithIndex.foreach {
-        case (image, i) =>
+      images.zipWithIndex.foreach { case (image, i) =>
+        val file = SFile(image.filePath)
+        val size = file.size
 
-          val file = SFile(image.filePath)
-          val size = file.size
-
-          val fileTitle = image.uploadTitle.get + file.extension.getOrElse("")
-          val fileFileTitle = "File:" + fileTitle
-          val url = commons.pageUrl(fileFileTitle, urlEncode = false)
-          val link = s"""    <li> <a href="$url">$url</a>"""
-          println(link)
+        val fileTitle = image.uploadTitle.get + file.extension.getOrElse("")
+        val fileFileTitle = "File:" + fileTitle
+        val url = commons.pageUrl(fileFileTitle, urlEncode = false)
+        val link = s"""    <li> <a href="$url">$url</a>"""
+        println(link)
 //          print(s"Uploading image $i/$count $fileTitle ${size / 1024} KB ")
-          //val result = upload(image, bot).await
+      // val result = upload(image, bot).await
 
-          //println(result)
+      // println(result)
       }
 
     }
   }
 
   def upload(entry: EntryImage, bot: MwBot): Future[String] = {
-    val page = ImageTemplate.makeInfoPage(entry.uploadTitle.get, entry.wikiDescription.get, "")
+    val page = ImageTemplate.makeInfoPage(
+      entry.uploadTitle.get,
+      entry.wikiDescription.get,
+      ""
+    )
     val file = SFile(entry.filePath)
     val fileTitle = entry.uploadTitle.get + file.extension.getOrElse("")
 
-    bot.page("File:" + fileTitle).upload(entry.filePath, Some(page), ignoreWarnings = true)
+    bot
+      .page("File:" + fileTitle)
+      .upload(entry.filePath, Some(page), ignoreWarnings = true)
   }
-
 
   //      genLoaded.zip(loaded).foreach {
   //        case (o, l) =>
@@ -195,7 +196,7 @@ class Pereiaslav(conf: Config, fs: FileSystem = FileSystems.getDefault) {
   //          }
   //      }
 
-  //val withSourceDescr = l.updateFrom(o, Set.empty, Set("sourceDescription"))
+  // val withSourceDescr = l.updateFrom(o, Set.empty, Set("sourceDescription"))
 
   // FileUtils.writeWithBackup(homeDir / l.dir / "upload.conf", withSourceDescr.toConfigString)
   //      }
@@ -229,5 +230,3 @@ object Pereiaslav {
     pereiaslav.run()
   }
 }
-
-

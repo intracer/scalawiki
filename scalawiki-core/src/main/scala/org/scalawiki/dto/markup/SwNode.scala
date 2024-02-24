@@ -11,5 +11,4 @@ trait SwNode {
 
   def getText(wtNodeP: WtNode): String = WtRtDataPrinter.print(wtNodeP)
 
-
 }

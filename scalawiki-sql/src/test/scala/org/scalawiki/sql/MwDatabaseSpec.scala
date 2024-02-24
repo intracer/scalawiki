@@ -1,6 +1,5 @@
 package org.scalawiki.sql
 
-
 import slick.driver.JdbcProfile
 import slick.backend.DatabaseConfig
 import org.specs2.mutable.{BeforeAfter, Specification}
@@ -23,15 +22,10 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
   }
 
   override def after = {
-    //mwDb.db.close()
+    // mwDb.db.close()
   }
 
-  val tableNames = Set("category",
-    "image",
-    "page",
-    "revision",
-    "text",
-    "user")
+  val tableNames = Set("category", "image", "page", "revision", "text", "user")
 
   "ddls" should {
     "create schema" in {
@@ -68,7 +62,8 @@ class MwDatabaseSpec extends Specification with BeforeAfter {
 
       dbs.foreach(_.dropTables())
 
-      val expectedNames = prefixes.flatMap(prefix => tableNames.map(prefix + "_" + _)).toSet
+      val expectedNames =
+        prefixes.flatMap(prefix => tableNames.map(prefix + "_" + _)).toSet
       names === expectedNames
 
       getTableNames.isEmpty === true

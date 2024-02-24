@@ -8,7 +8,10 @@ import org.specs2.matcher.ThrownExpectations
 import org.specs2.mutable.Specification
 import scala.concurrent.duration._
 
-class LoginSpec(implicit ee: ExecutionEnv) extends Specification with MockBotSpec with ThrownExpectations {
+class LoginSpec(implicit ee: ExecutionEnv)
+    extends Specification
+    with MockBotSpec
+    with ThrownExpectations {
 
   type EE = ExecutionEnv
 
@@ -43,13 +46,21 @@ class LoginSpec(implicit ee: ExecutionEnv) extends Specification with MockBotSpe
   val throttled = result("Throttled")
 
   val (user, password) = ("userName", "secret")
-  val loginAction = Map("action" -> "login", "format" -> "json", "lgname" -> user, "lgpassword" -> password)
+  val loginAction = Map(
+    "action" -> "login",
+    "format" -> "json",
+    "lgname" -> user,
+    "lgpassword" -> password
+  )
 
   "login" should {
     "get token and login" >> {
       val bot = getBot(
         HttpStub(loginAction, needToken),
-        HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), loginSuccess)
+        HttpStub(
+          loginAction ++ Map("lgtoken" -> "token-value+\\"),
+          loginSuccess
+        )
       )
 
       bot.login(user, password).map(_ === "Success").awaitFor(timeout)
@@ -75,18 +86,25 @@ class LoginSpec(implicit ee: ExecutionEnv) extends Specification with MockBotSpe
 
     "err503" >> {
 
-      val err = TestUtils.resourceAsString("/org/scalawiki/Wikimedia Error.html")
+      val err =
+        TestUtils.resourceAsString("/org/scalawiki/Wikimedia Error.html")
 
       val bot = getBot(
-        HttpStub(loginAction, err, contentType = ContentType(MediaTypes.`text/html`, HttpCharsets.`UTF-8`))
+        HttpStub(
+          loginAction,
+          err,
+          contentType =
+            ContentType(MediaTypes.`text/html`, HttpCharsets.`UTF-8`)
+        )
       )
 
       val f = bot.login(user, password)
 
-      f.failed.map {
-        case e: MwException =>
+      f.failed
+        .map { case e: MwException =>
           e.info must contain("Error: 503, Service Unavailable")
-      }.awaitFor(timeout)
+        }
+        .awaitFor(timeout)
     }
   }
 

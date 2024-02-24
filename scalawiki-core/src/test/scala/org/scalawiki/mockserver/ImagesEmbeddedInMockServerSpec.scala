@@ -4,11 +4,14 @@ import org.scalawiki.query.QueryLibrary
 import org.scalawiki.util.TestUtils.resourceAsString
 import spray.util.pimpFuture
 
-class ImagesEmbeddedInMockServerSpec extends BaseMockServerSpec with QueryLibrary {
+class ImagesEmbeddedInMockServerSpec
+    extends BaseMockServerSpec
+    with QueryLibrary {
 
   "images" should {
     "successfully get images" in {
-      val response = resourceAsString("/org/scalawiki/query/embeddedinIiPropRvProp.json")
+      val response =
+        resourceAsString("/org/scalawiki/query/embeddedinIiPropRvProp.json")
 
       val action = Map(
         "action" -> "query",
@@ -24,16 +27,22 @@ class ImagesEmbeddedInMockServerSpec extends BaseMockServerSpec with QueryLibrar
 
       val bot = getBot
 
-      val future = bot.run(imagesByGenerator(generatorWithTemplate("UkrainianNaturalHeritageSite")))
+      val future = bot.run(
+        imagesByGenerator(generatorWithTemplate("UkrainianNaturalHeritageSite"))
+      )
 
       val info = future.await
       info should not(beEmpty)
       info.size === 50
-      info.map(_.text.exists(_.contains("UkrainianNaturalHeritageSite"))) === List.fill(50)(true)
+      info.map(
+        _.text.exists(_.contains("UkrainianNaturalHeritageSite"))
+      ) === List.fill(50)(true)
     }
 
     "successfully get images new rvslots format" in {
-      val response = resourceAsString("/org/scalawiki/query/embeddedinIiPropRvPropRvSlots.json")
+      val response = resourceAsString(
+        "/org/scalawiki/query/embeddedinIiPropRvPropRvSlots.json"
+      )
       val action = Map(
         "action" -> "query",
         "geititle" -> "Template:UkrainianNaturalHeritageSite",
@@ -49,12 +58,19 @@ class ImagesEmbeddedInMockServerSpec extends BaseMockServerSpec with QueryLibrar
 
       val bot = getBot
 
-      val future = bot.run(imagesByGenerator(generatorWithTemplate("UkrainianNaturalHeritageSite"), rvSlots = Some("main")))
+      val future = bot.run(
+        imagesByGenerator(
+          generatorWithTemplate("UkrainianNaturalHeritageSite"),
+          rvSlots = Some("main")
+        )
+      )
 
       val info = future.await
       info should not(beEmpty)
       info.size === 50
-      info.map(_.text.exists(_.contains("UkrainianNaturalHeritageSite"))) === List.fill(50)(true)
+      info.map(
+        _.text.exists(_.contains("UkrainianNaturalHeritageSite"))
+      ) === List.fill(50)(true)
       info.map(_.images.nonEmpty) === List.fill(50)(true)
     }
   }

@@ -2,22 +2,44 @@ package org.scalawiki.wlx
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
-import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Katotth, Koatuu, Monument, RegionType}
+import org.scalawiki.wlx.dto.{
+  AdmDivision,
+  Contest,
+  Country,
+  Katotth,
+  Koatuu,
+  Monument,
+  RegionType
+}
 import org.scalawiki.wlx.query.MonumentQuery
 import org.scalawiki.wlx.stat.reports.Output
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-case class Koatuu2Katotth(koatuu: Option[String], katotth: Option[AdmDivision], monumentIds: Seq[String]/*, candidates: Candidate*/)
+case class Koatuu2Katotth(
+    koatuu: Option[String],
+    katotth: Option[AdmDivision],
+    monumentIds: Seq[String] /*, candidates: Candidate*/
+)
 
 object KatotthMonumentListCreator {
 
-  val UkraineKatotth: Country = new Country("UA", "Ukraine", Seq("uk"), Katotth.regions(() => Some(UkraineKatotth)))
+  val UkraineKatotth: Country = new Country(
+    "UA",
+    "Ukraine",
+    Seq("uk"),
+    Katotth.regions(() => Some(UkraineKatotth))
+  )
   val regionsKatotth = UkraineKatotth.regions
   val katotthMap = UkraineKatotth.mapByCode
 
-  val UkraineKoatuu: Country = new Country("UA", "Ukraine", Seq("uk"), Koatuu.regionsNew(() => Some(UkraineKoatuu)))
+  val UkraineKoatuu: Country = new Country(
+    "UA",
+    "Ukraine",
+    Seq("uk"),
+    Koatuu.regionsNew(() => Some(UkraineKoatuu))
+  )
   val regionsKoatuu = UkraineKoatuu.regions
   val koatuuMap = UkraineKoatuu.mapByCode
 
@@ -32,10 +54,12 @@ object KatotthMonumentListCreator {
 
     val (mapped, unmapped) = sequence.partition(_.katotth.nonEmpty)
     val grouped = groupByAdm(mapped)
-    reportUnmapped(monumentDB, unmapped
-      .filter(_.koatuu.nonEmpty)
-      .filterNot(_.koatuu.contains("80"))
-      .filterNot(_.koatuu.contains("85"))
+    reportUnmapped(
+      monumentDB,
+      unmapped
+        .filter(_.koatuu.nonEmpty)
+        .filterNot(_.koatuu.contains("80"))
+        .filterNot(_.koatuu.contains("85"))
     )
 
     val citiRegions = Set("51100370000040590", "12080090000039979")
@@ -43,8 +67,12 @@ object KatotthMonumentListCreator {
     val village2Regions = Set("12080110000055958", "59080150000013842")
 
     Future.sequence(grouped.map { case (adm, k2k) =>
-      if (!Set("Автономна Республіка Крим", "Київ", "Севастополь").contains(adm.namesList.tail.head)) {
-        val pageNameGuess = s"Вікіпедія:Вікі любить пам'ятки/новий АТУ/${adm.namesList.tail.mkString("/")}"
+      if (
+        !Set("Автономна Республіка Крим", "Київ", "Севастополь")
+          .contains(adm.namesList.tail.head)
+      ) {
+        val pageNameGuess =
+          s"Вікіпедія:Вікі любить пам'ятки/новий АТУ/${adm.namesList.tail.mkString("/")}"
 
         val newPageName = if (citiRegions.contains(adm.code)) {
           pageNameGuess.replace("громада", "міська громада")
@@ -56,22 +84,37 @@ object KatotthMonumentListCreator {
           pageNameGuess
         }
 
-        val (cities, other) = k2k.partition(_.katotth.exists(_.regionType.exists(_.code == "М")))
+        val (cities, other) =
+          k2k.partition(_.katotth.exists(_.regionType.exists(_.code == "М")))
         val cityMonumentIds = cities.flatMap(_.monumentIds).toSet
         val otherMonumentIds = other.flatMap(_.monumentIds).toSet
 
         val header = "{{ВЛП нові списки}}\n" +
           s"{{Вікіпедія:Вікі любить пам'ятки/новий АТУ/${adm.namesList.tail.head}/navbar}}\n" +
           "{{WLM-шапка}}\n"
-        val monuments = monumentDB.monuments.filter(m => cityMonumentIds.contains(m.id)) ++
-          monumentDB.monuments.filter(m => otherMonumentIds.contains(m.id))
+        val monuments =
+          monumentDB.monuments.filter(m => cityMonumentIds.contains(m.id)) ++
+            monumentDB.monuments.filter(m => otherMonumentIds.contains(m.id))
 
         def monumentPage(monument: Monument) = {
           val oldPage = monument.page
           if (oldPage.last == ')') {
             val suffix = oldPage.substring(oldPage.lastIndexOf("("))
-            val koatuu = Katotth.toKoatuu.get(adm.code).map(_.take(5)).getOrElse("")
-            if (Set("63101", "12101", "51101", "48101", "35101", "46101", "26101", "73101", "53240").contains(koatuu)) {
+            val koatuu =
+              Katotth.toKoatuu.get(adm.code).map(_.take(5)).getOrElse("")
+            if (
+              Set(
+                "63101",
+                "12101",
+                "51101",
+                "48101",
+                "35101",
+                "46101",
+                "26101",
+                "73101",
+                "53240"
+              ).contains(koatuu)
+            ) {
               newPageName + s" $suffix"
             } else {
               newPageName
@@ -82,14 +125,18 @@ object KatotthMonumentListCreator {
 
         val subPageFutures = bySubPage.map { case (page, pageMonuments) =>
           val koatuuPages = pageMonuments.map(_.page).distinct.sorted
-          val pageText = header + pageMonuments.map(_.asWiki(Some("WLM-рядок"))).mkString("") + "\n|}" +
-            "\n== Взято з ==\n" + koatuuPages.map(page => s"* [[$page]]").mkString("\n") +
+          val pageText = header + pageMonuments
+            .map(_.asWiki(Some("WLM-рядок")))
+            .mkString("") + "\n|}" +
+            "\n== Взято з ==\n" + koatuuPages
+              .map(page => s"* [[$page]]")
+              .mkString("\n") +
             "\n== Примітки ==\n{{reflist}}"
 
           if (pageText.length > 1000 * 1000) {
             println(s" $page ${pageText.length}")
           }
-          //Future.successful()
+          // Future.successful()
           ukWiki.page(page).edit(pageText)
         }
         Future.sequence(subPageFutures)
@@ -97,12 +144,18 @@ object KatotthMonumentListCreator {
     })
   }
 
-  def groupByAdm(sequence: Seq[Koatuu2Katotth]): Map[AdmDivision, Seq[Koatuu2Katotth]] = {
+  def groupByAdm(
+      sequence: Seq[Koatuu2Katotth]
+  ): Map[AdmDivision, Seq[Koatuu2Katotth]] = {
     sequence.groupBy { k2k =>
       val k = k2k.katotth.get
       var groupK = k
 
-      while (!groupK.regionType.exists(rt => parentCodes.contains(rt.code)) && groupK.parent().nonEmpty) {
+      while (
+        !groupK.regionType.exists(rt => parentCodes.contains(rt.code)) && groupK
+          .parent()
+          .nonEmpty
+      ) {
         groupK = groupK.parent().get
       }
       groupK
@@ -111,13 +164,20 @@ object KatotthMonumentListCreator {
 
   def reportUnmapped(mDb: MonumentDB, sequence: Seq[Koatuu2Katotth]) = {
     Output.unknownPlaces(mDb)
-    val byKoatuu = sequence.map { k2k =>
-      k2k.koatuu.get -> k2k.monumentIds
-    }.groupBy(_._1).mapValues(_.flatMap(_._2)).toMap
+    val byKoatuu = sequence
+      .map { k2k =>
+        k2k.koatuu.get -> k2k.monumentIds
+      }
+      .groupBy(_._1)
+      .mapValues(_.flatMap(_._2))
+      .toMap
 
-    val table = Table(Seq("koatuu", "monumentIds"), byKoatuu.toSeq.sortBy(_._1).map{
-      case (koatuu, ids) => Seq(koatuu, ids.mkString(", "))
-    })
+    val table = Table(
+      Seq("koatuu", "monumentIds"),
+      byKoatuu.toSeq.sortBy(_._1).map { case (koatuu, ids) =>
+        Seq(koatuu, ids.mkString(", "))
+      }
+    )
 
     val text = table.asWiki
     val pageName = s"Вікіпедія:${mDb.contest.contestType.name}/unmappedPlaces"
@@ -131,7 +191,8 @@ object KatotthMonumentListCreator {
       val koatuuOpt = placeByMonumentId.get(m.id)
       val katotthOpt = koatuuOpt.flatMap { koatuu =>
         val paddedKoatuu = koatuu.padTo(10, "0").mkString
-        val candidates = Katotth.toKatotth.getOrElse(paddedKoatuu, Nil).flatMap(katotthMap.get)
+        val candidates =
+          Katotth.toKatotth.getOrElse(paddedKoatuu, Nil).flatMap(katotthMap.get)
         if (candidates.nonEmpty) {
           Some(candidates.maxBy(_.level))
         } else {

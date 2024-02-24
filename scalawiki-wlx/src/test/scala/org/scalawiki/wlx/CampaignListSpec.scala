@@ -17,9 +17,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class CampaignListSpec extends Specification with MockBotSpec with Mockito {
 
-  implicit def titleToHasImages(title: String): HasImagesCategory = new HasImagesCategory {
-    override def imagesCategory = title
-  }
+  implicit def titleToHasImages(title: String): HasImagesCategory =
+    new HasImagesCategory {
+      override def imagesCategory = title
+    }
 
   def campaignList(testBot: MwBot) = new CampaignList() with HasBot {
     val bot = testBot
@@ -27,20 +28,34 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
 
   def categoryQueryBot(title: String, responseFile: String) = {
     val response = resourceAsString(responseFile)
-    val cmd = HttpStub(Map("action" -> "query", "list" -> "categorymembers",
-      "cmtitle" -> title,
-      "cmnamespace" -> Namespace.CATEGORY.toString,
-      "continue" -> "", "cmlimit" -> "max"),
-      response)
+    val cmd = HttpStub(
+      Map(
+        "action" -> "query",
+        "list" -> "categorymembers",
+        "cmtitle" -> title,
+        "cmnamespace" -> Namespace.CATEGORY.toString,
+        "continue" -> "",
+        "cmlimit" -> "max"
+      ),
+      response
+    )
     getBot(cmd)
   }
 
   def mockedBot(title: String, categories: Seq[String]) = {
     val bot = mock[MwBot]
 
-    val action = Action(Query(ListParam(CategoryMembers(
-      CmTitle(title), CmNamespace(Seq(Namespace.CATEGORY)), CmLimit("max"))
-    )))
+    val action = Action(
+      Query(
+        ListParam(
+          CategoryMembers(
+            CmTitle(title),
+            CmNamespace(Seq(Namespace.CATEGORY)),
+            CmLimit("max")
+          )
+        )
+      )
+    )
 
     bot.run(action) returns Future {
       categories.map(cat => Page(title = cat))
@@ -51,9 +66,13 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
 
   "CampaignList" should {
     "return WLM years" in {
-      val bot = categoryQueryBot("Category:Images from Wiki Loves Monuments", "/org/scalawiki/wlx/WLM_years.json")
+      val bot = categoryQueryBot(
+        "Category:Images from Wiki Loves Monuments",
+        "/org/scalawiki/wlx/WLM_years.json"
+      )
 
-      val result = campaignList(bot).getContests(ContestType.WLM).map(_.toSeq).await
+      val result =
+        campaignList(bot).getContests(ContestType.WLM).map(_.toSeq).await
 
       result must have size 8
       result.map(_.year) === (2010 to 2017)
@@ -61,9 +80,13 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
     }
 
     "return WLE years" in {
-      val bot = categoryQueryBot("Category:Images from Wiki Loves Earth", "/org/scalawiki/wlx/WLE_years.json")
+      val bot = categoryQueryBot(
+        "Category:Images from Wiki Loves Earth",
+        "/org/scalawiki/wlx/WLE_years.json"
+      )
 
-      val result = campaignList(bot).getContests(ContestType.WLE).map(_.toSeq).await
+      val result =
+        campaignList(bot).getContests(ContestType.WLE).map(_.toSeq).await
       val byYear = result.sortBy(_.year)
 
       byYear must have size 5
@@ -94,7 +117,12 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
 
     result.map(_.year).distinct === Seq(2011)
     result.map(_.contestType).distinct === Seq(ContestType.WLM)
-    result.map(_.country.name) === Seq("Andorra", "Hungary", "Hungary - international", "the Netherlands")
+    result.map(_.country.name) === Seq(
+      "Andorra",
+      "Hungary",
+      "Hungary - international",
+      "the Netherlands"
+    )
   }
 
   "return WLM 2012" in {
@@ -121,7 +149,14 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
 
     result.map(_.year).distinct === Seq(2012)
     result.map(_.contestType).distinct === Seq(ContestType.WLM)
-    result.map(_.country.name) === Seq("the Czech Republic", "the Philippines", "South Africa", "Ukraine", "the United States", "an unknown country")
+    result.map(_.country.name) === Seq(
+      "the Czech Republic",
+      "the Philippines",
+      "South Africa",
+      "Ukraine",
+      "the United States",
+      "an unknown country"
+    )
   }
 
   "return WLE 2014" in {
@@ -142,7 +177,12 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
 
     result.map(_.year).distinct === Seq(2014)
     result.map(_.contestType).distinct === Seq(ContestType.WLE)
-    result.map(_.country.name) === Seq("Algeria", "Andorra & Catalan areas", "Armenia & Nagorno-Karabakh", "the Netherlands")
+    result.map(_.country.name) === Seq(
+      "Algeria",
+      "Andorra & Catalan areas",
+      "Armenia & Nagorno-Karabakh",
+      "the Netherlands"
+    )
   }
 
   "return WLE 2016" in {
@@ -161,6 +201,8 @@ class CampaignListSpec extends Specification with MockBotSpec with Mockito {
 
     result.map(_.year).distinct === Seq(2016)
     result.map(_.contestType).distinct === Seq(ContestType.WLE)
-    result.map(_.country.name) === Seq("Albania"/*, "Biosphere Reserves 2016"*/)
+    result.map(_.country.name) === Seq(
+      "Albania" /*, "Biosphere Reserves 2016"*/
+    )
   }
 }

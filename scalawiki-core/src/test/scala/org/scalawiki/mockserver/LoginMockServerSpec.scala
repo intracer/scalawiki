@@ -6,7 +6,12 @@ class LoginMockServerSpec extends BaseMockServerSpec {
   val (password, wrongPassword) = ("secretPassword", "wrongPassword")
 
   def withCredentials(user: String, password: String) =
-    Map("action" -> "login", "format" -> "json", "lgname" -> user, "lgpassword" -> password)
+    Map(
+      "action" -> "login",
+      "format" -> "json",
+      "lgname" -> user,
+      "lgpassword" -> password
+    )
 
   val needToken =
     """{ "login": {

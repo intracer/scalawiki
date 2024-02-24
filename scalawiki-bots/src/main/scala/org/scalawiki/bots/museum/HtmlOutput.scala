@@ -20,7 +20,8 @@ object HtmlOutput {
         "\n",
         """</ol>
           </nav>
-        """)
+        """
+      )
     }
 
     val head =
@@ -37,14 +38,18 @@ object HtmlOutput {
         makeEntryGallery(e)
     }
 
-    galleries.map(g => "<html>" + head + "<body>\n" + nav + g + "\n</body></html>")
+    galleries.map(g =>
+      "<html>" + head + "<body>\n" + nav + g + "\n</body></html>"
+    )
   }
 
   def makeEntryGallery(entry: Entry): String = {
     Gallery.asHtml(
-      entry.images.map { entry => new Image(
-        entry.filePath,
-        url = Some(SFile(entry.filePath).uri.toString))
+      entry.images.map { entry =>
+        new Image(
+          entry.filePath,
+          url = Some(SFile(entry.filePath).uri.toString)
+        )
       },
       entry.images.map(_.sourceDescription.getOrElse(""))
     )

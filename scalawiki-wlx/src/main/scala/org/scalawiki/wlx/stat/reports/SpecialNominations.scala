@@ -19,34 +19,46 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
   }
 
   def nominations: Seq[SpecialNomination] = {
-    SpecialNomination.nominations.filter(_.years.contains(contest.year)).sortBy(_.name)
+    SpecialNomination.nominations
+      .filter(_.years.contains(contest.year))
+      .sortBy(_.name)
   }
 
   def specialNomination(): String = {
     val monumentsMap = SpecialNomination.getMonumentsMap(nominations, stat)
     val imageDbs = nominations.map { nomination =>
-      val specialNominationImageDb = if (monumentsMap.get(nomination).exists(_.nonEmpty)) {
-        imageDb.subSet(monumentsMap(nomination), withFalseIds = true)
-      } else {
-        imageDb.subSet { i =>
-          nomination.fileTemplate.exists(i.specialNominations.contains)
+      val specialNominationImageDb =
+        if (monumentsMap.get(nomination).exists(_.nonEmpty)) {
+          imageDb.subSet(monumentsMap(nomination), withFalseIds = true)
+        } else {
+          imageDb.subSet { i =>
+            nomination.fileTemplate.exists(i.specialNominations.contains)
+          }
         }
-      }
       nomination -> specialNominationImageDb
     }.toMap
 
-    val headers = Seq("Special nomination", "authors",
-      "all monuments", "special nomination monuments", "photographed monuments", "photographed special monuments",
-      "newly pictured monuments", "photos")
+    val headers = Seq(
+      "Special nomination",
+      "authors",
+      "all monuments",
+      "special nomination monuments",
+      "photographed monuments",
+      "photographed special monuments",
+      "newly pictured monuments",
+      "photos"
+    )
 
     val newImageNames = imageDb.images.map(_.title).toSet
     val oldMonumentIds = stat.totalImageDb.get.images
       .filterNot(image => newImageNames.contains(image.title))
-      .flatMap(_.monumentIds).toSet
+      .flatMap(_.monumentIds)
+      .toSet
 
     val rows = for (nomination <- nominations) yield {
 
-      val imagesPage = s"Commons:Images from ${contest.name} special nomination ${nomination.name}"
+      val imagesPage =
+        s"Commons:Images from ${contest.name} special nomination ${nomination.name}"
       val imageDb = imageDbs(nomination)
 
       galleryByRegion(imagesPage + " by region", imageDb)
@@ -56,7 +68,10 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
         nomination.name,
         imageDb.authors.size.toString,
         monumentsMap.get(nomination).map(_.size.toString).getOrElse(""),
-        monumentsMap.get(nomination).map(_.map(_.id).count(isSpecialNominationMonument).toString).getOrElse(""),
+        monumentsMap
+          .get(nomination)
+          .map(_.map(_.id).count(isSpecialNominationMonument).toString)
+          .getOrElse(""),
         imageDb.ids.size.toString,
         imageDb.ids.count(isSpecialNominationMonument).toString,
         imageDb.ids.diff(oldMonumentIds).size.toString,
@@ -83,22 +98,36 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
 
       if (images.nonEmpty) {
         val monumentIds = images.flatMap(_.monumentIds)
-        val byPlace = monumentIds.groupBy { id =>
-          monumentDb.placeByMonumentId.getOrElse(id, "Unknown")
-        }.mapValues(_.toSet).toMap
+        val byPlace = monumentIds
+          .groupBy { id =>
+            monumentDb.placeByMonumentId.getOrElse(id, "Unknown")
+          }
+          .mapValues(_.toSet)
+          .toMap
 
         imagesText += s"\n== ${region.name} ${images.size} images ==\n"
 
-        imagesText += byPlace.map { case (code, monumentIds) =>
-          val place = Country.Ukraine.byMonumentId(monumentIds.head).map(_.name).getOrElse("Unknown")
-          val placeImages = images.filter(_.monumentIds.toSet.intersect(monumentIds).nonEmpty)
-          s"\n=== $place ${placeImages.size} images ===\n" ++
-            placeImages.map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
-        }.mkString("\n")
+        imagesText += byPlace
+          .map { case (code, monumentIds) =>
+            val place = Country.Ukraine
+              .byMonumentId(monumentIds.head)
+              .map(_.name)
+              .getOrElse("Unknown")
+            val placeImages =
+              images.filter(_.monumentIds.toSet.intersect(monumentIds).nonEmpty)
+            s"\n=== $place ${placeImages.size} images ===\n" ++
+              placeImages
+                .map(_.title)
+                .mkString("<gallery>\n", "\n", "</gallery>")
+          }
+          .mkString("\n")
       }
     }
 
-    MwBot.fromHost(MwBot.commons).page(imagesPage).edit(imagesText, Some("updating"))
+    MwBot
+      .fromHost(MwBot.commons)
+      .page(imagesPage)
+      .edit(imagesText, Some("updating"))
   }
 
   def galleryByAuthor(imagesPage: String, imageDb: ImageDB): Unit = {
@@ -109,10 +138,15 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
       val images = imageDb._byAuthor.by(author)
       if (images.nonEmpty) {
         imagesText += s"\n== $author, ${byId.keys.size} monuments ==\n"
-        imagesText += images.map(_.title).mkString("<gallery>\n", "\n", "</gallery>")
+        imagesText += images
+          .map(_.title)
+          .mkString("<gallery>\n", "\n", "</gallery>")
       }
     }
 
-    MwBot.fromHost(MwBot.commons).page(imagesPage).edit(imagesText, Some("updating"))
+    MwBot
+      .fromHost(MwBot.commons)
+      .page(imagesPage)
+      .edit(imagesText, Some("updating"))
   }
 }

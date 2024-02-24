@@ -30,19 +30,25 @@ class TemplateParserSpec extends Specification {
     }
 
     "parse positional parameter article link" in {
-      val template = parser.parseOne("{{TemplateName | [[ article | link ]] }}").head
+      val template =
+        parser.parseOne("{{TemplateName | [[ article | link ]] }}").head
       template.templateName === "TemplateName"
 
       template.params === Map("1" -> "[[ article | link ]]")
     }
 
     "parse positional parameter article two article links" in {
-      val template = parser.parseOne("{{TemplateName | [[ article1 | link1 ]], [[ article2 | link2 ]] }}").head
+      val template = parser
+        .parseOne(
+          "{{TemplateName | [[ article1 | link1 ]], [[ article2 | link2 ]] }}"
+        )
+        .head
       template.templateName === "TemplateName"
 
-      template.params === Map("1" -> "[[ article1 | link1 ]], [[ article2 | link2 ]]")
+      template.params === Map(
+        "1" -> "[[ article1 | link1 ]], [[ article2 | link2 ]]"
+      )
     }
-
 
     "parse positional parameter template" in {
       val template = parser.parseOne("{{TemplateName | {{child}} }}").head
@@ -73,7 +79,8 @@ class TemplateParserSpec extends Specification {
     }
 
     "parse two positional parameters newline" in {
-      val template = parser.parseOne("{{TemplateName\n|param1\n|param2\n}}").head
+      val template =
+        parser.parseOne("{{TemplateName\n|param1\n|param2\n}}").head
       template.templateName === "TemplateName"
 
       template.params === Map("1" -> "param1", "2" -> "param2")
@@ -129,7 +136,8 @@ class TemplateParserSpec extends Specification {
     }
 
     "parse two named positional parameters newline" in {
-      val template = parser.parseOne("{{TemplateName\n|1=param1\n|2=param2\n}}").head
+      val template =
+        parser.parseOne("{{TemplateName\n|1=param1\n|2=param2\n}}").head
       template.templateName === "TemplateName"
 
       template.params === Map("1" -> "param1", "2" -> "param2")
@@ -163,8 +171,6 @@ class TemplateParserSpec extends Specification {
       template.params === Map("name" -> "value")
     }
 
-
   }
-
 
 }

@@ -13,18 +13,20 @@ class DumpFileInfo(val path: Path) {
   val dotParts = filename split "\\."
 
   val withoutExtension = dotParts(0)
-  val extensions = dotParts slice(1, dotParts.length)
+  val extensions = dotParts slice (1, dotParts.length)
 
   val hyphensParts = withoutExtension split "-"
-  val database: Option[String] = if (hyphensParts(0) == "pagecounts")
-    None
-  else
-    Some(hyphensParts(0))
+  val database: Option[String] =
+    if (hyphensParts(0) == "pagecounts")
+      None
+    else
+      Some(hyphensParts(0))
 
-  val dumpType = if (hyphensParts(0) == "pagecounts")
-    "pagecounts"
-  else
-    hyphensParts.slice(2, hyphensParts.length).mkString("-")
+  val dumpType =
+    if (hyphensParts(0) == "pagecounts")
+      "pagecounts"
+    else
+      hyphensParts.slice(2, hyphensParts.length).mkString("-")
 
   val date = hyphensParts(1)
 
@@ -39,11 +41,13 @@ class DumpFileInfo(val path: Path) {
 
   def isPagesXml = isXml && dumpType.startsWith("pages-")
 
-  def isPageIndex = isTxt && dumpType.startsWith("pages-") && dumpType.endsWith("-index")
+  def isPageIndex =
+    isTxt && dumpType.startsWith("pages-") && dumpType.endsWith("-index")
 
   def isPageCounts = dumpType == "pagecounts"
 
-  def isIndex(path: Path) = path.getFileName.toString.startsWith(withoutExtension + "-index.txt")
+  def isIndex(path: Path) =
+    path.getFileName.toString.startsWith(withoutExtension + "-index.txt")
 
   def dumpFile: Option[DumpFile] = {
     if (isPagesXml)
@@ -73,7 +77,6 @@ class PageIndexDump(info: DumpFileInfo) extends DumpFile(info)
 class SqlDump(info: DumpFileInfo) extends DumpFile(info)
 
 class PageViewCountDump(info: DumpFileInfo) extends DumpFile(info)
-
 
 object DumpFile {
 

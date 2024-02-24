@@ -15,5 +15,4 @@ case class Block(offset: Long, size: Long) {
 //  def intersection(offsetParam: Long, sizeParam: Long): Block =
 //    contains(offsetParam) && contains(offsetParam + sizeParam)
 
-
 }
