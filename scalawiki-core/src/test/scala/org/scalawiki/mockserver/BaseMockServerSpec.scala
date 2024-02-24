@@ -31,33 +31,52 @@ class BaseMockServerSpec extends Specification with StubServer {
   def await[T](future: Future[T]): T = Await.result(future, http.timeout)
 
   def stubResponse(path: String, code: Int, body: String) = {
-    mockServer.when(request()
-      .withMethod("POST")
-      .withPath(path)
-    ).respond(response()
-      .withStatusCode(code)
-      .withHeaders(
-        header(CONTENT_TYPE, MediaType.JSON_UTF_8.toString)
-      ).withBody(body)
-    )
+    mockServer
+      .when(
+        request()
+          .withMethod("POST")
+          .withPath(path)
+      )
+      .respond(
+        response()
+          .withStatusCode(code)
+          .withHeaders(
+            header(CONTENT_TYPE, MediaType.JSON_UTF_8.toString)
+          )
+          .withBody(body)
+      )
   }
 
-  def stubOk(parameters: Map[String, String], body: String): Unit = stubResponse(parameters, 200, body)
+  def stubOk(parameters: Map[String, String], body: String): Unit =
+    stubResponse(parameters, 200, body)
 
-  def stubResponse(parameters: Map[String, String], code: Int, body: String): Unit = {
-    mockServer.when(request()
-      .withMethod("POST")
-      .withPath(apiUrl)
-      .withBody(
-        params(
-          parameters.map { case (name, value) => new Parameter(name, value) }.toBuffer.asJava)
+  def stubResponse(
+      parameters: Map[String, String],
+      code: Int,
+      body: String
+  ): Unit = {
+    mockServer
+      .when(
+        request()
+          .withMethod("POST")
+          .withPath(apiUrl)
+          .withBody(
+            params(
+              parameters
+                .map { case (name, value) => new Parameter(name, value) }
+                .toBuffer
+                .asJava
+            )
+          )
       )
-    ).respond(response()
-      .withStatusCode(code)
-      .withHeaders(
-        header(CONTENT_TYPE, MediaType.JSON_UTF_8.toString)
-      ).withBody(body)
-    )
+      .respond(
+        response()
+          .withStatusCode(code)
+          .withHeaders(
+            header(CONTENT_TYPE, MediaType.JSON_UTF_8.toString)
+          )
+          .withBody(body)
+      )
   }
 
 }

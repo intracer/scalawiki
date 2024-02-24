@@ -37,25 +37,42 @@ class PropImagesSpec extends Specification with MockBotSpec {
           |    }
           |}""".stripMargin
 
-
       val commands = Seq(
-        HttpStub(Map("action" -> "query", "titles" -> "Albert_Einstein", "prop" -> "images", "format" -> "json", "continue" -> ""), response)
+        HttpStub(
+          Map(
+            "action" -> "query",
+            "titles" -> "Albert_Einstein",
+            "prop" -> "images",
+            "format" -> "json",
+            "continue" -> ""
+          ),
+          response
+        )
       )
 
       val bot = getBot(commands: _*)
 
-      val action = Action(Query(
-        TitlesParam(Seq("Albert_Einstein")),
-        Prop(Images())
-      ))
+      val action = Action(
+        Query(
+          TitlesParam(Seq("Albert_Einstein")),
+          Prop(Images())
+        )
+      )
 
       val result = bot.run(action).map(_.toSeq).await
       result must have size 1
       val page = result(0)
-      page === new Page(Some(736), Some(0), "Albert Einstein", images = Seq(
-        new Image("File:1919 eclipse positive.jpg"),
-        new Image("File:Albert Einstein's exam of maturity grades (color2).jpg")
-      ))
+      page === new Page(
+        Some(736),
+        Some(0),
+        "Albert Einstein",
+        images = Seq(
+          new Image("File:1919 eclipse positive.jpg"),
+          new Image(
+            "File:Albert Einstein's exam of maturity grades (color2).jpg"
+          )
+        )
+      )
     }
   }
 
@@ -93,18 +110,28 @@ class PropImagesSpec extends Specification with MockBotSpec {
         |    }
         |}""".stripMargin
 
-
     val commands = Seq(
-      HttpStub(Map("action" -> "query", "titles" -> "Commons:Wiki_Loves_Earth_2015/Winners",
-        "prop" -> "imageinfo", "generator" -> "images", "format" -> "json", "continue" -> ""), response)
+      HttpStub(
+        Map(
+          "action" -> "query",
+          "titles" -> "Commons:Wiki_Loves_Earth_2015/Winners",
+          "prop" -> "imageinfo",
+          "generator" -> "images",
+          "format" -> "json",
+          "continue" -> ""
+        ),
+        response
+      )
     )
 
     val bot = getBot(commands: _*)
-    val action = Action(Query(
-      TitlesParam(Seq("Commons:Wiki_Loves_Earth_2015/Winners")),
-      Prop(ImageInfo()),
-      Generator(Images())
-    ))
+    val action = Action(
+      Query(
+        TitlesParam(Seq("Commons:Wiki_Loves_Earth_2015/Winners")),
+        Prop(ImageInfo()),
+        Generator(Images())
+      )
+    )
 
     val result = bot.run(action).await
     result must have size 2

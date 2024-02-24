@@ -33,7 +33,7 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
   }
 
   override def after = {
-    //mwDb.db.close()
+    // mwDb.db.close()
   }
 
   "page" should {
@@ -51,11 +51,10 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
       val (titles, texts) = (
         (1 to 10) map ("title" + _),
         (1 to 10) map ("text" + _)
-        )
+      )
 
-      val pages = titles.zip(texts) map {
-        case (title, text) =>
-          Page(None, Some(0), title, Seq(Revision.one(text)))
+      val pages = titles.zip(texts) map { case (title, text) =>
+        Page(None, Some(0), title, Seq(Revision.one(text)))
       }
 
       pageDao.insertAll(pages)
@@ -71,7 +70,9 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
       revs.map(_.textId) aka "textIds in revisions" must_== dbTexts.map(_.id)
 
       val dbPages = pageDao.list
-      dbPages.map(_.revisions.headOption.flatMap(_.revId)) aka "revIds in pages" must_== revs.map(_.id)
+      dbPages.map(
+        _.revisions.headOption.flatMap(_.revId)
+      ) aka "revIds in pages" must_== revs.map(_.id)
 
       val fromDb = pageDao.listWithText
 
@@ -92,7 +93,7 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
         (1 to 10) map ("title" + _),
         (1 to 10) map ("text" + _),
         51L to 60L
-        )
+      )
 
       val pages = titles.zip(texts).zip(pageIds) map {
         case ((title, text), pageId) =>
@@ -112,7 +113,9 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
       revs.map(_.textId) aka "textIds in revisions" must_== dbTexts.map(_.id)
 
       val dbPages = pageDao.list
-      dbPages.map(_.revisions.headOption.flatMap(_.revId)) aka "revIds in pages" must_== revs.map(_.id)
+      dbPages.map(
+        _.revisions.headOption.flatMap(_.revId)
+      ) aka "revIds in pages" must_== revs.map(_.id)
 
       val fromDb = pageDao.listWithText
 
@@ -135,11 +138,15 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
         (1 to 10) map ("text" + _),
         51L to 60L,
         21L to 30L
-        )
+      )
 
       val pages = titles.zip(texts).zip(pageIds).zip(revIds) map {
         case (((title, text), pageId), revId) =>
-          val revision: Revision = new Revision(revId = Some(revId), pageId = Some(pageId), content = Some(text))
+          val revision: Revision = new Revision(
+            revId = Some(revId),
+            pageId = Some(pageId),
+            content = Some(text)
+          )
           Page(Some(pageId), Some(0), title, Seq(revision))
       }
 
@@ -156,7 +163,9 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
       revs.map(_.textId) aka "textIds in revisions" must_== dbTexts.map(_.id)
 
       val dbPages = pageDao.list
-      dbPages.map(_.revisions.headOption.flatMap(_.revId)) aka "revIds in pages" must_== revs.map(_.id)
+      dbPages.map(
+        _.revisions.headOption.flatMap(_.revId)
+      ) aka "revIds in pages" must_== revs.map(_.id)
 
       val fromDb = pageDao.listWithText
 
@@ -182,13 +191,16 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
         21L to 30L,
         31L to 40L,
         (1 to 10) map ("user" + _)
-        )
+      )
 
-      val pages = (0 to 9) map {
-        i =>
-          val revision: Revision = new Revision(revId = Some(revIds(i)), pageId = Some(pageIds(i)), content = Some(texts(i)),
-            user = Some(User(userIds(i), userNames(i))))
-          Page(Some(pageIds(i)), Some(0), titles(i), Seq(revision))
+      val pages = (0 to 9) map { i =>
+        val revision: Revision = new Revision(
+          revId = Some(revIds(i)),
+          pageId = Some(pageIds(i)),
+          content = Some(texts(i)),
+          user = Some(User(userIds(i), userNames(i)))
+        )
+        Page(Some(pageIds(i)), Some(0), titles(i), Seq(revision))
       }
 
       pageDao.insertAll(pages)
@@ -204,7 +216,9 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
       revs.map(_.textId) aka "textIds in revisions" must_== dbTexts.map(_.id)
 
       val dbPages = pageDao.list
-      dbPages.map(_.revisions.headOption.flatMap(_.revId)) aka "revIds in pages" must_== revs.map(_.id)
+      dbPages.map(
+        _.revisions.headOption.flatMap(_.revId)
+      ) aka "revIds in pages" must_== revs.map(_.id)
 
       val fromDb = pageDao.listWithText
 
@@ -230,11 +244,16 @@ class PageDaoBulkSpec extends Specification with BeforeAfter {
       val title = "Image.jpg"
       val image = new Image(
         title,
-        Some("http://Image.jpg"), None,
-        Some(1000 * 1000), Some(800), Some(600),
-        user.name, Some(user)
+        Some("http://Image.jpg"),
+        None,
+        Some(1000 * 1000),
+        Some(800),
+        Some(600),
+        user.name,
+        Some(user)
       )
-      val revision: Revision = new Revision(user = Some(user), content = Some("revision text"))
+      val revision: Revision =
+        new Revision(user = Some(user), content = Some("revision text"))
 
       val page = Page(None, Some(0), title, Seq(revision), Seq(image))
 

@@ -11,9 +11,14 @@ object SecretaryBot extends WithBot with QueryLibrary {
   val host = "ua.wikimedia.org"
 
   def fetchResolutions(): Future[Seq[Resolution]] = {
-    for (all <- bot.run(pageLinksGenerator("Рішення Правління (список)"))) yield {
-      all.flatMap(Resolution.fromPage).filter(r => r.year == 2016 || r.date == "28 грудня 2015").toSeq.sorted
-    }
+    for (all <- bot.run(pageLinksGenerator("Рішення Правління (список)")))
+      yield {
+        all
+          .flatMap(Resolution.fromPage)
+          .filter(r => r.year == 2016 || r.date == "28 грудня 2015")
+          .toSeq
+          .sorted
+      }
   }
 
   def main(args: Array[String]): Unit = {

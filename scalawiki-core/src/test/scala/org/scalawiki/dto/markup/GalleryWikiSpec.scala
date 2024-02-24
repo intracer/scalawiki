@@ -12,8 +12,7 @@ class GalleryWikiSpec extends Specification {
     "be without descriptions" in {
       val images = (1 to 3).map(i => s"File:$i.jpg")
 
-      Image.gallery(images) must haveSameLinesAs(
-        """<gallery>
+      Image.gallery(images) must haveSameLinesAs("""<gallery>
           |File:1.jpg
           |File:2.jpg
           |File:3.jpg
@@ -24,8 +23,7 @@ class GalleryWikiSpec extends Specification {
       val images = (1 to 3).map(i => s"File:$i.jpg")
       val descriptions = (1 to 3).map("Description " + _)
 
-      Image.gallery(images, descriptions) must haveSameLinesAs(
-        """<gallery>
+      Image.gallery(images, descriptions) must haveSameLinesAs("""<gallery>
           |File:1.jpg | Description 1
           |File:2.jpg | Description 2
           |File:3.jpg | Description 3
@@ -36,8 +34,7 @@ class GalleryWikiSpec extends Specification {
       val images = (1 to 3).map(_ + ".jpg")
       val descriptions = (1 to 3).map("Description " + _)
 
-      Image.gallery(images, descriptions) must haveSameLinesAs(
-        """<gallery>
+      Image.gallery(images, descriptions) must haveSameLinesAs("""<gallery>
           |File:1.jpg | Description 1
           |File:2.jpg | Description 2
           |File:3.jpg | Description 3

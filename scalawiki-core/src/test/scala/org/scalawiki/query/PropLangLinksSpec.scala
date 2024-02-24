@@ -77,26 +77,47 @@ class PropLangLinksSpec extends Specification with MockBotSpec {
           }
         """
 
-      val query = Map("action" -> "query", "prop" -> "langlinks",
-        "generator" -> "categorymembers", "gcmtitle" -> category, "gcmnamespace" -> "0",
-        "gcmlimit" -> "2", "lllimit" -> "2")
+      val query = Map(
+        "action" -> "query",
+        "prop" -> "langlinks",
+        "generator" -> "categorymembers",
+        "gcmtitle" -> category,
+        "gcmnamespace" -> "0",
+        "gcmlimit" -> "2",
+        "lllimit" -> "2"
+      )
 
       val commands = Seq(
         HttpStub(query + ("continue" -> ""), response1),
-        HttpStub(query ++ Map(
-          "continue" -> "||",
-          "llcontinue" -> "6863578|cs"
-        ), response2)
+        HttpStub(
+          query ++ Map(
+            "continue" -> "||",
+            "llcontinue" -> "6863578|cs"
+          ),
+          response2
+        )
       )
 
       val bot = getBot(commands: _*)
 
-      val action = Action(Query(
-        Prop(
-          LangLinks(LlLimit("2"))
-        ),
-        Generator(ListArgs.toDsl("categorymembers", Some(category), None, Set(Namespace.MAIN), Some("2")).get)
-      ))
+      val action = Action(
+        Query(
+          Prop(
+            LangLinks(LlLimit("2"))
+          ),
+          Generator(
+            ListArgs
+              .toDsl(
+                "categorymembers",
+                Some(category),
+                None,
+                Set(Namespace.MAIN),
+                Some("2")
+              )
+              .get
+          )
+        )
+      )
 
       val result = bot.run(action).await
 

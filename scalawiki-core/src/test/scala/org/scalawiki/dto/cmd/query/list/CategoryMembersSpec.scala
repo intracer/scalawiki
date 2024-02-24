@@ -12,12 +12,14 @@ class CategoryMembersSpec extends Specification {
   )
 
   def categoryMembers(args: CmParam[Any]*): Map[String, String] = {
-    Action(Query(ListParam(CategoryMembers(args:_*)))).pairs.toMap
+    Action(Query(ListParam(CategoryMembers(args: _*)))).pairs.toMap
   }
 
   "get Map" should {
     "get title" in {
-      categoryMembers(CmTitle("Category:Physics")) === baseParams + ("cmtitle" -> "Category:Physics")
+      categoryMembers(
+        CmTitle("Category:Physics")
+      ) === baseParams + ("cmtitle" -> "Category:Physics")
     }
 
     "get pageid" in {
@@ -25,12 +27,19 @@ class CategoryMembersSpec extends Specification {
     }
 
     "get props" in {
-      categoryMembers(CmPageId(1234L), CmProp(Ids, Title, cmprop.Timestamp)) === baseParams +
+      categoryMembers(
+        CmPageId(1234L),
+        CmProp(Ids, Title, cmprop.Timestamp)
+      ) === baseParams +
         ("cmpageid" -> "1234", "cmprop" -> "ids|title|timestamp")
     }
 
     "get sort" in {
-      categoryMembers(CmPageId(1234L), CmSort(cmsort.Timestamp), CmDir(Asc)) === baseParams +
+      categoryMembers(
+        CmPageId(1234L),
+        CmSort(cmsort.Timestamp),
+        CmDir(Asc)
+      ) === baseParams +
         ("cmpageid" -> "1234", "cmsort" -> "timestamp", "cmdir" -> "asc")
     }
   }

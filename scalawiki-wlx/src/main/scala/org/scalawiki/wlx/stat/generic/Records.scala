@@ -2,27 +2,34 @@ package org.scalawiki.wlx.stat.generic
 
 import org.scalawiki.dto.markup.Table
 
-class Aggregation[-T, +V](val name: String, aggFunc: Iterable[T] => V) extends Function[Iterable[T], V] {
+class Aggregation[-T, +V](val name: String, aggFunc: Iterable[T] => V)
+    extends Function[Iterable[T], V] {
 
   override def apply(t: Iterable[T]): V = aggFunc(t)
 }
 
-class Grouping[T, V](val name: String, groupFunc: T => V) extends Function[Iterable[T], Map[V, Iterable[T]]] {
+class Grouping[T, V](val name: String, groupFunc: T => V)
+    extends Function[Iterable[T], Map[V, Iterable[T]]] {
 
   override def apply(t: Iterable[T]): Map[V, Iterable[T]] = t.groupBy(groupFunc)
 }
 
-class Mapping[-T, +V](val name: String, mapFunc: T => V) extends Function[T, V] {
+class Mapping[-T, +V](val name: String, mapFunc: T => V)
+    extends Function[T, V] {
 
   override def apply(t: T): V = mapFunc(t)
 }
 
-class PercentageAggregation[T](name: String, valueAggregation: Aggregation[T, Int]) extends Aggregation[T, Long](
-  name,
-  t => (valueAggregation(t) * 100.0 / t.size).round
-)
+class PercentageAggregation[T](
+    name: String,
+    valueAggregation: Aggregation[T, Int]
+) extends Aggregation[T, Long](
+      name,
+      t => (valueAggregation(t) * 100.0 / t.size).round
+    )
 
-class StringColumnOrdering(column: Int, reverse: Boolean = false) extends Ordering[Seq[Any]] {
+class StringColumnOrdering(column: Int, reverse: Boolean = false)
+    extends Ordering[Seq[Any]] {
   override def compare(x: Seq[Any], y: Seq[Any]): Int =
     x(column).toString
       .compareTo(
@@ -30,7 +37,8 @@ class StringColumnOrdering(column: Int, reverse: Boolean = false) extends Orderi
       ) * (if (reverse) -1 else 1)
 }
 
-class LongColumnOrdering(column: Int, reverse: Boolean = false) extends Ordering[Seq[Any]] {
+class LongColumnOrdering(column: Int, reverse: Boolean = false)
+    extends Ordering[Seq[Any]] {
 
   override def compare(x: Seq[Any], y: Seq[Any]): Int =
     x(column).toString.toLong
@@ -39,22 +47,22 @@ class LongColumnOrdering(column: Int, reverse: Boolean = false) extends Ordering
       ) * (if (reverse) -1 else 1)
 }
 
-
 class Records[T, RK](
-                      data: Iterable[T],
-                      rowGrouping: Grouping[T, RK],
-                      columnAggregations: Seq[Aggregation[T, Any]],
-                      rowOrdering: Ordering[Seq[Any]],
-                      rowKeyMapping: Option[Mapping[RK, Any]] = None
-                      ) {
+    data: Iterable[T],
+    rowGrouping: Grouping[T, RK],
+    columnAggregations: Seq[Aggregation[T, Any]],
+    rowOrdering: Ordering[Seq[Any]],
+    rowKeyMapping: Option[Mapping[RK, Any]] = None
+) {
   val byRowKey: Map[RK, Iterable[T]] = rowGrouping(data)
 
-  val rows = byRowKey.map {
-    case (rk, tSeq) =>
+  val rows = byRowKey
+    .map { case (rk, tSeq) =>
       Seq(rk) ++
         rowKeyMapping.map(_(rk)).toSeq ++
         columnAggregations.map(_(tSeq))
-  }.toSeq
+    }
+    .toSeq
     .sorted(rowOrdering)
 
   val total: Seq[Any] = Seq("Total") ++ rowKeyMapping.map(_ => "Total").toSeq ++

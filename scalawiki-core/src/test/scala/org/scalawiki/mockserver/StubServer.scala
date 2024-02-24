@@ -3,7 +3,7 @@ package org.scalawiki.mockserver
 import org.mockserver.integration.ClientAndServer.startClientAndServer
 import org.specs2.specification.BeforeAfterEach
 
-trait StubServer extends BeforeAfterEach  {
+trait StubServer extends BeforeAfterEach {
   val Port = 8080
   val Host = "localhost"
   val Protocol = "http"

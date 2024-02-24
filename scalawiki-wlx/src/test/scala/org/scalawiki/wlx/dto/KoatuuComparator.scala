@@ -7,8 +7,12 @@ class KoatuuComparator extends Specification {
 
   val oldRegions = Ukraine.regions
 
-  val UkraineNew: Country = new Country("UA", "Ukraine", Seq("uk"),
-    Koatuu.regionsNew(() => Some(UkraineNew)))
+  val UkraineNew: Country = new Country(
+    "UA",
+    "Ukraine",
+    Seq("uk"),
+    Koatuu.regionsNew(() => Some(UkraineNew))
+  )
 
   val newRegions = UkraineNew.regions
 

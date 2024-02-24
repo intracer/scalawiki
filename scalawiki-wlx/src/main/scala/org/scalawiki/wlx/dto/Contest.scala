@@ -2,13 +2,17 @@ package org.scalawiki.wlx.dto
 
 import java.time.ZonedDateTime
 
-import com.typesafe.config.{Config, ConfigFactory, ConfigParseOptions, ConfigResolveOptions}
+import com.typesafe.config.{
+  Config,
+  ConfigFactory,
+  ConfigParseOptions,
+  ConfigResolveOptions
+}
 import org.scalawiki.wlx.stat.RateConfig
 
 import scala.util.Try
 
-/**
-  * Represents Wiki Loves X contest
+/** Represents Wiki Loves X contest
   *
   * @param contestType
   * @param country
@@ -19,16 +23,16 @@ import scala.util.Try
   * @param specialNominations
   */
 case class Contest(
-                    contestType: ContestType,
-                    country: Country,
-                    year: Int,
-                    startDate: String = "",
-                    endDate: String = "",
-                    uploadConfigs: Seq[UploadConfig] = Nil,
-                    specialNominations: Seq[SpecialNomination] = Nil,
-                    rateConfig: RateConfig = RateConfig(),
-                    config: Option[Config] = None
-                  ) extends HasImagesCategory {
+    contestType: ContestType,
+    country: Country,
+    year: Int,
+    startDate: String = "",
+    endDate: String = "",
+    uploadConfigs: Seq[UploadConfig] = Nil,
+    specialNominations: Seq[SpecialNomination] = Nil,
+    rateConfig: RateConfig = RateConfig(),
+    config: Option[Config] = None
+) extends HasImagesCategory {
 
   def campaign = contestType.code + "-" + country.code
 
@@ -40,20 +44,23 @@ case class Contest(
     else
       None
 
-  /**
-    * @return Name of category containing contest images
+  /** @return
+    *   Name of category containing contest images
     */
-  override def imagesCategory: String = s"Category:Images from $name".replaceAll(" ", "_")
+  override def imagesCategory: String =
+    s"Category:Images from $name".replaceAll(" ", "_")
 
-  /**
-    * @return name of template that monument lists consist of
+  /** @return
+    *   name of template that monument lists consist of
     */
-  def listTemplate: Option[String] = uploadConfigs.headOption.map(_.listTemplate)
+  def listTemplate: Option[String] =
+    uploadConfigs.headOption.map(_.listTemplate)
 
-  /**
-    * @return name of template that marks a contest image with monument id
+  /** @return
+    *   name of template that marks a contest image with monument id
     */
-  def fileTemplate: Option[String] = uploadConfigs.headOption.map(_.fileTemplate)
+  def fileTemplate: Option[String] =
+    uploadConfigs.headOption.map(_.fileTemplate)
 
   def listsHost: Option[String] = {
     uploadConfigs.head.listsHost
@@ -75,10 +82,10 @@ object Contest {
         val Campaign = "(\\w+)_(\\w+).conf".r
         name match {
           case Campaign(typeCode, countryCode) =>
-            for (contestType <- ContestType.byCode(typeCode);
-                 country <- Country.byCode(countryCode)
-            ) yield
-              Contest(contestType, country, ZonedDateTime.now.getYear)
+            for (
+              contestType <- ContestType.byCode(typeCode);
+              country <- Country.byCode(countryCode)
+            ) yield Contest(contestType, country, ZonedDateTime.now.getYear)
           case _ => None
         }
       }
@@ -92,17 +99,39 @@ object Contest {
     val (typeStr, countryStr, year) = (
       config.getString("type"),
       config.getString("country"),
-      config.getInt("year"))
+      config.getInt("year")
+    )
 
     val uploadConfig = UploadConfig.fromConfig(config)
 
-    for (contestType <- ContestType.byCode(typeStr.toLowerCase);
-         country <- Country.fromJavaLocales.find(country => country.name == countryStr || country.code == countryStr))
-      yield new Contest(contestType, country, year, uploadConfigs = Seq(uploadConfig), config = Some(config))
+    for (
+      contestType <- ContestType.byCode(typeStr.toLowerCase);
+      country <- Country.fromJavaLocales.find(country =>
+        country.name == countryStr || country.code == countryStr
+      )
+    )
+      yield new Contest(
+        contestType,
+        country,
+        year,
+        uploadConfigs = Seq(uploadConfig),
+        config = Some(config)
+      )
   }
 
-  def ESPCUkraine(year: Int, startDate: String = "01-09", endDate: String = "30-09") =
-    new Contest(ContestType.ESPC, Country.Ukraine, year, startDate, endDate, Nil)
+  def ESPCUkraine(
+      year: Int,
+      startDate: String = "01-09",
+      endDate: String = "30-09"
+  ) =
+    new Contest(
+      ContestType.ESPC,
+      Country.Ukraine,
+      year,
+      startDate,
+      endDate,
+      Nil
+    )
 
   def WLMUkraine(year: Int) =
     load("wlm_ua.conf").get.copy(year = year)
@@ -111,6 +140,3 @@ object Contest {
     load("wle_ua.conf").get.copy(year = year)
 
 }
-
-
-

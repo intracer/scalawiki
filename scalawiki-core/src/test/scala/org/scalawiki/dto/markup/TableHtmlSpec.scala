@@ -24,8 +24,7 @@ class TableHtmlSpec extends Specification {
 
     "make table with 1 column header" in {
       val table = new Table(Seq("header1"), Seq.empty, "", "")
-      table.asHtml must haveSameLinesAs(
-        """<table>
+      table.asHtml must haveSameLinesAs("""<table>
           |<thead>
           |<tr>
           |  <th> header1 </th>
@@ -36,8 +35,7 @@ class TableHtmlSpec extends Specification {
 
     "make table with 2 columns header" in {
       val table = new Table(Seq("header1", "header2"), Seq.empty, "", "")
-      table.asHtml must haveSameLinesAs(
-        """<table>
+      table.asHtml must haveSameLinesAs("""<table>
           |<thead>
           |<tr>
           |  <th> header1 </th>
@@ -48,9 +46,9 @@ class TableHtmlSpec extends Specification {
     }
 
     "make table with 3 columns headers" in {
-      val table = new Table(Seq("header1", "header2", "header3"), Seq.empty, "", "")
-      table.asHtml must haveSameLinesAs(
-        """<table>
+      val table =
+        new Table(Seq("header1", "header2", "header3"), Seq.empty, "", "")
+      table.asHtml must haveSameLinesAs("""<table>
           |<thead>
           |<tr>
           |  <th> header1 </th>
@@ -63,8 +61,7 @@ class TableHtmlSpec extends Specification {
 
     "make table with 1 data column" in {
       val table = new Table(Seq.empty, Seq(Seq("data11")), "", "")
-      table.asHtml must haveSameLinesAs(
-        """<table>
+      table.asHtml must haveSameLinesAs("""<table>
           |<tbody>
           |<tr>
           |  <td> data11 </td>
@@ -75,8 +72,7 @@ class TableHtmlSpec extends Specification {
 
     "make table with 2 data columns" in {
       val table = new Table(Seq.empty, Seq(Seq("data11", "data12")), "", "")
-      table.asHtml must haveSameLinesAs(
-        """<table>
+      table.asHtml must haveSameLinesAs("""<table>
           |<tbody>
           |<tr>
           |  <td> data11 </td>
@@ -87,9 +83,9 @@ class TableHtmlSpec extends Specification {
     }
 
     "make table with 1 data column and 2 rows" in {
-      val table = new Table(Seq.empty, Seq(Seq("data11"), Seq("data21")), "", "")
-      table.asHtml must haveSameLinesAs(
-        """<table>
+      val table =
+        new Table(Seq.empty, Seq(Seq("data11"), Seq("data21")), "", "")
+      table.asHtml must haveSameLinesAs("""<table>
           |<tbody>
           |<tr>
           |  <td> data11 </td>
@@ -103,16 +99,14 @@ class TableHtmlSpec extends Specification {
 
     "make table with css class and title" in {
       val table = new Table(Seq.empty, Seq.empty, "title", "wikitable")
-      table.asHtml must haveSameLinesAs(
-        """<table> class='wikitable'
+      table.asHtml must haveSameLinesAs("""<table> class='wikitable'
           |<caption> title </caption>
           |</table>""".stripMargin)
     }
 
     "make table with css class and 1 column header" in {
       val table = new Table(Seq("header1"), Seq.empty, "", "wikitable")
-      table.asHtml must haveSameLinesAs(
-        """<table> class='wikitable'
+      table.asHtml must haveSameLinesAs("""<table> class='wikitable'
           |<thead>
           |<tr>
           |  <th> header1 </th>
@@ -123,8 +117,7 @@ class TableHtmlSpec extends Specification {
 
     "make table with css class and 1 data column" in {
       val table = new Table(Seq.empty, Seq(Seq("data11")), "", "wikitable")
-      table.asHtml must haveSameLinesAs(
-        """<table> class='wikitable'
+      table.asHtml must haveSameLinesAs("""<table> class='wikitable'
           |<tbody>
           |<tr>
           |  <td> data11 </td>
@@ -135,8 +128,7 @@ class TableHtmlSpec extends Specification {
 
     "make table with title and 1 column header" in {
       val table = new Table(Seq("header1"), Seq.empty, "title", "")
-      table.asHtml must haveSameLinesAs(
-        """<table>
+      table.asHtml must haveSameLinesAs("""<table>
           |<caption> title </caption>
           |<thead>
           |<tr>
@@ -148,8 +140,7 @@ class TableHtmlSpec extends Specification {
 
     "make table with title and 1 data column" in {
       val table = new Table(Seq.empty, Seq(Seq("data11")), "title", "")
-      table.asHtml must haveSameLinesAs(
-        """<table>
+      table.asHtml must haveSameLinesAs("""<table>
           |<caption> title </caption>
           |<tbody>
           |<tr>
@@ -161,8 +152,7 @@ class TableHtmlSpec extends Specification {
 
     "make table with 1 column header and 1 data row" in {
       val table = new Table(Seq("header1"), Seq(Seq("data11")), "", "")
-      table.asHtml must haveSameLinesAs(
-        """<table>
+      table.asHtml must haveSameLinesAs("""<table>
           |<thead>
           |<tr>
           |  <th> header1 </th>

@@ -29,11 +29,13 @@ class PereiaslavSpec extends Specification with BeforeEach with Mockito {
 
   def pereiaslav(cfg: Config = config()) = new Pereiaslav(cfg, fs)
 
-  def config(host: String = ukWiki,
-             tablePage: String = "tablePage",
-             home: String = "." + fs.getSeparator + "data",
-             lang: String = "uk",
-             wlmPage: String = ""): Config = {
+  def config(
+      host: String = ukWiki,
+      tablePage: String = "tablePage",
+      home: String = "." + fs.getSeparator + "data",
+      lang: String = "uk",
+      wlmPage: String = ""
+  ): Config = {
     val map = Map(
       "host" -> host,
       "table-page" -> tablePage,
@@ -82,7 +84,8 @@ class PereiaslavSpec extends Specification with BeforeEach with Mockito {
       val html = descriptions.mkString(
         "<html> <body> <h1> Image list </h1> <p>",
         "</p> \n <p>",
-        "</p> </body> </html>")
+        "</p> </body> </html>"
+      )
 
       (root / listName).overwrite(html)
 
@@ -108,7 +111,12 @@ class PereiaslavSpec extends Specification with BeforeEach with Mockito {
 
       val entries = pereiaslav().getEntries.await
       entries.size === 2
-      entries.head === Entry("name1", Some("article1"), Some("wlmId1"), Seq.empty)
+      entries.head === Entry(
+        "name1",
+        Some("article1"),
+        Some("wlmId1"),
+        Seq.empty
+      )
       entries.last === Entry("name2", Some("article2"), None, Seq.empty)
     }
 
@@ -133,11 +141,29 @@ class PereiaslavSpec extends Specification with BeforeEach with Mockito {
 
       val entries = pereiaslav().getEntries.await
       entries.size === 2
-      entries.head === Entry("name1", Some("article1"), Some("wlmId1"),
-        (1 to 3).map { i => EntryImage((root / "name1" / s"$i.jpg").toString, None, size = Some(0)) }
+      entries.head === Entry(
+        "name1",
+        Some("article1"),
+        Some("wlmId1"),
+        (1 to 3).map { i =>
+          EntryImage(
+            (root / "name1" / s"$i.jpg").toString,
+            None,
+            size = Some(0)
+          )
+        }
       )
-      entries.last === Entry("name2", Some("article2"), None,
-        (11 to 13).map { i => EntryImage((root / "name2" / s"$i.jpg").toString, None, size = Some(0)) }
+      entries.last === Entry(
+        "name2",
+        Some("article2"),
+        None,
+        (11 to 13).map { i =>
+          EntryImage(
+            (root / "name2" / s"$i.jpg").toString,
+            None,
+            size = Some(0)
+          )
+        }
       )
     }
   }

@@ -1,6 +1,5 @@
 package org.scalawiki.query
 
-
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.prop.{Links, Prop}
 import org.scalawiki.dto.cmd.query.{Query, TitlesParam}
@@ -13,7 +12,8 @@ class PropLinksSpec extends Specification with MockBotSpec {
   "get links" should {
     "merge pages" in {
 
-      val title = "Reactive Streams"   //  https://en.wikipedia.org/wiki/Reactive_Streams
+      val title =
+        "Reactive Streams" //  https://en.wikipedia.org/wiki/Reactive_Streams
 
       val response1 =
         """{
@@ -67,26 +67,37 @@ class PropLinksSpec extends Specification with MockBotSpec {
           |}""".stripMargin
 
       val commands = Seq(
-        HttpStub(Map("action" -> "query",
-          "titles" -> title,
-          "prop" -> "links",
-          "continue" -> ""), response1),
-        HttpStub(Map("action" -> "query",
-          "titles" -> title,
-          "prop" -> "links",
-          "continue" -> "||",
-          "plcontinue" -> "48896716|0|Domain-specific_language"),
-          response2)
+        HttpStub(
+          Map(
+            "action" -> "query",
+            "titles" -> title,
+            "prop" -> "links",
+            "continue" -> ""
+          ),
+          response1
+        ),
+        HttpStub(
+          Map(
+            "action" -> "query",
+            "titles" -> title,
+            "prop" -> "links",
+            "continue" -> "||",
+            "plcontinue" -> "48896716|0|Domain-specific_language"
+          ),
+          response2
+        )
       )
 
       val bot = getBot(commands: _*)
 
-      val action = Action(Query(
-        Prop(
-          Links()
-        ),
-        TitlesParam(Seq(title))
-      ))
+      val action = Action(
+        Query(
+          Prop(
+            Links()
+          ),
+          TitlesParam(Seq(title))
+        )
+      )
 
       val result = bot.run(action).await
 
@@ -95,7 +106,12 @@ class PropLinksSpec extends Specification with MockBotSpec {
       p1.id === Some(48896716)
       p1.title === "Reactive Streams"
       p1.links.size === 4
-      p1.links.map(_.title) === Seq("API",  "Data buffer", "Implementation",  "Interoperability")
+      p1.links.map(_.title) === Seq(
+        "API",
+        "Data buffer",
+        "Implementation",
+        "Interoperability"
+      )
       p1.links.flatMap(_.ns).toSet === Set(0)
     }
   }

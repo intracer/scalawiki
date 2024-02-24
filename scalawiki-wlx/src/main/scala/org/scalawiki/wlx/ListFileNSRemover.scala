@@ -18,7 +18,9 @@ object ListFileNSRemover {
   }
 }
 
-class ListFileNSRemoverTask(val host: String, monumentDb: MonumentDB) extends PageUpdateTask with SwebleParser {
+class ListFileNSRemoverTask(val host: String, monumentDb: MonumentDB)
+    extends PageUpdateTask
+    with SwebleParser {
 
   val config: WikiConfig = DefaultConfigEnWp.generate
 
@@ -37,19 +39,26 @@ class ListFileNSRemoverTask(val host: String, monumentDb: MonumentDB) extends Pa
 
       if (needsUpdate(monument)) {
         added += 1
-        val value = monument.photo.get.replaceFirst("File:", "").replaceFirst("Файл:", "")
+        val value =
+          monument.photo.get.replaceFirst("File:", "").replaceFirst("Файл:", "")
         val name = wlxParser.image.get
         swTemplate.setTemplateParam(name, value)
       }
     }
 
-    val newText = replace(pageText, { case t: WtTemplate if getTemplateName(t) == template => t }, mapper)
+    val newText = replace(
+      pageText,
+      { case t: WtTemplate if getTemplateName(t) == template => t },
+      mapper
+    )
     val comment = s"fixing $added image(s)"
     (newText, comment)
   }
 
   def needsUpdate(m: Monument): Boolean =
-    m.photo.exists(photo => photo.trim.startsWith("File:") || photo.trim.startsWith("Файл:"))
+    m.photo.exists(photo =>
+      photo.trim.startsWith("File:") || photo.trim.startsWith("Файл:")
+    )
 
   def pagesToFix(monumentDb: MonumentDB): Set[String] = {
 

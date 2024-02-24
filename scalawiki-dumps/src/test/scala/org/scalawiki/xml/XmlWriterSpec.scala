@@ -17,10 +17,39 @@ class XmlWriterSpec extends Specification with XmlMatchers {
     "serialize page" in {
       val (title, ns, pageId) = ("Page title", 0, 123)
 
-      val (revId, parentId, timestamp, user, userId, comment, text, minor, sha1) =
-        (345, 456, ZonedDateTime.now, "user", 567, "revision comment", "revision text", true, "sha1")
+      val (
+        revId,
+        parentId,
+        timestamp,
+        user,
+        userId,
+        comment,
+        text,
+        minor,
+        sha1
+      ) =
+        (
+          345,
+          456,
+          ZonedDateTime.now,
+          "user",
+          567,
+          "revision comment",
+          "revision text",
+          true,
+          "sha1"
+        )
 
-      val rev = Revision(Some(revId), Some(pageId), Some(parentId), Some(User(userId, user)), Some(timestamp), Some(comment), Some(text), sha1 = Some(sha1)/*, minor = Some(minor)*/)
+      val rev = Revision(
+        Some(revId),
+        Some(pageId),
+        Some(parentId),
+        Some(User(userId, user)),
+        Some(timestamp),
+        Some(comment),
+        Some(text),
+        sha1 = Some(sha1) /*, minor = Some(minor)*/
+      )
       val page = Page(Some(pageId), Some(ns), title, Seq(rev))
 
       val sw = new StringWriter()
@@ -33,8 +62,18 @@ class XmlWriterSpec extends Specification with XmlMatchers {
 
       val actualXml = XML.loadString(str)
 
-      val revsXml = revisionXml(revId, parentId, timestamp, user, userId, comment, text, sha1)
-      val expectXml = XML.loadString(mediawiki(pageXml(title, ns, pageId, revsXml)))
+      val revsXml = revisionXml(
+        revId,
+        parentId,
+        timestamp,
+        user,
+        userId,
+        comment,
+        text,
+        sha1
+      )
+      val expectXml =
+        XML.loadString(mediawiki(pageXml(title, ns, pageId, revsXml)))
 
       trim(actualXml) === trim(expectXml)
     }

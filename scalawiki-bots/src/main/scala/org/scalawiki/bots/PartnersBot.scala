@@ -15,15 +15,18 @@ object PartnersBot {
   val http = HttpClient.get()
 
   def main(args: Array[String]): Unit = {
-    http.get(partnersLinkPage).foreach {
-      html =>
-        val doc = Jsoup.parse(html)
-        val links = doc.select("a[href]").asScala
-        val hrefs = links.map(_.attr("abs:href"))
+    http.get(partnersLinkPage).foreach { html =>
+      val doc = Jsoup.parse(html)
+      val links = doc.select("a[href]").asScala
+      val hrefs = links.map(_.attr("abs:href"))
 
-        val external = hrefs.map(_.trim).filterNot(href => href.isEmpty || href.contains(ourDomain)).toSet
+      val external = hrefs
+        .map(_.trim)
+        .filterNot(href => href.isEmpty || href.contains(ourDomain))
+        .toSet
 
-        Future.traverse(external) { link =>
+      Future
+        .traverse(external) { link =>
           println("getting " + link)
           http.get(link).map { home =>
             val doc = Jsoup.parse(home)
@@ -32,7 +35,8 @@ object PartnersBot {
             println(elem)
             elem
           }
-        }.foreach(println)
+        }
+        .foreach(println)
     }
   }
 }

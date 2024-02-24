@@ -16,10 +16,12 @@ class CampaignSpec extends Specification {
         "{{Wiki Loves Earth is running|at|{{Upload campaign header wle-at}}}}",
         "{{Upload campaign use Wiki Loves Earth}}",
         Seq("National parks of Austria"),
-        Seq(CampaignField(
-          "{{Nationalpark Österreich|$1}}",
-          "Name laut Liste"
-        ))
+        Seq(
+          CampaignField(
+            "{{Nationalpark Österreich|$1}}",
+            "Name laut Liste"
+          )
+        )
       )
     }
   }

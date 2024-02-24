@@ -8,7 +8,8 @@ class GroupingSpec extends Specification {
 
   "grouping" should {
     "group by resolution" in {
-      val images1 = Seq(Image("File:11.jpg", width = Some(1000), height = Some(1000)))
+      val images1 =
+        Seq(Image("File:11.jpg", width = Some(1000), height = Some(1000)))
       val images2 = Seq(
         Image("File:21.jpg", width = Some(2000), height = Some(1000)),
         Image("File:22.jpg", width = Some(2000), height = Some(1100))
@@ -29,7 +30,8 @@ class GroupingSpec extends Specification {
         Image("File:22.jpg", monumentIds = List("234"))
       )
 
-      val g = new Grouping("monuments", ImageGrouping.byMonument, images1 ++ images2)
+      val g =
+        new Grouping("monuments", ImageGrouping.byMonument, images1 ++ images2)
 
       g.keys === Set("123", "234")
       g.by("123") === images1
@@ -44,7 +46,8 @@ class GroupingSpec extends Specification {
         Image("File:22.jpg", monumentIds = List("05-234"))
       )
 
-      val g = new Grouping("monuments", ImageGrouping.byRegion, images1 ++ images2)
+      val g =
+        new Grouping("monuments", ImageGrouping.byRegion, images1 ++ images2)
 
       g.keys === Set("01", "05")
       g.by("01") === images1
@@ -59,7 +62,8 @@ class GroupingSpec extends Specification {
         Image("File:22.jpg", author = Some("B2"))
       )
 
-      val g = new Grouping("monuments", ImageGrouping.byAuthor, images1 ++ images2)
+      val g =
+        new Grouping("monuments", ImageGrouping.byAuthor, images1 ++ images2)
 
       g.keys === Set("A1", "B2")
       g.by("A1") === images1
@@ -68,12 +72,16 @@ class GroupingSpec extends Specification {
     }
 
     "group by author and region" in {
-      val imagesA1 = Seq(Image("File:A1.jpg", author = Some("A"), monumentIds = List("01-123")))
+      val imagesA1 = Seq(
+        Image("File:A1.jpg", author = Some("A"), monumentIds = List("01-123"))
+      )
       val imagesA2 = Seq(
         Image("File:A21.jpg", author = Some("A"), monumentIds = List("05-345")),
         Image("File:A22.jpg", author = Some("A"), monumentIds = List("05-345"))
       )
-      val imagesB1 = Seq(Image("File:B1.jpg", author = Some("B"), monumentIds = List("01-123")))
+      val imagesB1 = Seq(
+        Image("File:B1.jpg", author = Some("B"), monumentIds = List("01-123"))
+      )
       val imagesB2 = Seq(
         Image("File:B21.jpg", author = Some("B"), monumentIds = List("05-345")),
         Image("File:B22.jpg", author = Some("B"), monumentIds = List("05-345"))

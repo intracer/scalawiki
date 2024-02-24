@@ -10,9 +10,10 @@ class NewMonuments(val stat: ContestStat) extends Reporter {
 
   val ids: Seq[Set[String]] = sorted.map(_.ids)
 
-  val oldsIds: Seq[Set[String]] = Seq(Set.empty[String]) ++ (1 until ids.size).map { i =>
-    (0 until i).flatMap(ids).toSet
-  }
+  val oldsIds: Seq[Set[String]] =
+    Seq(Set.empty[String]) ++ (1 until ids.size).map { i =>
+      (0 until i).flatMap(ids).toSet
+    }
 
   val newIds: Seq[Set[String]] = ids.indices.map { i => ids(i) -- oldsIds(i) }
 

@@ -17,16 +17,25 @@ trait HttpClient {
   def getResponse(url: Uri): Future[HttpResponse]
   def getResponse(url: String): Future[HttpResponse]
 
-  def post(url: String, params: (String, String)*): Future[HttpResponse] = post(url, params.toMap)
+  def post(url: String, params: (String, String)*): Future[HttpResponse] =
+    post(url, params.toMap)
 
   def post(url: String, params: Map[String, String]): Future[HttpResponse]
 
   def postUri(url: Uri, params: Map[String, String]): Future[HttpResponse]
 
-  def postMultiPart(url: String, params: Map[String, String]): Future[HttpResponse]
+  def postMultiPart(
+      url: String,
+      params: Map[String, String]
+  ): Future[HttpResponse]
   def postMultiPart(url: Uri, params: Map[String, String]): Future[HttpResponse]
 
-  def postFile(url: String, params: Map[String, String], fileParam: String, filename: String): Future[HttpResponse]
+  def postFile(
+      url: String,
+      params: Map[String, String],
+      fileParam: String,
+      filename: String
+  ): Future[HttpResponse]
 
   def getBody(response: HttpResponse): Future[String]
 
@@ -35,5 +44,7 @@ trait HttpClient {
 object HttpClient {
   val JSON_UTF8 = ContentType(MediaTypes.`application/json`)
 
-  def get(system: ActorSystem = MwBot.system): HttpClient = new HttpClientAkka(system)
+  def get(system: ActorSystem = MwBot.system): HttpClient = new HttpClientAkka(
+    system
+  )
 }

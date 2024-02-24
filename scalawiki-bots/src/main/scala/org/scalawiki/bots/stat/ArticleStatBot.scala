@@ -10,7 +10,8 @@ import org.scalawiki.query.QueryLibrary
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ArticleStatBot(implicit val bot: MwBot = MwBot.fromHost(MwBot.ukWiki)) extends QueryLibrary {
+class ArticleStatBot(implicit val bot: MwBot = MwBot.fromHost(MwBot.ukWiki))
+    extends QueryLibrary {
 
   def pagesRevisions(ids: Seq[Long]): Future[Iterable[Option[Page]]] = {
     Future.traverse(ids)(pageRevisions)
@@ -30,29 +31,32 @@ class ArticleStatBot(implicit val bot: MwBot = MwBot.fromHost(MwBot.ukWiki)) ext
     val newPagesIdsF = articlesWithTemplate(event.newTemplate)
     val improvedPagesIdsF = articlesWithTemplate(event.improvedTemplate)
 
-    Future.sequence(Seq(newPagesIdsF, improvedPagesIdsF)).flatMap {
-      ids =>
+    Future.sequence(Seq(newPagesIdsF, improvedPagesIdsF)).flatMap { ids =>
+      val newPagesIds = ids.head
+      val improvedPagesIds = ids.last
+      println(s"New ${newPagesIds.size} $newPagesIds")
+      println(s"Improved ${improvedPagesIds.size} $improvedPagesIds")
 
-        val newPagesIds = ids.head
-        val improvedPagesIds = ids.last
-        println(s"New ${newPagesIds.size} $newPagesIds")
-        println(s"Improved ${improvedPagesIds.size} $improvedPagesIds")
+      val allIds = newPagesIds.toSet ++ improvedPagesIds.toSet
 
-        val allIds = newPagesIds.toSet ++ improvedPagesIds.toSet
-
-        pagesRevisions(allIds.toSeq).map { allPages =>
-
-          val revStats = allPages.iterator.flatten.toIndexedSeq.zipWithIndex.flatMap {
+      pagesRevisions(allIds.toSeq).map { allPages =>
+        val revStats = allPages.iterator.flatten.toIndexedSeq.zipWithIndex
+          .flatMap {
             case (page, index) if page.history.editedIn(revisionFilter) =>
-              bot.log.info(s"$index/${allIds.size} making revision stat for ${page.title}")
+              bot.log.info(
+                s"$index/${allIds.size} making revision stat for ${page.title}"
+              )
               Some(RevisionStat.fromPage(page, revisionFilter))
             case (page, index) =>
-              bot.log.info(s"$index/${allIds.size} skipping ${page.title} because it's rejected by revision filter")
+              bot.log.info(
+                s"$index/${allIds.size} skipping ${page.title} because it's rejected by revision filter"
+              )
               None
-          }.sortBy(-_.addedOrRewritten)
+          }
+          .sortBy(-_.addedOrRewritten)
 
-          EventStat(event, revStats)
-        }
+        EventStat(event, revStats)
+      }
     }
   }
 }
@@ -90,9 +94,12 @@ object ArticleStatBot {
     val (contests, weeks) = Events.events()
 
     val sweden = weeks.find(_.newTemplate.startsWith("2019Sweden-week")).toSeq
-    Future.sequence(sweden.map(contestStat)).map(_.map(_.asWiki).mkString("\n")).map { wikitext =>
-      FileUtils.write("articles.wiki", wikitext)
-    }
+    Future
+      .sequence(sweden.map(contestStat))
+      .map(_.map(_.asWiki).mkString("\n"))
+      .map { wikitext =>
+        FileUtils.write("articles.wiki", wikitext)
+      }
   }
 
   def eventSummary(stats: Seq[Long]): Unit = {

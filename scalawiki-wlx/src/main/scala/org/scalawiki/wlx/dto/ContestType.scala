@@ -4,7 +4,8 @@ trait HasImagesCategory {
   def imagesCategory: String
 }
 
-class ContestType(val code: String, val name: String) extends HasImagesCategory {
+class ContestType(val code: String, val name: String)
+    extends HasImagesCategory {
   override def imagesCategory: String = "Category:Images from " + name
 }
 

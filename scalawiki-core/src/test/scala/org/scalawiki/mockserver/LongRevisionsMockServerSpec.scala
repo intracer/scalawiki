@@ -9,7 +9,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class LongRevisionsMockServerSpec extends BaseMockServerSpec with QueryLibrary {
 
   val response = resourceAsString(
-    "/org/scalawiki/query/longRevisionHistory.json")
+    "/org/scalawiki/query/longRevisionHistory.json"
+  )
 
   "revisions" should {
     "succesfully get long response" in {

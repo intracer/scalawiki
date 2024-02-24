@@ -14,9 +14,9 @@ object Checker {
       val underscored = line.replace(' ', '_')
       val underscoredNoFile = underscored.replace("File:", "")
       winners.exists(_.startsWith(spaced)) ||
-        winners.exists(_.startsWith(underscored)) ||
-        winners.exists(_.startsWith(spacedNoFile)) ||
-        winners.exists(_.startsWith(underscoredNoFile))
+      winners.exists(_.startsWith(underscored)) ||
+      winners.exists(_.startsWith(spacedNoFile)) ||
+      winners.exists(_.startsWith(underscoredNoFile))
     }
 
     println(s"Missing size: ${missing.size}")
@@ -31,7 +31,9 @@ object Checker {
     val missingWinners = winnerFiles.filterNot { line =>
       val spaced = line.replace('_', ' ')
       val underscored = line.replace(' ', '_')
-      jury.contains(spaced) || jury.contains(underscored) || line == "File:INSERT FILE NAME"
+      jury.contains(spaced) || jury.contains(
+        underscored
+      ) || line == "File:INSERT FILE NAME"
     }
     println(s"missingWinners size: ${missingWinners.size}")
     missingWinners.foreach(println)

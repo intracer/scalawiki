@@ -15,10 +15,11 @@ import retry.Success
 
 import scala.concurrent.Future
 
-class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
-                       bot: MwBot,
-                       context: Map[String, String] = Map.empty)
-    extends PageQuery
+class PageQueryImplDsl(
+    query: Either[Set[Long], Set[String]],
+    bot: MwBot,
+    context: Map[String, String] = Map.empty
+) extends PageQuery
     with SinglePageQuery {
 
   override def withContext(context: Map[String, String]) =
@@ -27,7 +28,8 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
   override def revisions(
       namespaces: Set[Int],
       props: Set[String],
-      continueParam: Option[(String, String)]): Future[Iterable[Page]] = {
+      continueParam: Option[(String, String)]
+  ): Future[Iterable[Page]] = {
 
     import org.scalawiki.dto.cmd.query.prop.rvprop._
 
@@ -46,7 +48,8 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
             RvLimit("max")
           )
         )
-      ))
+      )
+    )
 
     bot.run(action, context)
   }
@@ -58,7 +61,8 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
       props: Set[String],
       continueParam: Option[(String, String)],
       limit: String,
-      titlePrefix: Option[String]): Future[Iterable[Page]] = {
+      titlePrefix: Option[String]
+  ): Future[Iterable[Page]] = {
 
     val pageId: Option[Long] = query.left.toOption.map(_.head)
     val title: Option[String] = query.right.toOption.map(_.head)
@@ -71,7 +75,8 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
         Revisions(RvProp(RvPropArgs.byNames(props.toSeq): _*))
       ),
       Generator(
-        ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)).get)
+        ListArgs.toDsl(generator, title, pageId, namespaces, Some(limit)).get
+      )
     )
 
     val action = Action(Query(queryParams: _*))
@@ -85,7 +90,8 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
       props: Set[String],
       continueParam: Option[(String, String)],
       limit: String,
-      titlePrefix: Option[String]): Future[Iterable[Page]] = {
+      titlePrefix: Option[String]
+  ): Future[Iterable[Page]] = {
     import org.scalawiki.dto.cmd.query.prop.iiprop._
 
     val pageId: Option[Long] = query.left.toOption.map(_.head)
@@ -106,13 +112,16 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
     bot.run(action, context)
   }
 
-  private def pagesParam(pageId: Option[Long],
-                         title: Option[String],
-                         generatorArg: Option[GeneratorArg]) = {
+  private def pagesParam(
+      pageId: Option[Long],
+      title: Option[String],
+      generatorArg: Option[GeneratorArg]
+  ) = {
     val pagesInGenerator = generatorArg.exists(
       _.pairs
         .map(_._1)
-        .exists(p => p.endsWith("title") || p.endsWith("pageid")))
+        .exists(p => p.endsWith("title") || p.endsWith("pageid"))
+    )
     if (pagesInGenerator) Seq.empty[QueryParam[String]]
     else {
       title.map(t => TitlesParam(Seq(t))).toSeq ++ pageId
@@ -121,11 +130,13 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
     }
   }
 
-  override def edit(text: String,
-                    summary: Option[String] = None,
-                    section: Option[String] = None,
-                    token: Option[String] = None,
-                    multi: Boolean = false) = {
+  override def edit(
+      text: String,
+      summary: Option[String] = None,
+      section: Option[String] = None,
+      token: Option[String] = None,
+      multi: Boolean = false
+  ) = {
 
     val page = query.fold(
       ids => PageId(ids.head),
@@ -137,17 +148,20 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
         page,
         Text(text),
         Token(token.fold(bot.token)(identity))
-      ))
+      )
+    )
 
     val params = action.pairs.toMap ++
-      Map("action" -> "edit",
-          "format" -> "json",
-          "utf8" -> "",
-          "bot" -> "x",
-          "assert" -> "user",
-          "assert" -> "bot") ++ section
-      .map(s => "section" -> s)
-      .toSeq ++ summary.map(s => "summary" -> s).toSeq
+      Map(
+        "action" -> "edit",
+        "format" -> "json",
+        "utf8" -> "",
+        "bot" -> "x",
+        "assert" -> "user",
+        "assert" -> "bot"
+      ) ++ section
+        .map(s => "section" -> s)
+        .toSeq ++ summary.map(s => "summary" -> s).toSeq
 
     import scala.concurrent.ExecutionContext.Implicits.global
     def performEdit(): Future[String] = {
@@ -165,10 +179,12 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
     retry.Backoff()(odelay.Timer.default)(() => performEdit())
   }
 
-  override def upload(filename: String,
-                      text: Option[String] = None,
-                      comment: Option[String] = None,
-                      ignoreWarnings: Boolean = false): Future[String] = {
+  override def upload(
+      filename: String,
+      text: Option[String] = None,
+      comment: Option[String] = None,
+      ignoreWarnings: Boolean = false
+  ): Future[String] = {
     val page = query.right.toOption.fold(filename)(_.head)
     val token = bot.token
     val fileContents = Files.readAllBytes(Paths.get(filename))
@@ -191,7 +207,8 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
 
   override def whatTranscludesHere(
       namespaces: Set[Int],
-      continueParam: Option[(String, String)]): Future[Iterable[Page]] = {
+      continueParam: Option[(String, String)]
+  ): Future[Iterable[Page]] = {
     val pages = query.fold(
       ids => EiPageId(ids.head),
       titles => EiTitle(titles.head)
@@ -206,14 +223,16 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
             EiNamespace(namespaces.toSeq)
           )
         )
-      ))
+      )
+    )
 
     bot.run(action, context)
   }
 
   override def categoryMembers(
       namespaces: Set[Int],
-      continueParam: Option[(String, String)]): Future[Iterable[Page]] = {
+      continueParam: Option[(String, String)]
+  ): Future[Iterable[Page]] = {
     val pages = query.fold(
       ids => CmPageId(ids.head),
       titles => CmTitle(titles.head)
@@ -224,18 +243,22 @@ class PageQueryImplDsl(query: Either[Set[Long], Set[String]],
       .map(_ => CmTypeSubCat) ++
       namespaces.filter(_ == Namespace.FILE).map(_ => CmTypeFile)
 
-    val cmParams = Seq(pages, CmLimit("max"), CmNamespace(namespaces.toSeq)) ++ (if (cmTypes.nonEmpty)
-                                                                                   Seq(CmType(
-                                                                                     cmTypes.toSeq: _*))
-                                                                                 else
-                                                                                   Seq.empty)
+    val cmParams = Seq(
+      pages,
+      CmLimit("max"),
+      CmNamespace(namespaces.toSeq)
+    ) ++ (if (cmTypes.nonEmpty)
+            Seq(CmType(cmTypes.toSeq: _*))
+          else
+            Seq.empty)
 
     val action = Action(
       Query(
         ListParam(
           CategoryMembers(cmParams: _*)
         )
-      ))
+      )
+    )
 
     bot.run(action, context)
   }

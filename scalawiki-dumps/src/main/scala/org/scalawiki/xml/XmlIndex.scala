@@ -12,7 +12,9 @@ class XmlIndex(val pages: Seq[PageIndex]) {
   val nl = System.lineSeparator()
 
   def save(os: OutputStream) = {
-    pages.map(pi => (pi.toString + nl).getBytes(StandardCharsets.UTF_8)).foreach(os.write)
+    pages
+      .map(pi => (pi.toString + nl).getBytes(StandardCharsets.UTF_8))
+      .foreach(os.write)
   }
 
 }

@@ -14,4 +14,3 @@ trait WithBot extends HasBot {
   }
 
 }
-

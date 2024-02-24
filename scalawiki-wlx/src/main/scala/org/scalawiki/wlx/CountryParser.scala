@@ -8,8 +8,7 @@ import scala.util.Try
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
-/**
-  * Parses information about contest country
+/** Parses information about contest country
   */
 object CountryParser {
 
@@ -18,36 +17,41 @@ object CountryParser {
   val contestCategory = "Category\\:Images from ([a-zA-Z ]+) (\\d+)"
 
   val contestRegex = (contestCategory + "$").r
-  val contestWithCountryRegex = (contestCategory + " in ([a-zA-Z\\&\\- ]+)($|\\|)").r
+  val contestWithCountryRegex =
+    (contestCategory + " in ([a-zA-Z\\&\\- ]+)($|\\|)").r
 
-  val contestLinkRegex = "\\[\\[Commons\\:([a-zA-Z ]+) (\\d+) in ([a-zA-Z\\& ]+)\\|".r
+  val contestLinkRegex =
+    "\\[\\[Commons\\:([a-zA-Z ]+) (\\d+) in ([a-zA-Z\\& ]+)\\|".r
 
   def isContestCategory(s: String) = contestRegex.pattern.matcher(s).matches()
 
   val parser = new RegexCampaignParser(contestWithCountryRegex)
 
-  /**
-    * Parses information from wiki-table of participating countries like
+  /** Parses information from wiki-table of participating countries like
     * https://commons.wikimedia.org/wiki/Commons:Wiki_Loves_Earth_2016
     *
-    * @param wikiText participating countries table wiki-markup
-    * @return list of contests from the table
+    * @param wikiText
+    *   participating countries table wiki-markup
+    * @return
+    *   list of contests from the table
     */
   def parse(wikiText: String): Seq[Contest] = {
     (Try {
       parseTable(wikiText)
-    } recoverWith { case _ => Try {
-      parsePageLinks(wikiText)
-    }
+    } recoverWith { case _ =>
+      Try {
+        parsePageLinks(wikiText)
+      }
     }).getOrElse(Seq.empty)
   }
 
-  /**
-    * Parses information from wiki-table of participating countries like
+  /** Parses information from wiki-table of participating countries like
     * https://commons.wikimedia.org/wiki/Commons:Wiki_Loves_Earth_2016
     *
-    * @param wikiText participating countries table wiki-markup
-    * @return list of contests from the table
+    * @param wikiText
+    *   participating countries table wiki-markup
+    * @return
+    *   list of contests from the table
     */
   def parseTable(wikiText: String): Seq[Contest] = {
     val table = TableParser.parse(wikiText)
@@ -55,8 +59,8 @@ object CountryParser {
     val headers = table.headers.toIndexedSeq
     val uploadsIndex = headers.indexWhere(_.contains("Uploads"))
 
-    if (uploadsIndex < 0) throw
-      new IllegalArgumentException("Could not find the country lists")
+    if (uploadsIndex < 0)
+      throw new IllegalArgumentException("Could not find the country lists")
 
     def rowToContest(data: Iterable[String]): Option[Contest] =
       fromCategoryName(data.toIndexedSeq(uploadsIndex))
@@ -72,10 +76,16 @@ object CountryParser {
 
 }
 
-class RegexCampaignParser(r: Regex, typeIndex: Int = 1, yearIndex: Int = 2, countryIndex: Int = 3) {
+class RegexCampaignParser(
+    r: Regex,
+    typeIndex: Int = 1,
+    yearIndex: Int = 2,
+    countryIndex: Int = 3
+) {
 
   def findWithBackup(cell: String): Option[Contest] = {
-    r.findFirstMatchIn(cell).flatMap(matchToContestWithCountry)
+    r.findFirstMatchIn(cell)
+      .flatMap(matchToContestWithCountry)
       .orElse {
         contestRegex.findFirstMatchIn(cell).flatMap(categoryToContest)
       }
@@ -89,10 +99,14 @@ class RegexCampaignParser(r: Regex, typeIndex: Int = 1, yearIndex: Int = 2, coun
     for (contest <- categoryToContest(m)) yield {
 
       val countryStr = m.group(countryIndex)
-      val country = countries.find(_.name == countryStr).getOrElse(new Country("", countryStr))
+      val country = countries
+        .find(_.name == countryStr)
+        .getOrElse(new Country("", countryStr))
 
-      val campaignCode = s"${contest.contestType.code}_${country.code}".toLowerCase
-      val uploadConfigs = Contest.load(campaignCode + ".conf").map(_.uploadConfigs).getOrElse(Nil)
+      val campaignCode =
+        s"${contest.contestType.code}_${country.code}".toLowerCase
+      val uploadConfigs =
+        Contest.load(campaignCode + ".conf").map(_.uploadConfigs).getOrElse(Nil)
 
       contest.copy(country = country, uploadConfigs = uploadConfigs)
     }
@@ -102,7 +116,7 @@ class RegexCampaignParser(r: Regex, typeIndex: Int = 1, yearIndex: Int = 2, coun
     val typeStr = m.group(typeIndex)
     val year = m.group(yearIndex).toInt
 
-    for (typ <- ContestType.byName(typeStr)) yield
-      new Contest(typ, NoAdmDivision, year)
+    for (typ <- ContestType.byName(typeStr))
+      yield new Contest(typ, NoAdmDivision, year)
   }
 }

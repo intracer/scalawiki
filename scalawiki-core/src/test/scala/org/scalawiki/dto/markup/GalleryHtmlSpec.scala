@@ -11,9 +11,8 @@ class GalleryHtmlSpec extends Specification {
 
     "be without descriptions" in {
       val title = "1.jpg"
-      val images = Seq(Image(s"File:$title",
-        url = Some(s"http://domain/path/$title")
-      ))
+      val images =
+        Seq(Image(s"File:$title", url = Some(s"http://domain/path/$title")))
 
       Gallery.asHtml(images) must haveSameLinesAs(
         s"""|<ul class="gallery mw-gallery-traditional">
@@ -24,15 +23,15 @@ class GalleryHtmlSpec extends Specification {
             |    </a>
             |  </div>
             |</li>
-            |</ul>""".stripMargin)
+            |</ul>""".stripMargin
+      )
     }
 
     "be with descriptions" in {
       val title = "1.jpg"
       val description = title + " description"
-      val images = Seq(Image(s"File:$title",
-        url = Some(s"http://domain/path/$title")
-      ))
+      val images =
+        Seq(Image(s"File:$title", url = Some(s"http://domain/path/$title")))
 
       Gallery.asHtml(images, Seq(description)) must haveSameLinesAs(
         s"""|<ul class="gallery mw-gallery-traditional">
@@ -46,7 +45,8 @@ class GalleryHtmlSpec extends Specification {
             |    <p>$description</p>
             |  </div>
             |</li>
-            |</ul>""".stripMargin)
+            |</ul>""".stripMargin
+      )
     }
   }
 }

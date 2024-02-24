@@ -9,8 +9,8 @@ case class Person(contact: String, ttns: Seq[TTN])
 
 object Person {
   def receivers(ttns: Seq[TTN]) = {
-    ttns.groupBy(_.receiverContact).map {
-      case (contact, personReceived) => Person(contact, personReceived)
+    ttns.groupBy(_.receiverContact).map { case (contact, personReceived) =>
+      Person(contact, personReceived)
     }
 
   }
@@ -20,8 +20,8 @@ case class TTNData(ttns: Seq[TTN]) {
 
   val byMonth =
     ttns.groupBy(_.month).view.mapValues(_.map(_.cost).sum).toSeq.sortBy(_._1)
-  val byYear = byMonth.groupMap {
-    case (month, ttns) => month.split("\\.").head
+  val byYear = byMonth.groupMap { case (month, ttns) =>
+    month.split("\\.").head
   } { case (month, ttns) => ttns }
 
   def variousStat(): Unit = {
@@ -33,8 +33,8 @@ case class TTNData(ttns: Seq[TTN]) {
       .groupBy(_.receiverContact)
       .view
       .mapValues(x => x.size)
-      .map {
-        case (contact, count) => (count, contact)
+      .map { case (contact, count) =>
+        (count, contact)
       }
       .groupBy(_._1)
       .view
@@ -47,8 +47,8 @@ case class TTNData(ttns: Seq[TTN]) {
     println(byMonth)
     println(byYearAvg)
 
-    lastYear.filter(_._1 >= 5) foreach {
-      case (count, people) => println(s"$count: $people")
+    lastYear.filter(_._1 >= 5) foreach { case (count, people) =>
+      println(s"$count: $people")
     }
 
     //   ttns.filter(x => x.receiverContact.contains("Мамон") && x.year == "2023").sortBy(_.yyMmDd).foreach { t =>

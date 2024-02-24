@@ -8,25 +8,32 @@ import org.scalawiki.json.Parser
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-case class QueryProgress(pages: Long,
-                         done: Boolean,
-                         action: Action,
-                         bot: MwBot,
-                         context: Map[String, String] = Map.empty)
+case class QueryProgress(
+    pages: Long,
+    done: Boolean,
+    action: Action,
+    bot: MwBot,
+    context: Map[String, String] = Map.empty
+)
 
-class DslQuery(val action: Action,
-               val bot: MwBot,
-               context: Map[String, String] = Map.empty) {
+class DslQuery(
+    val action: Action,
+    val bot: MwBot,
+    context: Map[String, String] = Map.empty
+) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
   var startTime: Long = 0
 
-  def run(continue: Map[String, String] = Map("continue" -> ""),
-          pages: PageList = new PageList(),
-          limit: Option[Long] = None): Future[PageList] = {
+  def run(
+      continue: Map[String, String] = Map("continue" -> ""),
+      pages: PageList = new PageList(),
+      limit: Option[Long] = None
+  ): Future[PageList] = {
 
-    val params = action.pairs ++ Seq("format" -> "json", "utf8" -> "") ++ continue
+    val params =
+      action.pairs ++ Seq("format" -> "json", "utf8" -> "") ++ continue
 
     if (startTime == 0)
       startTime = System.nanoTime()
@@ -36,31 +43,32 @@ class DslQuery(val action: Action,
     implicit val success: retry.Success[String] =
       retry.Success[String](_ => true)
 
-    retry.Backoff()(odelay.Timer.default)(() => bot.post(params.toMap)) flatMap {
-      body =>
-        val parser = new Parser(action)
+    retry.Backoff()(odelay.Timer.default)(() =>
+      bot.post(params.toMap)
+    ) flatMap { body =>
+      val parser = new Parser(action)
 
-        parser.parse(body) match {
-          case Success(newPages) =>
-            pages.addPages(newPages)
+      parser.parse(body) match {
+        case Success(newPages) =>
+          pages.addPages(newPages)
 
-            val newContinue = parser.continue
-            if (newContinue.isEmpty || limit.exists(_ <= pages.size)) {
+          val newContinue = parser.continue
+          if (newContinue.isEmpty || limit.exists(_ <= pages.size)) {
 
-              onProgress(pages.size, done = true)
-              Future.successful(pages)
-            } else {
-              run(newContinue, pages, limit)
-            }
+            onProgress(pages.size, done = true)
+            Future.successful(pages)
+          } else {
+            run(newContinue, pages, limit)
+          }
 
-          case Failure(mwEx: MwException) =>
-            val withParams = mwEx.copy(params = params.toMap)
-            bot.log.error(s"${bot.host} exception $withParams, body: $body")
-            Future.failed(withParams)
-          case Failure(ex) =>
-            bot.log.error(s"${bot.host} exception $ex, body: $body")
-            Future.failed(MwException(ex.getMessage, ex.getMessage, params.toMap))
-        }
+        case Failure(mwEx: MwException) =>
+          val withParams = mwEx.copy(params = params.toMap)
+          bot.log.error(s"${bot.host} exception $withParams, body: $body")
+          Future.failed(withParams)
+        case Failure(ex) =>
+          bot.log.error(s"${bot.host} exception $ex, body: $body")
+          Future.failed(MwException(ex.getMessage, ex.getMessage, params.toMap))
+      }
     }
   }
 
@@ -69,7 +77,8 @@ class DslQuery(val action: Action,
       val estimatedTime = (System.nanoTime() - startTime) / Math.pow(10, 9)
 
       bot.log.info(
-        s"${bot.host} Action completed with $pages pages in $estimatedTime seconds,  $action.pairs")
+        s"${bot.host} Action completed with $pages pages in $estimatedTime seconds,  $action.pairs"
+      )
     } else {
       bot.log.info(s"${bot.host} pages: $pages action: $action.pairs")
     }

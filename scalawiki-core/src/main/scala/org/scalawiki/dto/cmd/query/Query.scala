@@ -5,16 +5,13 @@ import org.scalawiki.dto.cmd.query.list.{ListArg, ListParam}
 import org.scalawiki.dto.cmd.query.meta.{MetaArg, MetaParam}
 import org.scalawiki.dto.cmd.query.prop.{Revisions, Prop, PropArg}
 
-
-/**
- * ?action=query
- *
- */
+/** ?action=query
+  */
 
 case class Query(override val params: QueryParam[Any]*)
-  extends EnumArgument[ActionArg]("query", "Various queries.")
-  with ActionArg
-  with ArgWithParams[QueryParam[Any], ActionArg] {
+    extends EnumArgument[ActionArg]("query", "Various queries.")
+    with ActionArg
+    with ArgWithParams[QueryParam[Any], ActionArg] {
 
   val lists: Seq[ListArg] = byPF({ case p: ListParam => p }).flatMap(_.args)
   val props: Seq[PropArg] = byPF({ case p: Prop => p }).flatMap(_.args)
@@ -22,32 +19,32 @@ case class Query(override val params: QueryParam[Any]*)
   def revisions = props.seq.collectFirst { case r: Revisions => r }
 
   def revisionsWithoutContent: Query =
-    Query(params.filterNot(_.isInstanceOf[Prop]) :+
-      Prop(
-        props.filterNot(_.isInstanceOf[Revisions]) ++
-          revisions.map(_.withoutContent).toSeq: _*
-      ):_*
+    Query(
+      params.filterNot(_.isInstanceOf[Prop]) :+
+        Prop(
+          props.filterNot(_.isInstanceOf[Revisions]) ++
+            revisions.map(_.withoutContent).toSeq: _*
+        ): _*
     )
 
   val metas: Seq[MetaArg] = byPF({ case p: MetaParam => p }).flatMap(_.args)
 }
 
-/**
- * Marker trait for parameters available together with ?action=query
- *
- */
+/** Marker trait for parameters available together with ?action=query
+  */
 trait QueryParam[+T] extends Parameter[T]
 
-
 case class TitlesParam(override val args: Seq[String])
-  extends StringListParameter("titles", "A list of titles to work on") with QueryParam[String]
+    extends StringListParameter("titles", "A list of titles to work on")
+    with QueryParam[String]
 
 case class PageIdsParam(override val args: Iterable[Long])
-  extends IdListParameter("pageids", "A list of page IDs to work on") with QueryParam[Long]
+    extends IdListParameter("pageids", "A list of page IDs to work on")
+    with QueryParam[Long]
 
 case class RevIdsParam(override val args: Seq[Long])
-  extends IdListParameter("revids", "A list of revision IDs to work on") with QueryParam[Long]
-
+    extends IdListParameter("revids", "A list of revision IDs to work on")
+    with QueryParam[Long]
 
 //indexpageids Include an additional pageids section listing all returned page IDs.
 //export Export the current revisions of all given or generated pages.

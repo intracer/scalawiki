@@ -9,7 +9,6 @@ class RegionFixerSpec extends Specification {
   val country = contest.country
   val listConfig = contest.uploadConfigs.head.listConfig
 
-
   "fixer" should {
 
     "get all regions" in {
@@ -20,7 +19,10 @@ class RegionFixerSpec extends Specification {
     "fix region 1" in {
       val wiki = resourceAsString("/org/scalawiki/wlx/region_to_fix.wiki")
 
-      val parser = new WlxTemplateParser(listConfig, "Вікіпедія:Вікі любить пам'ятки/Житомирська область/Новоград-Волинський район")
+      val parser = new WlxTemplateParser(
+        listConfig,
+        "Вікіпедія:Вікі любить пам'ятки/Житомирська область/Новоград-Волинський район"
+      )
       val monuments = parser.parse(wiki).toSeq
       val updater = new RegionFixerUpdater(new MonumentDB(contest, monuments))
 
@@ -32,7 +34,10 @@ class RegionFixerSpec extends Specification {
     "fix region 2" in {
       val wiki = resourceAsString("/org/scalawiki/wlx/region_to_fix_2.wiki")
 
-      val parser = new WlxTemplateParser(listConfig, "Вікіпедія:Вікі любить пам'ятки/Донецька область/Мангушський район")
+      val parser = new WlxTemplateParser(
+        listConfig,
+        "Вікіпедія:Вікі любить пам'ятки/Донецька область/Мангушський район"
+      )
       val monuments = parser.parse(wiki).toSeq
       val updater = new RegionFixerUpdater(new MonumentDB(contest, monuments))
 
@@ -44,7 +49,10 @@ class RegionFixerSpec extends Specification {
     "fix region 3" in {
       val wiki = resourceAsString("/org/scalawiki/wlx/region_to_fix_3.wiki")
 
-      val parser = new WlxTemplateParser(listConfig, "Вікіпедія:Вікі любить пам'ятки/Сумська область/Білопільський район")
+      val parser = new WlxTemplateParser(
+        listConfig,
+        "Вікіпедія:Вікі любить пам'ятки/Сумська область/Білопільський район"
+      )
       val monuments = parser.parse(wiki).toSeq
       val updater = new RegionFixerUpdater(new MonumentDB(contest, monuments))
 

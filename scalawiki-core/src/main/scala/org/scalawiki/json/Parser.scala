@@ -29,7 +29,8 @@ class Parser(val action: Action) {
 
       continue = getContinue(json)
       jsonObj.value match {
-        case value if value.contains("query") => parseQueryAction(json, queryChild)
+        case value if value.contains("query") =>
+          parseQueryAction(json, queryChild)
         case _ => Seq.empty
       }
     }
@@ -41,17 +42,17 @@ class Parser(val action: Action) {
     val jsons = (queryChild match {
       case "pages" => pagesJson.asInstanceOf[JsObject].values
       case "allusers" | "usercontribs" => pagesJson.asInstanceOf[JsArray].value
-      case "globaluserinfo" => Seq(pagesJson)
-      case _ => pagesJson.asInstanceOf[JsArray].value
+      case "globaluserinfo"            => Seq(pagesJson)
+      case _                           => pagesJson.asInstanceOf[JsArray].value
     }).map(_.asInstanceOf[JsObject])
 
     jsons.map { j =>
       queryChild match {
-        case "pages" => parsePage(j)
+        case "pages"              => parsePage(j)
         case "allusers" | "users" => parseUser(j, queryChild)
-        case "usercontribs" => parseUserContrib(j)
-        case "globaluserinfo" => parseGlobalUserInfo(j)
-        case _ => parsePage(j)
+        case "usercontribs"       => parseUserContrib(j)
+        case "globaluserinfo"     => parseGlobalUserInfo(j)
+        case _                    => parsePage(j)
       }
     }.toSeq
   }
@@ -72,39 +73,62 @@ class Parser(val action: Action) {
     val links = getLinks(pageJson)
     val categoryInfo = getCategoryInfo(pageJson)
 
-    page.copy(revisions = revisions, images = images, langLinks = langLinks, links = links, categoryInfo = categoryInfo)
+    page.copy(
+      revisions = revisions,
+      images = images,
+      langLinks = langLinks,
+      links = links,
+      categoryInfo = categoryInfo
+    )
   }
 
   def getImages(pageJson: JsObject, page: Page): Seq[Image] = {
-    pageJson.validate {
-      if (pageJson.value.contains("imageinfo")) {
-        Parser.imageInfoReads(page.id, Some(page.title))
-      } else {
-        //      if (pageJson.value.contains("images")) {
-        Parser.imageReads()
+    pageJson
+      .validate {
+        if (pageJson.value.contains("imageinfo")) {
+          Parser.imageInfoReads(page.id, Some(page.title))
+        } else {
+          //      if (pageJson.value.contains("images")) {
+          Parser.imageReads()
+        }
       }
-    }.getOrElse(Seq.empty)
+      .getOrElse(Seq.empty)
   }
 
   // hacky wrapping into page // TODO refactor return types
   def parseUser(userJson: JsObject, queryChild: String): Page = {
-    val hasEmptyRegistration = userJson.value.get("registration")
+    val hasEmptyRegistration = userJson.value
+      .get("registration")
       .collect({ case jsStr: JsString => jsStr.value.isEmpty })
       .getOrElse(false)
-    val mappedJson = if (hasEmptyRegistration) userJson - "registration" else userJson
+    val mappedJson =
+      if (hasEmptyRegistration) userJson - "registration" else userJson
 
     // TODO move out of loop or get from request?
     val prefix = queryChild match {
       case "allusers" => "au"
-      case "users" => "us"
+      case "users"    => "us"
     }
-    val props = params.get(prefix + "prop").map(_.split("\\|")).getOrElse(Array.empty[String]).toSet
+    val props = params
+      .get(prefix + "prop")
+      .map(_.split("\\|"))
+      .getOrElse(Array.empty[String])
+      .toSet
 
-    val blocked = if (props.contains("blockinfo")) Some(userJson.keys.contains("blockid")) else None
-    val emailable = if (props.contains("emailable")) Some(userJson.keys.contains("emailable")) else None
+    val blocked =
+      if (props.contains("blockinfo")) Some(userJson.keys.contains("blockid"))
+      else None
+    val emailable =
+      if (props.contains("emailable")) Some(userJson.keys.contains("emailable"))
+      else None
     val jsResult = mappedJson.validate(Parser.userReads)
     val user = jsResult.get.copy(blocked = blocked, emailable = emailable)
-    new Page(id = None, title = user.name.get, ns = Some(Namespace.USER), revisions = Seq(Revision(user = Some(user))))
+    new Page(
+      id = None,
+      title = user.name.get,
+      ns = Some(Namespace.USER),
+      revisions = Seq(Revision(user = Some(user)))
+    )
   }
 
   def parseUserContrib(userJson: JsObject): Page = {
@@ -113,28 +137,43 @@ class Parser(val action: Action) {
   }
 
   def getContinue(json: JsValue): Map[String, String] = {
-    (json \ "continue").asOpt[JsObject].map(_.value.mapValues[String] {
-      case JsNumber(n) => n.toString()
-      case JsString(s) => s
-    }.toMap)
+    (json \ "continue")
+      .asOpt[JsObject]
+      .map(
+        _.value
+          .mapValues[String] {
+            case JsNumber(n) => n.toString()
+            case JsString(s) => s
+          }
+          .toMap
+      )
       .getOrElse(Map.empty[String, String])
   }
 
   def getLangLinks(pageJson: JsObject): Map[String, String] = {
-    (pageJson \ "langlinks").asOpt[Seq[Map[String, String]]].map {
-      _.map(l => l("lang") -> l("*")).toMap
-    }.getOrElse(Map.empty[String, String])
+    (pageJson \ "langlinks")
+      .asOpt[Seq[Map[String, String]]]
+      .map {
+        _.map(l => l("lang") -> l("*")).toMap
+      }
+      .getOrElse(Map.empty[String, String])
   }
 
   def getLinks(pageJson: JsObject): Seq[Page] = {
-    (pageJson \ "links").asOpt[JsArray].map {
-      _.value.map { l =>
-        new Page(id = None,
-          ns = (l \ "ns").asOpt[Int],
-          title = (l \ "title").as[String]
-        )
-      }.toSeq
-    }.getOrElse(Nil)
+    (pageJson \ "links")
+      .asOpt[JsArray]
+      .map {
+        _.value
+          .map { l =>
+            new Page(
+              id = None,
+              ns = (l \ "ns").asOpt[Int],
+              title = (l \ "title").as[String]
+            )
+          }
+          .toSeq
+      }
+      .getOrElse(Nil)
   }
 
   def getCategoryInfo(pageJson: JsObject): Option[CategoryInfo] =
@@ -153,9 +192,19 @@ class Parser(val action: Action) {
         sulAccounts = gui.merged
       )
 
-      new Page(id = None, title = gui.name, ns = Some(Namespace.USER), revisions = Seq(Revision(user = Some(user))))
+      new Page(
+        id = None,
+        title = gui.name,
+        ns = Some(Namespace.USER),
+        revisions = Seq(Revision(user = Some(user)))
+      )
     } else {
-      new Page(id = None, title = "missing", ns = Some(Namespace.USER), revisions = Seq.empty)
+      new Page(
+        id = None,
+        title = "missing",
+        ns = Some(Namespace.USER),
+        revisions = Seq.empty
+      )
     }
   }
 
@@ -182,8 +231,12 @@ object Parser {
     (__ \ "revisions").read[Seq[Revision]]
   }
 
-  private def imageInfoReads(pageId: Option[Long], title: Option[String]): Reads[Seq[Image]] = {
-    implicit val imageReads: Reads[Image] = ImageReads(title = title, pageId = pageId)
+  private def imageInfoReads(
+      pageId: Option[Long],
+      title: Option[String]
+  ): Reads[Seq[Image]] = {
+    implicit val imageReads: Reads[Image] =
+      ImageReads(title = title, pageId = pageId)
     (__ \ "imageinfo").read[Seq[Image]]
   }
 

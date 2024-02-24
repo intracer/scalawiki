@@ -14,7 +14,10 @@ class ReplaceSpec extends Specification {
 
     "replacements" in {
       parse(Seq("old", "new")).replacements === Map("old" -> "new")
-      parse(Seq("old1", "new1", "old2", "new2")).replacements === Map("old1" -> "new1", "old2" -> "new2")
+      parse(Seq("old1", "new1", "old2", "new2")).replacements === Map(
+        "old1" -> "new1",
+        "old2" -> "new2"
+      )
     }
 
     "replacement and cat" in {
@@ -24,7 +27,8 @@ class ReplaceSpec extends Specification {
     }
 
     "replacements and cat" in {
-      val args = parse(Seq("--cat", "category name", "old1", "new1", "old2", "new2"))
+      val args =
+        parse(Seq("--cat", "category name", "old1", "new1", "old2", "new2"))
       args.pages.cat === Seq("category name")
       args.replacements === Map("old1" -> "new1", "old2" -> "new2")
     }
@@ -61,7 +65,11 @@ class ReplaceSpec extends Specification {
       replaceExcept("A behindB C", "(?<=behind)\\w", "Z") === "A behindZ C"
 
       // test regex with lookbehind and groups.
-      replaceExcept("A behindB C D", "(?<=behind)\\w( )", "$1Z") === "A behind ZC D"
+      replaceExcept(
+        "A behindB C D",
+        "(?<=behind)\\w( )",
+        "$1Z"
+      ) === "A behind ZC D"
 
       // test regex with lookahead.
       replaceExcept("A Bahead C", "\\w(?=ahead)", "Z") === "A Zahead C"
@@ -86,12 +94,17 @@ class ReplaceSpec extends Specification {
       replaceExcept("1111", "11", "21") === "2121"
 
       // allow overlap not supported
-      //replaceExcept("1111", "11", "21") === "2221"
+      // replaceExcept("1111", "11", "21") === "2221"
     }
 
     "replacing not inside a specific regex" in {
       replaceExcept("123x123", "123", "000") === "000x000"
-      replaceExcept("123x123", "123", "000", exceptions = Seq("\\w123".r)) === "000x123"
+      replaceExcept(
+        "123x123",
+        "123",
+        "000",
+        exceptions = Seq("\\w123".r)
+      ) === "000x123"
     }
   }
 }

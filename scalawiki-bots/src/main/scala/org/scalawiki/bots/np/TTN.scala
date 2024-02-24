@@ -2,18 +2,20 @@ package org.scalawiki.bots.np
 
 import org.apache.poi.ss.usermodel.{Cell, CellType}
 
-case class TTN(ttn: String,
-               date: String,
-               route: String,
-               sender: String,
-               senderContact: String,
-               receiver: String,
-               receiverContact: String,
-               description: String,
-               mass: Double,
-               places: Int,
-               value: Double,
-               cost: Double) {
+case class TTN(
+    ttn: String,
+    date: String,
+    route: String,
+    sender: String,
+    senderContact: String,
+    receiver: String,
+    receiverContact: String,
+    description: String,
+    mass: Double,
+    places: Int,
+    value: Double,
+    cost: Double
+) {
   def month: String = date.split("\\.").tail.reverse.mkString(".")
   def year: String = date.split("\\.").last
   def yyMmDd: String = date.split("\\.").reverse.mkString(".")

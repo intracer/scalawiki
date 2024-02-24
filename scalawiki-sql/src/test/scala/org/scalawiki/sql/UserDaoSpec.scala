@@ -21,12 +21,12 @@ class UserDaoSpec extends Specification with BeforeAfter {
   }
 
   override def before = {
-      val dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
-      mwDb = new MwDatabase(dc)
+    val dc = DatabaseConfig.forConfig[JdbcProfile]("h2mem")
+    mwDb = new MwDatabase(dc)
   }
 
   override def after = {
-    //mwDb.db.close()
+    // mwDb.db.close()
   }
 
   "user" should {
@@ -83,7 +83,9 @@ class UserDaoSpec extends Specification with BeforeAfter {
       dbUser.id.isDefined === true
       dbUser.id === userId
 
-      userDao.insert(dbUser.copy(login = Some("other name"))) must throwA[SQLException]
+      userDao.insert(dbUser.copy(login = Some("other name"))) must throwA[
+        SQLException
+      ]
 
       userDao.list.size === 1
     }
@@ -108,8 +110,8 @@ class UserDaoSpec extends Specification with BeforeAfter {
       createSchema()
 
       val names = Seq("user1", "user2", "user3")
-      val users = names.map {
-        name => User(None, Some(name))
+      val users = names.map { name =>
+        User(None, Some(name))
       }
 
       val userIds = users.flatMap(u => userDao.insert(u))

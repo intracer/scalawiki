@@ -15,13 +15,20 @@ object RedLinksBot {
 
   def main(args: Array[String]): Unit = {
     for (page <- linkPages) {
-      val html = Await.result(http.get("https://commons.wikimedia.org/wiki/" + page), 1.minute)
+      val html = Await.result(
+        http.get("https://commons.wikimedia.org/wiki/" + page),
+        1.minute
+      )
       val doc = Jsoup.parse(html)
       val links = doc.select("a[href]").asScala
-      val missingFiles = links.filter { link =>
-        link.attr("class") == "new" && link.attr("title").startsWith("File")
-      }.map(_.attr("title").replace(" (page does not exist)", ""))
-      val text = s"\n== [[$page]] ==\n" + missingFiles.map(title => s"#[[$title]]").mkString("\n")
+      val missingFiles = links
+        .filter { link =>
+          link.attr("class") == "new" && link.attr("title").startsWith("File")
+        }
+        .map(_.attr("title").replace(" (page does not exist)", ""))
+      val text = s"\n== [[$page]] ==\n" + missingFiles
+        .map(title => s"#[[$title]]")
+        .mkString("\n")
       println(text)
     }
   }

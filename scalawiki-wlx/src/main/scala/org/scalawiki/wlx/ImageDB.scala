@@ -6,10 +6,12 @@ import org.scalawiki.wlx.query.ImageQuery
 
 import scala.concurrent.Future
 
-case class ImageDB(contest: Contest,
-                   images: Iterable[Image],
-                   monumentDb: Option[MonumentDB],
-                   minMpx: Option[Float] = None) {
+case class ImageDB(
+    contest: Contest,
+    images: Iterable[Image],
+    monumentDb: Option[MonumentDB],
+    minMpx: Option[Float] = None
+) {
 
   def this(contest: Contest, images: Seq[Image]) = this(contest, images, None)
 
@@ -25,14 +27,16 @@ case class ImageDB(contest: Contest,
 
   lazy val sansIneligible: Iterable[Image] = withCorrectIds
     .filterNot(
-      _.categories.contains(
-        s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
+      _.categories
+        .contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine")
+    )
     .filter(_.atLeastMpx(minMpx))
 
   lazy val ineligible: Iterable[Image] = withCorrectIds
     .filter(
-      _.categories.contains(
-        s"Ineligible submissions for WLM ${contest.year} in Ukraine"))
+      _.categories
+        .contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine")
+    )
     .filterNot(_.atLeastMpx(minMpx))
 
   lazy val _byId: Grouping[String, Image] =
@@ -78,7 +82,8 @@ case class ImageDB(contest: Contest,
       val parentId = regId.substring(0, 2)
       val topImages = _byRegion.by(parentId)
       topImages.filter(
-        _.monumentId.exists(_.replace("-", "").startsWith(regId)))
+        _.monumentId.exists(_.replace("-", "").startsWith(regId))
+      )
     }
 
   def idsByRegion(regId: String): Set[String] = {
@@ -93,10 +98,12 @@ case class ImageDB(contest: Contest,
 
   def idByAuthor(author: String): Set[String] = _byAuthorAndId.by(author).keys
 
-  def authorsByRegion(regId: String): Set[String] = _byRegionAndAuthor.by(regId).keys
+  def authorsByRegion(regId: String): Set[String] =
+    _byRegionAndAuthor.by(regId).keys
 
   def byMegaPixelFilterAuthorMap(
-      predicate: Int => Boolean): Map[String, Seq[Image]] = {
+      predicate: Int => Boolean
+  ): Map[String, Seq[Image]] = {
     _byMegaPixels.grouped
       .filterKeys(mpx => mpx >= 0 && predicate(mpx))
       .values
@@ -112,9 +119,8 @@ case class ImageDB(contest: Contest,
 
   def byNumberOfAuthors: Map[Int, Map[String, Iterable[Image]]] = {
     _byId.grouped
-      .groupBy {
-        case (id, photos) =>
-          photos.flatMap(_.author).toSet.size
+      .groupBy { case (id, photos) =>
+        photos.flatMap(_.author).toSet.size
       }
       .mapValues(_.toMap)
       .toMap
@@ -122,15 +128,17 @@ case class ImageDB(contest: Contest,
 
   def byNumberOfPhotos: Map[Int, Map[String, Iterable[Image]]] = {
     _byId.grouped
-      .groupBy {
-        case (id, photos) => photos.size
+      .groupBy { case (id, photos) =>
+        photos.size
       }
       .mapValues(_.toMap)
       .toMap
   }
 
-  def subSet(monuments: Seq[Monument],
-             withFalseIds: Boolean = false): ImageDB = {
+  def subSet(
+      monuments: Seq[Monument],
+      withFalseIds: Boolean = false
+  ): ImageDB = {
     val subSetMonumentDb =
       new MonumentDB(monumentDb.get.contest, monuments, withFalseIds)
     val subSetImages =
@@ -188,7 +196,8 @@ object ImageGrouping {
 
   def byMonument: Image => String = (i: Image) => i.monumentId.getOrElse("")
 
-  def byRegion: Image => String = (i: Image) => Monument.getRegionId(i.monumentId)
+  def byRegion: Image => String = (i: Image) =>
+    Monument.getRegionId(i.monumentId)
 
   def byAuthor: Image => String = (i: Image) => i.author.getOrElse("")
 
@@ -198,10 +207,12 @@ object ImageDB {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def create(contest: Contest,
-             imageQuery: ImageQuery,
-             monumentDb: Option[MonumentDB],
-             minMpx: Option[Float] = None): Future[ImageDB] = {
+  def create(
+      contest: Contest,
+      imageQuery: ImageQuery,
+      monumentDb: Option[MonumentDB],
+      minMpx: Option[Float] = None
+  ): Future[ImageDB] = {
     imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest).map {
       images =>
         new ImageDB(contest, images, monumentDb, minMpx)

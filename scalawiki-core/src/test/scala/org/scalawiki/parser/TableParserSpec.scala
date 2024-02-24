@@ -41,7 +41,12 @@ class TableParserSpec extends Specification {
 
     "parse table with 2 data columns" in {
       val wiki = "{|\n|-\n| data11 || data12\n|}"
-      parser.parse(wiki) === new Table(Seq.empty, Seq(Seq("data11", "data12")), "", "")
+      parser.parse(wiki) === new Table(
+        Seq.empty,
+        Seq(Seq("data11", "data12")),
+        "",
+        ""
+      )
     }
 
     "parse table with formatted data" in {
@@ -60,12 +65,22 @@ class TableParserSpec extends Specification {
 
     "parse table with empty columns" in {
       val wiki = "{|\n|-\n| data11 || || data13\n|}"
-      parser.parse(wiki) === new Table(Seq.empty, Seq(Seq("data11", "", "data13")), "", "")
+      parser.parse(wiki) === new Table(
+        Seq.empty,
+        Seq(Seq("data11", "", "data13")),
+        "",
+        ""
+      )
     }
 
     "parse table with 1 data column and 2 rows" in {
       val wiki = "{|\n|-\n| data11\n|-\n| data21\n|}"
-      parser.parse(wiki) === new Table(Seq.empty, Seq(Seq("data11"), Seq("data21")), "", "")
+      parser.parse(wiki) === new Table(
+        Seq.empty,
+        Seq(Seq("data11"), Seq("data21")),
+        "",
+        ""
+      )
     }
 
     "parse table with header and data" in {
@@ -75,17 +90,32 @@ class TableParserSpec extends Specification {
 
     "parse table with 2 columns header and data" in {
       val wiki = "{|\n! header1 !! header2\n|-\n| data11 || data12\n|}"
-      parser.parse(wiki) === Table(Seq("header1", "header2"), Seq(Seq("data11", "data12")), "", "")
+      parser.parse(wiki) === Table(
+        Seq("header1", "header2"),
+        Seq(Seq("data11", "data12")),
+        "",
+        ""
+      )
     }
 
     "parse table with 2 columns header and 1 column data" in {
       val wiki = "{|\n! header1 !! header2\n|-\n| data11 ||\n|}"
-      parser.parse(wiki) === Table(Seq("header1", "header2"), Seq(Seq("data11", "")), "", "")
+      parser.parse(wiki) === Table(
+        Seq("header1", "header2"),
+        Seq(Seq("data11", "")),
+        "",
+        ""
+      )
     }
 
     "parse table with 2 rows header" in {
       val wiki = "{|\n! header1 !! header2\n|-\n! data11 || data12\n|}"
-      parser.parse(wiki) === Table(Seq("header1", "header2"), Seq(Seq("data11", "data12")), "", "")
+      parser.parse(wiki) === Table(
+        Seq("header1", "header2"),
+        Seq(Seq("data11", "data12")),
+        "",
+        ""
+      )
     }
   }
 }

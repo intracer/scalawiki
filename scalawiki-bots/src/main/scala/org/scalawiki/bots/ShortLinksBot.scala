@@ -14,35 +14,41 @@ import scala.concurrent.Future
 import spray.util.pimpFuture
 import scala.io.Source
 
-/**
-  * Converts links to Wikimedia Commons files to short links (with file id) and tries to add image author and license
+/** Converts links to Wikimedia Commons files to short links (with file id) and
+  * tries to add image author and license
   */
 object ShortLinksBot {
   val commons = MwBot.fromHost(MwBot.commons)
   val ukWiki = MwBot.fromHost(MwBot.ukWiki)
 
   def getPage(title: String): Future[Page] = {
-    val action = Action(Query(
-      TitlesParam(Seq(title)),
-      Prop(
-        Revisions(RvProp(Content))
+    val action = Action(
+      Query(
+        TitlesParam(Seq(title)),
+        Prop(
+          Revisions(RvProp(Content))
+        )
       )
-    ))
+    )
 
-    commons.run(action).flatMap { commonsPages =>
-      val commonsPage = commonsPages.head
-      if (commonsPage.missing) {
-        ukWiki.run(action).map(_.head)
-      } else Future.successful(commonsPage)
-    }
+    commons
+      .run(action)
+      .flatMap { commonsPages =>
+        val commonsPage = commonsPages.head
+        if (commonsPage.missing) {
+          ukWiki.run(action).map(_.head)
+        } else Future.successful(commonsPage)
+      }
       .recoverWith { case e =>
         Future.successful(Page(title = "Error! " + e))
       }
   }
 
   def getPageLicense(page: Page): Option[String] = {
-    for (id <- page.id;
-         text <- page.revisions.headOption.flatMap(_.content)) yield {
+    for (
+      id <- page.id;
+      text <- page.revisions.headOption.flatMap(_.content)
+    ) yield {
 
       val author = Image.getAuthorFromPage(text)
 
@@ -51,8 +57,8 @@ object ShortLinksBot {
         .map(_.toLowerCase)
         .find { s =>
           s.startsWith("cc-") ||
-            s.startsWith("gfdl") ||
-            s.startsWith("wikimapia")
+          s.startsWith("gfdl") ||
+          s.startsWith("wikimapia")
         }
         .getOrElse("???")
 
@@ -79,16 +85,16 @@ object ShortLinksBot {
     val start = replaced.indexOf("File:")
     if (start >= 0) {
       val decoded = URLDecoder.decode(replaced.substring(start), "UTF-8")
-      getPage(decoded.trim).map(page => getPageLicense(page).getOrElse(line)).recoverWith { case e =>
-        Future.successful("Error! " + e)
-      }
-    }
-    else Future.successful(line)
+      getPage(decoded.trim)
+        .map(page => getPageLicense(page).getOrElse(line))
+        .recoverWith { case e =>
+          Future.successful("Error! " + e)
+        }
+    } else Future.successful(line)
   }
 
   def main(args: Array[String]) {
     val lines = Source.fromFile("arch.txt").getLines().toSeq
-
 
     val parallel = false
     val updatedLines = if (parallel) {

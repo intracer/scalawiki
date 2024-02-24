@@ -3,24 +3,27 @@ package org.scalawiki.dto.cmd.query.prop
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.query.Module
 
-/**
- *  ?action=query&amp;prop=langlinks
- *
- */
-case class LangLinks(override val params:LangLinksParam[Any]*)
-  extends Module[PropArg]("ll", "langlinks", "Gets a list of all language links from the provided pages to other languages.")
-  with PropArg with ArgWithParams[LangLinksParam[Any], PropArg]
+/** ?action=query&amp;prop=langlinks
+  */
+case class LangLinks(override val params: LangLinksParam[Any]*)
+    extends Module[PropArg](
+      "ll",
+      "langlinks",
+      "Gets a list of all language links from the provided pages to other languages."
+    )
+    with PropArg
+    with ArgWithParams[LangLinksParam[Any], PropArg]
 
-
-/**
- * Marker trait for parameters used with prop=langlinks
- */
+/** Marker trait for parameters used with prop=langlinks
+  */
 trait LangLinksParam[+T] extends Parameter[T]
 
-case class LlLimit(override val arg: String) extends StringParameter("lllimit",
-  " How many langlinks to return. Default: 10. No more than 500 (5000 for bots) allowed.") with LangLinksParam[String]
-
-
+case class LlLimit(override val arg: String)
+    extends StringParameter(
+      "lllimit",
+      " How many langlinks to return. Default: 10. No more than 500 (5000 for bots) allowed."
+    )
+    with LangLinksParam[String]
 
 ///**
 // *  ?action=query&amp;prop=info&amp;llprop=

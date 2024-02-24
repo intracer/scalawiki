@@ -205,8 +205,19 @@ class KoatuuFlatParserSpec extends Specification {
       val kyiv = regions.head
       kyiv.code === "80"
       kyiv.name === "Київ"
-      regions.tail.map(_.name) === Seq("Райони м. Київ", "Голосіївський", "Дарницький", "Деснянський", "Дніпровський",
-        "Оболонський", "Печерський", "Подільський", "Святошинський", "Солом'янський", "Шевченківський")
+      regions.tail.map(_.name) === Seq(
+        "Райони м. Київ",
+        "Голосіївський",
+        "Дарницький",
+        "Деснянський",
+        "Дніпровський",
+        "Оболонський",
+        "Печерський",
+        "Подільський",
+        "Святошинський",
+        "Солом'янський",
+        "Шевченківський"
+      )
     }
   }
 
@@ -221,7 +232,9 @@ class KoatuuFlatParserSpec extends Specification {
     }
 
     "parse Simferopol" in {
-      val regions = makeHierarchy(parse(arr(crimeaJson, simferopolJson, simferopolRegionJson)))
+      val regions = makeHierarchy(
+        parse(arr(crimeaJson, simferopolJson, simferopolRegionJson))
+      )
       regions.size === 1
       val crimea = regions.head
       crimea.code === "01"
@@ -233,7 +246,9 @@ class KoatuuFlatParserSpec extends Specification {
       simferopol.code === "01101"
       simferopol.name === "Сімферополь"
 
-      crimea.regions.flatMap(_.parent().map(_.name)) === Seq("Автономна Республіка Крим")
+      crimea.regions.flatMap(_.parent().map(_.name)) === Seq(
+        "Автономна Республіка Крим"
+      )
     }
 
     "parse Kyiv city" in {
@@ -242,8 +257,18 @@ class KoatuuFlatParserSpec extends Specification {
       val kyiv = regions.head
       kyiv.code === "80"
       kyiv.name === "Київ"
-      kyiv.regions.map(_.name) === Seq("Голосіївський", "Дарницький", "Деснянський", "Дніпровський",
-        "Оболонський", "Печерський", "Подільський", "Святошинський", "Солом'янський", "Шевченківський")
+      kyiv.regions.map(_.name) === Seq(
+        "Голосіївський",
+        "Дарницький",
+        "Деснянський",
+        "Дніпровський",
+        "Оболонський",
+        "Печерський",
+        "Подільський",
+        "Святошинський",
+        "Солом'янський",
+        "Шевченківський"
+      )
     }
   }
 

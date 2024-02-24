@@ -4,25 +4,31 @@ import org.scalawiki.dto.Image
 
 object Gallery {
 
-  def asWiki(images: Iterable[String], descriptions: Iterable[String] = Seq.empty): String = {
+  def asWiki(
+      images: Iterable[String],
+      descriptions: Iterable[String] = Seq.empty
+  ): String = {
     val fill = if (descriptions.size < images.size) {
       Seq.fill(images.size - descriptions.size)("")
     } else
       Seq.empty
 
-    images.zip(descriptions ++ fill)
-      .map {
-        case (image, description) =>
-          val filed = (if (!image.startsWith("File:")) "File:" else "") + image
+    images
+      .zip(descriptions ++ fill)
+      .map { case (image, description) =>
+        val filed = (if (!image.startsWith("File:")) "File:" else "") + image
 
-          val piped = if (description.nonEmpty) " | " + description else ""
+        val piped = if (description.nonEmpty) " | " + description else ""
 
-          filed + piped
+        filed + piped
       }
       .mkString("<gallery>\n", "\n", "\n</gallery>")
   }
 
-  def asHtml(images: Seq[Image], descriptions: Seq[String] = Seq.empty): String = {
+  def asHtml(
+      images: Seq[Image],
+      descriptions: Seq[String] = Seq.empty
+  ): String = {
     val width = 300
     val height = 200
     val fill = if (descriptions.size < images.size) {
@@ -30,33 +36,43 @@ object Gallery {
     } else
       Seq.empty
 
-    images.zip(descriptions ++ fill)
-      .map {
-        case (image, description) =>
-          val thumb = thumbUrl(image, width, height, false)
-          val imgUrl = image.pageUrl.getOrElse(image.url.get)
+    images
+      .zip(descriptions ++ fill)
+      .map { case (image, description) =>
+        val thumb = thumbUrl(image, width, height, false)
+        val imgUrl = image.pageUrl.getOrElse(image.url.get)
 
-          val imageHtml =
-            s"""|<li class="gallerybox">
+        val imageHtml =
+          s"""|<li class="gallerybox">
                 |  <div class="thumb">
                 |    <a href="$imgUrl">
                 |       <img class="cropped" alt="${image.title}" src="$thumb">
                 |    </a>
                 |  </div>""".stripMargin
 
-          val descrHtml = if (description.nonEmpty) {
-            "\n" +
-              s"""|  <div class="gallerytext">
+        val descrHtml = if (description.nonEmpty) {
+          "\n" +
+            s"""|  <div class="gallerytext">
                   |    <p>$description</p>
                   |  </div>""".stripMargin
-          } else ""
+        } else ""
 
-          imageHtml + descrHtml + "\n</li>"
+        imageHtml + descrHtml + "\n</li>"
 
-      }.mkString("<ul class=\"gallery mw-gallery-traditional\">\n", "\n", "\n</ul>")
+      }
+      .mkString(
+        "<ul class=\"gallery mw-gallery-traditional\">\n",
+        "\n",
+        "\n</ul>"
+      )
   }
 
-  def thumbUrl(image: Image, resizeToWidth: Int, resizeToHeight: Int, thumbUrl: Boolean = true): String = {
+  def thumbUrl(
+      image: Image,
+      resizeToWidth: Int,
+      resizeToHeight: Int,
+      thumbUrl: Boolean = true
+  ): String = {
     val url = image.url.get
     if (!thumbUrl) {
       url
@@ -77,11 +93,14 @@ object Gallery {
         } else {
           url.substring(lastSlash + 1)
         }
-        url.replace("//upload.wikimedia.org/wikipedia/commons/", "//upload.wikimedia.org/wikipedia/commons/thumb/") + "/" +
+        url.replace(
+          "//upload.wikimedia.org/wikipedia/commons/",
+          "//upload.wikimedia.org/wikipedia/commons/thumb/"
+        ) + "/" +
           (if (isPdf) "page1-"
-          else if (isTif) "lossy-page1-"
-          else
-            "") +
+           else if (isTif) "lossy-page1-"
+           else
+             "") +
           px + "px-" + thumbStr + (if (isPdf || isTif) ".jpg" else "")
       } else {
         url

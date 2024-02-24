@@ -13,8 +13,8 @@ object TableParser extends SwebleParser {
     case h: WtTableHeader => h
   }
 
-  val cellFunc: PartialFunction[WtNode, WtTableCell] = {
-    case c: WtTableCell => c
+  val cellFunc: PartialFunction[WtNode, WtTableCell] = { case c: WtTableCell =>
+    c
   }
 
   val headerOrCell = cellFunc orElse headerFunc
@@ -23,24 +23,26 @@ object TableParser extends SwebleParser {
 
     val page = parsePage("Some title", wiki).getPage
 
-    findNode(page, { case t: WtTableImplicitTableBody => t }).map {
-      tableBody =>
+    findNode(page, { case t: WtTableImplicitTableBody => t })
+      .map { tableBody =>
         val rows = collectNodes(tableBody, { case r: WtTableRow => r })
 
-        val headers = rows.headOption.toSeq.flatMap {
-          head => nodesToText(head, headerFunc)
+        val headers = rows.headOption.toSeq.flatMap { head =>
+          nodesToText(head, headerFunc)
         }
 
         val dataRows = if (headers.isEmpty) rows else rows.drop(1)
 
-        val items = dataRows.map {
-          row => nodesToText(row, headerOrCell)
-        }.filter(_.nonEmpty)
+        val items = dataRows
+          .map { row =>
+            nodesToText(row, headerOrCell)
+          }
+          .filter(_.nonEmpty)
 
         new Table(headers, items, "", "")
 
-    }.getOrElse(new Table(Seq.empty, Seq.empty, "", ""))
+      }
+      .getOrElse(new Table(Seq.empty, Seq.empty, "", ""))
   }
 
 }
-

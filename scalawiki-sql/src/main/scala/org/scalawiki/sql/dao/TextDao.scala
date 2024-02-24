@@ -7,7 +7,11 @@ import slick.driver.JdbcProfile
 import slick.lifted.TableQuery
 import spray.util.pimpFuture
 
-class TextDao(val mwDb: MwDatabase, val query: TableQuery[Texts], val driver: JdbcProfile) {
+class TextDao(
+    val mwDb: MwDatabase,
+    val query: TableQuery[Texts],
+    val driver: JdbcProfile
+) {
 
   import driver.api._
 

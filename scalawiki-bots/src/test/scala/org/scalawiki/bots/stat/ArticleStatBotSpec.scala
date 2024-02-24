@@ -10,7 +10,13 @@ class ArticleStatBotSpec extends Specification with MockBotSpec {
 
   "stat " should {
     "no stat" in {
-      val event = new ArticlesEvent("Martians", ZonedDateTime.now, ZonedDateTime.now, "Martians-week-new", "Martians-week-improved")
+      val event = new ArticlesEvent(
+        "Martians",
+        ZonedDateTime.now,
+        ZonedDateTime.now,
+        "Martians-week-new",
+        "Martians-week-improved"
+      )
 
       val commands = getCommands(emptyResponse, emptyResponse)
 
@@ -30,7 +36,13 @@ class ArticleStatBotSpec extends Specification with MockBotSpec {
     }
 
     "created 1 article" in {
-      val event = new ArticlesEvent("Martians", ZonedDateTime.parse("2015-06-07T16:45:30Z"), ZonedDateTime.now, "Martians-week-new", "Martians-week-improved")
+      val event = new ArticlesEvent(
+        "Martians",
+        ZonedDateTime.parse("2015-06-07T16:45:30Z"),
+        ZonedDateTime.now,
+        "Martians-week-new",
+        "Martians-week-improved"
+      )
 
       val createdResponse =
         """{ "query": { "pages": {
@@ -80,8 +92,12 @@ class ArticleStatBotSpec extends Specification with MockBotSpec {
     }
   }
 
-
-  def checkStat(stat: UserStat, users: Set[String], byUser: Map[String, Seq[RevisionStat]], byUserAddedOrRemoved: Seq[(String, Long)]) = {
+  def checkStat(
+      stat: UserStat,
+      users: Set[String],
+      byUser: Map[String, Seq[RevisionStat]],
+      byUserAddedOrRemoved: Seq[(String, Long)]
+  ) = {
     stat.users === users
     stat.byUser === byUser
     stat.byUserAddedOrRemoved === byUserAddedOrRemoved
@@ -94,15 +110,30 @@ class ArticleStatBotSpec extends Specification with MockBotSpec {
       |    }
       |}""".stripMargin
 
-  def getCommands(newResponse: String, improvedResponse: String): Seq[HttpStub] = {
+  def getCommands(
+      newResponse: String,
+      improvedResponse: String
+  ): Seq[HttpStub] = {
     val newParams = Map(
-      "format" -> "json", "generator" -> "embeddedin", "inprop" -> "subjectid", "geilimit" -> "500",
-      "geititle" -> "Template:Martians-week-new", "prop" -> "info|revisions", "action" -> "query", "continue" -> ""
+      "format" -> "json",
+      "generator" -> "embeddedin",
+      "inprop" -> "subjectid",
+      "geilimit" -> "500",
+      "geititle" -> "Template:Martians-week-new",
+      "prop" -> "info|revisions",
+      "action" -> "query",
+      "continue" -> ""
     )
 
     val improvedParams = Map(
-      "format" -> "json", "generator" -> "embeddedin", "inprop" -> "subjectid", "geilimit" -> "500",
-      "geititle" -> "Template:Martians-week-improved", "prop" -> "info|revisions", "action" -> "query", "continue" -> ""
+      "format" -> "json",
+      "generator" -> "embeddedin",
+      "inprop" -> "subjectid",
+      "geilimit" -> "500",
+      "geititle" -> "Template:Martians-week-improved",
+      "prop" -> "info|revisions",
+      "action" -> "query",
+      "continue" -> ""
     )
 
     Seq(

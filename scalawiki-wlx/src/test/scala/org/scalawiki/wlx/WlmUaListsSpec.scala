@@ -17,7 +17,8 @@ class WlmUaListsSpec extends Specification {
   val contest = Contest.byCampaign(campaign).get.copy(year = 2019)
   val country = contest.country
 
-  val bot = new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 1000)
+  val bot =
+    new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 1000)
   val monumentQuery = MonumentQuery.create(contest)(bot)
   val monumentDb = MonumentDB.getMonumentDb(contest, monumentQuery)
   val all = monumentDb.allMonuments
@@ -36,7 +37,11 @@ class WlmUaListsSpec extends Specification {
       val updater = new RegionFixerUpdater(monumentDb)
       updater.raions.size === 490
 
-      val highLevel = all.filter(m => updater.raionNames.contains(m.cityName) && m.place.exists(_.trim.nonEmpty))
+      val highLevel = all.filter(m =>
+        updater.raionNames.contains(m.cityName) && m.place.exists(
+          _.trim.nonEmpty
+        )
+      )
 
       val percentage = highLevel.size * 100 / all.size
       percentage should be <= 5

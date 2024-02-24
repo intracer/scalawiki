@@ -2,7 +2,11 @@ package org.scalawiki.bots.stat
 
 import org.scalawiki.dto.filter.RevisionFilter
 
-class ArticleStat(val filter: RevisionFilter, val revisionStats: Seq[RevisionStat], label: String) {
+class ArticleStat(
+    val filter: RevisionFilter,
+    val revisionStats: Seq[RevisionStat],
+    label: String
+) {
 
   println(s"making ArticleStat for label: $label")
 
@@ -10,7 +14,8 @@ class ArticleStat(val filter: RevisionFilter, val revisionStats: Seq[RevisionSta
   val addedOrRewritten = revisionStats.map(_.addedOrRewritten)
 
   val added = new NumericArrayStat("Added", deltas)
-  val addedOrRewrittenStat = new NumericArrayStat("Added or rewritten", addedOrRewritten)
+  val addedOrRewrittenStat =
+    new NumericArrayStat("Added or rewritten", addedOrRewritten)
 
   val userStat = new UserStat(revisionStats)
 

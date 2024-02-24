@@ -48,50 +48,62 @@ case class Page(
 
 object Page {
 
-  def full(id: Option[Long],
-           ns: Option[Int],
-           title: String,
-           missing: Boolean,
-           subjectId: Option[Long],
-           talkId: Option[Long],
-           invalidReason: Option[String]): Page = {
-    new Page(id,
-             ns,
-             title,
-             missing = missing,
-             subjectId = subjectId,
-             talkId = talkId,
-             invalidReason = invalidReason)
+  def full(
+      id: Option[Long],
+      ns: Option[Int],
+      title: String,
+      missing: Boolean,
+      subjectId: Option[Long],
+      talkId: Option[Long],
+      invalidReason: Option[String]
+  ): Page = {
+    new Page(
+      id,
+      ns,
+      title,
+      missing = missing,
+      subjectId = subjectId,
+      talkId = talkId,
+      invalidReason = invalidReason
+    )
   }
 
-  def noText(id: Long,
-             ns: Option[Int],
-             title: String,
-             missing: Option[String] = None) =
+  def noText(
+      id: Long,
+      ns: Option[Int],
+      title: String,
+      missing: Option[String] = None
+  ) =
     new Page(Some(id), ns, title, missing = missing.fold(false)(_ => true))
 
   def withText(id: Long, ns: Option[Int], title: String, text: Option[String]) =
     new Page(Some(id), ns, title, revisionsFromText(text))
 
-  def withRevisionsText(id: Long,
-                        ns: Option[Int],
-                        title: String,
-                        texts: Seq[String]) =
+  def withRevisionsText(
+      id: Long,
+      ns: Option[Int],
+      title: String,
+      texts: Seq[String]
+  ) =
     new Page(Some(id), ns, title, Revision.many(texts: _*))
 
-  def withRevisions(id: Long,
-                    ns: Option[Int],
-                    title: String,
-                    editToken: Option[String],
-                    revisions: Seq[Revision],
-                    missing: Option[String]) =
-    new Page(Some(id),
-             ns,
-             title,
-             revisions,
-             Seq.empty,
-             editToken,
-             missing.fold(false)(_ => true))
+  def withRevisions(
+      id: Long,
+      ns: Option[Int],
+      title: String,
+      editToken: Option[String],
+      revisions: Seq[Revision],
+      missing: Option[String]
+  ) =
+    new Page(
+      Some(id),
+      ns,
+      title,
+      revisions,
+      Seq.empty,
+      editToken,
+      missing.fold(false)(_ => true)
+    )
 
   def withImages(id: Long, ns: Option[Int], title: String, images: Seq[Image]) =
     new Page(Some(id), ns, title, Seq.empty, images)
@@ -103,10 +115,12 @@ object Page {
   def apply(id: Long, ns: Option[Int], title: String) =
     new Page(Some(id), ns, title)
 
-  def withEditToken(id: Option[Long],
-                    ns: Option[Int],
-                    title: String,
-                    editToken: Option[String]) = {
+  def withEditToken(
+      id: Option[Long],
+      ns: Option[Int],
+      title: String,
+      editToken: Option[String]
+  ) = {
     new Page(id, ns, title, Seq.empty, Seq.empty, editToken)
   }
 

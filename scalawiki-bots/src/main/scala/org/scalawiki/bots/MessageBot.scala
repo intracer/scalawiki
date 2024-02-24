@@ -15,39 +15,36 @@ import scala.concurrent.Future
 
 case class Message(subject: String, body: String)
 
-/**
-  * Send messages to users either via talk page or email
+/** Send messages to users either via talk page or email
   *
-  * @param conf configuration
+  * @param conf
+  *   configuration
   */
 class MessageBot(val conf: Config) extends ActionLibrary with QueryLibrary {
 
-  /**
-    * Mediawiki host, e.g. en.wikipedia.org
+  /** Mediawiki host, e.g. en.wikipedia.org
     */
   val host = conf.getString("host")
 
-  /**
-    * Page that contains links to user pages of users we are going to notify
+  /** Page that contains links to user pages of users we are going to notify
     */
   val userListPage = conf.getString("users.list")
 
-  /**
-    * optional start and end of time range that user contributions are queried
+  /** optional start and end of time range that user contributions are queried
     */
   val (start: Option[ZonedDateTime], end: Option[ZonedDateTime]) = (
-    conf.as[Option[LocalDate]]("users.start").map(_.atStartOfDay(ZoneOffset.UTC)),
+    conf
+      .as[Option[LocalDate]]("users.start")
+      .map(_.atStartOfDay(ZoneOffset.UTC)),
     conf.as[Option[LocalDate]]("users.end").map(_.atStartOfDay(ZoneOffset.UTC))
   )
   val range = TimeRange(start, end)
 
-  /**
-    * Email message
+  /** Email message
     */
   val mail = conf.as[Message]("email")
 
-  /**
-    * Talk page message
+  /** Talk page message
     */
   val talkPageMessage = conf.as[Message]("talk-page")
 
@@ -68,11 +65,14 @@ class MessageBot(val conf: Config) extends ActionLibrary with QueryLibrary {
   def processUsers(users: Iterable[User], conf: Config) = {
 
     val pages = users.map(u => userCreatedPages(u.name.get, range))
-    val folded = Future.fold(pages)(Seq.empty[(String, Set[String])])(_ :+ _).map(_.toMap)
+    val folded =
+      Future.fold(pages)(Seq.empty[(String, Set[String])])(_ :+ _).map(_.toMap)
     for (createdPagesByUser <- folded) {
 
-      val withContribution = users.filter(u => createdPagesByUser(u.name.get).nonEmpty)
-      val (withEmail, withoutEmail) = withContribution.partition(_.emailable.getOrElse(false))
+      val withContribution =
+        users.filter(u => createdPagesByUser(u.name.get).nonEmpty)
+      val (withEmail, withoutEmail) =
+        withContribution.partition(_.emailable.getOrElse(false))
 
       logUsers(users, withEmail, withoutEmail)
 
@@ -85,7 +85,11 @@ class MessageBot(val conf: Config) extends ActionLibrary with QueryLibrary {
     }
   }
 
-  def logUsers(users: Iterable[User], withEmail: Iterable[User], withoutEmail: Iterable[User]): Unit = {
+  def logUsers(
+      users: Iterable[User],
+      withEmail: Iterable[User],
+      withoutEmail: Iterable[User]
+  ): Unit = {
     println("AllUsers: " + users.size)
     println("WithEmail: " + withEmail.size)
     println("WithoutEmail: " + withoutEmail.size)

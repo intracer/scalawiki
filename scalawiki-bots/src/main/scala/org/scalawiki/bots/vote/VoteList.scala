@@ -15,7 +15,8 @@ object VoteList {
 
   val specialPage = "Special:SecurePoll/list/637"
 
-  val url = "https://vote.wikimedia.org/w/index.php?title=Special:SecurePoll/list/637&limit=5000&sort=vote_voter_name"
+  val url =
+    "https://vote.wikimedia.org/w/index.php?title=Special:SecurePoll/list/637&limit=5000&sort=vote_voter_name"
 
   def main(args: Array[String]): Unit = {
 
@@ -44,9 +45,9 @@ object VoteList {
 
       names.flatten.distinct.toSeq
 
-    } recover {
-      case t: Throwable => println(t)
-        Seq.empty
+    } recover { case t: Throwable =>
+      println(t)
+      Seq.empty
     }
     names
   }

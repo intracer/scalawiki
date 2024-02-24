@@ -6,8 +6,8 @@ import org.specs2.mutable.Specification
 class WlxTemplateParserSpec extends Specification {
 
   def dataToWiki(data: Seq[Seq[(String, String)]]): String = {
-    val templates = data.map {
-      params => new Template("templateName", params.toMap)
+    val templates = data.map { params =>
+      new Template("templateName", params.toMap)
     }
 
     templates.map(_.text).mkString("\n")
@@ -46,8 +46,9 @@ class WlxTemplateParserSpec extends Specification {
 
       monuments.size === 2
       monuments.map(_.page).toSet === Set("page")
-      monuments.map(m => Seq(m.id, m.name, m.otherParams("_f1"), m.otherParams("_f2"))) === data.map(_.toMap.values.toSeq)
+      monuments.map(m =>
+        Seq(m.id, m.name, m.otherParams("_f1"), m.otherParams("_f2"))
+      ) === data.map(_.toMap.values.toSeq)
     }
   }
 }
-

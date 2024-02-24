@@ -16,15 +16,36 @@ object TemplateParser extends SwebleParser {
     parsePage("Some title", wiki).getPage
   }
 
-  def getTemplate(page: EngPage, templateName: Option[String] = None): Option[Template] = {
-    findNode(page, { case t: WtTemplate if templateName.forall(getTemplateName(t).equals) => nodeToTemplate(t) })
+  def getTemplate(
+      page: EngPage,
+      templateName: Option[String] = None
+  ): Option[Template] = {
+    findNode(
+      page,
+      {
+        case t: WtTemplate if templateName.forall(getTemplateName(t).equals) =>
+          nodeToTemplate(t)
+      }
+    )
   }
 
-  def collectTemplates(page: EngPage, templateName: String): mutable.Buffer[Template] = {
-    collectNodes(page, { case t: WtTemplate if getTemplateName(t) == templateName => nodeToTemplate(t) })
+  def collectTemplates(
+      page: EngPage,
+      templateName: String
+  ): mutable.Buffer[Template] = {
+    collectNodes(
+      page,
+      {
+        case t: WtTemplate if getTemplateName(t) == templateName =>
+          nodeToTemplate(t)
+      }
+    )
   }
 
-  def parseOne(wiki: String, templateName: Option[String] = None): Option[Template] = {
+  def parseOne(
+      wiki: String,
+      templateName: Option[String] = None
+  ): Option[Template] = {
     getTemplate(parsePage(wiki), templateName)
   }
 
@@ -33,6 +54,8 @@ object TemplateParser extends SwebleParser {
     collectTemplates(page, templateName)
   }
 
-  def nodeToTemplate(wtTemplate: WtTemplate): Template = new SwTemplate(wtTemplate).getTemplate
+  def nodeToTemplate(wtTemplate: WtTemplate): Template = new SwTemplate(
+    wtTemplate
+  ).getTemplate
 
 }

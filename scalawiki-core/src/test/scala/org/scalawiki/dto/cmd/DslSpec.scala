@@ -1,12 +1,17 @@
 package org.scalawiki.dto.cmd
 
-import org.scalawiki.dto.cmd.query.list.{CmTitle, CategoryMembers, EiTitle, EmbeddedIn}
+import org.scalawiki.dto.cmd.query.list.{
+  CmTitle,
+  CategoryMembers,
+  EiTitle,
+  EmbeddedIn
+}
 import org.scalawiki.dto.cmd.query.{Generator, Query}
 import org.scalawiki.dto.cmd.query.prop._
 import org.specs2.matcher.ThrownMessages
 import org.specs2.mutable.Specification
 
-class DslSpec extends Specification  with ThrownMessages {
+class DslSpec extends Specification with ThrownMessages {
 
   "1" should {
     "23" in {
@@ -19,8 +24,11 @@ class DslSpec extends Specification  with ThrownMessages {
         )
       )
 
-     // action.flatten.map(_.name).toSet === Set("action", "prop", "inprop")
-      action.query.toSeq.flatMap(_.props).map(_.name).toSet === Set("info", "revisions")
+      // action.flatten.map(_.name).toSet === Set("action", "prop", "inprop")
+      action.query.toSeq.flatMap(_.props).map(_.name).toSet === Set(
+        "info",
+        "revisions"
+      )
     }
   }
 
@@ -38,19 +46,22 @@ class DslSpec extends Specification  with ThrownMessages {
       action.pairs.toMap === Map(
         "action" -> "query",
         "prop" -> "info|revisions",
-        "inprop" -> "subjectid")
+        "inprop" -> "subjectid"
+      )
     }
   }
 
   "2" should {
     "34" in {
-      val action = Action(Query(
+      val action = Action(
+        Query(
           Prop(
             Info(InProp(SubjectId)),
             Revisions()
           ),
           Generator(EmbeddedIn(EiTitle("Template:Name")))
-        ))
+        )
+      )
 
       action.pairs.toMap === Map(
         "action" -> "query",
