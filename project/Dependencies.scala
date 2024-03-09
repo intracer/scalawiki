@@ -17,7 +17,7 @@ object Dependencies {
   val MockServerV = "5.15.0"
   val ReactiveStreamsV = "1.0.4"
   val RetryV = "0.3.6"
-  val Scala213V = "2.13.12"
+  val Scala213V = "2.13.13"
   val ScalaChartV = "0.8.0"
   val ScalaCheckV = "1.17.0"
   val ScalaCsvV = "1.3.10"
