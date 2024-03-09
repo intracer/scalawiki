@@ -47,8 +47,8 @@ lazy val commonSettings = Seq(
 
 lazy val scalawiki = (project in file("."))
   .settings(commonSettings)
-  .dependsOn(core, bots, dumps, wlx, sql, `http-extensions`)
-  .aggregate(core, bots, dumps, wlx, sql, `http-extensions`)
+  .dependsOn(core, bots, dumps, wlx, `http-extensions`)
+  .aggregate(core, bots, dumps, wlx, `http-extensions`)
 
 lazy val core = Project("scalawiki-core", file("scalawiki-core"))
   .settings(commonSettings: _*)
@@ -116,17 +116,6 @@ lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
       "com.github.tototoshi" %% "scala-csv" % ScalaCsvV
     ),
     assembly / mainClass := Some("org.scalawiki.wlx.stat.Statistics")
-  )
-
-lazy val sql = Project("scalawiki-sql", file("scalawiki-sql"))
-  .dependsOn(core % "compile->compile;test->test")
-  .settings(commonSettings: _*)
-  .settings(
-    libraryDependencies ++= Seq(
-      Library.Slick.slick,
-      Library.Slick.hikaricp,
-      "com.h2database" % "h2" % H2V
-    )
   )
 
 lazy val `http-extensions` = (project in file("http-extensions"))
