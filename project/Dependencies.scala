@@ -127,13 +127,6 @@ object Dependencies {
         "com.fasterxml.jackson.core" % "jackson-databind" % JacksonV
     }
 
-    object Slick {
-      val SlickV = "3.4.1"
-
-      val slick = "com.typesafe.slick" %% "slick" % SlickV
-      val hikaricp = "com.typesafe.slick" %% "slick-hikaricp" % SlickV
-    }
-
     object Specs2 {
       val SpecsV = "4.20.5"
 
