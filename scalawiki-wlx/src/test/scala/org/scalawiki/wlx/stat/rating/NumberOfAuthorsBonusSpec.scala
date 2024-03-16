@@ -1,10 +1,10 @@
-package org.scalawiki.wlx.stat
+package org.scalawiki.wlx.stat.rating
 
 import com.typesafe.config.ConfigFactory
 import org.scalawiki.dto.Image
-import org.scalawiki.wlx.{ImageDB, MonumentDB}
 import org.scalawiki.wlx.dto.{Contest, ContestType, Country, Monument}
-import org.scalawiki.wlx.stat.rating.NumberOfAuthorsBonus
+import org.scalawiki.wlx.stat.ContestStat
+import org.scalawiki.wlx.{ImageDB, MonumentDB}
 import org.specs2.mutable.Specification
 
 class NumberOfAuthorsBonusSpec extends Specification {
