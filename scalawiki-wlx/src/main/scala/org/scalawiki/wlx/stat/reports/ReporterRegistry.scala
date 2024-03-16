@@ -2,7 +2,8 @@ package org.scalawiki.wlx.stat.reports
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
-import org.scalawiki.wlx.stat.{ContestStat, Rater, StatConfig, Stats}
+import org.scalawiki.wlx.stat.rating.Rater
+import org.scalawiki.wlx.stat.{ContestStat, StatConfig, Stats}
 import org.scalawiki.wlx.{ImageDB, ImageFiller, MonumentDB}
 
 import scala.concurrent.ExecutionContext

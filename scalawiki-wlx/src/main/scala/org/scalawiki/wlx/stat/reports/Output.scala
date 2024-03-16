@@ -3,7 +3,8 @@ package org.scalawiki.wlx.stat.reports
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.Contest
-import org.scalawiki.wlx.stat.{ContestStat, RateSum, Rater}
+import org.scalawiki.wlx.stat.rating.{RateSum, Rater}
+import org.scalawiki.wlx.stat.ContestStat
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 import scala.concurrent.ExecutionContext

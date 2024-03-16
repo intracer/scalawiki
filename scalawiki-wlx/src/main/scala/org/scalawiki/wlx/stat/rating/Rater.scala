@@ -1,9 +1,10 @@
-package org.scalawiki.wlx.stat
+package org.scalawiki.wlx.stat.rating
 
 import com.typesafe.config.Config
 import org.scalawiki.MwBot
 import org.scalawiki.wlx.ImageDB
 import org.scalawiki.wlx.stat.reports.RateInputDistribution
+import org.scalawiki.wlx.stat.{ContestStat, StatParams}
 
 import scala.collection.mutable
 import scala.util.Try
@@ -69,23 +70,23 @@ object Rater {
     stat.contest.config.map(fromConfig(stat, _)).getOrElse {
       val config = stat.contest.rateConfig
 
-      val raters = Seq(new NumberOfMonuments(stat, config.baseRate)) ++
+      val raters = Seq(NumberOfMonuments(stat, config.baseRate)) ++
         config.newAuthorObjectRating
           .map(r =>
-            new NewlyPicturedPerAuthorBonus(
+            NewlyPicturedPerAuthorBonus(
               stat,
               config.newObjectRating.getOrElse(1),
               r
             )
           )
           .orElse(
-            config.newObjectRating.map(new NewlyPicturedBonus(stat, _))
+            config.newObjectRating.map(NewlyPicturedBonus(stat, _))
           )
 
       if (raters.tail.isEmpty) {
         raters.head
       } else {
-        new RateSum(stat, raters)
+        RateSum(stat, raters)
       }
     }
   }
@@ -93,14 +94,14 @@ object Rater {
   def fromConfig(stat: ContestStat, config: Config): Rater = {
     val rateCfg = config.getConfig(s"rates.${stat.contest.year}")
     val raters = Seq(
-      new NumberOfMonuments(
+      NumberOfMonuments(
         stat,
         Try(rateCfg.getDouble("base-rate")).toOption.getOrElse(1)
       )
     ) ++
       (if (rateCfg.hasPath("number-of-authors-bonus")) {
          Seq(
-           new NumberOfAuthorsBonus(
+           NumberOfAuthorsBonus(
              stat,
              RateRanges(rateCfg.getConfig("number-of-authors-bonus"))
            )
@@ -108,7 +109,7 @@ object Rater {
        } else Nil) ++
       (if (rateCfg.hasPath("number-of-images-bonus")) {
          Seq(
-           new NumberOfImagesInPlaceBonus(
+           NumberOfImagesInPlaceBonus(
              stat,
              RateRanges(rateCfg.getConfig("number-of-images-bonus"))
            )
@@ -124,7 +125,8 @@ object Rater {
   }
 }
 
-case class NumberOfMonuments(stat: ContestStat, baseRate: Double) extends Rater {
+case class NumberOfMonuments(stat: ContestStat, baseRate: Double)
+    extends Rater {
   val monumentIds = stat.monumentDb.map(_.ids).getOrElse(Set.empty)
 
   override def rate(monumentId: String, author: String): Double = {
@@ -158,7 +160,7 @@ case class NewlyPicturedBonus(stat: ContestStat, newlyPicturedRate: Double)
 }
 
 case class NewlyPicturedPerAuthorBonus(
-    val stat: ContestStat,
+    stat: ContestStat,
     newlyPicturedRate: Double,
     newlyPicturedPerAuthorRate: Double
 ) extends Rater {
@@ -469,8 +471,8 @@ case class RateSum(stat: ContestStat, raters: Seq[Rater]) extends Rater {
   }
 
   override def explain(monumentId: String, author: String): String = {
-    val disqulifiedRater = raters.find(_.disqualify(monumentId, author))
-    disqulifiedRater.fold(
+    val disqualifiedRater = raters.find(_.disqualify(monumentId, author))
+    disqualifiedRater.fold(
       s"Rating = ${raters.map(_.rate(monumentId, author)).sum}, is a sum of: " + raters
         .map(_.explain(monumentId, author))
         .mkString(", ")

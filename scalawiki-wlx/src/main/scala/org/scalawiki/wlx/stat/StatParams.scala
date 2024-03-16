@@ -1,5 +1,7 @@
 package org.scalawiki.wlx.stat
 
+import org.scalawiki.wlx.stat.rating.RateConfig
+
 import java.time.ZonedDateTime
 
 case class StatConfig(
@@ -124,7 +126,7 @@ object StatParams {
       exceptRegions = conf.exceptRegions.getOrElse(Nil),
       cities = conf.cities.getOrElse(Nil),
       exceptCities = conf.exceptCities.getOrElse(Nil),
-      rateConfig = RateConfig(conf),
+      rateConfig = rating.RateConfig(conf),
       gallery = conf.gallery.getOrElse(false),
       fillLists = conf.fillLists.getOrElse(false),
       wrongIds = conf.wrongIds.getOrElse(false),

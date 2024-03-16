@@ -8,7 +8,7 @@ import com.typesafe.config.{
   ConfigParseOptions,
   ConfigResolveOptions
 }
-import org.scalawiki.wlx.stat.RateConfig
+import org.scalawiki.wlx.stat.rating.RateConfig
 
 import scala.util.Try
 

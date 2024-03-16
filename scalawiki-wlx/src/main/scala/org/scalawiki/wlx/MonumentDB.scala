@@ -5,7 +5,7 @@ import java.time.{ZoneOffset, ZonedDateTime}
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.dto.{AdmDivision, Contest, Monument}
 import org.scalawiki.wlx.query.MonumentQuery
-import org.scalawiki.wlx.stat.PerPlaceStat
+import org.scalawiki.wlx.stat.rating.PerPlaceStat
 
 class MonumentDB(
     val contest: Contest,
