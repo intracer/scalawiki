@@ -3,9 +3,9 @@ package org.scalawiki.wlx.stat.rating
 import org.scalawiki.wlx.ImageDB
 
 case class PerPlaceStat(
-                         imagesPerPlace: Map[String, Int],
-                         placeByMonument: Map[String, String]
-                       ) {
+    imagesPerPlace: Map[String, Int],
+    placeByMonument: Map[String, String]
+) {
   val distribution = placeByMonument.values
     .map(place => imagesPerPlace.getOrElse(place, 0))
     .groupBy(identity)
@@ -111,7 +111,7 @@ object PerPlaceStat {
       id <- imageDB.ids.toSeq;
       place <- monumentDb.placeByMonumentId.get(id)
     )
-    yield (place -> imageDB.byId(id).size))
+      yield (place -> imageDB.byId(id).size))
       .groupBy(_._1)
       .mapValues(_.map(_._2).sum)
 

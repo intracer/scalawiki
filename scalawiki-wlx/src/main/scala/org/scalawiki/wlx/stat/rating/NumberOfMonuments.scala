@@ -2,8 +2,7 @@ package org.scalawiki.wlx.stat.rating
 
 import org.scalawiki.wlx.stat.ContestStat
 
-case class NumberOfMonuments(stat: ContestStat, baseRate: Double)
-  extends Rater {
+case class NumberOfMonuments(stat: ContestStat, baseRate: Double) extends Rater {
   val monumentIds = stat.monumentDb.map(_.ids).getOrElse(Set.empty)
 
   override def rate(monumentId: String, author: String): Double = {
@@ -18,8 +17,7 @@ case class NumberOfMonuments(stat: ContestStat, baseRate: Double)
   override def withRating: Boolean = false
 }
 
-case class NewlyPicturedBonus(stat: ContestStat, newlyPicturedRate: Double)
-  extends Rater {
+case class NewlyPicturedBonus(stat: ContestStat, newlyPicturedRate: Double) extends Rater {
 
   override def rate(monumentId: String, author: String): Double = {
     if (!oldMonumentIds.contains(monumentId))

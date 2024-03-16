@@ -8,9 +8,9 @@ import org.scalawiki.wlx.stat.reports.RateInputDistribution
 import scala.collection.mutable
 
 case class NumberOfImagesInPlaceBonus(
-                                       stat: ContestStat,
-                                       rateRanges: RateRanges
-                                     ) extends Rater {
+    stat: ContestStat,
+    rateRanges: RateRanges
+) extends Rater {
 
   val oldImagesDb = new ImageDB(stat.contest, oldImages, stat.monumentDb)
   val perPlaceStat = PerPlaceStat(oldImagesDb)

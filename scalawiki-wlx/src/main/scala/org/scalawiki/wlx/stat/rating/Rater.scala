@@ -6,7 +6,6 @@ import org.scalawiki.wlx.stat.ContestStat
 
 import scala.util.Try
 
-
 trait Rater {
 
   def stat: ContestStat
