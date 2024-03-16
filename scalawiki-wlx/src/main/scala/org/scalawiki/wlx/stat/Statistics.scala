@@ -99,7 +99,7 @@ class Statistics(
       contest: Contest,
       startYear: Option[Int] = None,
       monumentQuery: MonumentQuery,
-      imageQuery: ImageQuery = ImageQuery.create(),
+      imageQuery: ImageQuery = ImageQuery.create,
       imageQueryWiki: Option[ImageQuery] = None,
       bot: MwBot = MwBot.fromHost(MwBot.commons),
       config: Option[StatConfig] = None
@@ -267,8 +267,8 @@ object Statistics {
 
     val cacheName = s"${cfg.campaign}-${contest.year}"
     val imageQuery =
-      ImageQuery.create()(new CachedBot(Site.commons, cacheName, true))
-    val imageQueryWiki = ImageQuery.create()(
+      ImageQuery.create(new CachedBot(Site.commons, cacheName, true))
+    val imageQueryWiki = ImageQuery.create(
       new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 100)
     )
 

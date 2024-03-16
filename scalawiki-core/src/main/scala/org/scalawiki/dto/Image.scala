@@ -82,7 +82,7 @@ object Image {
   def fromPageRevision(
       page: Page,
       monumentIdTemplate: Option[String],
-      specialNominationTemplates: Seq[String] = Nil
+      specialNominationTemplates: Set[String] = Set.empty
   ): Option[Image] = {
     page.revisions.headOption.map { revision =>
       val content = revision.content.getOrElse("")
@@ -92,12 +92,8 @@ object Image {
           .collectTemplates(parsedPage, template)
           .flatMap(_.getParamOpt("1"))
       }
-      val specialNominations = specialNominationTemplates.flatMap { template =>
-        Some(template).filter(_ => {
-          val value = TemplateParser.collectTemplates(parsedPage, template)
-          value.nonEmpty
-        })
-      }
+      val specialNominations =
+        TemplateParser.collectTemplateNames(parsedPage, specialNominationTemplates)
 
       val author = getAuthorFromPage(parsedPage)
 
@@ -115,40 +111,32 @@ object Image {
         monumentIds = ids,
         pageId = page.id,
         categories = categories,
-        specialNominations = specialNominations.toSet
+        specialNominations = specialNominations
       )
     }
   }
 
   def fromPage(
-      page: Page,
       monumentIdTemplate: Option[String],
-      specialNominationTemplates: Seq[String] = Nil
-  ): Option[Image] = {
-    for (
-      fromImage <- Image.fromPageImages(page);
+      specialNominationTemplates: Set[String] = Set.empty
+  )(page: Page): Option[Image] =
+    for {
+      fromImage <- Image.fromPageImages(page)
       fromRev <- Image.fromPageRevision(
         page,
         monumentIdTemplate,
         specialNominationTemplates
       )
+      renamedAuthor = fromRev.author.map(author => AuthorsMap.renames.getOrElse(author, author))
+    } yield fromImage.copy(
+      monumentIds = fromRev.monumentIds,
+      author = renamedAuthor,
+      categories = fromRev.categories,
+      specialNominations = fromRev.specialNominations
     )
-      yield {
-        val renamedAuthor = fromRev.author.map(author =>
-          AuthorsMap.renames.getOrElse(author, author)
-        )
-        fromImage.copy(
-          monumentIds = fromRev.monumentIds,
-          author = renamedAuthor,
-          categories = fromRev.categories,
-          specialNominations = fromRev.specialNominations
-        )
-      }
-  }
 
-  def getAuthorFromPage(content: String): String = {
+  def getAuthorFromPage(content: String): String =
     getAuthorFromPage(TemplateParser.parsePage(content))
-  }
 
   def getAuthorFromPage(parsedPage: EngPage): String = {
     val template = TemplateParser.getTemplate(parsedPage, Some("Information"))
