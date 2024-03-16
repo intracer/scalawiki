@@ -156,7 +156,7 @@ class Grouping[T, F](name: String, val f: F => T, data: Iterable[F]) {
 
   val grouped: Map[T, Seq[F]] = data.groupBy(f).mapValues(_.toSeq).toMap
 
-  def by(key: T): Seq[F] = grouped.getOrElse(key, Seq.empty)
+  def by(key: T): Seq[F] = grouped.getOrElse(key, Nil)
 
   def contains(id: T): Boolean = grouped.contains(id)
 
@@ -196,8 +196,7 @@ object ImageGrouping {
 
   def byMonument: Image => String = (i: Image) => i.monumentId.getOrElse("")
 
-  def byRegion: Image => String = (i: Image) =>
-    Monument.getRegionId(i.monumentId)
+  def byRegion: Image => String = (i: Image) => Monument.getRegionId(i.monumentId)
 
   def byAuthor: Image => String = (i: Image) => i.author.getOrElse("")
 
@@ -213,9 +212,8 @@ object ImageDB {
       monumentDb: Option[MonumentDB],
       minMpx: Option[Float] = None
   ): Future[ImageDB] = {
-    imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest).map {
-      images =>
-        new ImageDB(contest, images, monumentDb, minMpx)
+    imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest).map { images =>
+      new ImageDB(contest, images, monumentDb, minMpx)
     }
   }
 }

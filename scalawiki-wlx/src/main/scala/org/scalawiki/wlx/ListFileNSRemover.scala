@@ -4,14 +4,14 @@ import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.SwTemplate
 import org.scalawiki.edit.{PageUpdateTask, PageUpdater}
 import org.scalawiki.wikitext.SwebleParser
-import org.scalawiki.wlx.dto.Monument
+import org.scalawiki.wlx.dto.{Monument, UploadConfig}
 import org.sweble.wikitext.engine.config.WikiConfig
 import org.sweble.wikitext.engine.utils.DefaultConfigEnWp
 import org.sweble.wikitext.parser.nodes.WtTemplate
 
 object ListFileNSRemover {
 
-  def updateLists(monumentDb: MonumentDB) {
+  def updateLists(monumentDb: MonumentDB): Unit = {
     val task = new ListFileNSRemoverTask(MwBot.ukWiki, monumentDb)
     val updater = new PageUpdater(task)
     updater.update()
@@ -24,17 +24,17 @@ class ListFileNSRemoverTask(val host: String, monumentDb: MonumentDB)
 
   val config: WikiConfig = DefaultConfigEnWp.generate
 
-  val titles = pagesToFix(monumentDb)
+  val titles: Set[String] = pagesToFix(monumentDb)
 
-  val uploadConfig = monumentDb.contest.uploadConfigs.head
+  val uploadConfig: UploadConfig = monumentDb.contest.uploadConfigs.head
 
   override def updatePage(title: String, pageText: String): (String, String) = {
     val template = uploadConfig.listTemplate
     val wlxParser = new WlxTemplateParser(uploadConfig.listConfig, title)
     var added: Int = 0
 
-    def mapper(wtTemplate: WtTemplate) = {
-      val swTemplate = new SwTemplate(wtTemplate)
+    def mapper(wtTemplate: WtTemplate): Unit = {
+      val swTemplate = SwTemplate(wtTemplate)
       val monument = wlxParser.templateToMonument(swTemplate.template)
 
       if (needsUpdate(monument)) {
@@ -56,9 +56,7 @@ class ListFileNSRemoverTask(val host: String, monumentDb: MonumentDB)
   }
 
   def needsUpdate(m: Monument): Boolean =
-    m.photo.exists(photo =>
-      photo.trim.startsWith("File:") || photo.trim.startsWith("Файл:")
-    )
+    m.photo.exists(photo => photo.trim.startsWith("File:") || photo.trim.startsWith("Файл:"))
 
   def pagesToFix(monumentDb: MonumentDB): Set[String] = {
 

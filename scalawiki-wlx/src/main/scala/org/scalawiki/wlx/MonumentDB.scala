@@ -1,9 +1,8 @@
 package org.scalawiki.wlx
 
 import java.time.{ZoneOffset, ZonedDateTime}
-
 import org.scalawiki.dto.markup.Table
-import org.scalawiki.wlx.dto.{AdmDivision, Contest, Monument}
+import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Monument}
 import org.scalawiki.wlx.query.MonumentQuery
 import org.scalawiki.wlx.stat.rating.PerPlaceStat
 
@@ -13,12 +12,12 @@ class MonumentDB(
     withFalseIds: Boolean = true
 ) {
 
-  val monuments = allMonuments.filter(m => withFalseIds || isIdCorrect(m.id))
-  val wrongIdMonuments = allMonuments.filterNot(m => isIdCorrect(m.id))
-  val withArticles = allMonuments
+  val monuments: Seq[Monument] = allMonuments.filter(m => withFalseIds || isIdCorrect(m.id))
+  val wrongIdMonuments: Seq[Monument] = allMonuments.filterNot(m => isIdCorrect(m.id))
+  val withArticles: Map[String, Seq[Monument]] = allMonuments
     .filter(m => m.name.contains("[["))
     .groupBy(m => Monument.getRegionId(m.id))
-  val country = contest.country
+  val country: Country = contest.country
 
   val _byId: Map[String, Iterable[Monument]] = monuments.groupBy(_.id)
   val _byRegion: Map[String, Iterable[Monument]] =
@@ -37,9 +36,9 @@ class MonumentDB(
 
   def ids: Set[String] = _byId.keySet
 
-  def byId(id: String) = _byId.getOrElse(id, Seq.empty[Monument]).headOption
+  def byId(id: String): Option[Monument] = _byId.getOrElse(id, Seq.empty[Monument]).headOption
 
-  def byRegion(regId: String) = {
+  def byRegion(regId: String): Iterable[Monument] = {
     if (regId.length == 2) {
       _byRegion.getOrElse(regId, Seq.empty[Monument])
     } else {
@@ -49,21 +48,21 @@ class MonumentDB(
     }
   }
 
-  def regionIds =
+  def regionIds: Seq[String] =
     _byRegion.keySet.toSeq.filter(contest.country.regionIds.contains).sorted
 
-  def isIdCorrect(id: String) = {
+  def isIdCorrect(id: String): Boolean = {
     val idRegex = """(\d\d)-(\d\d\d)-(\d\d\d\d)"""
     id.matches(idRegex) && contest.country.regionIds.contains(
       Monument.getRegionId(id)
     )
   }
 
-  def withImages = monuments.filter(_.photo.isDefined)
+  def withImages: Seq[Monument] = monuments.filter(_.photo.isDefined)
 
-  def picturedIds = withImages.map(_.id).toSet
+  def picturedIds: Set[String] = withImages.map(_.id).toSet
 
-  def picturedInRegion(regionId: String) =
+  def picturedInRegion(regionId: String): Set[String] =
     byRegion(regionId).map(_.id).toSet intersect picturedIds
 
   def getAdmDivision(monumentId: String): Option[AdmDivision] = {
@@ -155,7 +154,7 @@ case class UnknownPlace(
   def parents: Set[String] =
     candidates.map(_.parent().map(_.name).getOrElse("")).toSet
 
-  override def toString = {
+  override def toString: String = {
     val candidatesStr = candidates
       .map { c =>
         c.parent()
@@ -163,6 +162,7 @@ case class UnknownPlace(
           .getOrElse("") + s"${c.name}(${c.code})"
       }
       .mkString(", ")
+
     s"* [[$page]]/$regionId/$name. \n** ${monuments.size} monument(s): ${monuments
         .map(_.id)
         .mkString(", ")}" + (if (candidates.nonEmpty)
@@ -181,8 +181,7 @@ object MonumentDB {
     var allMonuments = monumentQuery.byMonumentTemplate(date = date)
 
     if (contest.country.code == "ru") {
-      allMonuments =
-        allMonuments.filter(_.page.contains("Природные памятники России"))
+      allMonuments = allMonuments.filter(_.page.contains("Природные памятники России"))
     }
 
     new MonumentDB(contest, allMonuments.toSeq)
@@ -190,20 +189,5 @@ object MonumentDB {
 
   def getMonumentDb(contest: Contest, date: Option[ZonedDateTime]): MonumentDB =
     getMonumentDb(contest, MonumentQuery.create(contest), date)
-
-  def getMonumentDbRange(
-      contest: Contest
-  ): (Option[MonumentDB], Option[MonumentDB]) = {
-    if (contest.uploadConfigs.nonEmpty) {
-      val date =
-        ZonedDateTime.of(contest.year, 9, 1, 0, 0, 0, 0, ZoneOffset.UTC)
-      (
-        Some(getMonumentDb(contest, None)),
-        Some(getMonumentDb(contest, Some(date)))
-      )
-    } else {
-      (None, None)
-    }
-  }
 
 }

@@ -15,7 +15,7 @@ class WlxTableParser(val config: ListConfig) {
 
     val headers = table.headers.toIndexedSeq
 
-    def getIndex(name: String) = {
+    def getIndex(name: String): Option[Int] = {
       config.namesMap.get(name).flatMap { mappedName =>
         val index = headers.indexOf(mappedName)
         if (index >= 0)

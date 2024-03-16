@@ -12,18 +12,18 @@ import scala.util.matching.Regex.Match
   */
 object CountryParser {
 
-  val countries = Country.fromJavaLocales
+  val countries: Seq[Country] = Country.fromJavaLocales
 
-  val contestCategory = "Category\\:Images from ([a-zA-Z ]+) (\\d+)"
+  val contestCategory: String = "Category\\:Images from ([a-zA-Z ]+) (\\d+)"
 
-  val contestRegex = (contestCategory + "$").r
-  val contestWithCountryRegex =
+  val contestRegex: Regex = (contestCategory + "$").r
+  val contestWithCountryRegex: Regex =
     (contestCategory + " in ([a-zA-Z\\&\\- ]+)($|\\|)").r
 
-  val contestLinkRegex =
+  val contestLinkRegex: Regex =
     "\\[\\[Commons\\:([a-zA-Z ]+) (\\d+) in ([a-zA-Z\\& ]+)\\|".r
 
-  def isContestCategory(s: String) = contestRegex.pattern.matcher(s).matches()
+  def isContestCategory(s: String): Boolean = contestRegex.pattern.matcher(s).matches()
 
   val parser = new RegexCampaignParser(contestWithCountryRegex)
 
