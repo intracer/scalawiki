@@ -24,7 +24,9 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
   private val area = getMappedName("area")
   private val lat = getMappedName("lat")
   private val lon = getMappedName("lon")
-  private val image = getMappedName("photo")
+
+  val image: Option[String] = getMappedName("photo")
+
   private val gallery = getMappedName("gallery")
   private val stateId = getMappedName("stateId")
   private val typ = getMappedName("type")
