@@ -37,8 +37,11 @@ object TemplateParser extends SwebleParser {
   def collectTemplateNames(
       page: EngPage,
       inSet: Set[String]
-  ): Set[String] =
-    collectNodes(page, { case t: WtTemplate => getTemplateName(t) }).toSet intersect inSet
+  ): Set[String] = {
+    collectNodes(page, { case t: WtTemplate if inSet.contains(getTemplateName(t)) => t })
+      .map(getTemplateName)
+      .toSet
+  }
 
   def parseOne(
       wiki: String,
