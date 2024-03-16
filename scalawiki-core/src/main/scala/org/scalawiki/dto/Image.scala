@@ -19,8 +19,8 @@ case class ImageMetadata(data: Map[String, String]) {
 }
 
 object ImageMetadata {
-  val pattern = "yyyy:MM:dd HH:mm:ss"
-  val df = DateTimeFormatter.ofPattern(pattern)
+  private val pattern = "yyyy:MM:dd HH:mm:ss"
+  private val df = DateTimeFormatter.ofPattern(pattern)
 }
 
 case class Image(

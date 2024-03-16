@@ -118,13 +118,13 @@ object Rater {
     if (raters.tail.isEmpty) {
       raters.head
     } else {
-      new RateSum(stat, raters)
+      RateSum(stat, raters)
     }
 
   }
 }
 
-class NumberOfMonuments(val stat: ContestStat, baseRate: Double) extends Rater {
+case class NumberOfMonuments(stat: ContestStat, baseRate: Double) extends Rater {
   val monumentIds = stat.monumentDb.map(_.ids).getOrElse(Set.empty)
 
   override def rate(monumentId: String, author: String): Double = {
@@ -139,7 +139,7 @@ class NumberOfMonuments(val stat: ContestStat, baseRate: Double) extends Rater {
   override def withRating: Boolean = false
 }
 
-class NewlyPicturedBonus(val stat: ContestStat, newlyPicturedRate: Double)
+case class NewlyPicturedBonus(stat: ContestStat, newlyPicturedRate: Double)
     extends Rater {
 
   override def rate(monumentId: String, author: String): Double = {
@@ -157,7 +157,7 @@ class NewlyPicturedBonus(val stat: ContestStat, newlyPicturedRate: Double)
   }
 }
 
-class NewlyPicturedPerAuthorBonus(
+case class NewlyPicturedPerAuthorBonus(
     val stat: ContestStat,
     newlyPicturedRate: Double,
     newlyPicturedPerAuthorRate: Double
@@ -206,7 +206,7 @@ class NewlyPicturedPerAuthorBonus(
   }
 }
 
-class NumberOfAuthorsBonus(val stat: ContestStat, val rateRanges: RateRanges)
+case class NumberOfAuthorsBonus(stat: ContestStat, rateRanges: RateRanges)
     extends Rater {
   val authorsByMonument: Map[String, Set[String]] = oldImages
     .groupBy(_.monumentId.getOrElse(""))
@@ -384,9 +384,9 @@ object PerPlaceStat {
   }
 }
 
-class NumberOfImagesInPlaceBonus(
-    val stat: ContestStat,
-    val rateRanges: RateRanges
+case class NumberOfImagesInPlaceBonus(
+    stat: ContestStat,
+    rateRanges: RateRanges
 ) extends Rater {
 
   val oldImagesDb = new ImageDB(stat.contest, oldImages, stat.monumentDb)
@@ -461,7 +461,7 @@ class NumberOfImagesInPlaceBonus(
   }
 }
 
-class RateSum(val stat: ContestStat, val raters: Seq[Rater]) extends Rater {
+case class RateSum(stat: ContestStat, raters: Seq[Rater]) extends Rater {
   override def rate(monumentId: String, author: String): Double = {
     if (!raters.exists(_.disqualify(monumentId, author))) {
       raters.map(_.rate(monumentId, author)).sum

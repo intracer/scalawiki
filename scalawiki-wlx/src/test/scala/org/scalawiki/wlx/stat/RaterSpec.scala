@@ -1,62 +1,78 @@
 package org.scalawiki.wlx.stat
 
 import com.typesafe.config.ConfigFactory
-import org.scalawiki.wlx.{ImageDB, MonumentDB}
+import org.scalawiki.wlx.dto.ContestType.{WLE, WLM}
 import org.scalawiki.wlx.dto.{Contest, ContestType, Country}
+import org.scalawiki.wlx.stat.RaterSpec.loadRater
+import org.scalawiki.wlx.{ImageDB, MonumentDB}
 import org.specs2.mutable.Specification
 
 class RaterSpec extends Specification {
 
   "Rater" should {
-    val contest = Contest(ContestType.WLM, Country.Ukraine, 2020)
-    val monumentDb = Some(new MonumentDB(contest, Nil))
-    val imageDb = new ImageDB(contest, Nil, monumentDb)
-    val contestStat = ContestStat(
-      contest = contest,
-      startYear = 2019,
-      monumentDb = monumentDb,
-      currentYearImageDb = Some(imageDb),
-      totalImageDb = Some(imageDb)
-    )
 
     "parse wlm 2020" in {
-      val rater =
-        Rater.fromConfig(contestStat, ConfigFactory.load("wlm_ua.conf"))
-      rater must beAnInstanceOf[RateSum]
-      val rateSum = rater.asInstanceOf[RateSum]
-      val raters = rateSum.raters
-      raters.size === 3
-      raters.find(_.isInstanceOf[NumberOfMonuments]) must beSome
-      raters.find(_.isInstanceOf[NumberOfAuthorsBonus]) must beSome
-      raters.find(_.isInstanceOf[NumberOfImagesInPlaceBonus]) must beSome
+      val rater = loadRater(WLM, 2020)
 
-      val numberOfAuthorsBonus = raters.collect {
-        case r: NumberOfAuthorsBonus => r
-      }.head
-      numberOfAuthorsBonus.rateRanges.sameAuthorZeroBonus === false
+      rater match {
+        case RateSum(
+              _,
+              List(
+                NumberOfMonuments(_, 1),
+                NumberOfAuthorsBonus(_, numberOfAuthorsRates),
+                NumberOfImagesInPlaceBonus(_, numberOfImagesInPlaceRates)
+              )
+            ) =>
+          numberOfAuthorsRates === RateRanges(
+            Map((0, 0) -> 10.0, (1, 3) -> 6.0, (4, 6) -> 3.0, (7, 9) -> 1.0)
+          )
+          numberOfImagesInPlaceRates === RateRanges(
+            Map((0, 0) -> 10.0, (1, 3) -> 6.0, (4, 9) -> 3.0, (10, 49) -> 1.0)
+          )
+        case other => ko(s"unexpected rater $other")
+      }
 
-      val numberOfImagesInPlaceBonus = raters.collect {
-        case r: NumberOfImagesInPlaceBonus => r
-      }.head
-      numberOfImagesInPlaceBonus.rateRanges.sameAuthorZeroBonus === false
+    }
+
+    "parse wlm 2023" in {
+      val rater = loadRater(WLM, 2023)
+
+      rater match {
+        case RateSum(
+              _,
+              List(
+                NumberOfMonuments(_, 1),
+                NumberOfAuthorsBonus(_, numberOfAuthorsRates),
+                NumberOfImagesInPlaceBonus(_, numberOfImagesInPlaceRates)
+              )
+            ) =>
+          numberOfAuthorsRates === RateRanges(
+            Map((0, 0) -> 10.0, (1, 3) -> 6.0, (4, 6) -> 3.0, (7, 9) -> 1.0)
+          )
+          numberOfImagesInPlaceRates === RateRanges(
+            Map((0, 0) -> 10.0, (1, 3) -> 6.0, (4, 9) -> 3.0, (10, 49) -> 1.0)
+          )
+        case other => ko(s"unexpected rater $other")
+      }
     }
 
     "parse wle 2020" in {
-      val rater =
-        Rater.fromConfig(contestStat, ConfigFactory.load("wle_ua.conf"))
-      rater must beAnInstanceOf[RateSum]
-      val rateSum = rater.asInstanceOf[RateSum]
-      val raters = rateSum.raters
-      raters.size === 2
-      raters.find(_.isInstanceOf[NumberOfMonuments]) must beSome
-      raters.find(_.isInstanceOf[NumberOfAuthorsBonus]) must beSome
-      val bonusRater = raters.collect { case x: NumberOfAuthorsBonus => x }.head
-      bonusRater.rateRanges.rangeMap === Map(
-        ((0, 0), 9),
-        ((1, 3), 3),
-        ((4, 9), 1)
-      )
-      bonusRater.rateRanges.sameAuthorZeroBonus === true
+      val rater = loadRater(WLE, 2020)
+
+      rater match {
+        case RateSum(
+              _,
+              List(
+                NumberOfMonuments(_, 1),
+                NumberOfAuthorsBonus(_, numberOfAuthorsRates)
+              )
+            ) =>
+          numberOfAuthorsRates === RateRanges(
+            Map((0, 0) -> 9.0, (1, 3) -> 3.0, (4, 9) -> 1.0),
+            sameAuthorZeroBonus = true
+          )
+        case other => ko(s"unexpected rater $other")
+      }
     }
 
 //    "05-101-0380" in {
@@ -72,4 +88,26 @@ class RaterSpec extends Specification {
 
   }
 
+}
+
+object RaterSpec {
+  private def loadRater(contestType: ContestType, year: Int) = {
+    Rater.fromConfig(
+      makeContestStat(contestType, year),
+      ConfigFactory.load(s"${contestType.code}_ua.conf")
+    )
+  }
+
+  private def makeContestStat(contestType: ContestType, year: Int) = {
+    val contest = Contest(contestType, Country.Ukraine, year)
+    val monumentDb = Some(new MonumentDB(contest, Nil))
+    val imageDb = new ImageDB(contest, Nil, monumentDb)
+    ContestStat(
+      contest = contest,
+      startYear = year,
+      monumentDb = monumentDb,
+      currentYearImageDb = Some(imageDb),
+      totalImageDb = Some(imageDb)
+    )
+  }
 }
