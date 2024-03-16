@@ -17,20 +17,16 @@ import scala.concurrent.Future
   * @param contest
   *   contest: contest type (WLM/WLE), country, year, etc.
   * @param startYear
-  *   the first year contest was held, or the first year that we are interested
-  *   in
+  *   the first year contest was held, or the first year that we are interested in
   * @param monumentDb
   *   cultural/natural monuments database for the contest
   * @param currentYearImageDb
   *   image database for current year's contest
   * @param totalImageDb
-  *   image database that holds images of all monuments from the contest,
-  *   regardless of when they where uploaded
+  *   image database that holds images of all monuments from the contest, regardless of when they
+  *   where uploaded
   * @param dbsByYear
   *   image databases split by contest year
-  * @param monumentDbOld
-  *   monument database at current year's contest start. Used to rate users who
-  *   submitted newly pictured monuments.
   */
 case class ContestStat(
     contest: Contest,
@@ -39,45 +35,35 @@ case class ContestStat(
     currentYearImageDb: Option[ImageDB] = None,
     totalImageDb: Option[ImageDB] = None,
     dbsByYear: Seq[ImageDB] = Seq.empty,
-    monumentDbOld: Option[MonumentDB] = None,
     config: Option[StatConfig] = None
 ) {
 
-  val imageDbsByYear = dbsByYear.groupBy(_.contest.year)
-  val yearSeq = imageDbsByYear.keys.toSeq.sorted
+  val imageDbsByYear: Map[Int, Seq[ImageDB]] = dbsByYear.groupBy(_.contest.year)
+  val yearSeq: Seq[Int] = imageDbsByYear.keys.toSeq.sorted
 
   lazy val oldImages: Iterable[Image] = {
-    for (
-      total <- totalImageDb;
+    for {
+      total <- totalImageDb
       current <- currentYearImageDb
-    )
-      yield {
-        val currentImageIds = current.images.flatMap(_.pageId).toSet
-        total.images.filter(image =>
-          !currentImageIds.contains(image.pageId.get)
-        )
-      }
+      currentImageIds = current.images.flatMap(_.pageId).toSet
+    } yield total.images.filterNot(_.pageId.exists(currentImageIds.contains))
   }.getOrElse(Nil)
 
-  def imageDbByYear(year: Int) = imageDbsByYear.get(year).map(_.head)
+  def imageDbByYear(year: Int): Option[ImageDB] = imageDbsByYear.get(year).map(_.head)
 
-  def mapYears[T](f: ImageDB => T) = {
-    for (
-      year <- yearSeq;
+  def mapYears[T](f: ImageDB => T): Seq[T] =
+    for {
+      year <- yearSeq
       imageDb <- imageDbByYear(year)
-    )
-      yield f(imageDb)
-  }
+    } yield f(imageDb)
 }
 
-/** Coordinates fetching contest statistics and creating reports/galleries etc.
-  * Needs refactoring.
+/** Coordinates fetching contest statistics and creating reports/galleries etc. Needs refactoring.
   *
   * @param contest
   *   contest: contest type (WLM/WLE), country, year, etc.
   * @param startYear
-  *   the first year contest was held, or the first year that we are interested
-  *   in
+  *   the first year contest was held, or the first year that we are interested in
   * @param monumentQuery
   *   monuments fetcher
   * @param imageQuery
@@ -117,31 +103,20 @@ class Statistics(
   private val currentYear = contest.year
 
   private val contests =
-    (startYear.getOrElse(currentYear) to currentYear).map(y =>
-      contest.copy(year = y)
-    )
+    (startYear.getOrElse(currentYear) to currentYear).map(y => contest.copy(year = y))
 
   /** Fetches contest data
     *
     * @param total
-    *   whether to fetch image database that holds images of all monuments from
-    *   the contest, regardless of when they where uploaded
+    *   whether to fetch image database that holds images of all monuments from the contest,
+    *   regardless of when they where uploaded
     * @return
     *   asynchronously returned contest data
     */
   def gatherData(total: Boolean): Future[ContestStat] = {
 
-    val (monumentDb, monumentDbOld) = (
-      Some(MonumentDB.getMonumentDb(contest, monumentQuery)),
-      contest.rateConfig.newObjectRating.map { _ =>
-        MonumentDB.getMonumentDb(
-          contest,
-          monumentQuery,
-          date =
-            Some(ZonedDateTime.of(2017, 4, 30, 23, 59, 0, 0, ZoneOffset.UTC))
-        )
-      }
-    )
+    val monumentDb =
+      Some(MonumentDB.getMonumentDb(contest, monumentQuery))
 
     for (
       byYear <- Future.sequence(contests.map(contestImages(monumentDb)));
@@ -162,11 +137,6 @@ class Statistics(
           )
     ) yield {
       val currentYearImages = byYear.find(_.contest.year == currentYear)
-
-      val mDbOld: Option[MonumentDB] = currentYearImages.flatMap(
-        getOldImagesMonumentDb(monumentDb, monumentDbOld, totalImages, _)
-      )
-
       ContestStat(
         contest,
         startYear.getOrElse(contest.year),
@@ -174,7 +144,6 @@ class Statistics(
         currentYearImages,
         totalImages,
         byYear,
-        mDbOld,
         Some(config)
       )
     }
@@ -203,28 +172,6 @@ class Statistics(
     ) yield {
       Some(new ImageDB(contest, commons ++ wiki, monumentDb))
     }
-
-  def getOldImagesMonumentDb(
-      monumentDb: Option[MonumentDB],
-      monumentDbOld: Option[MonumentDB],
-      totalImages: Option[ImageDB],
-      imageDB: ImageDB
-  ): Option[MonumentDB] = {
-    for (
-      mDb <- monumentDb;
-      mdbOld <- monumentDbOld;
-      total <- totalImages.orElse(Some(new ImageDB(contest, Seq.empty)))
-    ) yield {
-      val oldIds = mdbOld.monuments.filter(_.photo.isDefined).map(_.id).toSet ++
-        total.images
-          .filterNot(ti =>
-            imageDB.images.exists(i => i.pageId.exists(ti.pageId.contains))
-          )
-          .flatMap(_.monumentId)
-
-      new MonumentDB(contest, mDb.monuments.filter(m => oldIds.contains(m.id)))
-    }
-  }
 
   def init(total: Boolean): Unit = {
     gatherData(total = total)
@@ -275,8 +222,7 @@ object Statistics {
     val stat = new Statistics(
       contest,
       startYear = Some(cfg.years.head),
-      monumentQuery =
-        MonumentQuery.create(contest, reportDifferentRegionIds = true),
+      monumentQuery = MonumentQuery.create(contest, reportDifferentRegionIds = true),
       config = Some(cfg),
       imageQuery = imageQuery,
       imageQueryWiki = Some(imageQueryWiki)
