@@ -8,14 +8,20 @@ import org.scalawiki.dto.markup.Gallery
 import org.scalawiki.wikitext.TemplateParser
 import org.sweble.wikitext.engine.nodes.EngPage
 
+import scala.util.Try
+
 case class ImageMetadata(data: Map[String, String]) {
 
   def camera: Option[String] = data.get("Model")
 
   def date: Option[ZonedDateTime] =
     data
-      .get("DateTime")
-      .map(s => LocalDateTime.parse(s, ImageMetadata.df).atZone(ZoneOffset.UTC))
+      .get("DateTimeOriginal")
+      .flatMap { s =>
+        val parsed = Try(LocalDateTime.parse(s, ImageMetadata.df).atZone(ZoneOffset.UTC))
+        parsed.failed.foreach(println)
+        parsed.toOption
+      }
 }
 
 object ImageMetadata {

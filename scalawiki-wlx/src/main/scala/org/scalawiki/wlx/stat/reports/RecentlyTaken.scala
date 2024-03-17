@@ -15,8 +15,8 @@ class RecentlyTaken(val stat: ContestStat) extends Reporter {
       val images = db.images.filter(_.metadata.exists(_.date.exists(_.isAfter(jun30))))
       images.map{ i =>
         List(
-          s"[[File:${i.title}]]",
-          s"[[User:${i.author}|${i.author}]]",
+          s"[[:${i.title}]]",
+          s"[[User:${i.author.getOrElse("")}|${i.author.getOrElse("")}]]",
           i.metadata.flatMap(_.date.map(_.toString)).getOrElse("")
         )
 
