@@ -1,6 +1,6 @@
 package org.scalawiki.dto
 
-import org.scalawiki.dto.ImageSpec.{makeTemplate, withCategories, withSpecialNominations}
+import org.scalawiki.dto.ImageSpec._
 import org.scalawiki.dto.markup.Template
 import org.specs2.mutable.Specification
 
@@ -86,6 +86,13 @@ class ImageSpec extends Specification {
       .get
 
     image2.specialNominations === Set.empty
+
+    val page3 = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(withSpecialNomination2)))
+    val image3 = Image
+      .fromPageRevision(page3, Some("Monument"), Set("WLM2023-UA-interior"))
+      .get
+
+    image3.specialNominations === Set("WLM2023-UA-interior")
   }
 
   "resize" should {
@@ -172,4 +179,24 @@ object ImageSpec {
       |[[Category:Bishop's house in Lutsk castle]]
       |[[Category:Uploaded via Campaign:wlm-ua]]
       |""".stripMargin
+
+  private val withSpecialNomination2 = """=={{int:filedesc}}==
+                                          |{{Information
+                                          ||description={{uk|1=Прибутковий будинок, [[:uk:Дніпро (місто)|Дніпро]], вул. Троїцька (Червона), 8}}{{Monument Ukraine|12-101-0443}}[[Category:Wiki Loves Monuments in Ukraine 2023 - Quantity]]{{WLM2023-UA-interior}}
+                                          ||date=2023-07-18 08:59:48
+                                          ||source={{own}}
+                                          ||author=[[User:Olebesedin|Olebesedin]]
+                                          ||permission=
+                                          ||other versions=
+                                          |}}
+                                          |{{Location|48.462144|35.042819}}
+                                          |
+                                          |=={{int:license-header}}==
+                                          |{{self|cc-by-sa-4.0}}
+                                          |
+                                          |{{Wiki Loves Monuments 2023|ua}}
+                                          |
+                                          |[[Category:8 Troitska Street, Dnipro]]
+                                          |[[Category:Uploaded via Campaign:wlm-ua]]
+                                          |""".stripMargin
 }
