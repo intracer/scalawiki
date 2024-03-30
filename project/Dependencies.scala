@@ -108,7 +108,7 @@ object Dependencies {
       val CommonsCodecV = "1.16.1"
       val CommonsCompressV = "1.26.1"
       val CommonsLang3V = "3.7"
-      val CommonsIoV = "2.15.1"
+      val CommonsIoV = "2.16.0"
 
       val codec = "commons-codec" % "commons-codec" % CommonsCodecV
       val io = "commons-io" % "commons-io" % CommonsIoV
