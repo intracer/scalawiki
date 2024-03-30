@@ -4,7 +4,7 @@ import org.scalawiki.dto.cmd.query.Generator
 import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.{Image, Namespace}
 import org.scalawiki.query.QueryLibrary
-import org.scalawiki.wlx.dto.{Contest, SpecialNomination}
+import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.{ActionBot, MwBot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -55,25 +55,22 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
       contest: Contest,
       generator: Generator
   ): Future[Iterable[Image]] = {
-    val specialNominationTemplates = SpecialNomination.nominations
-      .filter(n => n.years.contains(contest.year))
-      .flatMap(_.fileTemplate)
-    for (pages <- bot.run(imagesByGenerator(generator))) yield {
-      val optionalImages =
-        for (page <- pages)
-          yield Image.fromPage(
-            page,
+    val specialNominationTemplates = contest.specialNominations.flatMap(_.fileTemplate).toSet
+    for (pages <- bot.run(imagesByGenerator(generator, withMetadata = true)))
+      yield {
+        pages.flatMap(
+          Image.fromPage(
             contest.fileTemplate,
             specialNominationTemplates
           )
-      optionalImages.flatten
-    }
+        )
+      }
   }
 }
 
 object ImageQuery {
 
-  def create(db: Boolean = false)(implicit
+  def create(implicit
       bot: ActionBot = MwBot.fromHost(MwBot.commons)
   ): ImageQuery = new ImageQueryApi(bot)
 

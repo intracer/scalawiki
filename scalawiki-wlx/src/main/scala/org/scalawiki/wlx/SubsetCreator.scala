@@ -10,7 +10,7 @@ object SubsetCreator {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
 
     val specialNomination = "конкурс статей"
 
@@ -34,7 +34,7 @@ object SubsetCreator {
       contest: Contest,
       specialNomination: String,
       monumentFilter: Monument => Boolean
-  ) = {
+  ): Unit = {
     val ukWiki = MwBot.fromHost("uk.wikipedia.org")
 
     val subset = monuments.filter(monumentFilter)
@@ -62,7 +62,7 @@ object SubsetCreator {
       contest: Contest,
       byRegion: Map[String, Seq[Monument]],
       regionIds: SortedSet[String]
-  ) {
+  ): Unit = {
     val buf = new StringBuffer
     buf.append("__TOC__\n")
 
@@ -112,7 +112,7 @@ object SubsetCreator {
       contest: Contest,
       byRegion: Map[String, Iterable[Monument]],
       regionIds: SortedSet[String]
-  ) {
+  ): Unit = {
     for (regionId <- regionIds) {
 
       val regionTitle = contest.country.regionName(regionId)

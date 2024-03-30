@@ -21,7 +21,7 @@ class MonumentDbStat {
     "article"
   )
 
-  def getStat(monumentDbs: Seq[MonumentDB]) = {
+  def getStat(monumentDbs: Seq[MonumentDB]): String = {
     val title =
       monumentDbs.head.contest.contestType.name + " database statistics"
 
@@ -54,7 +54,7 @@ class MonumentDbStat {
       )
     }
 
-    val table = new Table(columns, data, title)
+    val table = Table(columns, data, title)
 
     table.asWiki
   }

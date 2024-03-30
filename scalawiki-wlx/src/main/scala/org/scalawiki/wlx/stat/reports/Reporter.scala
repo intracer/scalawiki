@@ -2,17 +2,20 @@ package org.scalawiki.wlx.stat.reports
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
+import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.stat.ContestStat
+
+import scala.concurrent.Future
 
 trait Reporter {
 
   def stat: ContestStat
 
-  def contest = stat.contest
+  def contest: Contest = stat.contest
 
   def name: String
 
-  def category = contest.name
+  def category: String = contest.name
 
   def page = s"Commons:$category/$name"
 
@@ -26,7 +29,7 @@ trait Reporter {
     header + table.asWiki + categoryText
   }
 
-  def updateWiki(bot: MwBot) = {
+  def updateWiki(bot: MwBot): Future[Any] = {
     bot.page(page).edit(asText, Some("updating"))
   }
 

@@ -8,19 +8,25 @@ import org.scalawiki.dto.markup.Gallery
 import org.scalawiki.wikitext.TemplateParser
 import org.sweble.wikitext.engine.nodes.EngPage
 
+import scala.util.Try
+
 case class ImageMetadata(data: Map[String, String]) {
 
   def camera: Option[String] = data.get("Model")
 
   def date: Option[ZonedDateTime] =
     data
-      .get("DateTime")
-      .map(s => LocalDateTime.parse(s, ImageMetadata.df).atZone(ZoneOffset.UTC))
+      .get("DateTimeOriginal")
+      .flatMap { s =>
+        val parsed = Try(LocalDateTime.parse(s, ImageMetadata.df).atZone(ZoneOffset.UTC))
+        parsed.failed.foreach(println)
+        parsed.toOption
+      }
 }
 
 object ImageMetadata {
-  val pattern = "yyyy:MM:dd HH:mm:ss"
-  val df = DateTimeFormatter.ofPattern(pattern)
+  private val pattern = "yyyy:MM:dd HH:mm:ss"
+  private val df = DateTimeFormatter.ofPattern(pattern)
 }
 
 case class Image(
@@ -82,7 +88,7 @@ object Image {
   def fromPageRevision(
       page: Page,
       monumentIdTemplate: Option[String],
-      specialNominationTemplates: Seq[String] = Nil
+      specialNominationTemplates: Set[String] = Set.empty
   ): Option[Image] = {
     page.revisions.headOption.map { revision =>
       val content = revision.content.getOrElse("")
@@ -92,12 +98,8 @@ object Image {
           .collectTemplates(parsedPage, template)
           .flatMap(_.getParamOpt("1"))
       }
-      val specialNominations = specialNominationTemplates.flatMap { template =>
-        Some(template).filter(_ => {
-          val value = TemplateParser.collectTemplates(parsedPage, template)
-          value.nonEmpty
-        })
-      }
+      val specialNominations =
+        TemplateParser.collectTemplateNames(parsedPage, specialNominationTemplates)
 
       val author = getAuthorFromPage(parsedPage)
 
@@ -115,40 +117,32 @@ object Image {
         monumentIds = ids,
         pageId = page.id,
         categories = categories,
-        specialNominations = specialNominations.toSet
+        specialNominations = specialNominations
       )
     }
   }
 
   def fromPage(
-      page: Page,
       monumentIdTemplate: Option[String],
-      specialNominationTemplates: Seq[String] = Nil
-  ): Option[Image] = {
-    for (
-      fromImage <- Image.fromPageImages(page);
+      specialNominationTemplates: Set[String] = Set.empty
+  )(page: Page): Option[Image] =
+    for {
+      fromImage <- Image.fromPageImages(page)
       fromRev <- Image.fromPageRevision(
         page,
         monumentIdTemplate,
         specialNominationTemplates
       )
+      renamedAuthor = fromRev.author.map(author => AuthorsMap.renames.getOrElse(author, author))
+    } yield fromImage.copy(
+      monumentIds = fromRev.monumentIds,
+      author = renamedAuthor,
+      categories = fromRev.categories,
+      specialNominations = fromRev.specialNominations
     )
-      yield {
-        val renamedAuthor = fromRev.author.map(author =>
-          AuthorsMap.renames.getOrElse(author, author)
-        )
-        fromImage.copy(
-          monumentIds = fromRev.monumentIds,
-          author = renamedAuthor,
-          categories = fromRev.categories,
-          specialNominations = fromRev.specialNominations
-        )
-      }
-  }
 
-  def getAuthorFromPage(content: String): String = {
+  def getAuthorFromPage(content: String): String =
     getAuthorFromPage(TemplateParser.parsePage(content))
-  }
 
   def getAuthorFromPage(parsedPage: EngPage): String = {
     val template = TemplateParser.getTemplate(parsedPage, Some("Information"))

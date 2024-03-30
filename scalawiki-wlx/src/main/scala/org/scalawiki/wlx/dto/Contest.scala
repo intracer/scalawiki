@@ -2,13 +2,8 @@ package org.scalawiki.wlx.dto
 
 import java.time.ZonedDateTime
 
-import com.typesafe.config.{
-  Config,
-  ConfigFactory,
-  ConfigParseOptions,
-  ConfigResolveOptions
-}
-import org.scalawiki.wlx.stat.RateConfig
+import com.typesafe.config.{Config, ConfigFactory, ConfigParseOptions, ConfigResolveOptions}
+import org.scalawiki.wlx.stat.rating.RateConfig
 
 import scala.util.Try
 
@@ -34,9 +29,9 @@ case class Contest(
     config: Option[Config] = None
 ) extends HasImagesCategory {
 
-  def campaign = contestType.code + "-" + country.code
+  def campaign: String = contestType.code + "-" + country.code
 
-  def name = s"${contestType.name} $year" + countryName.fold("")(" in " + _)
+  def name: String = s"${contestType.name} $year" + countryName.fold("")(" in " + _)
 
   def countryName: Option[String] =
     if (country != NoAdmDivision)
@@ -62,17 +57,17 @@ case class Contest(
   def fileTemplate: Option[String] =
     uploadConfigs.headOption.map(_.fileTemplate)
 
-  def listsHost: Option[String] = {
+  def listsHost: Option[String] =
     uploadConfigs.head.listsHost
       .orElse(
         country.languageCodes.headOption.map(_ + ".wikipedia.org")
       )
-  }
+
 }
 
 object Contest {
 
-  val opts = ConfigParseOptions.defaults.setAllowMissing(false)
+  private val opts = ConfigParseOptions.defaults.setAllowMissing(false)
 
   def load(name: String): Option[Contest] = {
     Try {
@@ -106,16 +101,17 @@ object Contest {
 
     for (
       contestType <- ContestType.byCode(typeStr.toLowerCase);
-      country <- Country.fromJavaLocales.find(country =>
-        country.name == countryStr || country.code == countryStr
-      )
+      country <- Country.fromJavaLocales
+        .find(country => country.name == countryStr || country.code == countryStr)
     )
       yield new Contest(
-        contestType,
-        country,
-        year,
+        contestType = contestType,
+        country = country,
+        year = year,
         uploadConfigs = Seq(uploadConfig),
-        config = Some(config)
+        config = Some(config),
+        specialNominations = SpecialNomination.nominations
+          .filter(n => n.years.contains(year))
       )
   }
 
@@ -133,10 +129,10 @@ object Contest {
       Nil
     )
 
-  def WLMUkraine(year: Int) =
+  def WLMUkraine(year: Int): Contest =
     load("wlm_ua.conf").get.copy(year = year)
 
-  def WLEUkraine(year: Int) =
+  def WLEUkraine(year: Int): Contest =
     load("wle_ua.conf").get.copy(year = year)
 
 }
