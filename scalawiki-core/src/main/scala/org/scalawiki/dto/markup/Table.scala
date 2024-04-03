@@ -7,7 +7,7 @@ case class Table(
     cssClass: String = "wikitable sortable"
 ) {
 
-  def asWiki = {
+  def asWiki: String = {
     "{|" +
       (if (cssClass.nonEmpty) s" class='$cssClass'" else "") +
       (if (title.nonEmpty) "\n|+ " + title else "") +
@@ -22,7 +22,7 @@ case class Table(
       "\n|}"
   }
 
-  def asHtml = {
+  def asHtml: String = {
     "<table>" +
       (if (cssClass.nonEmpty) s" class='$cssClass'" else "") +
       (if (title.nonEmpty) s"\n<caption> $title </caption>" else "") +

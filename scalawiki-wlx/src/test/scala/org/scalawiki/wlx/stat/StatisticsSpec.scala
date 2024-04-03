@@ -34,7 +34,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv)
 
     val cfg = StatConfig(campaign = contest.campaign)
 
-    new Statistics(contest, None, monumentQuery, imageQuery, None, bot, cfg)
+    new Statistics(contest, None, monumentQuery, Some(imageQuery), None, bot, cfg)
   }
 
   "give current year stat empty" in {
@@ -81,7 +81,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv)
     monumentQuery.byMonumentTemplate(date = None) returns monuments
 
     val stat =
-      new Statistics(contest, None, monumentQuery, imageQuery, None, bot)
+      new Statistics(contest, None, monumentQuery, Some(imageQuery), None, bot)
 
     stat.gatherData(false) must throwA[RuntimeException].await
   }

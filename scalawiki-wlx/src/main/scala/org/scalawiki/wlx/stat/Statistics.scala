@@ -75,7 +75,7 @@ class Statistics(
     contest: Contest,
     startYear: Option[Int],
     monumentQuery: MonumentQuery,
-    imageQuery: ImageQuery,
+    imageQuery: Option[ImageQuery],
     imageQueryWiki: Option[ImageQuery],
     bot: MwBot,
     config: StatConfig
@@ -85,7 +85,7 @@ class Statistics(
       contest: Contest,
       startYear: Option[Int] = None,
       monumentQuery: MonumentQuery,
-      imageQuery: ImageQuery = ImageQuery.create,
+      imageQuery: Option[ImageQuery] = Some(ImageQuery.create),
       imageQueryWiki: Option[ImageQuery] = None,
       bot: MwBot = MwBot.fromHost(MwBot.commons),
       config: Option[StatConfig] = None
@@ -99,6 +99,11 @@ class Statistics(
       bot,
       config.getOrElse(StatConfig(contest.campaign))
     )
+
+  def getImageQuery(year: Option[Int]): ImageQuery = {
+    val cacheName = s"${contest.campaign}-${year.getOrElse("all")}"
+    ImageQuery.create(new CachedBot(Site.commons, cacheName, true))
+  }
 
   private val currentYear = contest.year
 
@@ -121,7 +126,7 @@ class Statistics(
     for (
       byYear <- Future.sequence(contests.map(contestImages(monumentDb)));
       totalImages <-
-        if (total) imagesByTemplate(monumentDb)
+        if (total) imagesByTemplate(monumentDb, imageQuery.getOrElse(getImageQuery(None)))
         else
           Future.successful(
             Some(
@@ -150,11 +155,16 @@ class Statistics(
   }
 
   private def contestImages(monumentDb: Some[MonumentDB])(contest: Contest) =
-    ImageDB.create(contest, imageQuery, monumentDb, config.minMpx)
+    ImageDB.create(
+      contest,
+      imageQuery.getOrElse(getImageQuery(Some(contest.year))),
+      monumentDb,
+      config.minMpx
+    )
 
   private def imagesByTemplate(
       monumentDb: Some[MonumentDB],
-      imageQuery: ImageQuery = imageQuery
+      imageQuery: ImageQuery
   ) =
     for (
       commons <- imageQuery.imagesWithTemplateAsync(
@@ -224,7 +234,7 @@ object Statistics {
       startYear = Some(cfg.years.head),
       monumentQuery = MonumentQuery.create(contest, reportDifferentRegionIds = true),
       config = Some(cfg),
-      imageQuery = imageQuery,
+      imageQuery = Option.empty[ImageQuery],
       imageQueryWiki = Some(imageQueryWiki)
     )
 

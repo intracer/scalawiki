@@ -8,6 +8,8 @@ import org.scalawiki.dto.markup.Gallery
 import org.scalawiki.wikitext.TemplateParser
 import org.sweble.wikitext.engine.nodes.EngPage
 
+import scala.util.Try
+
 case class ImageMetadata(data: Map[String, String]) {
 
   def camera: Option[String] = data.get("Model")
@@ -15,7 +17,7 @@ case class ImageMetadata(data: Map[String, String]) {
   def date: Option[ZonedDateTime] =
     data
       .get("DateTime")
-      .map(s => LocalDateTime.parse(s, ImageMetadata.df).atZone(ZoneOffset.UTC))
+      .flatMap(s => Try(LocalDateTime.parse(s, ImageMetadata.df).atZone(ZoneOffset.UTC)).toOption)
 }
 
 object ImageMetadata {

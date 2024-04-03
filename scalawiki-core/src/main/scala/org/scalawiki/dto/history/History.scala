@@ -7,7 +7,7 @@ import org.scalawiki.dto.filter.RevisionFilter
 
 class History(val revisions: Seq[Revision]) {
 
-  def hasPageCreation = revisions.headOption.exists(_.isNewPage)
+  def hasPageCreation: Boolean = revisions.headOption.exists(_.isNewPage)
 
   def users(revisionFilter: RevisionFilter): Set[String] = {
     val filtered = revisionFilter.apply(revisions)
@@ -45,10 +45,10 @@ class History(val revisions: Seq[Revision]) {
 
   def updated: Option[ZonedDateTime] = revisions.headOption.flatMap(_.timestamp)
 
-  def createdAfter(from: Option[ZonedDateTime]) =
+  def createdAfter(from: Option[ZonedDateTime]): Boolean =
     created.exists(rev => from.forall(rev.isAfter))
 
-  def editedIn(revisionFilter: RevisionFilter) =
+  def editedIn(revisionFilter: RevisionFilter): Boolean =
     revisionFilter.apply(revisions).nonEmpty
 
 }
