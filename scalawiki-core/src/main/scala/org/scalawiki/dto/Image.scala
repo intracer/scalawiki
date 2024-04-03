@@ -16,8 +16,12 @@ case class ImageMetadata(data: Map[String, String]) {
 
   def date: Option[ZonedDateTime] =
     data
-      .get("DateTime")
-      .flatMap(s => Try(LocalDateTime.parse(s, ImageMetadata.df).atZone(ZoneOffset.UTC)).toOption)
+      .get("DateTimeOriginal")
+      .flatMap { s =>
+        val parsed = Try(LocalDateTime.parse(s, ImageMetadata.df).atZone(ZoneOffset.UTC))
+        parsed.failed.foreach(println)
+        parsed.toOption
+      }
 }
 
 object ImageMetadata {

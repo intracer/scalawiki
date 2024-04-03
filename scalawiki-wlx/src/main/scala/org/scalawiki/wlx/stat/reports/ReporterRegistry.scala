@@ -15,11 +15,11 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
 
   import org.scalawiki.wlx.stat.reports.{ReporterRegistry => RR}
 
-  val contest = stat.contest
-  val monumentDb = stat.monumentDb
-  val currentYearImageDb = stat.currentYearImageDb
-  val totalImageDb = stat.totalImageDb
-  val commons = MwBot.fromHost(MwBot.commons)
+  private val contest = stat.contest
+  private val monumentDb = stat.monumentDb
+  private val currentYearImageDb = stat.currentYearImageDb
+  private val totalImageDb = stat.totalImageDb
+  private val commons = MwBot.fromHost(MwBot.commons)
 
   def monumentDbStat: Option[String] = stat.monumentDb.map(RR.monumentDbStat)
 
@@ -45,6 +45,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
     */
   def currentYear(): Unit = {
     for (imageDb <- currentYearImageDb) {
+      new RecentlyTaken(stat).updateWiki(commons)
 
       if (cfg.regionalGallery && stat.totalImageDb.isEmpty) {
         Output.byRegion(monumentDb.get, imageDb)

@@ -105,11 +105,13 @@ object Contest {
         .find(country => country.name == countryStr || country.code == countryStr)
     )
       yield new Contest(
-        contestType,
-        country,
-        year,
+        contestType = contestType,
+        country = country,
+        year = year,
         uploadConfigs = Seq(uploadConfig),
-        config = Some(config)
+        config = Some(config),
+        specialNominations = SpecialNomination.nominations
+          .filter(n => n.years.contains(year))
       )
   }
 
