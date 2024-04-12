@@ -19,7 +19,7 @@ case class ImageMetadata(data: Map[String, String]) {
       .get("DateTimeOriginal")
       .flatMap { s =>
         val parsed = Try(LocalDateTime.parse(s, ImageMetadata.df).atZone(ZoneOffset.UTC))
-        parsed.failed.foreach(println)
+//        parsed.failed.foreach(println)
         parsed.toOption
       }
 }

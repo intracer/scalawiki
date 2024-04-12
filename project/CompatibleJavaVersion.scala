@@ -4,10 +4,10 @@ import sbt.{VersionNumberCompatibility, VersionNumber}
 object CompatibleJavaVersion extends VersionNumberCompatibility {
   def name = "Java specification compatibility"
 
-  def isCompatible(current: VersionNumber, required: VersionNumber) =
+  def isCompatible(current: VersionNumber, required: VersionNumber): Boolean =
     current.numbers.zip(required.numbers).forall(n => n._1 >= n._2)
 
-  def apply(current: VersionNumber, required: VersionNumber) =
+  def apply(current: VersionNumber, required: VersionNumber): Boolean =
     isCompatible(current, required)
 
 }

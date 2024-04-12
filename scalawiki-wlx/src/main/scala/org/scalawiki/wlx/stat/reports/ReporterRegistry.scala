@@ -138,9 +138,9 @@ class NumberOfMonumentsByNumberOfPictures(
     val stat: ContestStat,
     val imageDb: ImageDB
 ) extends Reporter {
-  val picturesPerMonument =
+  private val picturesPerMonument =
     imageDb.images.flatMap(_.monumentIds).groupBy(identity).values.map(_.size)
-  val numberOfMonumentsByNumberOfPictures = picturesPerMonument
+  private val numberOfMonumentsByNumberOfPictures = picturesPerMonument
     .groupBy(identity)
     .mapValues(_.size)
     .toSeq

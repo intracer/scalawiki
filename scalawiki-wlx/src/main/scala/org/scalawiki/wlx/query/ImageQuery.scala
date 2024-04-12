@@ -7,6 +7,7 @@ import org.scalawiki.query.QueryLibrary
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.{ActionBot, MwBot}
 
+import scala.collection.parallel.CollectionConverters.IterableIsParallelizable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -57,14 +58,12 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
   ): Future[Iterable[Image]] = {
     val specialNominationTemplates = contest.specialNominations.flatMap(_.fileTemplate).toSet
     for (pages <- bot.run(imagesByGenerator(generator, withMetadata = true)))
-      yield {
-        pages.flatMap(
-          Image.fromPage(
-            contest.fileTemplate,
-            specialNominationTemplates
-          )
+      yield pages.par
+        .flatMap(
+          Image.fromPage(contest.fileTemplate, specialNominationTemplates)
         )
-      }
+        .seq
+
   }
 }
 

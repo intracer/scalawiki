@@ -30,7 +30,9 @@ trait Reporter {
   }
 
   def updateWiki(bot: MwBot): Future[Any] = {
-    bot.page(page).edit(asText, Some("updating"))
+    if (!stat.config.exists(_.noOutput))
+      bot.page(page).edit(asText, Some("updating"))
+    else Future.successful()
   }
 
 }

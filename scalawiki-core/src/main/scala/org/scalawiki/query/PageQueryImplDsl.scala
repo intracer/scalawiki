@@ -136,7 +136,7 @@ class PageQueryImplDsl(
       section: Option[String] = None,
       token: Option[String] = None,
       multi: Boolean = false
-  ) = {
+  ): Future[String] = {
 
     val page = query.fold(
       ids => PageId(ids.head),
