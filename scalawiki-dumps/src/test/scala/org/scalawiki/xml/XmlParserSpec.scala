@@ -420,17 +420,27 @@ class XmlParserSpec extends Specification {
     val p1Revs = p1.revisions
     p1Revs.size === 2
     val p1r1 = p1Revs(0)
-    (p1r1.revId, p1r1.parentId, p1r1.comment, p1r1.content) === (Some(
-      100
-    ), Some(99), Some("I have just one thing to say!"), Some(
-      "A bunch of [[text]] here."
-    ))
+    (p1r1.revId, p1r1.parentId, p1r1.comment, p1r1.content) === (
+      Some(
+        100
+      ),
+      Some(99),
+      Some("I have just one thing to say!"),
+      Some(
+        "A bunch of [[text]] here."
+      )
+    )
     p1r1.user === Some(User(42, "Foobar"))
 
     val p1r2 = p1Revs(1)
-    (p1r2.revId, p1r2.parentId, p1r2.comment, p1r2.content) === (Some(
-      99
-    ), None, Some("new!"), Some("An earlier [[revision]]."))
+    (p1r2.revId, p1r2.parentId, p1r2.comment, p1r2.content) === (
+      Some(
+        99
+      ),
+      None,
+      Some("new!"),
+      Some("An earlier [[revision]].")
+    )
     p1r2.user === Some(IpContributor("10.0.0.2"))
 
     val p2 = pages(1)
@@ -438,11 +448,16 @@ class XmlParserSpec extends Specification {
     val p2Revs = p2.revisions
     p2Revs.size === 1
     val p2r1 = p2Revs(0)
-    (p2r1.revId, p2r1.parentId, p2r1.comment, p2r1.content) === (Some(
-      101
-    ), None, Some("hey"), Some(
-      "WHYD YOU LOCK PAGE??!!! i was editing that jerk"
-    ))
+    (p2r1.revId, p2r1.parentId, p2r1.comment, p2r1.content) === (
+      Some(
+        101
+      ),
+      None,
+      Some("hey"),
+      Some(
+        "WHYD YOU LOCK PAGE??!!! i was editing that jerk"
+      )
+    )
     p2r1.user === Some(IpContributor("10.0.0.2"))
 
     val p3 = pages(2)
@@ -450,11 +465,16 @@ class XmlParserSpec extends Specification {
     val p3Revs = p3.revisions
     p3Revs.size === 1
     val p3r1 = p3Revs(0)
-    (p3r1.revId, p3r1.parentId, p3r1.comment, p3r1.content) === (Some(
-      102
-    ), None, Some("My awesomeest image!"), Some(
-      "This is an awesome little imgae. I lurves it. {{PD}}"
-    ))
+    (p3r1.revId, p3r1.parentId, p3r1.comment, p3r1.content) === (
+      Some(
+        102
+      ),
+      None,
+      Some("My awesomeest image!"),
+      Some(
+        "This is an awesome little imgae. I lurves it. {{PD}}"
+      )
+    )
     p3r1.user === Some(User(42, "Foobar"))
 
     val ii = p3.images
@@ -475,17 +495,27 @@ class XmlParserSpec extends Specification {
     val p1Revs = p1.revisions
     p1Revs.size === 2
     val p1r1 = p1Revs(0)
-    (p1r1.revId, p1r1.parentId, p1r1.comment, p1r1.content) === (Some(
-      100
-    ), Some(99), Some("I have just one thing to say!"), Some(
-      "A bunch of [[text]] here."
-    ))
+    (p1r1.revId, p1r1.parentId, p1r1.comment, p1r1.content) === (
+      Some(
+        100
+      ),
+      Some(99),
+      Some("I have just one thing to say!"),
+      Some(
+        "A bunch of [[text]] here."
+      )
+    )
     p1r1.user === Some(User(42, "Foobar"))
 
     val p1r2 = p1Revs(1)
-    (p1r2.revId, p1r2.parentId, p1r2.comment, p1r2.content) === (Some(
-      99
-    ), None, Some("new!"), Some("An earlier [[revision]]."))
+    (p1r2.revId, p1r2.parentId, p1r2.comment, p1r2.content) === (
+      Some(
+        99
+      ),
+      None,
+      Some("new!"),
+      Some("An earlier [[revision]].")
+    )
     p1r2.user === Some(IpContributor("10.0.0.2"))
   }
 
@@ -506,9 +536,15 @@ class XmlParserSpec extends Specification {
       revision.comment,
       revision.content
     ) ===
-      (Some(revId), Some(parentId), Some(Timestamp.format(timestamp)), Some(
-        comment
-      ), Some(text))
+      (
+        Some(revId),
+        Some(parentId),
+        Some(Timestamp.format(timestamp)),
+        Some(
+          comment
+        ),
+        Some(text)
+      )
 
     revision.user === Some(User(userId, user))
   }
