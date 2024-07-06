@@ -12,7 +12,7 @@ case class SwTemplate(wtNode: WtTemplate) extends SwNode {
     wtNode.getArgs.asScala.collect { case arg: WtTemplateArgument => arg }
   val template = getTemplate
 
-  def getTemplate = {
+  def getTemplate: Template = {
     val argsMap = args.zipWithIndex.map { case (arg, index) =>
       val name =
         if (arg.hasName)
@@ -25,13 +25,13 @@ case class SwTemplate(wtNode: WtTemplate) extends SwNode {
       name -> value
     }.toMap
 
-    new Template(name, argsMap)
+    Template(name, argsMap)
   }
 
   def getArg(name: String): Option[WtTemplateArgument] =
     args.find(p => p.getName.isResolved && p.getName.getAsString.trim == name)
 
-  def setTemplateParam(name: String, value: String) = {
+  def setTemplateParam(name: String, value: String): Unit = {
     getArg(name).foreach { arg =>
       val orig = getText(arg.getValue)
 
