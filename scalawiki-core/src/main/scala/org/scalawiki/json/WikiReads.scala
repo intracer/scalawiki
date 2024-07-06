@@ -222,7 +222,8 @@ case class ImageReads(
       Reads.pure[Option[Long]](pageId) ~
       (__ \ "metadata")
         .readNullable[Seq[JsObject]]
-        .map(_.map(_.map(readKv).toMap))
+        .map(_.map(_.map(readKv).toMap)) ~
+      (__ \ "mime").readNullable[String]
   )(Image.basic _)
 
   override def reads(json: JsValue): JsResult[Image] = imagesRead.reads(json)

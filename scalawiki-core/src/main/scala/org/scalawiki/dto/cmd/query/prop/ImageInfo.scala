@@ -166,6 +166,7 @@ package iiprop {
       Size,
       Dimensions,
       Sha1,
+      Mime,
       ThumbMime,
       MediaType,
       Metadata,

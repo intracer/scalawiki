@@ -44,7 +44,8 @@ case class Image(
     pageId: Option[Long] = None,
     metadata: Option[ImageMetadata] = None,
     categories: Set[String] = Set.empty,
-    specialNominations: Set[String] = Set.empty
+    specialNominations: Set[String] = Set.empty,
+    mime: Option[String] = None
 ) extends Ordered[Image] {
 
   def compare(that: Image): Int = title.compareTo(that.title)
@@ -192,7 +193,8 @@ object Image {
       url: Option[String],
       pageUrl: Option[String],
       pageId: Option[Long],
-      metadata: Option[Map[String, String]] = None
+      metadata: Option[Map[String, String]] = None,
+      mime: Option[String] = None
   ) =
     new Image(
       title = title,
@@ -204,7 +206,8 @@ object Image {
       url = url,
       pageUrl = pageUrl,
       pageId = pageId,
-      metadata = metadata.map(ImageMetadata.apply)
+      metadata = metadata.map(ImageMetadata.apply),
+      mime = mime
     )
 
   def gallery(

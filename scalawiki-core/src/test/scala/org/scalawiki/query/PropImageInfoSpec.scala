@@ -9,6 +9,7 @@ import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.{PageIdsParam, Query}
 import org.scalawiki.dto.cmd.query.prop.{ImageInfo, Prop}
 import org.scalawiki.dto.cmd.query.prop.iiprop.{IiProp, Metadata}
+import org.scalawiki.query.PropImageInfoSpec.{page1, page2, response1, response2}
 import org.scalawiki.util.TestUtils.resourceAsString
 import org.specs2.mutable.Specification
 import spray.util.pimpFuture
@@ -16,95 +17,6 @@ import spray.util.pimpFuture
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class PropImageInfoSpec extends Specification with MockBotSpec {
-
-  def response1(generatorPrefix: String = "cm") =
-    s"""  {
-       |    "query": {
-       |      "pages": {
-       |      "32885574": {
-       |      "pageid": 32885574,
-       |      "ns": 6,
-       |      "title": "File:Dovbush-rocks 01.JPG",
-       |      "imagerepository": "local",
-       |      "imageinfo": [
-       |    {
-       |      "timestamp": "2014-05-20T20:54:33Z",
-       |      "user": "Taras r",
-       |      "size": 4270655,
-       |      "width": 3648,
-       |      "height": 2736,
-       |      "url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Dovbush-rocks_01.JPG",
-       |      "descriptionurl": "https://commons.wikimedia.org/wiki/File:Dovbush-rocks_01.JPG"
-       |    }]}}},
-       |    "continue": {
-       |    "g${generatorPrefix}continue": "file|44454d45524749373631312e4a50470a44454d45524749373631312e4a5047|32763876",
-       |    "continue": "g${generatorPrefix}continue||"}}
-    """.stripMargin
-
-  val response2 =
-    """  {
-      |    "query": {
-      |      "pages": {
-      |      "32885597": {
-      |      "pageid": 32885597,
-      |      "ns": 6,
-      |      "title": "File:Dovbush-rocks 02.JPG",
-      |      "imagerepository": "local",
-      |      "imageinfo": [
-      |    {
-      |      "timestamp": "2014-05-20T20:55:12Z",
-      |      "user": "Taras r",
-      |      "size": 4537737,
-      |      "width": 2736,
-      |      "height": 3648,
-      |      "url": "https://upload.wikimedia.org/wikipedia/commons/2/26/Dovbush-rocks_02.JPG",
-      |      "descriptionurl": "https://commons.wikimedia.org/wiki/File:Dovbush-rocks_02.JPG"
-      |    }]}}}}
-      |    """.stripMargin
-
-  val page1 = Page(
-    Some(32885574),
-    Some(6),
-    "File:Dovbush-rocks 01.JPG",
-    Seq.empty,
-    Seq(
-      Image.basic(
-        "File:Dovbush-rocks 01.JPG",
-        Some(Timestamp.parse("2014-05-20T20:54:33Z")),
-        Some("Taras r"),
-        Some(4270655),
-        Some(3648),
-        Some(2736),
-        Some(
-          "https://upload.wikimedia.org/wikipedia/commons/e/ea/Dovbush-rocks_01.JPG"
-        ),
-        Some("https://commons.wikimedia.org/wiki/File:Dovbush-rocks_01.JPG"),
-        Some(32885574)
-      )
-    )
-  )
-
-  val page2 = Page(
-    Some(32885597),
-    Some(6),
-    "File:Dovbush-rocks 02.JPG",
-    Seq.empty,
-    Seq(
-      Image.basic(
-        "File:Dovbush-rocks 02.JPG",
-        Some(Timestamp.parse("2014-05-20T20:55:12Z")),
-        Some("Taras r"),
-        Some(4537737),
-        Some(2736),
-        Some(3648),
-        Some(
-          "https://upload.wikimedia.org/wikipedia/commons/2/26/Dovbush-rocks_02.JPG"
-        ),
-        Some("https://commons.wikimedia.org/wiki/File:Dovbush-rocks_02.JPG"),
-        Some(32885597)
-      )
-    )
-  )
 
   "get image info in generator" should {
     "query by category members" in {
@@ -117,7 +29,7 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
             "gcmtitle" -> "Category:SomeCategory",
             "gcmlimit" -> "max",
             "prop" -> "imageinfo",
-            "iiprop" -> "timestamp|user|comment",
+            "iiprop" -> "timestamp|user|comment|mime",
             "continue" -> ""
           ),
           response1("cm")
@@ -129,7 +41,7 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
             "gcmtitle" -> "Category:SomeCategory",
             "gcmlimit" -> "max",
             "prop" -> "imageinfo",
-            "iiprop" -> "timestamp|user|comment",
+            "iiprop" -> "timestamp|user|comment|mime",
             "continue" -> "gcmcontinue||",
             "gcmcontinue" -> "file|44454d45524749373631312e4a50470a44454d45524749373631312e4a5047|32763876"
           ),
@@ -142,10 +54,10 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
       val future = bot
         .page("Category:SomeCategory")
         .imageInfoByGenerator(
-          "categorymembers",
-          "cm",
-          Set.empty,
-          Set("timestamp", "user", "comment")
+          generator = "categorymembers",
+          generatorPrefix = "cm",
+          namespaces = Set.empty,
+          props = Set("timestamp", "user", "comment", "mime")
         )
         .map(_.toSeq)
 
@@ -247,4 +159,101 @@ class PropImageInfoSpec extends Specification with MockBotSpec {
       )
     }
   }
+}
+
+object PropImageInfoSpec {
+  private def response1(generatorPrefix: String = "cm") =
+    s"""  {
+       |    "query": {
+       |      "pages": {
+       |      "32885574": {
+       |      "pageid": 32885574,
+       |      "ns": 6,
+       |      "title": "File:Dovbush-rocks 01.JPG",
+       |      "imagerepository": "local",
+       |      "imageinfo": [
+       |    {
+       |      "timestamp": "2014-05-20T20:54:33Z",
+       |      "user": "Taras r",
+       |      "size": 4270655,
+       |      "width": 3648,
+       |      "height": 2736,
+       |      "mime": "image/jpeg",
+       |      "url": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Dovbush-rocks_01.JPG",
+       |      "descriptionurl": "https://commons.wikimedia.org/wiki/File:Dovbush-rocks_01.JPG"
+       |    }]}}},
+       |    "continue": {
+       |    "g${generatorPrefix}continue": "file|44454d45524749373631312e4a50470a44454d45524749373631312e4a5047|32763876",
+       |    "continue": "g${generatorPrefix}continue||"}}
+    """.stripMargin
+
+  private val response2 =
+    """  {
+      |    "query": {
+      |      "pages": {
+      |      "32885597": {
+      |      "pageid": 32885597,
+      |      "ns": 6,
+      |      "title": "File:Dovbush-rocks 02.JPG",
+      |      "imagerepository": "local",
+      |      "imageinfo": [
+      |    {
+      |      "timestamp": "2014-05-20T20:55:12Z",
+      |      "user": "Taras r",
+      |      "size": 4537737,
+      |      "width": 2736,
+      |      "height": 3648,
+      |      "mime": "image/jpeg",
+      |      "url": "https://upload.wikimedia.org/wikipedia/commons/2/26/Dovbush-rocks_02.JPG",
+      |      "descriptionurl": "https://commons.wikimedia.org/wiki/File:Dovbush-rocks_02.JPG"
+      |    }]}}}}
+      |    """.stripMargin
+
+  private val page1 = Page(
+    id = Some(32885574),
+    ns = Some(6),
+    title = "File:Dovbush-rocks 01.JPG",
+    revisions = Seq.empty,
+    images = Seq(
+      Image
+        .basic(
+          title = "File:Dovbush-rocks 01.JPG",
+          timestamp = Some(Timestamp.parse("2014-05-20T20:54:33Z")),
+          uploader = Some("Taras r"),
+          size = Some(4270655),
+          width = Some(3648),
+          height = Some(2736),
+          url = Some(
+            "https://upload.wikimedia.org/wikipedia/commons/e/ea/Dovbush-rocks_01.JPG"
+          ),
+          pageUrl = Some("https://commons.wikimedia.org/wiki/File:Dovbush-rocks_01.JPG"),
+          pageId = Some(32885574)
+        )
+        .copy(mime = Some("image/jpeg"))
+    )
+  )
+
+  private val page2 = Page(
+    id = Some(32885597),
+    ns = Some(6),
+    title = "File:Dovbush-rocks 02.JPG",
+    revisions = Seq.empty,
+    images = Seq(
+      Image
+        .basic(
+          title = "File:Dovbush-rocks 02.JPG",
+          timestamp = Some(Timestamp.parse("2014-05-20T20:55:12Z")),
+          uploader = Some("Taras r"),
+          size = Some(4537737),
+          width = Some(2736),
+          height = Some(3648),
+          url = Some(
+            "https://upload.wikimedia.org/wikipedia/commons/2/26/Dovbush-rocks_02.JPG"
+          ),
+          pageUrl = Some("https://commons.wikimedia.org/wiki/File:Dovbush-rocks_02.JPG"),
+          pageId = Some(32885597)
+        )
+        .copy(mime = Some("image/jpeg"))
+    )
+  )
 }
