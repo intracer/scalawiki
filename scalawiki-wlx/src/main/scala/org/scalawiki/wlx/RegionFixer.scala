@@ -1,25 +1,24 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.wlx.dto.Monument
+import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Monument}
 
 object RegionFixer {
 
-  def fixLists(monumentDb: MonumentDB) {
+  def fixLists(monumentDb: MonumentDB): Unit = {
     ListUpdater.updateLists(monumentDb, new RegionFixerUpdater(monumentDb))
   }
 }
 
 class RegionFixerUpdater(monumentDb: MonumentDB) extends MonumentUpdater {
 
-  val contest = monumentDb.contest
-  val country = contest.country
-  val oblasts = country.regions.filter(adm =>
-    !Set("Київ", "Севастополь").contains(adm.name)
-  )
-  val raions = oblasts.flatMap(_.regions).filter(_.name.endsWith("район"))
-  val raionNames = raions.map(_.name).toSet
+  val contest: Contest = monumentDb.contest
+  val country: Country = contest.country
+  val oblasts: Seq[AdmDivision] =
+    country.regions.filter(adm => !Set("Київ", "Севастополь").contains(adm.name))
+  val raions: Seq[AdmDivision] = oblasts.flatMap(_.regions).filter(_.name.endsWith("район"))
+  val raionNames: Set[String] = raions.map(_.name).toSet
 
-  val nameParam = contest.uploadConfigs.head.listConfig.namesMap("city")
+  val nameParam: String = contest.uploadConfigs.head.listConfig.namesMap("city")
   val maxIndex = 2
 
   def updatedParams(m: Monument): Map[String, String] = {

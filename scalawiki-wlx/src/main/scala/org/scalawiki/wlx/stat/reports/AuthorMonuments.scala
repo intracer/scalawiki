@@ -4,6 +4,7 @@ import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.ImageDB
 import org.scalawiki.wlx.stat._
+import org.scalawiki.wlx.stat.rating.{NumberOfImagesInPlaceBonus, RateSum, Rater}
 
 class AuthorMonuments(
     val stat: ContestStat,
