@@ -9,7 +9,7 @@ import org.jsoup.Jsoup
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.{LoginResponse, MwException, Page, Site}
 import org.scalawiki.http.HttpClient
-import org.scalawiki.json.MwReads._
+import org.scalawiki.json.playjson.MwReads._
 import org.scalawiki.query.{DslQuery, PageQuery, SinglePageQuery}
 import play.api.libs.json._
 

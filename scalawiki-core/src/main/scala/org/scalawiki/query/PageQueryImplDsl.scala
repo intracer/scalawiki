@@ -10,7 +10,7 @@ import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
 import org.scalawiki.dto.{Namespace, Page}
-import org.scalawiki.json.MwReads._
+import org.scalawiki.json.playjson.MwReads._
 import retry.Success
 
 import scala.concurrent.Future

@@ -1,4 +1,4 @@
-package org.scalawiki.json
+package org.scalawiki.json.playjson
 
 import org.scalawiki.dto._
 import play.api.libs.functional.syntax._

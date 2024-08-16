@@ -26,7 +26,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv)
     val monumentQuery = mock[MonumentQuery]
     val imageQuery = mock[ImageQuery]
 
-    imageQuery.imagesFromCategoryAsync(
+    imageQuery.imagesFromCategory(
       contest.imagesCategory,
       contest
     ) returns Future.successful(images)
@@ -74,7 +74,7 @@ class StatisticsSpec(implicit ee: ExecutionEnv)
     val monumentQuery = mock[MonumentQuery]
     val imageQuery = mock[ImageQuery]
 
-    imageQuery.imagesFromCategoryAsync(
+    imageQuery.imagesFromCategory(
       contest.imagesCategory,
       contest
     ) returns Future.failed(new RuntimeException("Error 123"))

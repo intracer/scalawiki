@@ -5,6 +5,7 @@ import org.scalawiki.dto.cmd.query.list.{EmbeddedIn, ListParam}
 import org.scalawiki.dto.cmd.query.prop.{LangLinks, LlLimit, Prop, Revisions}
 import org.scalawiki.dto.cmd.query.{PageIdsParam, Query, TitlesParam}
 import org.scalawiki.dto.{MwException, Page}
+import org.scalawiki.json.playjson.PlayParser
 import org.scalawiki.util.TestUtils._
 import org.specs2.matcher.MatchResult
 import org.specs2.mutable.Specification
@@ -25,7 +26,7 @@ class ParserSpec extends Specification {
   "One page query" should {
     val limitsStr = s"""{"limits": {"embeddedin": 500}, $queryStr}"""
 
-    val parser = new Parser(emptyAction)
+    val parser = new PlayParser(emptyAction)
     val pagesOpt = parser.parse(limitsStr).toOption
 
     "contain page" in {
@@ -40,7 +41,7 @@ class ParserSpec extends Specification {
   "New Multipage query" should {
     val queryContinueStr =
       s"""{$queryStr, "continue": {"continue": "-||", "eicontinue": "qcValue"}}"""
-    val parser = new Parser(emptyAction)
+    val parser = new PlayParser(emptyAction)
     val pagesOpt = parser.parse(queryContinueStr).toOption
 
     "contain page" in {
@@ -57,7 +58,7 @@ class ParserSpec extends Specification {
     val queryContinueStr =
       s"""{"query-continue": {"$queryType": {"$queryContinue": "qcValue" }}, $queryStr}"""
 
-    val parser = new Parser(emptyAction)
+    val parser = new PlayParser(emptyAction)
     val pagesOpt = parser.parse(queryContinueStr).toOption
 
     "contain page" in {
@@ -101,7 +102,7 @@ class ParserSpec extends Specification {
         )
       )
 
-      val parser = new Parser(action)
+      val parser = new PlayParser(action)
       val page = parser.parse(s).get.head
 
       val langLinks = page.langLinks
@@ -136,7 +137,7 @@ class ParserSpec extends Specification {
         }
       }"""
 
-      val parser = new Parser(action)
+      val parser = new PlayParser(action)
       val result = parser.parse(json)
 
       result.isFailure === true

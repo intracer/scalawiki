@@ -3,7 +3,7 @@ package org.scalawiki.query
 import org.scalawiki.MwBot
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.{MwException, PageList}
-import org.scalawiki.json.Parser
+import org.scalawiki.json.playjson.PlayParser
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -43,10 +43,8 @@ class DslQuery(
     implicit val success: retry.Success[String] =
       retry.Success[String](_ => true)
 
-    retry.Backoff()(odelay.Timer.default)(() =>
-      bot.post(params.toMap)
-    ) flatMap { body =>
-      val parser = new Parser(action)
+    retry.Backoff()(odelay.Timer.default)(() => bot.post(params.toMap)) flatMap { body =>
+      val parser = new PlayParser(action)
 
       parser.parse(body) match {
         case Success(newPages) =>

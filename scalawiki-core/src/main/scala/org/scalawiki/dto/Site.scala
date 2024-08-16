@@ -13,9 +13,9 @@ case class Site(
     articlePath: String = "/wiki"
 ) {
 
-  val home = protocol + "://" + domain
+  val home: String = protocol + "://" + domain
 
-  def pageUrl(title: String, urlEncode: Boolean = false) = {
+  def pageUrl(title: String, urlEncode: Boolean = false): String = {
     val underscored = title.replaceAll(" ", "_")
     home + articlePath + "/" + (
       if (urlEncode)
@@ -25,22 +25,22 @@ case class Site(
     )
   }
 
-  def portStr = port.fold("")(":" + _)
+  def portStr: String = port.fold("")(":" + _)
 }
 
 object Site {
 
-  def wikipedia(langCode: String) = project(langCode, "wikipedia")
+  def wikipedia(langCode: String): Site = project(langCode, "wikipedia")
 
-  val commons = wikimedia("commons")
+  val commons: Site = wikimedia("commons")
 
-  val meta = wikimedia("meta")
+  val meta: Site = wikimedia("meta")
 
-  val enWiki = wikipedia("en")
+  val enWiki: Site = wikipedia("en")
 
-  val ukWiki = wikipedia("uk")
+  val ukWiki: Site = wikipedia("uk")
 
-  def localhost = {
+  def localhost: Site = {
     val scriptPath = "/w"
     val script = scriptPath + "/index.php"
     Site(
@@ -55,10 +55,10 @@ object Site {
     )
   }
 
-  def project(langCode: String, family: String) =
+  def project(langCode: String, family: String): Site =
     Site(Some(langCode), family, s"$langCode.$family.org")
 
-  def wikimedia(code: String) = Site(None, code, s"$code.wikimedia.org")
+  def wikimedia(code: String): Site = Site(None, code, s"$code.wikimedia.org")
 
   def host(
       host: String,
@@ -69,7 +69,7 @@ object Site {
     list match {
       case code :: "wikimedia" :: "org" :: Nil => wikimedia(code)
       case code :: family :: "org" :: Nil      => project(code, family)
-      case _ => Site(None, host, host, protocol, port)
+      case _                                   => Site(None, host, host, protocol, port)
     }
   }
 }

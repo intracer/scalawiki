@@ -13,12 +13,12 @@ import scala.concurrent.Future
 
 trait ImageQuery {
 
-  def imagesFromCategoryAsync(
+  def imagesFromCategory(
       category: String,
       contest: Contest
   ): Future[Iterable[Image]]
 
-  def imagesWithTemplateAsync(
+  def imagesWithTemplate(
       template: String,
       contest: Contest
   ): Future[Iterable[Image]]
@@ -27,7 +27,7 @@ trait ImageQuery {
 
 class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
 
-  override def imagesFromCategoryAsync(
+  override def imagesFromCategory(
       category: String,
       contest: Contest
   ): Future[Iterable[Image]] = {
@@ -42,7 +42,7 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
     imagesByGenerator(contest, generator)
   }
 
-  override def imagesWithTemplateAsync(
+  override def imagesWithTemplate(
       template: String,
       contest: Contest
   ): Future[Iterable[Image]] = {

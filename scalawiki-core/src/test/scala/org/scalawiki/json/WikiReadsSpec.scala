@@ -1,8 +1,8 @@
 package org.scalawiki.json
 
 import java.time.ZonedDateTime
-
 import org.scalawiki.dto._
+import org.scalawiki.json.playjson.{CategoryInfoReads, GlobalUserInfoReads, ImageReads, PageReads, RevisionRead, UserContributorReads, UserReads, WikiReads}
 import org.specs2.mutable.Specification
 import play.api.libs.json._
 

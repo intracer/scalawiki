@@ -9,6 +9,7 @@ import org.scalawiki.wikitext.TemplateParser
 import org.sweble.wikitext.engine.nodes.EngPage
 
 import scala.util.Try
+import scala.util.matching.Regex
 
 case class ImageMetadata(data: Map[String, String]) {
 
@@ -80,7 +81,7 @@ case class Image(
 
 object Image {
 
-  val categoryRegex = "\\[\\[Category:([^]]+)\\]\\]".r
+  val categoryRegex: Regex = "\\[\\[Category:([^]]+)\\]\\]".r
 
   def fromPageImages(page: Page): Option[Image] =
     page.images.headOption

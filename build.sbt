@@ -59,6 +59,8 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
       Library.Akka.http,
       Library.Akka.httpCaching,
       Library.Play.json(isScala213.value),
+      "com.lihaoyi" %% "ujson" % "3.3.0",
+      "com.lihaoyi" %% "upickle" % "3.3.0",
       "com.typesafe" % "config" % TypesafeConfigV,
       "com.iheart" %% "ficus" % FicusV,
       "jp.ne.opt" %% "chronoscala" % ChronoScalaV,

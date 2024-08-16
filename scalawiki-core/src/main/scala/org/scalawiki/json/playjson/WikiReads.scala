@@ -1,21 +1,10 @@
-package org.scalawiki.json
-
-import java.time.{Instant, ZoneOffset, ZonedDateTime}
-import java.time.format.DateTimeFormatter
+package org.scalawiki.json.playjson
 
 import org.scalawiki.dto._
-import play.api.libs.json.JsonValidationError
-import play.api.libs.json.{
-  JsError,
-  JsNumber,
-  JsPath,
-  JsResult,
-  JsString,
-  JsSuccess,
-  JsValue,
-  Reads,
-  _
-}
+import play.api.libs.json._
+
+import java.time.format.DateTimeFormatter
+import java.time.{Instant, ZoneOffset, ZonedDateTime}
 
 /** Created by francisco on 03/11/16.
   */
@@ -23,8 +12,7 @@ trait WikiReads[T] extends Reads[T] {}
 
 abstract class WikiResponseReads[T]() {
   val TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-  val df =
-    DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN).withZone(ZoneOffset.UTC)
+  val df = DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN).withZone(ZoneOffset.UTC)
 
   lazy val zonedDateTimeReads = zonedDateReads(TIMESTAMP_PATTERN)
 
@@ -160,9 +148,7 @@ case class RevisionRead(override val pageId: Option[Long])
     revisionRead.reads(json)
 }
 
-case class GlobalUserInfoReads()
-    extends WikiResponseReads
-    with WikiReads[GlobalUserInfo] {
+case class GlobalUserInfoReads() extends WikiResponseReads with WikiReads[GlobalUserInfo] {
 
   import play.api.libs.functional.syntax._
 
@@ -228,9 +214,7 @@ case class ImageReads(
   override def reads(json: JsValue): JsResult[Image] = imagesRead.reads(json)
 }
 
-case class CategoryInfoReads()
-    extends WikiResponseReads
-    with WikiReads[CategoryInfo] {
+case class CategoryInfoReads() extends WikiResponseReads with WikiReads[CategoryInfo] {
 
   import play.api.libs.functional.syntax._
 
@@ -245,9 +229,7 @@ case class CategoryInfoReads()
     categoryRead.reads(json)
 }
 
-case class UserContributorReads()
-    extends WikiResponseReads
-    with WikiReads[UserContrib] {
+case class UserContributorReads() extends WikiResponseReads with WikiReads[UserContrib] {
 
   import play.api.libs.functional.syntax._
 

@@ -167,13 +167,13 @@ class Statistics(
       imageQuery: ImageQuery
   ) =
     for (
-      commons <- imageQuery.imagesWithTemplateAsync(
+      commons <- imageQuery.imagesWithTemplate(
         contest.uploadConfigs.head.fileTemplate,
         contest
       );
       wiki <- imageQueryWiki
         .map(
-          _.imagesWithTemplateAsync(
+          _.imagesWithTemplate(
             contest.uploadConfigs.head.fileTemplate,
             contest
           )
