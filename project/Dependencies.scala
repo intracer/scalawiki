@@ -19,7 +19,7 @@ object Dependencies {
   val RetryV = "0.3.6"
   val Scala213V = "2.13.14"
   val ScalaChartV = "0.8.0"
-  val ScalaCheckV = "1.18.0"
+  val ScalaCheckV = "1.18.1"
   val ScalaCsvV = "2.0.0"
   val ScalaParserCombinatorsV = "2.2.0"
   val ScalaXmlV = "2.1.0"
