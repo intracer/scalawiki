@@ -4,7 +4,7 @@ object Dependencies {
 
   val AaltoXmlV = "1.3.3"
   val BetterFilesV = "3.9.2"
-  val BlameApiV = "15.10.11"
+  val BlameApiV = "15.10.12"
   val ChronicleMapV = "3.22.9"
   val ChronoScalaV = "1.0.0"
   val FicusV = "1.5.2"
@@ -12,15 +12,15 @@ object Dependencies {
   val H2V = "1.4.200"
   val JimFsV = "1.3.0"
   val JodaTimeV = "2.12.2"
-  val JSoupV = "1.17.2"
-  val LogbackClassicV = "1.5.6"
+  val JSoupV = "1.18.1"
+  val LogbackClassicV = "1.5.8"
   val MockServerV = "5.15.0"
   val ReactiveStreamsV = "1.0.4"
   val RetryV = "0.3.6"
   val Scala213V = "2.13.14"
   val ScalaChartV = "0.8.0"
   val ScalaCheckV = "1.18.0"
-  val ScalaCsvV = "1.3.10"
+  val ScalaCsvV = "2.0.0"
   val ScalaParserCombinatorsV = "2.2.0"
   val ScalaXmlV = "2.1.0"
   val ScallopV = "5.1.0"
@@ -93,7 +93,7 @@ object Dependencies {
 
     object Poi {
       val PoiV = "5.3.0"
-      val PoiXwpfV = "2.0.6"
+      val PoiXwpfV = "2.1.0"
 
       val scratchpad = "org.apache.poi" % "poi-scratchpad" % PoiV
       val poi = "org.apache.poi" % "poi" % PoiV
@@ -105,10 +105,10 @@ object Dependencies {
     }
 
     object Commons {
-      val CommonsCodecV = "1.17.0"
-      val CommonsCompressV = "1.26.2"
+      val CommonsCodecV = "1.17.1"
+      val CommonsCompressV = "1.27.1"
       val CommonsLang3V = "3.7"
-      val CommonsIoV = "2.16.1"
+      val CommonsIoV = "2.17.0"
 
       val codec = "commons-codec" % "commons-codec" % CommonsCodecV
       val io = "commons-io" % "commons-io" % CommonsIoV
