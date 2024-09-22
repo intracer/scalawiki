@@ -32,9 +32,9 @@ case class ContestStat(
     contest: Contest,
     startYear: Int,
     monumentDb: Option[MonumentDB] = None,
-    currentYearImageDb: Option[ImageDB] = None,
-    totalImageDb: Option[ImageDB] = None,
-    dbsByYear: Seq[ImageDB] = Seq.empty,
+    currentYearImageDb: ImageDB,
+    totalImageDb: ImageDB,
+    dbsByYear: Seq[ImageDB] = Nil,
     config: Option[StatConfig] = None
 ) {
 
@@ -42,12 +42,9 @@ case class ContestStat(
   val yearSeq: Seq[Int] = imageDbsByYear.keys.toSeq.sorted
 
   lazy val oldImages: Iterable[Image] = {
-    for {
-      total <- totalImageDb
-      current <- currentYearImageDb
-      currentImageIds = current.images.flatMap(_.pageId).toSet
-    } yield total.images.filterNot(_.pageId.exists(currentImageIds.contains))
-  }.getOrElse(Nil)
+    val currentImageIds = currentYearImageDb.images.flatMap(_.pageId).toSet
+    totalImageDb.images.filterNot(_.pageId.exists(currentImageIds.contains))
+  }
 
   def imageDbByYear(year: Int): Option[ImageDB] = imageDbsByYear.get(year).map(_.head)
 
@@ -119,29 +116,16 @@ class Statistics(
     *   asynchronously returned contest data
     */
   def gatherData(total: Boolean): Future[ContestStat] = {
+    val monumentDb = Some(MonumentDB.getMonumentDb(contest, monumentQuery))
 
-    val monumentDb =
-      Some(MonumentDB.getMonumentDb(contest, monumentQuery))
-
-    for (
-      byYear <- Future.sequence(contests.map(contestImages(monumentDb)));
+    for {
+      byYear <- Future.sequence(contests.map(contestImages(monumentDb)))
+      currentYearImages = byYear.find(_.contest.year == currentYear).get
       totalImages <-
         if (total) imagesByTemplate(monumentDb, imageQuery.getOrElse(getImageQuery(None)))
         else
-          Future.successful(
-            Some(
-              new ImageDB(
-                contest,
-                byYear
-                  .find(_.contest.year == currentYear)
-                  .map(_.images)
-                  .getOrElse(Nil),
-                monumentDb
-              )
-            )
-          )
-    ) yield {
-      val currentYearImages = byYear.find(_.contest.year == currentYear)
+          Future.successful(currentYearImages)
+    } yield {
       ContestStat(
         contest,
         startYear.getOrElse(contest.year),
@@ -162,26 +146,11 @@ class Statistics(
       config.minMpx
     )
 
-  private def imagesByTemplate(
-      monumentDb: Some[MonumentDB],
-      imageQuery: ImageQuery
-  ) =
-    for (
-      commons <- imageQuery.imagesWithTemplateAsync(
-        contest.uploadConfigs.head.fileTemplate,
-        contest
-      );
-      wiki <- imageQueryWiki
-        .map(
-          _.imagesWithTemplateAsync(
-            contest.uploadConfigs.head.fileTemplate,
-            contest
-          )
-        )
-        .getOrElse(Future.successful(Nil))
-    ) yield {
-      Some(new ImageDB(contest, commons ++ wiki, monumentDb))
-    }
+  private def imagesByTemplate(monumentDb: Some[MonumentDB], imageQuery: ImageQuery) =
+    for {
+      commons <- imageQuery.imagesWithTemplate(contest)
+      wiki <- imageQueryWiki.map(_.imagesWithTemplate(contest)).getOrElse(Future.successful(Nil))
+    } yield new ImageDB(contest, commons ++ wiki, monumentDb)
 
   def init(total: Boolean): Unit = {
     gatherData(total = total)
@@ -223,8 +192,6 @@ object Statistics {
     val contest = getContest(cfg)
 
     val cacheName = s"${cfg.campaign}-${contest.year}"
-    val imageQuery =
-      ImageQuery.create(new CachedBot(Site.commons, cacheName, true))
     val imageQueryWiki = ImageQuery.create(
       new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 100)
     )
@@ -234,7 +201,7 @@ object Statistics {
       startYear = Some(cfg.years.head),
       monumentQuery = MonumentQuery.create(contest, reportDifferentRegionIds = true),
       config = Some(cfg),
-      imageQuery = Option.empty[ImageQuery],
+      imageQuery = None,
       imageQueryWiki = Some(imageQueryWiki)
     )
 

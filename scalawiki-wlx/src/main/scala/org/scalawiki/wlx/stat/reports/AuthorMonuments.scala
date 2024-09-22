@@ -18,10 +18,10 @@ class AuthorMonuments(
 
   val country = contest.country
 
-  val imageDb = stat.currentYearImageDb.get
+  val imageDb = stat.currentYearImageDb
   val currentImageIds = imageDb.images.flatMap(_.pageId).toSet
 
-  val totalImageDb = stat.totalImageDb.get
+  val totalImageDb = stat.totalImageDb
 
   val oldImages = totalImageDb.images.filter(image =>
     !currentImageIds.contains(image.pageId.get)

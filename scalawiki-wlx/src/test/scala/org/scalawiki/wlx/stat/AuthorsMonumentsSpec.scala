@@ -27,7 +27,7 @@ class AuthorsMonumentsSpec extends Specification {
     val mdb = Some(new MonumentDB(contest, monuments))
 
     val db = new ImageDB(contest, images, mdb)
-    val contestStat = ContestStat(contest, 2013, mdb, Some(db), Some(db))
+    val contestStat = ContestStat(contest, 2013, mdb, db, db)
     new AuthorMonuments(contestStat, gallery = gallery).table
   }
 
@@ -40,9 +40,7 @@ class AuthorsMonumentsSpec extends Specification {
       namePrefix: String,
       startId: Int = 1
   ): Seq[Monument] =
-    (startId until startId + n).map(i =>
-      monument(s"$regionId-xxx-000$i", namePrefix + i)
-    )
+    (startId until startId + n).map(i => monument(s"$regionId-xxx-000$i", namePrefix + i))
 
   def image(
       i: Int,
@@ -78,7 +76,7 @@ class AuthorsMonumentsSpec extends Specification {
 
       val db = new ImageDB(noRegions, Seq.empty[Image], mdb)
 
-      val contestStat = ContestStat(contest, 2013, mdb, Some(db), Some(db))
+      val contestStat = ContestStat(contest, 2013, mdb, db, db)
       val table = new AuthorMonuments(contestStat).table
 
       table.headers === Seq(
@@ -333,8 +331,7 @@ class AuthorsMonumentsSpec extends Specification {
       )
 
       val db = new ImageDB(contest, images2, Some(mDb))
-      val contestStat =
-        new ContestStat(contest, 2013, Some(mDb), Some(db), Some(db))
+      val contestStat = ContestStat(contest, 2013, Some(mDb), db, db)
       val table = new AuthorMonuments(contestStat).table
       val data = table.data
 
@@ -452,12 +449,12 @@ class AuthorsMonumentsSpec extends Specification {
       val db = new ImageDB(contest, images2, Some(mDb))
       val totalDb = new ImageDB(contest, images1 ++ images2, Some(mDb))
 
-      val contestStat = new ContestStat(
+      val contestStat = ContestStat(
         contest.copy(rateConfig = RateConfig(newObjectRating = Some(3))),
         2013,
         Some(mDb),
-        Some(db),
-        Some(totalDb)
+        db,
+        totalDb
       )
       val table = new AuthorMonuments(contestStat).table
       val data = table.data
@@ -599,12 +596,12 @@ class AuthorsMonumentsSpec extends Specification {
 
       val db = new ImageDB(contest, images2, Some(mDb))
 
-      val contestStat = new ContestStat(
+      val contestStat = ContestStat(
         contest.copy(rateConfig = RateConfig(newObjectRating = Some(3))),
         2013,
         Some(mDb),
-        Some(db),
-        Some(db)
+        db,
+        db
       )
 
       val table = new AuthorMonuments(contestStat).table
@@ -770,12 +767,12 @@ class AuthorsMonumentsSpec extends Specification {
       val db = new ImageDB(contest, images2, Some(mDb))
       val totalDb = new ImageDB(contest, images1 ++ images2, Some(mDb))
 
-      val contestStat = new ContestStat(
+      val contestStat = ContestStat(
         contest.copy(rateConfig = RateConfig(newObjectRating = Some(3))),
         2013,
         Some(mDb),
-        Some(db),
-        Some(totalDb)
+        db,
+        totalDb
       )
 
       val table = new AuthorMonuments(contestStat).table

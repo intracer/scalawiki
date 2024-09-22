@@ -538,7 +538,7 @@ object Output {
     bot
       .page(s"Commons:$categoryName/Regional statistics")
       .edit(regionalStat, Some("updating"))
-    authorsStat.authorsContributedPerRegion(stat.totalImageDb.get, bot)
+    authorsStat.authorsContributedPerRegion(stat.totalImageDb, bot)
   }
 
   def newMonuments(stat: ContestStat) = {

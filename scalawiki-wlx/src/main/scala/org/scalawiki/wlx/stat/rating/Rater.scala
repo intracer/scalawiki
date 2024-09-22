@@ -10,7 +10,7 @@ trait Rater {
 
   def stat: ContestStat
 
-  def imageDb: ImageDB = stat.currentYearImageDb.get
+  def imageDb: ImageDB = stat.currentYearImageDb
 
   def rate(monumentId: String, author: String): Double
 

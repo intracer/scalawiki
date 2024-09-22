@@ -27,7 +27,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
   //    RR.authorsMonuments(stat.currentYearImageDb.get)
 
   def authorsImages: String =
-    RR.authorsImages(currentYearImageDb.get, monumentDb)
+    RR.authorsImages(currentYearImageDb, monumentDb)
 
   def authorsContributed: String =
     RR.authorsContributed(stat.dbsByYear, totalImageDb, monumentDb)
@@ -44,87 +44,81 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
   /** Outputs current year reports.
     */
   def currentYear(): Unit = {
-    for (imageDb <- currentYearImageDb) {
-      new RecentlyTaken(stat).updateWiki(commons)
+    val imageDb = currentYearImageDb
+    new RecentlyTaken(stat).updateWiki(commons)
 
-      if (cfg.regionalGallery && stat.totalImageDb.isEmpty) {
-        Output.byRegion(monumentDb.get, imageDb)
+    if (cfg.specialNominations) {
+      new SpecialNominations(stat, imageDb).statistics()
+    }
+
+    if (cfg.lowRes) {
+      Output.lessThan2MpGallery(contest, imageDb)
+    }
+
+    monumentDb.foreach { mDb =>
+      if (cfg.wrongIds) {
+        Output.wrongIds(imageDb, mDb)
       }
 
-      if (cfg.specialNominations) {
-        new SpecialNominations(stat, imageDb).statistics()
+      if (cfg.missingIds) {
+        Output.missingIds(imageDb, mDb)
       }
 
-      if (cfg.lowRes) {
-        Output.lessThan2MpGallery(contest, imageDb)
+      if (cfg.multipleIds) {
+        Output.multipleIds(imageDb, mDb)
       }
 
-      monumentDb.foreach { mDb =>
-        if (cfg.wrongIds) {
-          Output.wrongIds(imageDb, mDb)
-        }
+      if (cfg.fillLists && cfg.years.size == 1) {
+        ImageFiller.fillLists(mDb, imageDb)
+      }
 
-        if (cfg.missingIds) {
-          Output.missingIds(imageDb, mDb)
-        }
+      if (cfg.missingGallery) {
+        Output.missingGallery(mDb)
+      }
 
-        if (cfg.multipleIds) {
-          Output.multipleIds(imageDb, mDb)
-        }
+      if (cfg.placeDetection) {
+        Output.unknownPlaces(mDb, imageDb)
+        Output.unknownPlaces(mDb)
+      }
 
-        if (cfg.fillLists && cfg.years.size == 1) {
-          ImageFiller.fillLists(mDb, imageDb)
-        }
-
-        if (cfg.missingGallery) {
-          Output.missingGallery(mDb)
-        }
-
-        if (cfg.placeDetection) {
-          Output.unknownPlaces(mDb, imageDb)
-          Output.unknownPlaces(mDb)
-        }
-
-        if (cfg.mostPopularMonuments) {
-          new MostPopularMonuments(stat).updateWiki(
-            MwBot.fromHost(MwBot.commons)
-          )
-        }
+      if (cfg.mostPopularMonuments) {
+        new MostPopularMonuments(stat).updateWiki(
+          MwBot.fromHost(MwBot.commons)
+        )
       }
     }
   }
 
   def allYears(): Unit = {
-    for (imageDb <- totalImageDb) {
-      if (cfg.fillLists) {
-        ImageFiller.fillLists(monumentDb.get, imageDb)
-      }
-
-      if (cfg.regionalStat) {
-        Output.regionalStat(stat)
-      }
-
-      if (cfg.newMonuments) {
-        Output.newMonuments(stat)
-      }
-
-      if (cfg.authorsStat) {
-        new AuthorsStat().authorsStat(stat, commons, cfg.gallery)
-      } else if (cfg.rateInputDistribution) {
-        Rater.create(stat)
-      }
-
-      if (cfg.regionalGallery) {
-        Output.byRegion(monumentDb.get, imageDb)
-      }
-
-      if (cfg.numberOfMonumentsByNumberOfPictures) {
-        // new NumberOfMonumentsByNumberOfPictures(stat, imageDb).updateWiki(commons)
-        val mDb = monumentDb.get
-
-        Gallery.gallery(imageDb, mDb)
-      }
+    val imageDb = totalImageDb
+    if (cfg.fillLists) {
+      ImageFiller.fillLists(monumentDb.get, imageDb)
     }
+
+    if (cfg.regionalStat) {
+      Output.regionalStat(stat)
+    }
+
+    if (cfg.newMonuments) {
+      Output.newMonuments(stat)
+    }
+
+    if (cfg.authorsStat) {
+      new AuthorsStat().authorsStat(stat, commons, cfg.gallery)
+    } else if (cfg.rateInputDistribution) {
+      Rater.create(stat)
+    }
+
+    if (cfg.regionalGallery) {
+      Output.byRegion(monumentDb.get, imageDb)
+    }
+
+    if (cfg.numberOfMonumentsByNumberOfPictures) {
+      // new NumberOfMonumentsByNumberOfPictures(stat, imageDb).updateWiki(commons)
+      val mDb = monumentDb.get
+      Gallery.gallery(imageDb, mDb)
+    }
+
   }
 
   def output(): Unit = {
@@ -170,14 +164,12 @@ object ReporterRegistry {
 
   def authorsContributed(
       imageDbs: Seq[ImageDB],
-      totalImageDb: Option[ImageDB],
+      totalImageDb: ImageDB,
       monumentDb: Option[MonumentDB]
-  ): String =
-    new AuthorsStat().authorsContributed(imageDbs, totalImageDb, monumentDb)
+  ): String = new AuthorsStat().authorsContributed(imageDbs, totalImageDb, monumentDb)
 
   def specialNominations(stat: ContestStat): String =
-    new SpecialNominations(stat, stat.currentYearImageDb.get)
-      .specialNomination()
+    new SpecialNominations(stat, stat.currentYearImageDb).specialNomination()
 
   def withArticles(monumentDb: Option[MonumentDB]): Option[String] =
     monumentDb.map(db => Stats.withArticles(db).asWiki("").asWiki)

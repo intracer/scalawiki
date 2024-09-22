@@ -12,66 +12,45 @@ import scala.concurrent.Future
 
 trait ImageQuery {
 
-  def imagesFromCategoryAsync(
-      category: String,
-      contest: Contest
-  ): Future[Iterable[Image]]
+  def imagesFromCategory(contest: Contest): Future[Iterable[Image]]
 
-  def imagesWithTemplateAsync(
-      template: String,
-      contest: Contest
-  ): Future[Iterable[Image]]
+  def imagesWithTemplate(contest: Contest): Future[Iterable[Image]]
 
 }
 
 class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
 
-  override def imagesFromCategoryAsync(
-      category: String,
-      contest: Contest
-  ): Future[Iterable[Image]] = {
+  override def imagesFromCategory(contest: Contest): Future[Iterable[Image]] = {
     val generator: Generator = Generator(
       CategoryMembers(
-        CmTitle(category),
+        CmTitle(contest.imagesCategory),
         CmNamespace(Seq(Namespace.FILE)),
         CmLimit("400")
       )
-    ) // 5000 / 10
+    )
 
     imagesByGenerator(contest, generator)
   }
 
-  override def imagesWithTemplateAsync(
-      template: String,
-      contest: Contest
-  ): Future[Iterable[Image]] = {
-    imagesByGenerator(
-      contest,
-      generatorWithTemplate(template, Set(Namespace.FILE))
-    )
-  }
+  override def imagesWithTemplate(contest: Contest): Future[Iterable[Image]] =
+    contest.fileTemplate
+      .map { template =>
+        imagesByGenerator(contest, generatorWithTemplate(template, Set(Namespace.FILE)))
+      }
+      .getOrElse(Future.successful(Nil))
 
-  def imagesByGenerator(
-      contest: Contest,
-      generator: Generator
-  ): Future[Iterable[Image]] = {
+  def imagesByGenerator(contest: Contest, generator: Generator): Future[Iterable[Image]] = {
     val specialNominationTemplates = contest.specialNominations.flatMap(_.fileTemplate).toSet
     for (pages <- bot.run(imagesByGenerator(generator, withMetadata = true)))
-      yield {
-        pages.flatMap(
-          Image.fromPage(
-            contest.fileTemplate,
-            specialNominationTemplates
-          )
-        )
-      }
+      yield pages.flatMap(
+        Image.fromPage(contest.fileTemplate, specialNominationTemplates)
+      )
   }
 }
 
 object ImageQuery {
 
-  def create(implicit
-      bot: ActionBot = MwBot.fromHost(MwBot.commons)
-  ): ImageQuery = new ImageQueryApi(bot)
+  def create(implicit bot: ActionBot = MwBot.fromHost(MwBot.commons)): ImageQuery =
+    new ImageQueryApi(bot)
 
 }

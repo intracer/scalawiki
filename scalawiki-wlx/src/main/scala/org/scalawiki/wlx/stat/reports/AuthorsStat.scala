@@ -20,7 +20,7 @@ class AuthorsStat(val uploadImages: Boolean = false) {
 
   def authorsContributed(
       imageDbs: Seq[ImageDB],
-      totalImageDb: Option[ImageDB],
+      totalImageDb: ImageDB,
       monumentDb: Option[MonumentDB]
   ): String = {
 
@@ -54,7 +54,7 @@ class AuthorsStat(val uploadImages: Boolean = false) {
 
   def authorsContributedTable(
       imageDbs: Seq[ImageDB],
-      totalImageDb: Option[ImageDB],
+      totalImageDb: ImageDB,
       monumentDb: Option[MonumentDB],
       listAuthors: Boolean = true
   ): Table = {
@@ -71,10 +71,10 @@ class AuthorsStat(val uploadImages: Boolean = false) {
     val yearDbs = yearSeq.flatMap { year =>
       imageDbsByYear(year).headOption
     }
-    val dbs = totalImageDb.toSeq ++ yearDbs
+    val dbs = Seq(totalImageDb) ++ yearDbs
 
     val columns = Seq("Region") ++
-      totalImageDb.map(_ => s"$numYears years total").toSeq ++
+      Seq(s"$numYears years total") ++
       yearSeq.map(_.toString)
 
     val perRegion = monumentDb.fold(Seq.empty[Seq[String]]) { db =>
@@ -95,8 +95,8 @@ class AuthorsStat(val uploadImages: Boolean = false) {
         }
 
         Seq(regionName) ++
-          totalImageDb.map { db =>
-            val count = db.authorsByRegion(regionId).size.toString
+          Seq {
+            val count = totalImageDb.authorsByRegion(regionId).size.toString
             if (listAuthors) {
               val listPage =
                 "Commons:Wiki Loves Monuments in Ukraine/Автори " + regionName
@@ -138,9 +138,7 @@ class AuthorsStat(val uploadImages: Boolean = false) {
 
     val sections = byAuthor
       .mapValues(images =>
-        monumentDb.fold(images)(db =>
-          images.filter(_.monumentId.fold(false)(db.ids.contains))
-        )
+        monumentDb.fold(images)(db => images.filter(_.monumentId.fold(false)(db.ids.contains)))
       )
       .collect {
         case (user, images) if images.nonEmpty =>
@@ -163,7 +161,7 @@ class AuthorsStat(val uploadImages: Boolean = false) {
       ids: Seq[Set[String]],
       idsSize: Seq[Int],
       uploadImages: Boolean = true
-  ) = {
+  ): String = {
 
     val images =
       s"\n[[File:${filenamePrefix}AuthorsByYearTotal.png|$categoryName, Authors by year overall|left]]" +

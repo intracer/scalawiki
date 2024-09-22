@@ -107,8 +107,8 @@ object RaterSpec {
       contest = contest,
       startYear = year,
       monumentDb = monumentDb,
-      currentYearImageDb = Some(imageDb),
-      totalImageDb = Some(imageDb)
+      currentYearImageDb = imageDb,
+      totalImageDb = imageDb
     )
   }
 }

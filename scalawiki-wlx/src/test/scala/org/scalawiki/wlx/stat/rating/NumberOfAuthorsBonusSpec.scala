@@ -9,7 +9,6 @@ import org.specs2.mutable.Specification
 
 class NumberOfAuthorsBonusSpec extends Specification {
   val contest = Contest(ContestType.WLE, Country.Ukraine, 2019)
-  val contestStatStub = ContestStat(contest = contest, startYear = 2019)
   val monumentId1 = "01-123-0001"
   val monument1 = Monument(id = monumentId1, name = "name 1")
   val image1 = Image("File:Image1.jpg", pageId = Some(1))
@@ -20,17 +19,23 @@ class NumberOfAuthorsBonusSpec extends Specification {
     .withMonument(monumentId1)
   val monumentDbStub = Some(new MonumentDB(contest, Seq(monument1)))
   val imageDbStub = new ImageDB(contest, Nil, monumentDbStub)
+  val contestStatStub =
+    ContestStat(
+      contest = contest,
+      startYear = 2019,
+      monumentDb = monumentDbStub,
+      currentYearImageDb = imageDbStub,
+      totalImageDb = imageDbStub
+    )
 
   "rater" should {
-    val ranges =
-      RateRanges(ConfigFactory.parseString("""{"0-0": 9, "1-3": 3}"""))
+    val ranges = RateRanges(ConfigFactory.parseString("""{"0-0": 9, "1-3": 3}"""))
     val imageDb = imageDbStub.copy(images = Seq(image1))
-    val currentYearStat =
-      contestStatStub.copy(currentYearImageDb = Some(imageDb))
+    val currentYearStat = contestStatStub.copy(currentYearImageDb = imageDb)
 
     "rate non-pictured first year" in {
-      val rater = new NumberOfAuthorsBonus(
-        currentYearStat.copy(totalImageDb = Some(imageDb)),
+      val rater = NumberOfAuthorsBonus(
+        currentYearStat.copy(totalImageDb = imageDb),
         ranges
       )
       rater.rate("01-123-0001", "author 1") === 9
@@ -42,8 +47,8 @@ class NumberOfAuthorsBonusSpec extends Specification {
 
     "rate pictured twice by same author with sameAuthorZeroBonus" in {
       val totalImageDb = imageDbStub.copy(images = Seq(image1, image2))
-      val rater = new NumberOfAuthorsBonus(
-        currentYearStat.copy(totalImageDb = Some(totalImageDb)),
+      val rater = NumberOfAuthorsBonus(
+        currentYearStat.copy(totalImageDb = totalImageDb),
         ranges.copy(sameAuthorZeroBonus = true)
       )
       rater.rate("01-123-0001", "author 1") === 0
@@ -55,8 +60,8 @@ class NumberOfAuthorsBonusSpec extends Specification {
 
     "rate pictured twice by same author without sameAuthorZeroBonus" in {
       val totalImageDb = imageDbStub.copy(images = Seq(image1, image2))
-      val rater = new NumberOfAuthorsBonus(
-        currentYearStat.copy(totalImageDb = Some(totalImageDb)),
+      val rater = NumberOfAuthorsBonus(
+        currentYearStat.copy(totalImageDb = totalImageDb),
         ranges.copy(sameAuthorZeroBonus = false)
       )
       rater.rate("01-123-0001", "author 1") === 3

@@ -223,7 +223,7 @@ object ImageDB {
       monumentDb: Option[MonumentDB],
       minMpx: Option[Float] = None
   ): Future[ImageDB] = {
-    imageQuery.imagesFromCategoryAsync(contest.imagesCategory, contest).map { images =>
+    imageQuery.imagesFromCategory(contest).map { images =>
       new ImageDB(contest, images, monumentDb, minMpx)
     }
   }

@@ -5,7 +5,6 @@ import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto._
 import org.scalawiki.wlx.dto.lists.ListConfig._
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
-import org.scalawiki.wlx.{ImageDB, MonumentDB}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.FutureMatchers
 import org.specs2.mock.Mockito
@@ -19,17 +18,14 @@ class StatisticsSpec(implicit ee: ExecutionEnv)
     with Mockito
     with FutureMatchers {
 
-  val contest = Contest.WLEUkraine(2016)
+  private val contest = Contest.WLEUkraine(2016)
 
   def mockedStat(monuments: Seq[Monument], images: Seq[Image]): Statistics = {
     val bot = mock[MwBot]
     val monumentQuery = mock[MonumentQuery]
     val imageQuery = mock[ImageQuery]
 
-    imageQuery.imagesFromCategoryAsync(
-      contest.imagesCategory,
-      contest
-    ) returns Future.successful(images)
+    imageQuery.imagesFromCategory(contest) returns Future.successful(images)
     monumentQuery.byMonumentTemplate(date = None) returns monuments
 
     val cfg = StatConfig(campaign = contest.campaign)
@@ -46,14 +42,13 @@ class StatisticsSpec(implicit ee: ExecutionEnv)
 
     data.contest === contest
     data.monumentDb.map(_.monuments) === Some(monuments)
-    data.currentYearImageDb.get.images === images
-    data.dbsByYear === data.currentYearImageDb.toSeq
-    data.totalImageDb.isEmpty === false
+    data.currentYearImageDb.images === Nil
+    data.dbsByYear === Seq(data.currentYearImageDb)
+    data.totalImageDb.images === Nil
   }
 
   "give some stat" in {
-    val images =
-      Seq(Image("image1.jpg", author = Some("user"), monumentIds = List("123")))
+    val images = Seq(Image("image1.jpg", author = Some("user"), monumentIds = List("123")))
     val monuments = Seq(new Monument(id = "123", name = "123 monument"))
 
     val stat = mockedStat(monuments, images)
@@ -61,9 +56,9 @@ class StatisticsSpec(implicit ee: ExecutionEnv)
 
     data.contest === contest
     data.monumentDb.map(_.monuments) === Some(monuments)
-    data.currentYearImageDb.get.images === images
-    data.dbsByYear === data.currentYearImageDb.toSeq
-    data.totalImageDb.isEmpty === false
+    data.currentYearImageDb.images === images
+    data.dbsByYear === Seq(data.currentYearImageDb)
+    data.totalImageDb.images === images
   }
 
   "handle image query error" in {
@@ -74,14 +69,10 @@ class StatisticsSpec(implicit ee: ExecutionEnv)
     val monumentQuery = mock[MonumentQuery]
     val imageQuery = mock[ImageQuery]
 
-    imageQuery.imagesFromCategoryAsync(
-      contest.imagesCategory,
-      contest
-    ) returns Future.failed(new RuntimeException("Error 123"))
+    imageQuery.imagesFromCategory(contest) returns Future.failed(new RuntimeException("Error 123"))
     monumentQuery.byMonumentTemplate(date = None) returns monuments
 
-    val stat =
-      new Statistics(contest, None, monumentQuery, Some(imageQuery), None, bot)
+    val stat = new Statistics(contest, None, monumentQuery, Some(imageQuery), None, bot)
 
     stat.gatherData(false) must throwA[RuntimeException].await
   }

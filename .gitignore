@@ -11,6 +11,7 @@
 
 ## Directory-based project format:
 .idea/
+null/
 
 ## File-based project format:
 *.ipr
