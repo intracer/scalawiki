@@ -97,7 +97,7 @@ class Statistics(
       config.getOrElse(StatConfig(contest.campaign))
     )
 
-  def getImageQuery(year: Option[Int]): ImageQuery = {
+  def getImageQuery(year: Option[Int] = None): ImageQuery = {
     val cacheName = s"${contest.campaign}-${year.getOrElse("all")}"
     ImageQuery.create(new CachedBot(Site.commons, cacheName, true))
   }
@@ -120,11 +120,9 @@ class Statistics(
 
     for {
       byYear <- Future.sequence(contests.map(contestImages(monumentDb)))
-      currentYearImages = byYear.find(_.contest.year == currentYear).get
+      currentYearImages = byYear.last
       totalImages <-
-        if (total) imagesByTemplate(monumentDb, imageQuery.getOrElse(getImageQuery(None)))
-        else
-          Future.successful(currentYearImages)
+        if (total) imagesByTemplate(monumentDb) else Future.successful(currentYearImages)
     } yield {
       ContestStat(
         contest,
@@ -146,9 +144,9 @@ class Statistics(
       config.minMpx
     )
 
-  private def imagesByTemplate(monumentDb: Some[MonumentDB], imageQuery: ImageQuery) =
+  private def imagesByTemplate(monumentDb: Some[MonumentDB]): Future[ImageDB] =
     for {
-      commons <- imageQuery.imagesWithTemplate(contest)
+      commons <- imageQuery.getOrElse(getImageQuery()).imagesWithTemplate(contest)
       wiki <- imageQueryWiki.map(_.imagesWithTemplate(contest)).getOrElse(Future.successful(Nil))
     } yield new ImageDB(contest, commons ++ wiki, monumentDb)
 

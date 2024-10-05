@@ -455,6 +455,7 @@ object Output {
         image.monumentId.fold(false)(id =>
           monumentDb.ids.contains(id)
             || id.startsWith("88")
+            || id.startsWith("93")
             || id.startsWith("95")
             || id.startsWith("97")
             || id.startsWith("98")
