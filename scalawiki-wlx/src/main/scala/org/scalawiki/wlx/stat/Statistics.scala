@@ -1,6 +1,5 @@
 package org.scalawiki.wlx.stat
 
-import java.time.{ZoneOffset, ZonedDateTime}
 import org.scalawiki.MwBot
 import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.{Image, Site}
@@ -97,15 +96,15 @@ class Statistics(
       config.getOrElse(StatConfig(contest.campaign))
     )
 
-  def getImageQuery(year: Option[Int] = None): ImageQuery = {
-    val cacheName = s"${contest.campaign}-${year.getOrElse("all")}"
-    ImageQuery.create(new CachedBot(Site.commons, cacheName, true))
-  }
-
   private val currentYear = contest.year
 
   private val contests =
     (startYear.getOrElse(currentYear) to currentYear).map(y => contest.copy(year = y))
+
+  def getImageQuery(year: Option[Int] = None): ImageQuery = {
+    val cacheName = s"${contest.campaign}-${year.getOrElse("all")}"
+    ImageQuery.create(new CachedBot(Site.commons, cacheName, true))
+  }
 
   /** Fetches contest data
     *
@@ -118,11 +117,15 @@ class Statistics(
   def gatherData(total: Boolean): Future[ContestStat] = {
     val monumentDb = Some(MonumentDB.getMonumentDb(contest, monumentQuery))
 
+    val byYearFutures = contests.map(contestImages(monumentDb))
+    val totalPageIdsFuture = if (total) imageIdsByTemplate() else Future.successful(Nil)
     for {
-      byYear <- Future.sequence(contests.map(contestImages(monumentDb)))
+      byYear <- Future.sequence(byYearFutures)
       currentYearImages = byYear.last
+      totalPageIds <- totalPageIdsFuture
       totalImages <-
-        if (total) imagesByTemplate(monumentDb) else Future.successful(currentYearImages)
+        if (total) imagesByTemplate(monumentDb, byYear, totalPageIds)
+        else Future.successful(currentYearImages)
     } yield {
       ContestStat(
         contest,
@@ -144,11 +147,22 @@ class Statistics(
       config.minMpx
     )
 
-  private def imagesByTemplate(monumentDb: Some[MonumentDB]): Future[ImageDB] =
+  private def imagesByTemplate(
+      monumentDb: Some[MonumentDB],
+      dbsByYear: Seq[ImageDB],
+      totalPageIds: Iterable[Long]
+  ): Future[ImageDB] = {
+    val missingPageIds = totalPageIds.toSet -- dbsByYear.flatMap(_.images.flatMap(_.pageId)).toSet
     for {
-      commons <- imageQuery.getOrElse(getImageQuery()).imagesWithTemplate(contest)
+      commons <- imageQuery
+        .getOrElse(getImageQuery())
+        .imagesWithTemplateByIds(contest, missingPageIds)
       wiki <- imageQueryWiki.map(_.imagesWithTemplate(contest)).getOrElse(Future.successful(Nil))
     } yield new ImageDB(contest, commons ++ wiki, monumentDb)
+  }
+
+  private def imageIdsByTemplate(): Future[Iterable[Long]] =
+    imageQuery.getOrElse(getImageQuery()).imageIdsWithTemplate(contest)
 
   def init(total: Boolean): Unit = {
     gatherData(total = total)

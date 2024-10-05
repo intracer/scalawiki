@@ -7,7 +7,7 @@ import org.scalawiki.dto.cmd.query.meta.{EditCount, GuiUser, _}
 import org.scalawiki.dto.cmd.query.prop.iiprop.{IiProp, Timestamp}
 import org.scalawiki.dto.cmd.query.prop.rvprop._
 import org.scalawiki.dto.cmd.query.prop.{InProp, Revisions, SubjectId, _}
-import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query, TitlesParam}
+import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query, QueryParam, TitlesParam}
 import org.scalawiki.dto.{Contributor, Page}
 import org.scalawiki.time.TimeRange
 
@@ -18,6 +18,20 @@ trait QueryLibrary {
 
   def imagesByGenerator(
       generator: Generator,
+      withUrl: Boolean = false,
+      withMetadata: Boolean = false,
+      rvSlots: Option[String] = None
+  ): Action = imagesQuery(generator, withUrl, withMetadata, rvSlots)
+
+  def imagesByIds(
+      pageIds: Set[Long],
+      withUrl: Boolean = false,
+      withMetadata: Boolean = false,
+      rvSlots: Option[String] = None
+  ): Action = imagesQuery(PageIdsParam(pageIds), withUrl, withMetadata, rvSlots)
+
+  def imagesQuery(
+      queryParam: QueryParam[_],
       withUrl: Boolean = false,
       withMetadata: Boolean = false,
       rvSlots: Option[String] = None
@@ -45,7 +59,7 @@ trait QueryLibrary {
           ),
           ImageInfo(IiProp(iiProps: _*))
         ),
-        generator
+        queryParam
       )
     )
   }
