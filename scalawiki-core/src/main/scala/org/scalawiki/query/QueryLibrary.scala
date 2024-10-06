@@ -24,7 +24,7 @@ trait QueryLibrary {
   ): Action = imagesQuery(generator, withUrl, withMetadata, rvSlots)
 
   def imagesByIds(
-      pageIds: Set[Long],
+      pageIds: Seq[Long],
       withUrl: Boolean = false,
       withMetadata: Boolean = false,
       rvSlots: Option[String] = None

@@ -1,14 +1,14 @@
 package org.scalawiki.wlx.query
 
 import org.scalawiki.dto.cmd.Action
-import org.scalawiki.dto.cmd.query.{Generator, Query}
 import org.scalawiki.dto.cmd.query.list._
+import org.scalawiki.dto.cmd.query.{Generator, Query}
 import org.scalawiki.dto.{Image, Namespace}
 import org.scalawiki.query.QueryLibrary
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.{ActionBot, MwBot}
 
-import scala.collection.IterableOnce.iterableOnceExtensionMethods
+import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -31,7 +31,7 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
       CategoryMembers(
         CmTitle(contest.imagesCategory),
         CmNamespace(Seq(Namespace.FILE)),
-        CmLimit("400")
+        CmLimit("max")
       )
     )
 
@@ -56,14 +56,20 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
       contest: Contest,
       pageIds: Set[Long]
   ): Future[Iterable[Image]] = {
+    bot.log.info(s"imagesWithTemplateByIds pageIds size: ${pageIds.size}")
+    val blockSize = 50
+    val fetched = new AtomicInteger(0)
     val specialNominationTemplates = contest.specialNominations.flatMap(_.fileTemplate).toSet
     Future
-      .sequence(pageIds.sliding(50).map { idsSlice =>
+      .sequence(pageIds.toSeq.sorted.grouped(blockSize).map { idsSlice =>
         imagesByIds(idsSlice, withMetadata = true)
         for (pages <- bot.run(imagesByIds(idsSlice, withMetadata = true)))
-          yield pages.flatMap(
-            Image.fromPage(contest.fileTemplate, specialNominationTemplates)
-          )
+          yield {
+            bot.log.info(s"Fetched ${fetched.addAndGet(pages.size)} of ${pageIds.size}")
+            pages.flatMap(
+              Image.fromPage(contest.fileTemplate, specialNominationTemplates)
+            )
+          }
       })
       .map(_.flatten.toIndexedSeq)
   }

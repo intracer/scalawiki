@@ -25,6 +25,8 @@ trait ActionBot {
       limit: Option[Long] = None
   ): Future[Iterable[Page]]
 
+  def log: LoggingAdapter
+
 }
 
 trait MwBot extends ActionBot {
@@ -69,8 +71,6 @@ trait MwBot extends ActionBot {
   def await[T](future: Future[T]): T
 
   def system: ActorSystem
-
-  def log: LoggingAdapter
 
   def mediaWikiVersion: MediaWikiVersion
 }

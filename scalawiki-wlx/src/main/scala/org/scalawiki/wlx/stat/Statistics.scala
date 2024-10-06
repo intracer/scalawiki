@@ -101,6 +101,8 @@ class Statistics(
   private val contests =
     (startYear.getOrElse(currentYear) to currentYear).map(y => contest.copy(year = y))
 
+  private lazy val totalImageQuery: ImageQuery = imageQuery.getOrElse(getImageQuery())
+
   def getImageQuery(year: Option[Int] = None): ImageQuery = {
     val cacheName = s"${contest.campaign}-${year.getOrElse("all")}"
     ImageQuery.create(new CachedBot(Site.commons, cacheName, true))
@@ -152,17 +154,16 @@ class Statistics(
       dbsByYear: Seq[ImageDB],
       totalPageIds: Iterable[Long]
   ): Future[ImageDB] = {
-    val missingPageIds = totalPageIds.toSet -- dbsByYear.flatMap(_.images.flatMap(_.pageId)).toSet
+    val idsByYear = dbsByYear.flatMap(_.images.flatMap(_.pageId)).toSet
+    val missingPageIds = totalPageIds.toSet -- idsByYear
     for {
-      commons <- imageQuery
-        .getOrElse(getImageQuery())
-        .imagesWithTemplateByIds(contest, missingPageIds)
+      commons <- totalImageQuery.imagesWithTemplateByIds(contest, missingPageIds)
       wiki <- imageQueryWiki.map(_.imagesWithTemplate(contest)).getOrElse(Future.successful(Nil))
-    } yield new ImageDB(contest, commons ++ wiki, monumentDb)
+    } yield new ImageDB(contest, dbsByYear.flatMap(_.images) ++ commons ++ wiki, monumentDb)
   }
 
   private def imageIdsByTemplate(): Future[Iterable[Long]] =
-    imageQuery.getOrElse(getImageQuery()).imageIdsWithTemplate(contest)
+    totalImageQuery.imageIdsWithTemplate(contest)
 
   def init(total: Boolean): Unit = {
     gatherData(total = total)
