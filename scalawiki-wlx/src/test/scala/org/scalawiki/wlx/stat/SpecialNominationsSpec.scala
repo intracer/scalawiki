@@ -1,6 +1,6 @@
 package org.scalawiki.wlx.stat
 
-import org.scalawiki.wlx.dto.{Country, RegionType, SpecialNomination}
+import org.scalawiki.wlx.dto.SpecialNomination
 import org.specs2.mutable.Specification
 
 class SpecialNominationsSpec extends Specification {
