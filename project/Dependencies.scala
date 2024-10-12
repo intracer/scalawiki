@@ -11,7 +11,7 @@ object Dependencies {
   val GuavaV = "23.0"
   val H2V = "1.4.200"
   val JimFsV = "1.3.0"
-  val JodaTimeV = "2.12.2"
+  val JodaTimeV = "2.12.7"
   val JSoupV = "1.18.1"
   val LogbackClassicV = "1.5.8"
   val MockServerV = "5.15.0"
