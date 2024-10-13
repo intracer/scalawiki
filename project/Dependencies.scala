@@ -8,23 +8,23 @@ object Dependencies {
   val ChronicleMapV = "3.22.9"
   val ChronoScalaV = "1.0.0"
   val FicusV = "1.5.2"
-  val GuavaV = "23.0"
+  val GuavaV = "23.6.1-jre"
   val H2V = "1.4.200"
   val JimFsV = "1.3.0"
-  val JodaTimeV = "2.12.2"
+  val JodaTimeV = "2.12.7"
   val JSoupV = "1.18.1"
-  val LogbackClassicV = "1.5.8"
+  val LogbackClassicV = "1.5.10"
   val MockServerV = "5.15.0"
   val ReactiveStreamsV = "1.0.4"
   val RetryV = "0.3.6"
   val Scala213V = "2.13.15"
   val ScalaChartV = "0.8.0"
-  val ScalaCheckV = "1.18.0"
+  val ScalaCheckV = "1.18.1"
   val ScalaCsvV = "2.0.0"
-  val ScalaParserCombinatorsV = "2.2.0"
+  val ScalaParserCombinatorsV = "2.4.0"
   val ScalaXmlV = "2.3.0"
   val ScallopV = "5.1.0"
-  val Slf4jV = "2.0.5"
+  val Slf4jV = "2.0.16"
   val SwcEngineV = "3.1.9"
   val TypesafeConfigV = "1.4.3"
 
@@ -107,7 +107,7 @@ object Dependencies {
     object Commons {
       val CommonsCodecV = "1.17.1"
       val CommonsCompressV = "1.27.1"
-      val CommonsLang3V = "3.7"
+      val CommonsLang3V = "3.17.0"
       val CommonsIoV = "2.17.0"
 
       val codec = "commons-codec" % "commons-codec" % CommonsCodecV
@@ -118,7 +118,7 @@ object Dependencies {
     }
 
     object Jackson {
-      val JacksonV = "2.11.4"
+      val JacksonV = "2.18.0"
 
       val core = "com.fasterxml.jackson.core" % "jackson-core" % JacksonV
       val annotations =
