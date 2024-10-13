@@ -8,22 +8,20 @@ class MostPopularMonuments(val stat: ContestStat) extends Reporter {
 
   def this(
       imageDbs: Seq[ImageDB],
-      totalImageDb: Option[ImageDB],
+      totalImageDb: ImageDB,
       monumentDb: MonumentDB
-  ) = {
-    this(
+  ) = this(
       ContestStat(
         monumentDb.contest,
         imageDbs.headOption
           .map(_.contest.year)
           .getOrElse(monumentDb.contest.year),
         Some(monumentDb),
-        imageDbs.lastOption.orElse(totalImageDb),
+        imageDbs.lastOption.getOrElse(totalImageDb),
         totalImageDb,
         imageDbs // .headOption.map(_ => imageDbs.init).getOrElse(Seq.empty)
       )
     )
-  }
 
   val name = "Most photographed objects"
 
@@ -39,17 +37,16 @@ class MostPopularMonuments(val stat: ContestStat) extends Reporter {
 
   def mostPopularMonumentsTable(
       imageDbs: Seq[ImageDB],
-      totalImageDb: Option[ImageDB],
+      totalImageDb: ImageDB,
       monumentDb: MonumentDB
   ): Table = {
     val imageDbsByYear = imageDbs.groupBy(_.contest.year)
     val yearSeq = imageDbsByYear.keys.toSeq.sorted
 
-    val authorsColumns = Seq("N", "Id", "Name", "Category") ++
-      totalImageDb.map(_ => Seq("authors", "photos")).getOrElse(Seq.empty)
+    val authorsColumns = Seq("N", "Id", "Name", "Category") ++ Seq("authors", "photos")
 
-    val photosCountTotal = totalImageDb.map(_.imageCountById).get
-    val authorsCountTotal = totalImageDb.map(_.authorsCountById).get
+    val photosCountTotal = totalImageDb.imageCountById
+    val authorsCountTotal = totalImageDb.authorsCountById
 
     val topAuthors = topN(100, authorsCountTotal)
 
@@ -124,7 +121,7 @@ class MostPopularMonuments(val stat: ContestStat) extends Reporter {
     val categoryText = s"\n[[Category:$category]]"
 
     val byRegions = mostPopularMonumentsInRegions(
-      stat.totalImageDb.get,
+      stat.totalImageDb,
       stat.monumentDb.get
     ).toSeq
       .sortBy(_._1)
