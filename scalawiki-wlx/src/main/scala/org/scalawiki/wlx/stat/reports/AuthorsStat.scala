@@ -43,7 +43,7 @@ class AuthorsStat(val uploadImages: Boolean = false) {
             .map(_.replace("Участник:", ""))
             .filterNot(_.isBlank)
         val listPage =
-          "Commons:Wiki Loves Monuments in Ukraine/Автори " + regionName
+          s"Commons:${imageDb.contest.name}/Автори " + regionName
         val text = authors
           .map(author => s"# {{#target:User_talk:$author|}}")
           .mkString("\n")
