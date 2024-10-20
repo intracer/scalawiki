@@ -32,7 +32,7 @@ case class ImageDB(
   lazy val sansIneligible: Seq[Image] =
     withCorrectIds.filterNot(_.pageId.exists(ineligibleIds.contains))
 
-  private val jun30 = ZonedDateTime.parse(s"2023-06-30T23:59:59Z")
+  private val jun30 = ZonedDateTime.parse(s"2024-06-30T23:59:59Z")
 
   lazy val ineligible: Seq[Image] = withCorrectIds.filter { i =>
     val after30 =
