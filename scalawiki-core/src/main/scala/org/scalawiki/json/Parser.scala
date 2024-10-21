@@ -1,5 +1,6 @@
 package org.scalawiki.json
 
+import org.scalawiki.dto.cmd.query.Query
 import org.scalawiki.dto.cmd.query.list.ListArg
 import org.scalawiki.dto.cmd.query.meta.MetaArg
 import org.scalawiki.dto.cmd.query.prop.PropArg
@@ -11,7 +12,7 @@ import scala.util.Try
 
 class Parser(val action: Action) {
 
-  val params = action.pairs.toMap
+  val params: Map[String, String] = action.pairs.toMap
 
   var continue = Map.empty[String, String]
 
@@ -36,53 +37,55 @@ class Parser(val action: Action) {
     }
   }
 
-  def parseQueryAction(json: JsValue, queryChild: String): Seq[Page] = {
+  private def parseQueryAction(json: JsValue, queryChild: String): Seq[Page] = {
     val pagesJson = (json \ "query" \ queryChild).get
 
     val jsons = (queryChild match {
-      case "pages" => pagesJson.asInstanceOf[JsObject].values
+      case "pages"                     => pagesJson.asInstanceOf[JsObject].values
       case "allusers" | "usercontribs" => pagesJson.asInstanceOf[JsArray].value
       case "globaluserinfo"            => Seq(pagesJson)
       case _                           => pagesJson.asInstanceOf[JsArray].value
     }).map(_.asInstanceOf[JsObject])
 
-    jsons.map { j =>
+    jsons.flatMap { j =>
       queryChild match {
         case "pages"              => parsePage(j)
-        case "allusers" | "users" => parseUser(j, queryChild)
-        case "usercontribs"       => parseUserContrib(j)
-        case "globaluserinfo"     => parseGlobalUserInfo(j)
+        case "allusers" | "users" => Some(parseUser(j, queryChild))
+        case "usercontribs"       => Some(parseUserContrib(j))
+        case "globaluserinfo"     => Some(parseGlobalUserInfo(j))
         case _                    => parsePage(j)
       }
     }.toSeq
   }
 
-  def mwException(jsonObj: JsObject): MwException = {
+  private def mwException(jsonObj: JsObject): MwException = {
     jsonObj.validate(MwReads.errorReads).get
   }
 
-  def parsePage(pageJson: JsObject): Page = {
-    val page = pageJson.validate(Parser.pageReads).get
+  def parsePage(pageJson: JsObject): Option[Page] = {
+    // TODO handle errors
+    pageJson.validate(Parser.pageReads).fold(_ => Option.empty[Page], page => Some(page)).map {
+      page =>
+        val revisions = page.id.fold(Seq.empty[Revision]) { pageId =>
+          pageJson.validate(Parser.revisionsReads(pageId)).getOrElse(Seq.empty)
+        }
 
-    val revisions = page.id.fold(Seq.empty[Revision]) { pageId =>
-      pageJson.validate(Parser.revisionsReads(pageId)).getOrElse(Seq.empty)
+        val images = getImages(pageJson, page)
+        val langLinks = getLangLinks(pageJson)
+        val links = getLinks(pageJson)
+        val categoryInfo = getCategoryInfo(pageJson)
+
+        page.copy(
+          revisions = revisions,
+          images = images,
+          langLinks = langLinks,
+          links = links,
+          categoryInfo = categoryInfo
+        )
     }
-
-    val images = getImages(pageJson, page)
-    val langLinks = getLangLinks(pageJson)
-    val links = getLinks(pageJson)
-    val categoryInfo = getCategoryInfo(pageJson)
-
-    page.copy(
-      revisions = revisions,
-      images = images,
-      langLinks = langLinks,
-      links = links,
-      categoryInfo = categoryInfo
-    )
   }
 
-  def getImages(pageJson: JsObject, page: Page): Seq[Image] = {
+  private def getImages(pageJson: JsObject, page: Page): Seq[Image] = {
     pageJson
       .validate {
         if (pageJson.value.contains("imageinfo")) {
@@ -131,12 +134,12 @@ class Parser(val action: Action) {
     )
   }
 
-  def parseUserContrib(userJson: JsObject): Page = {
+  private def parseUserContrib(userJson: JsObject): Page = {
     val userContribs = userJson.validate(Parser.userContribReads).get
     userContribs.toPage
   }
 
-  def getContinue(json: JsValue): Map[String, String] = {
+  private def getContinue(json: JsValue): Map[String, String] = {
     (json \ "continue")
       .asOpt[JsObject]
       .map(
@@ -150,7 +153,7 @@ class Parser(val action: Action) {
       .getOrElse(Map.empty[String, String])
   }
 
-  def getLangLinks(pageJson: JsObject): Map[String, String] = {
+  private def getLangLinks(pageJson: JsObject): Map[String, String] = {
     (pageJson \ "langlinks")
       .asOpt[Seq[Map[String, String]]]
       .map {
@@ -159,7 +162,7 @@ class Parser(val action: Action) {
       .getOrElse(Map.empty[String, String])
   }
 
-  def getLinks(pageJson: JsObject): Seq[Page] = {
+  private def getLinks(pageJson: JsObject): Seq[Page] = {
     (pageJson \ "links")
       .asOpt[JsArray]
       .map {
@@ -176,10 +179,10 @@ class Parser(val action: Action) {
       .getOrElse(Nil)
   }
 
-  def getCategoryInfo(pageJson: JsObject): Option[CategoryInfo] =
+  private def getCategoryInfo(pageJson: JsObject): Option[CategoryInfo] =
     pageJson.validate(Parser.categoryInfoReads()).getOrElse(None)
 
-  def parseGlobalUserInfo(json: JsObject) = {
+  private def parseGlobalUserInfo(json: JsObject) = {
     if (!json.value.contains("missing")) {
 
       val gui = json.validate(Parser.globalUserInfoReads).get
@@ -208,7 +211,7 @@ class Parser(val action: Action) {
     }
   }
 
-  def query = action.query.toSeq
+  def query: Seq[Query] = action.query.toSeq
 
   def lists: Seq[ListArg] = query.flatMap(_.lists)
 
