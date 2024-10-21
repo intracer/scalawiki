@@ -3,7 +3,8 @@ package org.scalawiki.wlx.stat.reports
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.Contest
-import org.scalawiki.wlx.stat.{ContestStat, RateSum, Rater}
+import org.scalawiki.wlx.stat.rating.{RateSum, Rater}
+import org.scalawiki.wlx.stat.ContestStat
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 import scala.concurrent.ExecutionContext
@@ -454,6 +455,7 @@ object Output {
         image.monumentId.fold(false)(id =>
           monumentDb.ids.contains(id)
             || id.startsWith("88")
+            || id.startsWith("93")
             || id.startsWith("95")
             || id.startsWith("97")
             || id.startsWith("98")
@@ -537,7 +539,7 @@ object Output {
     bot
       .page(s"Commons:$categoryName/Regional statistics")
       .edit(regionalStat, Some("updating"))
-    authorsStat.authorsContributedPerRegion(stat.totalImageDb.get, bot)
+    authorsStat.authorsContributedPerRegion(stat.totalImageDb, bot)
   }
 
   def newMonuments(stat: ContestStat) = {

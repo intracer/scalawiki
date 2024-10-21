@@ -16,22 +16,20 @@ class MonumentsPicturedByRegion(
 
   def this(
       imageDbs: Seq[ImageDB],
-      totalImageDb: Option[ImageDB],
+      totalImageDb: ImageDB,
       monumentDb: MonumentDB
-  ) = {
-    this(
-      ContestStat(
-        monumentDb.contest,
-        imageDbs.headOption
-          .map(_.contest.year)
-          .getOrElse(monumentDb.contest.year),
-        Some(monumentDb),
-        imageDbs.lastOption.orElse(totalImageDb),
-        totalImageDb,
-        imageDbs
-      )
+  ) = this(
+    ContestStat(
+      monumentDb.contest,
+      imageDbs.headOption
+        .map(_.contest.year)
+        .getOrElse(monumentDb.contest.year),
+      Some(monumentDb),
+      imageDbs.lastOption.getOrElse(totalImageDb),
+      totalImageDb,
+      imageDbs
     )
-  }
+  )
 
   val yearSeq: Seq[Int] = stat.yearSeq.reverse
   val regionalDetails: Boolean = stat.config.exists(_.regionalDetails)
@@ -41,8 +39,8 @@ class MonumentsPicturedByRegion(
   val name: String = pageName(parentRegion.name)
 
   val currentYearPageIds: Set[Long] =
-    stat.currentYearImageDb.get.images.flatMap(_.pageId).toSet
-  val oldImagesMonumentIds: Set[String] = stat.totalImageDb.get.images
+    stat.currentYearImageDb.images.flatMap(_.pageId).toSet
+  val oldImagesMonumentIds: Set[String] = stat.totalImageDb.images
     .filter(image => !currentYearPageIds.contains(image.pageId.get))
     .flatMap(_.monumentIds)
     .toSet
@@ -82,12 +80,10 @@ class MonumentsPicturedByRegion(
   def regionData(
       regionId: String,
       regionalDetails: Boolean = regionalDetails,
-      totalImageDb: Option[ImageDB],
+      totalImageDb: ImageDB,
       monumentDb: MonumentDB
   ): Seq[String] = {
-    val picturedMonumentsInRegionSet = totalImageDb
-      .map(_.idsByRegion(regionId))
-      .getOrElse(Set.empty) ++
+    val picturedMonumentsInRegionSet = totalImageDb.idsByRegion(regionId) ++
       monumentDb.picturedInRegion(regionId)
     val picturedMonumentsInRegion = picturedMonumentsInRegionSet.size
     val allMonumentsInRegion = monumentDb.byRegion(regionId).size
@@ -100,8 +96,7 @@ class MonumentsPicturedByRegion(
         100 * picturedMonumentsInRegion / allMonumentsInRegion
       else 0
 
-    val newIds = stat.currentYearImageDb.get
-      .idsByRegion(regionId) -- oldImagesMonumentIds
+    val newIds = stat.currentYearImageDb.idsByRegion(regionId) -- oldImagesMonumentIds
     val newlyPicturedPage = s"Commons:$category/${pageName(regionName, true)}"
 
     val pictured = stat
@@ -120,9 +115,7 @@ class MonumentsPicturedByRegion(
       .reverse
       .flatten
 
-    val newImagesDb = stat.currentYearImageDb.get.subSet(i =>
-      i.monumentIds.exists(newIds.contains)
-    )
+    val newImagesDb = stat.currentYearImageDb.subSet(_.monumentIds.exists(newIds.contains))
 
     if (gallery) {
       bot
@@ -154,7 +147,7 @@ class MonumentsPicturedByRegion(
   }
 
   def monumentsPicturedTable(
-      totalImageDb: Option[ImageDB],
+      totalImageDb: ImageDB,
       monumentDb: MonumentDB
   ): Table = {
     val regionIds = parentRegion.regions.map(_.code)
@@ -163,9 +156,7 @@ class MonumentsPicturedByRegion(
       .filter(row => regionalDetails || row(1) != "0")
 
     val allMonuments = monumentDb.monuments.size
-    val picturedMonuments = (totalImageDb
-      .map(_.ids)
-      .getOrElse(Set.empty) ++ monumentDb.picturedIds).size
+    val picturedMonuments = (totalImageDb.ids ++ monumentDb.picturedIds).size
 
     val ids = stat.mapYears(_.ids).reverse
     val photoSize = stat.mapYears(_.images.size).reverse
@@ -191,9 +182,7 @@ class MonumentsPicturedByRegion(
       )
     } else {
       Seq(
-        Seq("Sum") ++ rows.head.indices.tail.map(i =>
-          rows.map(_(i).toInt).sum.toString
-        ),
+        Seq("Sum") ++ rows.head.indices.tail.map(i => rows.map(_(i).toInt).sum.toString),
         regionData(parentRegion.code, false, totalImageDb, monumentDb)
       )
     }

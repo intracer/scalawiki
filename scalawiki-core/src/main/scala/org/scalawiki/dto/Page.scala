@@ -20,29 +20,29 @@ case class Page(
 ) /*extends HasId[Page]*/ {
   val history = new History(revisions)
 
-  def titleWithoutNs = title.split("\\:").last
+  def titleWithoutNs: String = title.split("\\:").last
 
-  def withText(text: String) =
+  def withText(text: String): Page =
     copy(revisions = Page.revisionsFromText(Some(text)))
 
   def text: Option[String] = revisions.headOption.flatMap(_.content)
 
-  def isTalkPage = ns.exists(_ % 2 == 1)
+  def isTalkPage: Boolean = ns.exists(_ % 2 == 1)
 
-  def isArticle = ns.contains(Namespace.MAIN)
+  def isArticle: Boolean = ns.contains(Namespace.MAIN)
 
   def withId(id: Long): Page = copy(id = Some(id))
 
   def lastRevisionUser: Option[Contributor] =
     revisions.headOption.flatMap(_.user)
 
-  def appendLists(other: Page) = copy(
+  def appendLists(other: Page): Page = copy(
     revisions = this.revisions ++ other.revisions,
     langLinks = this.langLinks ++ other.langLinks,
     links = this.links ++ other.links
   )
 
-  def withoutContent = copy(revisions = revisions.map(_.withoutContent))
+  def withoutContent: Page = copy(revisions = revisions.map(_.withoutContent))
 
 }
 
@@ -120,11 +120,9 @@ object Page {
       ns: Option[Int],
       title: String,
       editToken: Option[String]
-  ) = {
-    new Page(id, ns, title, Seq.empty, Seq.empty, editToken)
-  }
+  ): Page = new Page(id, ns, title, Nil, Nil, editToken)
 
-  def revisionsFromText(text: Option[String]) =
+  def revisionsFromText(text: Option[String]): Seq[Revision] =
     text.fold(Seq.empty[Revision])(content => Revision.many(content))
 
   def groupById(pages: Seq[Page]): Map[Long, Seq[Page]] =

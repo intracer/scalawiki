@@ -50,7 +50,7 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
     )
 
     val newImageNames = imageDb.images.map(_.title).toSet
-    val oldMonumentIds = stat.totalImageDb.get.images
+    val oldMonumentIds = stat.totalImageDb.images
       .filterNot(image => newImageNames.contains(image.title))
       .flatMap(_.monumentIds)
       .toSet
