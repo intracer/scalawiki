@@ -3,12 +3,12 @@ package org.scalawiki.wlx.stat.reports
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.ImageDB
-import org.scalawiki.wlx.dto.{Country, SpecialNomination}
+import org.scalawiki.wlx.dto.{Contest, Country, SpecialNomination}
 import org.scalawiki.wlx.stat.ContestStat
 
 class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
 
-  val contest = stat.contest
+  private val contest: Contest = stat.contest
 
   def statistics(): Unit = {
 
@@ -74,22 +74,40 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
           .getOrElse(""),
         imageDb.ids.size.toString,
         imageDb.ids.count(isSpecialNominationMonument).toString,
-        imageDb.ids.diff(oldMonumentIds).size.toString,
+        newlyPicturedText(imagesPage, imageDb, imageDb.ids.diff(oldMonumentIds)),
         s"${imageDb.images.size} [[$imagesPage by region|by region]], [[$imagesPage by author|by author]]"
       )
     }
 
-    val table = new Table(headers, rows)
+    val table = Table(headers, rows)
 
     table.asWiki + s"\n[[Category:${contest.name}]]"
   }
 
-  private def isSpecialNominationMonument(id: String) = {
+  private def newlyPicturedText(imagesPage: String, imageDb: ImageDB, newMonumentIds: Set[String]): String = {
+    val newlyPicturedText = if (newMonumentIds.nonEmpty) {
+      val newPicturedImagesPage = imagesPage + " newly pictured"
+      galleryByRegion(
+        newPicturedImagesPage + " by region",
+        imageDb.subSet(i => i.monumentIds.exists(newMonumentIds.contains))
+      )
+      galleryByAuthor(
+        imagesPage + " by author",
+        imageDb.subSet(i => i.monumentIds.exists(newMonumentIds.contains))
+      )
+      s"${newMonumentIds.size.toString} [[$newPicturedImagesPage by region|by region]], [[$newPicturedImagesPage by author|by author]]"
+    } else {
+      newMonumentIds.size.toString
+    }
+    newlyPicturedText
+  }
+
+  private def isSpecialNominationMonument(id: String): Boolean = {
     val regionId = id.split("-").headOption.getOrElse("")
     !contest.country.regionIds.contains(regionId)
   }
 
-  def galleryByRegion(imagesPage: String, imageDb: ImageDB): Unit = {
+  private def galleryByRegion(imagesPage: String, imageDb: ImageDB): Unit = {
     var imagesText = "__TOC__"
     val monumentDb = imageDb.monumentDb.get
 
@@ -130,7 +148,7 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
       .edit(imagesText, Some("updating"))
   }
 
-  def galleryByAuthor(imagesPage: String, imageDb: ImageDB): Unit = {
+  private def galleryByAuthor(imagesPage: String, imageDb: ImageDB): Unit = {
     var imagesText = "__TOC__"
 
     val authors = imageDb._byAuthorAndId.grouped.toSeq.sortBy(-_._2.keys.size)
