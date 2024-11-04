@@ -20,26 +20,23 @@ trait SwebleParser {
     engine.postprocess(getPageId(title), text, null)
   }
 
-  def getPageId(title: String): PageId = {
+  def getPageId(title: String): PageId =
     new PageId(PageTitle.make(config, title), -1)
-  }
 
-  def findNode[T](node: WtNode, pf: PartialFunction[WtNode, T]): Option[T] = {
+  def findNode[T](node: WtNode, pf: PartialFunction[WtNode, T]): Option[T] =
     if (pf.isDefinedAt(node))
       Some(pf(node))
     else
       node.asScala.view.flatMap(child => findNode(child, pf)).headOption
-  }
 
   def collectNodes[T](
       node: WtNode,
       pf: PartialFunction[WtNode, T]
-  ): mutable.Buffer[T] = {
+  ): mutable.Buffer[T] =
     if (pf.isDefinedAt(node))
       mutable.Buffer(pf(node))
     else
       node.asScala.flatMap(child => collectNodes(child, pf))
-  }
 
   def nodesToText[T <: AstNode[WtNode]](
       node: WtNode,
@@ -47,13 +44,9 @@ trait SwebleParser {
   ): mutable.Buffer[String] =
     collectNodes(node, pf).map(c => getText(c.get(1)).trim)
 
-  def getText(node: WtNode): String = {
-    WtRtDataPrinter.print(node)
-  }
+  def getText(node: WtNode): String = WtRtDataPrinter.print(node)
 
-  def getTemplateName(template: WtTemplate): String = getText(
-    template.getName
-  ).trim
+  def getTemplateName(template: WtTemplate): String = getText(template.getName).trim
 
   def replace[T <: WtNode](
       wiki: String,
@@ -71,11 +64,10 @@ trait SwebleParser {
       node: WtNode,
       pf: PartialFunction[WtNode, T],
       mapper: (T => Unit)
-  ): Unit = {
+  ): Unit =
     if (pf.isDefinedAt(node))
       mapper(node.asInstanceOf[T])
     else
       node.asScala.foreach(child => replaceNodeWithText(child, pf, mapper))
-  }
 
 }

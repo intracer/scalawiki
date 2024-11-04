@@ -39,8 +39,8 @@ class MonumentsPicturedByRegionSpec extends Specification {
       contest,
       startYear,
       Some(monumentDb),
-      imagesDbs.lastOption,
-      Some(imageDb(images.flatten)),
+      imagesDbs.last,
+      imageDb(images.flatten),
       imagesDbs.init
     )
   }
@@ -104,7 +104,7 @@ class MonumentsPicturedByRegionSpec extends Specification {
 
       val table = new MonumentsPicturedByRegion(
         imageDbs,
-        Some(totalImageDb),
+        totalImageDb,
         monumentDb
       ).table
 
@@ -159,7 +159,7 @@ class MonumentsPicturedByRegionSpec extends Specification {
 
       val table = new MonumentsPicturedByRegion(
         imageDbs,
-        Some(totalImageDb),
+        totalImageDb,
         monumentDb
       ).table
 
@@ -240,7 +240,7 @@ class MonumentsPicturedByRegionSpec extends Specification {
 
       val table = new MonumentsPicturedByRegion(
         imageDbs,
-        Some(totalImageDb),
+        totalImageDb,
         monumentDb
       ).table
 
