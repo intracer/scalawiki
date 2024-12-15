@@ -1,4 +1,4 @@
-package org.scalawiki.wlx.stat
+package org.scalawiki.wlx.stat.rating
 
 import com.typesafe.config.Config
 

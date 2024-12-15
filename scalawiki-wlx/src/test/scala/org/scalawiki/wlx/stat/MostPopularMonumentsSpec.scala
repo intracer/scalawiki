@@ -31,7 +31,7 @@ class MostPopularMonumentsSpec extends Specification {
       val table =
         new MostPopularMonuments(
           Nil,
-          Some(new ImageDB(contest, Nil, monumentDb)),
+          new ImageDB(contest, Nil, monumentDb),
           monumentDb
         ).table
 
@@ -50,7 +50,7 @@ class MostPopularMonumentsSpec extends Specification {
       val table =
         new MostPopularMonuments(
           Nil,
-          Some(new ImageDB(contest, Nil, monumentDb)),
+          new ImageDB(contest, Nil, monumentDb),
           monumentDb
         ).table
 
@@ -97,7 +97,7 @@ class MostPopularMonumentsSpec extends Specification {
       val table =
         new MostPopularMonuments(
           Nil,
-          Some(new ImageDB(contest, images, monumentDb)),
+          new ImageDB(contest, images, monumentDb),
           monumentDb
         ).table
 
@@ -177,7 +177,7 @@ class MostPopularMonumentsSpec extends Specification {
         Seq(images1, images2).zipWithIndex.map { case (images, i) =>
           new ImageDB(Contest.WLMUkraine(2014 + i), images, monumentDb)
         },
-        Some(new ImageDB(contest, images1 ++ images2, monumentDb)),
+        new ImageDB(contest, images1 ++ images2, monumentDb),
         monumentDb
       ).table
 

@@ -1,7 +1,8 @@
 package org.scalawiki.wlx.stat
 
-import java.time.ZonedDateTime
+import org.scalawiki.wlx.stat.rating.RateConfig
 
+import java.time.ZonedDateTime
 import org.specs2.mutable.Specification
 
 class StatParamsSpec extends Specification {
