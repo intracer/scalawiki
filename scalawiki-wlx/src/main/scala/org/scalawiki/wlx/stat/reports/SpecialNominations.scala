@@ -107,9 +107,10 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
     !contest.country.regionIds.contains(regionId)
   }
 
-  private def galleryByRegion(imagesPage: String, imageDb: ImageDB): Unit = {
-    var imagesText = "__TOC__"
+  private def galleryByRegion(regionsPage: String, imageDb: ImageDB): Unit = {
+
     val monumentDb = imageDb.monumentDb.get
+    var regionsText = ""
 
     for (region <- Country.Ukraine.regions) {
       val images = imageDb.imagesByRegion(region.code)
@@ -123,8 +124,10 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
           .mapValues(_.toSet)
           .toMap
 
+        val imagesPage = regionsPage + "_" + region.name.replace(' ', '_')
+        var imagesText = "__TOC__"
         imagesText += s"\n== ${region.name} ${images.size} images ==\n"
-
+        regionsText += s"*[[$imagesPage|${region.name} ${images.size} images]]\n"
         imagesText += byPlace
           .map { case (code, monumentIds) =>
             val place = Country.Ukraine
@@ -139,13 +142,18 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
                 .mkString("<gallery>\n", "\n", "</gallery>")
           }
           .mkString("\n")
+
+        MwBot
+          .fromHost(MwBot.commons)
+          .page(imagesPage)
+          .edit(imagesText, Some("updating"))
       }
     }
 
     MwBot
       .fromHost(MwBot.commons)
-      .page(imagesPage)
-      .edit(imagesText, Some("updating"))
+      .page(regionsPage)
+      .edit(regionsText, Some("updating"))
   }
 
   private def galleryByAuthor(imagesPage: String, imageDb: ImageDB): Unit = {
