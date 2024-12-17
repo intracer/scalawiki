@@ -8,7 +8,7 @@ object Dependencies {
   val ChronicleMapV = "3.22.9"
   val ChronoScalaV = "1.0.0"
   val FicusV = "1.5.2"
-  val GuavaV = "33.3.1-jre"
+  val GuavaV = "33.4.0-jre"
   val H2V = "1.4.200"
   val JimFsV = "1.3.0"
   val JodaTimeV = "2.13.0"
