@@ -4,15 +4,15 @@ object Dependencies {
 
   val AaltoXmlV = "1.3.3"
   val BetterFilesV = "3.9.2"
-  val BlameApiV = "15.10.13"
+  val BlameApiV = "15.10.15"
   val ChronicleMapV = "3.22.9"
   val ChronoScalaV = "1.0.0"
   val FicusV = "1.5.2"
-  val GuavaV = "33.3.1-jre"
+  val GuavaV = "33.4.0-jre"
   val H2V = "1.4.200"
   val JimFsV = "1.3.0"
   val JodaTimeV = "2.13.0"
-  val JSoupV = "1.18.1"
+  val JSoupV = "1.18.3"
   val LogbackClassicV = "1.5.14"
   val MockServerV = "5.15.0"
   val ReactiveStreamsV = "1.0.4"
@@ -23,7 +23,7 @@ object Dependencies {
   val ScalaCsvV = "2.0.0"
   val ScalaParserCombinatorsV = "2.4.0"
   val ScalaXmlV = "2.3.0"
-  val ScallopV = "5.1.0"
+  val ScallopV = "5.2.0"
   val Slf4jV = "2.0.16"
   val SwcEngineV = "3.1.9"
   val TypesafeConfigV = "1.4.3"
@@ -108,7 +108,7 @@ object Dependencies {
       val CommonsCodecV = "1.17.1"
       val CommonsCompressV = "1.27.1"
       val CommonsLang3V = "3.17.0"
-      val CommonsIoV = "2.17.0"
+      val CommonsIoV = "2.18.0"
 
       val codec = "commons-codec" % "commons-codec" % CommonsCodecV
       val io = "commons-io" % "commons-io" % CommonsIoV
@@ -118,7 +118,7 @@ object Dependencies {
     }
 
     object Jackson {
-      val JacksonV = "2.18.1"
+      val JacksonV = "2.18.2"
 
       val core = "com.fasterxml.jackson.core" % "jackson-core" % JacksonV
       val annotations =
