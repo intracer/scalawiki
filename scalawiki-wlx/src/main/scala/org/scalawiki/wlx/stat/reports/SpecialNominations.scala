@@ -3,12 +3,12 @@ package org.scalawiki.wlx.stat.reports
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.ImageDB
-import org.scalawiki.wlx.dto.{Country, SpecialNomination}
+import org.scalawiki.wlx.dto.{Contest, Country, SpecialNomination}
 import org.scalawiki.wlx.stat.ContestStat
 
 class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
 
-  val contest = stat.contest
+  private val contest: Contest = stat.contest
 
   def statistics(): Unit = {
 
@@ -50,7 +50,7 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
     )
 
     val newImageNames = imageDb.images.map(_.title).toSet
-    val oldMonumentIds = stat.totalImageDb.get.images
+    val oldMonumentIds = stat.totalImageDb.images
       .filterNot(image => newImageNames.contains(image.title))
       .flatMap(_.monumentIds)
       .toSet
@@ -74,24 +74,43 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
           .getOrElse(""),
         imageDb.ids.size.toString,
         imageDb.ids.count(isSpecialNominationMonument).toString,
-        imageDb.ids.diff(oldMonumentIds).size.toString,
+        newlyPicturedText(imagesPage, imageDb, imageDb.ids.diff(oldMonumentIds)),
         s"${imageDb.images.size} [[$imagesPage by region|by region]], [[$imagesPage by author|by author]]"
       )
     }
 
-    val table = new Table(headers, rows)
+    val table = Table(headers, rows)
 
     table.asWiki + s"\n[[Category:${contest.name}]]"
   }
 
-  private def isSpecialNominationMonument(id: String) = {
+  private def newlyPicturedText(imagesPage: String, imageDb: ImageDB, newMonumentIds: Set[String]): String = {
+    val newlyPicturedText = if (newMonumentIds.nonEmpty) {
+      val newPicturedImagesPage = imagesPage + " newly pictured"
+      galleryByRegion(
+        newPicturedImagesPage + " by region",
+        imageDb.subSet(i => i.monumentIds.exists(newMonumentIds.contains))
+      )
+      galleryByAuthor(
+        imagesPage + " by author",
+        imageDb.subSet(i => i.monumentIds.exists(newMonumentIds.contains))
+      )
+      s"${newMonumentIds.size.toString} [[$newPicturedImagesPage by region|by region]], [[$newPicturedImagesPage by author|by author]]"
+    } else {
+      newMonumentIds.size.toString
+    }
+    newlyPicturedText
+  }
+
+  private def isSpecialNominationMonument(id: String): Boolean = {
     val regionId = id.split("-").headOption.getOrElse("")
     !contest.country.regionIds.contains(regionId)
   }
 
-  def galleryByRegion(imagesPage: String, imageDb: ImageDB): Unit = {
-    var imagesText = "__TOC__"
+  private def galleryByRegion(regionsPage: String, imageDb: ImageDB): Unit = {
+
     val monumentDb = imageDb.monumentDb.get
+    var regionsText = ""
 
     for (region <- Country.Ukraine.regions) {
       val images = imageDb.imagesByRegion(region.code)
@@ -105,8 +124,10 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
           .mapValues(_.toSet)
           .toMap
 
+        val imagesPage = regionsPage + "_" + region.name.replace(' ', '_')
+        var imagesText = "__TOC__"
         imagesText += s"\n== ${region.name} ${images.size} images ==\n"
-
+        regionsText += s"*[[$imagesPage|${region.name} ${images.size} images]]\n"
         imagesText += byPlace
           .map { case (code, monumentIds) =>
             val place = Country.Ukraine
@@ -121,16 +142,21 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
                 .mkString("<gallery>\n", "\n", "</gallery>")
           }
           .mkString("\n")
+
+        MwBot
+          .fromHost(MwBot.commons)
+          .page(imagesPage)
+          .edit(imagesText, Some("updating"))
       }
     }
 
     MwBot
       .fromHost(MwBot.commons)
-      .page(imagesPage)
-      .edit(imagesText, Some("updating"))
+      .page(regionsPage)
+      .edit(regionsText, Some("updating"))
   }
 
-  def galleryByAuthor(imagesPage: String, imageDb: ImageDB): Unit = {
+  private def galleryByAuthor(imagesPage: String, imageDb: ImageDB): Unit = {
     var imagesText = "__TOC__"
 
     val authors = imageDb._byAuthorAndId.grouped.toSeq.sortBy(-_._2.keys.size)

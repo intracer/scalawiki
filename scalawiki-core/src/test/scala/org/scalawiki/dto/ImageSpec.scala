@@ -1,22 +1,10 @@
 package org.scalawiki.dto
 
+import org.scalawiki.dto.ImageSpec._
 import org.scalawiki.dto.markup.Template
 import org.specs2.mutable.Specification
 
 class ImageSpec extends Specification {
-
-  def makeTemplate(author: String, description: String = "") =
-    new Template(
-      "Information",
-      Map(
-        "description" -> description,
-        "date" -> "",
-        "source" -> "{{own}}",
-        "author" -> author,
-        "permission" -> "",
-        "other versions" -> ""
-      )
-    ).text
 
   "get author" should {
     "get author from wiki link" in {
@@ -59,8 +47,7 @@ class ImageSpec extends Specification {
         "{{Monument|id1}}{{Monument|id2}}"
       )
 
-      val page =
-        Page("File:Image.jpg").copy(revisions = Seq(Revision.one(wiki)))
+      val page = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(wiki)))
       val image = Image.fromPageRevision(page, Some("Monument")).get
 
       image.author === Some("PhotoMaster")
@@ -70,9 +57,7 @@ class ImageSpec extends Specification {
 
     "parse categories" in {
 
-      val page = Page("File:Image.jpg").copy(revisions =
-        Seq(Revision.one(withCategories))
-      )
+      val page = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(withCategories)))
 
       val image = Image.fromPageRevision(page, Some("Monument")).get
 
@@ -87,11 +72,9 @@ class ImageSpec extends Specification {
 
   "parse special nomination template" in {
 
-    val page1 = Page("File:Image.jpg").copy(revisions =
-      Seq(Revision.one(withSpecialNominations))
-    )
+    val page1 = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(withSpecialNominations)))
     val image1 = Image
-      .fromPageRevision(page1, Some("Monument"), Seq("WLM2021-UA-Aero"))
+      .fromPageRevision(page1, Some("Monument"), Set("WLM2021-UA-Aero"))
       .get
 
     image1.specialNominations === Set("WLM2021-UA-Aero")
@@ -99,10 +82,17 @@ class ImageSpec extends Specification {
     val page2 =
       Page("File:Image.jpg").copy(revisions = Seq(Revision.one(withCategories)))
     val image2 = Image
-      .fromPageRevision(page2, Some("Monument"), Seq("WLM2021-UA-Aero"))
+      .fromPageRevision(page2, Some("Monument"), Set("WLM2021-UA-Aero"))
       .get
 
     image2.specialNominations === Set.empty
+
+    val page3 = Page("File:Image.jpg").copy(revisions = Seq(Revision.one(withSpecialNomination2)))
+    val image3 = Image
+      .fromPageRevision(page3, Some("Monument"), Set("WLM2023-UA-interior"))
+      .get
+
+    image3.specialNominations === Set("WLM2023-UA-interior")
   }
 
   "resize" should {
@@ -130,8 +120,24 @@ class ImageSpec extends Specification {
       px === 320
     }
   }
+}
 
-  val withCategories =
+object ImageSpec {
+
+  def makeTemplate(author: String, description: String = ""): String =
+    Template(
+      "Information",
+      Map(
+        "description" -> description,
+        "date" -> "",
+        "source" -> "{{own}}",
+        "author" -> author,
+        "permission" -> "",
+        "other versions" -> ""
+      )
+    ).text
+
+  private val withCategories =
     """=={{int:filedesc}}==
       |{{Information
       ||description={{uk|1=Храм святителя-чудотворцая Миколи на водах в Києві на Подолі}}
@@ -153,7 +159,7 @@ class ImageSpec extends Specification {
       |[[Category:Saint Nicholas Church on Water]]
       |""".stripMargin
 
-  val withSpecialNominations =
+  private val withSpecialNominations =
     """=={{int:filedesc}}==
       |{{Information
       ||description={{uk|1=[[:uk:Замок Любарта|Єпископський будинок]], [[:uk:Луцьк|Луцьк]], [[:uk:Вулиця Кафедральна (Луцьк)|вул. Кафедральна]], 1а}}{{Monument Ukraine|07-101-0006}}[[Category:Wiki Loves Monuments in Ukraine 2021 - Quantity]]{{WLE2017-UA-SN|{{WLM2021-UA-Aero}}}}
@@ -173,4 +179,24 @@ class ImageSpec extends Specification {
       |[[Category:Bishop's house in Lutsk castle]]
       |[[Category:Uploaded via Campaign:wlm-ua]]
       |""".stripMargin
+
+  private val withSpecialNomination2 = """=={{int:filedesc}}==
+                                          |{{Information
+                                          ||description={{uk|1=Прибутковий будинок, [[:uk:Дніпро (місто)|Дніпро]], вул. Троїцька (Червона), 8}}{{Monument Ukraine|12-101-0443}}[[Category:Wiki Loves Monuments in Ukraine 2023 - Quantity]]{{WLM2023-UA-interior}}
+                                          ||date=2023-07-18 08:59:48
+                                          ||source={{own}}
+                                          ||author=[[User:Olebesedin|Olebesedin]]
+                                          ||permission=
+                                          ||other versions=
+                                          |}}
+                                          |{{Location|48.462144|35.042819}}
+                                          |
+                                          |=={{int:license-header}}==
+                                          |{{self|cc-by-sa-4.0}}
+                                          |
+                                          |{{Wiki Loves Monuments 2023|ua}}
+                                          |
+                                          |[[Category:8 Troitska Street, Dnipro]]
+                                          |[[Category:Uploaded via Campaign:wlm-ua]]
+                                          |""".stripMargin
 }
