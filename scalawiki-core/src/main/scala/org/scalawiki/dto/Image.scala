@@ -134,9 +134,8 @@ object Image {
       )
     )
       yield {
-        val renamedAuthor = fromRev.author.map(author =>
-          AuthorsMap.renames.getOrElse(author, author)
-        )
+        val renamedAuthor = fromRev.author
+          .map(author => AuthorsMap.renames.getOrElse(author, author))
         fromImage.copy(
           monumentIds = fromRev.monumentIds,
           author = renamedAuthor,
