@@ -1,10 +1,10 @@
 package org.scalawiki
 
-import akka.actor.ActorSystem
-import akka.event.LoggingAdapter
-import akka.http.caching.LfuCache
-import akka.http.scaladsl.model.Uri.Query
-import akka.http.scaladsl.model._
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.event.LoggingAdapter
+import org.apache.pekko.http.caching.LfuCache
+import org.apache.pekko.http.scaladsl.model.Uri.Query
+import org.apache.pekko.http.scaladsl.model._
 import org.jsoup.Jsoup
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.{LoginResponse, MwException, Page, Site}
@@ -309,7 +309,7 @@ class MwBotImpl(
 
 object MwBot {
 
-  import akka.http.caching.scaladsl.Cache
+  import org.apache.pekko.http.caching.scaladsl.Cache
 
   import scala.concurrent.ExecutionContext.Implicits.global
   import scala.concurrent._

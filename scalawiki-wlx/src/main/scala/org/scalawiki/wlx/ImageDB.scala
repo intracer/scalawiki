@@ -35,10 +35,10 @@ case class ImageDB(
   private val jun30 = ZonedDateTime.parse(s"2024-06-30T23:59:59Z")
 
   lazy val ineligible: Seq[Image] = withCorrectIds.filter { i =>
-    val after30 =
-      i.metadata.exists(_.date.exists(_.isAfter(jun30))) &&
-        !i.specialNominations.contains(s"WLM${contest.year}-UA-interior") &&
-        !i.pageId.exists(allowList.contains)
+    val after30 = false
+//      i.metadata.exists(_.date.exists(_.isAfter(jun30))) &&
+//        !i.specialNominations.contains(s"WLM${contest.year}-UA-interior") &&
+//        !i.pageId.exists(allowList.contains)
 
     val category = i.categories
       .contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine")

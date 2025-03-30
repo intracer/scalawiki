@@ -1,20 +1,18 @@
 package org.scalawiki.bots.stat
 
-import java.util.Collections
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
-
-import akka.actor.ActorSystem
-import akka.http.caching.LfuCache
-import akka.http.caching.javadsl.CachingSettings
-import akka.http.caching.scaladsl.Cache
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.caching.LfuCache
+import org.apache.pekko.http.caching.scaladsl.Cache
 import org.scalawiki.MwBot
-import org.scalawiki.dto.{Namespace, Page}
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{Generator, Query}
+import org.scalawiki.dto.{Namespace, Page}
 
+import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.JavaConverters._
 import scala.collection.SortedSet
 import scala.concurrent.ExecutionContext.Implicits.global

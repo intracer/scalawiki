@@ -37,7 +37,7 @@ object Dependencies {
   )
 
   val overrides = Seq(
-    Library.Akka.actor,
+    Library.Pekko.actor,
     "org.reactivestreams" % "reactive-streams" % ReactiveStreamsV,
     "org.scala-lang.modules" %% "scala-xml" % ScalaXmlV,
     "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsV,
@@ -63,14 +63,14 @@ object Dependencies {
 
   object Library {
 
-    object Akka {
-      val AkkaV = "2.6.20"
-      val AkkaHttpV = "10.1.15"
+    object Pekko {
+      val PekkoV = "1.0.3"
+      val PekkoHttpV = "1.0.1"
 
-      val actor = "com.typesafe.akka" %% "akka-actor" % AkkaV
-      val stream = "com.typesafe.akka" %% "akka-stream" % AkkaV
-      val http = "com.typesafe.akka" %% "akka-http" % AkkaHttpV
-      val httpCaching = "com.typesafe.akka" %% "akka-http-caching" % AkkaHttpV
+      val actor = "org.apache.pekko" %% "pekko-actor" % PekkoV
+      val stream = "org.apache.pekko" %% "pekko-stream" % PekkoV
+      val http = "org.apache.pekko" %% "pekko-http" % PekkoHttpV
+      val httpCaching = "org.apache.pekko" %% "pekko-http-caching" % PekkoHttpV
     }
 
     object Play {

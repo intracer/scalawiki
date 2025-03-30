@@ -1,7 +1,7 @@
 package org.scalawiki.util
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.model._
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.model._
 import org.scalawiki.http.HttpClient
 import org.specs2.control.NoLanguageFeatures
 import org.specs2.matcher.Matchers

@@ -1,7 +1,7 @@
 package org.scalawiki.http
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.model._
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.model._
 import org.scalawiki.MwBot
 
 import scala.concurrent.Future
@@ -44,7 +44,7 @@ trait HttpClient {
 object HttpClient {
   val JSON_UTF8 = ContentType(MediaTypes.`application/json`)
 
-  def get(system: ActorSystem = MwBot.system): HttpClient = new HttpClientAkka(
+  def get(system: ActorSystem = MwBot.system): HttpClient = new HttpClientPekko(
     system
   )
 }

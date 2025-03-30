@@ -1,8 +1,8 @@
 package net.spraycookies
 
-import akka.http.scaladsl.client.RequestBuilding
-import akka.http.scaladsl.model.headers.{Cookie, `Set-Cookie`}
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
+import org.apache.pekko.http.scaladsl.client.RequestBuilding
+import org.apache.pekko.http.scaladsl.model.headers.{Cookie, `Set-Cookie`}
+import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -1,6 +1,6 @@
 package org.scalawiki.util
 
-import akka.http.scaladsl.model.ContentType
+import org.apache.pekko.http.scaladsl.model.ContentType
 import org.scalawiki.http.HttpClient
 
 case class HttpStub(

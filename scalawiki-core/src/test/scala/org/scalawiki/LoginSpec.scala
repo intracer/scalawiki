@@ -1,12 +1,14 @@
 package org.scalawiki
 
-import akka.http.scaladsl.model.{ContentType, HttpCharsets, MediaTypes}
+import org.apache.pekko.http.scaladsl.model.{ContentType, HttpCharsets, MediaTypes}
 import org.scalawiki.dto.MwException
 import org.scalawiki.util.{HttpStub, MockBotSpec, TestUtils}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.ThrownExpectations
 import org.specs2.mutable.Specification
+
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class LoginSpec(implicit ee: ExecutionEnv)
     extends Specification
@@ -15,7 +17,7 @@ class LoginSpec(implicit ee: ExecutionEnv)
 
   type EE = ExecutionEnv
 
-  val timeout = 5 seconds
+  private val timeout = 5 seconds
 
   sequential
 

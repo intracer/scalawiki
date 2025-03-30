@@ -1,17 +1,17 @@
 package org.scalawiki.http
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.client.RequestBuilding._
-import akka.http.scaladsl.coding.{Deflate, Gzip, NoCoding}
-import akka.http.scaladsl.model.Multipart.FormData.BodyPart
-import akka.http.scaladsl.model.headers.{
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.client.RequestBuilding._
+import org.apache.pekko.http.scaladsl.coding.{Deflate, Gzip, NoCoding}
+import org.apache.pekko.http.scaladsl.model.Multipart.FormData.BodyPart
+import org.apache.pekko.http.scaladsl.model.headers.{
   HttpEncodings,
   `Accept-Encoding`,
   `User-Agent`
 }
-import akka.http.scaladsl.model._
-import akka.util.Timeout
+import org.apache.pekko.http.scaladsl.model._
+import org.apache.pekko.util.Timeout
 import net.spraycookies.tldlist.DefaultEffectiveTldList
 import net.spraycookies.{CookieHandling, CookieJar}
 import org.scalawiki.MwBot
@@ -21,7 +21,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration.{Duration, _}
 import scala.language.postfixOps
 
-class HttpClientAkka(val system: ActorSystem = MwBot.system)
+class HttpClientPekko(val system: ActorSystem = MwBot.system)
     extends HttpClient {
 
   implicit val sys: ActorSystem = system

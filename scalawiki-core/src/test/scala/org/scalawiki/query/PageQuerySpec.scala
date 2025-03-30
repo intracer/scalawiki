@@ -1,6 +1,6 @@
 package org.scalawiki.query
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.{Query, TitlesParam}
 import org.scalawiki.dto.{Page, Revision}

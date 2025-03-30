@@ -1,7 +1,7 @@
 package org.scalawiki
 
-import akka.actor.ActorSystem
-import org.scalawiki.http.HttpClientAkka
+import org.apache.pekko.actor.ActorSystem
+import org.scalawiki.http.HttpClientPekko
 import org.specs2.mutable.Specification
 
 import scala.concurrent.{Await, Future}
@@ -14,7 +14,7 @@ class BaseIntegrationSpec extends Specification {
   val commons = "commons.wikimedia.org"
 
   val system: ActorSystem = ActorSystem()
-  val http = new HttpClientAkka(system)
+  val http = new HttpClientPekko(system)
 
   def getUkWikiBot: MwBot = MwBot.fromHost(ukWiki)
 

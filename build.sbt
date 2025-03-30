@@ -54,10 +54,10 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= {
     Seq(
-      Library.Akka.actor,
-      Library.Akka.stream,
-      Library.Akka.http,
-      Library.Akka.httpCaching,
+      Library.Pekko.actor,
+      Library.Pekko.stream,
+      Library.Pekko.http,
+      Library.Pekko.httpCaching,
       Library.Play.json(isScala213.value),
       "com.typesafe" % "config" % TypesafeConfigV,
       "com.iheart" %% "ficus" % FicusV,
@@ -125,9 +125,9 @@ lazy val `http-extensions` = (project in file("http-extensions"))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      Library.Akka.actor,
-      Library.Akka.stream,
-      Library.Akka.http,
+      Library.Pekko.actor,
+      Library.Pekko.stream,
+      Library.Pekko.http,
       "org.scalacheck" %% "scalacheck" % ScalaCheckV % Test
     )
   )

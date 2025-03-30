@@ -1,7 +1,7 @@
 package net.spraycookies
 
-import akka.http.scaladsl.model.{DateTime, Uri}
-import akka.http.scaladsl.model.headers.HttpCookie
+import org.apache.pekko.http.scaladsl.model.{DateTime, Uri}
+import org.apache.pekko.http.scaladsl.model.headers.HttpCookie
 import net.spraycookies.tldlist.EffectiveTldList
 
 import scala.annotation.tailrec

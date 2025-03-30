@@ -1,14 +1,14 @@
 package net.spraycookies
 
-import akka.http.scaladsl.model.headers.HttpCookie
+import org.apache.pekko.http.scaladsl.model.headers.HttpCookie
 import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Gen
 
 object CookieJarSpecification extends Properties("CookieHandling") {
 
-  import akka.http.scaladsl.model.headers.{Cookie, `Set-Cookie`}
-  import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
+  import org.apache.pekko.http.scaladsl.model.headers.{Cookie, `Set-Cookie`}
+  import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
   import net.spraycookies.tldlist.EffectiveTldList
   import scala.concurrent._
   import scala.concurrent.duration._

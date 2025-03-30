@@ -1,6 +1,6 @@
 package org.scalawiki.mockserver
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
 import org.mockserver.model.Parameter
@@ -9,7 +9,7 @@ import org.mockserver.model.Header.header
 import com.google.common.net.MediaType
 import com.google.common.net.HttpHeaders.CONTENT_TYPE
 import org.scalawiki.MwBot
-import org.scalawiki.http.HttpClientAkka
+import org.scalawiki.http.HttpClientPekko
 import org.specs2.mutable.Specification
 
 import scala.collection.JavaConverters._
@@ -20,7 +20,7 @@ class BaseMockServerSpec extends Specification with StubServer {
   sequential
 
   val system: ActorSystem = ActorSystem()
-  val http = new HttpClientAkka(system)
+  val http = new HttpClientPekko(system)
   val apiUrl = "/w/api.php"
 
   def getBot: MwBot = MwBot.fromHost(Host, Protocol, Some(Port))

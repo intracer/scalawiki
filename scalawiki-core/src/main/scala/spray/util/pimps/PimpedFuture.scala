@@ -17,7 +17,7 @@
 package spray.util
 package pimps
 
-import akka.util.Timeout
+import org.apache.pekko.util.Timeout
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}

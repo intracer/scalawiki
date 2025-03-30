@@ -119,7 +119,7 @@ class SpecialNominationsSpec extends Specification {
       SpecialNomination
         .load("wlm_ua.conf")
         .map(_.copy(cities = Nil))
-        .filterNot(sn => sn.years == Seq(2022) || sn.years == Seq(2023))
+        .filterNot(sn => sn.years.nonEmpty && sn.years.min >= 2022)
         .map(sn => sn.copy(years = sn.years.filterNot(_ >= 2022))) === expected
     }
   }
