@@ -14,9 +14,15 @@ class RecentlyTaken(val stat: ContestStat) extends Reporter {
 
   override def table: Table = {
 
+    val filesList = stat.config
+      .flatMap(_.recentlyTakenFiles)
+      .toList
+      .flatMap(file => scala.io.Source.fromFile(file).getLines.toList)
+
     val images = stat.currentYearImageDb.images.filter { i =>
       i.metadata.exists(_.date.exists(_.isAfter(jun30))) &&
-      !i.specialNominations.contains(s"WLM${contest.year}-UA-interior")
+      !i.specialNominations.contains(s"WLM${contest.year}-UA-interior") &&
+      (filesList.isEmpty || filesList.contains(i.title))
     }
 
     val sql = "INSERT INTO selection (round_id, page_id, jury_id, rate) \n" +

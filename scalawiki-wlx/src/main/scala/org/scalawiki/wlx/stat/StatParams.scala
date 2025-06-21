@@ -30,7 +30,8 @@ case class StatConfig(
     mostPopularMonuments: Boolean = false,
     minMpx: Option[Float] = None,
     previousYearsGallery: Boolean = false,
-    numberOfMonumentsByNumberOfPictures: Boolean = false
+    numberOfMonumentsByNumberOfPictures: Boolean = false,
+    recentlyTakenFiles: Option[String] = None
 )
 
 import org.rogach.scallop._
@@ -105,7 +106,11 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
   val minMpx = opt[Float](name = "min-mpx", descr = "minimum megapixels")
   val previousYearsGallery =
     opt[Boolean](name = "prev-years-gallery", descr = "previous years gallery")
+
+  val recentlyTakenFiles =
+    opt[String](name = "recently-taken-files", descr = "recently taken files")
   verify()
+
 }
 
 object StatParams {
@@ -144,7 +149,8 @@ object StatParams {
       rateInputDistribution = conf.rateInputDistribution.getOrElse(false),
       mostPopularMonuments = conf.mostPopularMonuments.getOrElse(false),
       minMpx = conf.minMpx.toOption,
-      previousYearsGallery = conf.previousYearsGallery.getOrElse(false)
+      previousYearsGallery = conf.previousYearsGallery.getOrElse(false),
+      recentlyTakenFiles = conf.recentlyTakenFiles.toOption
     )
   }
 }

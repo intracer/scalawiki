@@ -12,7 +12,8 @@ case class ImageDB(
     contest: Contest,
     images: Iterable[Image],
     monumentDb: Option[MonumentDB],
-    minMpx: Option[Float] = None
+    minMpx: Option[Float] = None,
+    recentlyTakenFiles: Option[String] = None
 ) {
 
   def this(contest: Contest, images: Seq[Image]) = this(contest, images, None)
@@ -32,13 +33,19 @@ case class ImageDB(
   lazy val sansIneligible: Seq[Image] =
     withCorrectIds.filterNot(_.pageId.exists(ineligibleIds.contains))
 
-  private val jun30 = ZonedDateTime.parse(s"2024-06-30T23:59:59Z")
+  private val jun30 = ZonedDateTime.parse(s"${contest.year}-06-30T23:59:59Z")
+
+  val filesList = recentlyTakenFiles
+    .toList
+    .flatMap(file => scala.io.Source.fromFile(file).getLines.toList)
 
   lazy val ineligible: Seq[Image] = withCorrectIds.filter { i =>
-    val after30 = false
-//      i.metadata.exists(_.date.exists(_.isAfter(jun30))) &&
-//        !i.specialNominations.contains(s"WLM${contest.year}-UA-interior") &&
-//        !i.pageId.exists(allowList.contains)
+    val after30 = //false
+      i.metadata.exists(_.date.exists(_.isAfter(jun30))) &&
+        !i.specialNominations.contains(s"WLM${contest.year}-UA-interior") &&
+        (filesList.isEmpty || filesList.contains(i.title))
+
+    //        !i.pageId.exists(allowList.contains)
 
     val category = i.categories
       .contains(s"Ineligible submissions for WLM ${contest.year} in Ukraine")
