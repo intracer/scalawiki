@@ -36,8 +36,7 @@ trait SinglePageQuery {
       generator: String,
       generatorPrefix: String,
       namespaces: Set[Int] = Set(),
-      props: Set[String] =
-        Set("timestamp", "user", "size", "url" /*, "extmetadata"*/ ),
+      props: Set[String] = Set("timestamp", "user", "size", "url" /*, "extmetadata"*/ ),
       continueParam: Option[(String, String)] = None,
       limit: String = "max",
       titlePrefix: Option[String] = None

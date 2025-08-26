@@ -114,8 +114,7 @@ class StatParamsSpec extends Specification {
         StatConfig(
           "wle-ua",
           Seq(thisYear),
-          rateConfig =
-            RateConfig(numberOfAuthorsBonus = true, numberOfImagesBonus = true)
+          rateConfig = RateConfig(numberOfAuthorsBonus = true, numberOfImagesBonus = true)
         )
     }
 

@@ -35,12 +35,11 @@ case class ImageDB(
 
   private val jun30 = ZonedDateTime.parse(s"${contest.year}-06-30T23:59:59Z")
 
-  val filesList = recentlyTakenFiles
-    .toList
+  val filesList = recentlyTakenFiles.toList
     .flatMap(file => scala.io.Source.fromFile(file).getLines.toList)
 
   lazy val ineligible: Seq[Image] = withCorrectIds.filter { i =>
-    val after30 = //false
+    val after30 = // false
       i.metadata.exists(_.date.exists(_.isAfter(jun30))) &&
         !i.specialNominations.contains(s"WLM${contest.year}-UA-interior") &&
         (filesList.isEmpty || filesList.contains(i.title))
