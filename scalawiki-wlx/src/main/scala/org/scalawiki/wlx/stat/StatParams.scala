@@ -37,8 +37,8 @@ case class StatConfig(
 import org.rogach.scallop._
 
 class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
-  val years = opt[List[Int]]("year", 'y', "contest year.")
-  val startYear = opt[Int]("start-year", 's', "contest year.")
+  val years = opt[List[Int]]("year", 'y', "contest year(s).")
+  val startYear = opt[Int]("start-year", 's', "start contest year.")
   val campaign = opt[String](
     "campaign",
     'c',

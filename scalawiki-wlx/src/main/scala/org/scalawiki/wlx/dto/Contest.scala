@@ -94,7 +94,7 @@ object Contest {
     val (typeStr, countryStr, year) = (
       config.getString("type"),
       config.getString("country"),
-      config.getInt("year")
+      ZonedDateTime.now.getYear
     )
 
     val uploadConfig = UploadConfig.fromConfig(config)
