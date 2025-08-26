@@ -16,8 +16,7 @@ import scala.util.Try
   * @param listTemplate
   *   name of template that monument lists consist of
   * @param pages
-  *   pages that contain lists of monuments, ot templates that contains links to
-  *   these pages
+  *   pages that contain lists of monuments, ot templates that contains links to these pages
   */
 case class SpecialNomination(
     name: String,
@@ -76,31 +75,30 @@ object SpecialNomination {
       .filter(_.listTemplate.nonEmpty)
       .flatMap { nomination =>
         nomination.listTemplate.map { listTemplate =>
-          val monuments = if (
-            nomination.pages.nonEmpty && nomination.name != "Пам'ятки Подесення"
-          ) {
-            nomination.pages.flatMap { page =>
-              monumentQuery.byPage(page, listTemplate)
-            }
-          } else if (nomination.cities.nonEmpty) {
-            monumentsInCities(nomination.cities, stat.monumentDb.get)
-          } else if (nomination.name == "Пам'ятки Подесення") {
-            val desna = DesnaRegionSpecialNomination()
-            val placeIds = desna.places.flatMap(desna.getPlace).map(_.code)
-            val k2k = placeIds.flatMap(Katotth.toKoatuu.get)
-            val allPlaceIds = (placeIds ++ k2k).toSet
+          val monuments =
+            if (nomination.pages.nonEmpty && nomination.name != "Пам'ятки Подесення") {
+              nomination.pages.flatMap { page =>
+                monumentQuery.byPage(page, listTemplate)
+              }
+            } else if (nomination.cities.nonEmpty) {
+              monumentsInCities(nomination.cities, stat.monumentDb.get)
+            } else if (nomination.name == "Пам'ятки Подесення") {
+              val desna = DesnaRegionSpecialNomination()
+              val placeIds = desna.places.flatMap(desna.getPlace).map(_.code)
+              val k2k = placeIds.flatMap(Katotth.toKoatuu.get)
+              val allPlaceIds = (placeIds ++ k2k).toSet
 
-            val monumentDb = stat.monumentDb.get
-            monumentDb.allMonuments.filter { monument =>
-              monumentDb.placeByMonumentId
-                .get(monument.id)
-                .exists(allPlaceIds.contains)
-            } ++ nomination.pages.flatMap { page =>
-              monumentQuery.byPage(page, listTemplate)
+              val monumentDb = stat.monumentDb.get
+              monumentDb.allMonuments.filter { monument =>
+                monumentDb.placeByMonumentId
+                  .get(monument.id)
+                  .exists(allPlaceIds.contains)
+              } ++ nomination.pages.flatMap { page =>
+                monumentQuery.byPage(page, listTemplate)
+              }
+            } else {
+              Nil
             }
-          } else {
-            Nil
-          }
           (nomination, monuments)
         }
       }

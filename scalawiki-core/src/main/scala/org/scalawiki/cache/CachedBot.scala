@@ -13,8 +13,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class Caller(fn: String => String)
-    extends java.util.function.Function[String, String] {
+class Caller(fn: String => String) extends java.util.function.Function[String, String] {
   override def apply(t: String): String = {
     fn.apply(t)
   }
