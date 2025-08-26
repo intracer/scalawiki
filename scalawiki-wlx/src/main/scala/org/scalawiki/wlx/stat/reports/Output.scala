@@ -16,9 +16,7 @@ object Output {
   ) = {
     val regions = monumentDb.contest.country.regionById
 
-    for (
-      (typ, size) <- monumentDb._byType.mapValues(_.size).toSeq.sortBy(-_._2)
-    ) {
+    for ((typ, size) <- monumentDb._byType.mapValues(_.size).toSeq.sortBy(-_._2)) {
       val byRegion = monumentDb._byTypeAndRegion(typ)
 
       val regionStat = byRegion.toSeq
@@ -202,14 +200,16 @@ object Output {
 
   def galleryByMonumentId(imageDb: ImageDB, monumentDb: MonumentDB): String = {
     val ids = imageDb.ids.toSeq.sorted
-    ids
-      .map { id =>
-        val images = imageDb.byId(id).map(_.title).sorted
-        s"\n== $id ==\n" +
-          s"${monumentDb.byId(id).get.name.replace("[[", "[[:uk:")}\n\n" +
-          Image.gallery(images)
-      }
-      .mkString("\n")
+    val galleryById = for {
+      id <- ids
+      monument <- monumentDb.byId(id)
+    } yield {
+      val images = imageDb.byId(id).map(_.title).sorted
+      s"\n== $id ==\n" +
+        s"${monument.name.replace("[[", "[[:uk:")}\n\n" +
+        Image.gallery(images)
+    }
+    galleryById.mkString("\n")
   }
 
   def photoWithoutArticle(imageDb: ImageDB): String = {
@@ -278,20 +278,19 @@ object Output {
 
     def page(city: String) = "User:Ilya/Миколаївська область/" + city
 
-    all.groupBy(m => cityShort(m.city.getOrElse(""))).foreach {
-      case (city, monuments) =>
-        val galleries = monuments.map { m =>
-          val images = imageDb.byId(m.id)
-          val gallery = Image.gallery(images.map(_.title))
+    all.groupBy(m => cityShort(m.city.getOrElse(""))).foreach { case (city, monuments) =>
+      val galleries = monuments.map { m =>
+        val images = imageDb.byId(m.id)
+        val gallery = Image.gallery(images.map(_.title))
 
-          s"""== ${m.name.replaceAll("\\[\\[", "[[:uk:")} ==
+        s"""== ${m.name.replaceAll("\\[\\[", "[[:uk:")} ==
                |'''Рік:''' ${m.year.getOrElse("")}, '''Адреса:''' ${m.place
-              .getOrElse("")}, '''Тип:''' ${m.typ.getOrElse("")},
+            .getOrElse("")}, '''Тип:''' ${m.typ.getOrElse("")},
                |'''Охоронний номер:''' ${m.stateId
-              .getOrElse("")}\n""".stripMargin +
-            gallery
-        }
-        ukWiki.page(page(city)).edit(galleries.mkString("\n"))
+            .getOrElse("")}\n""".stripMargin +
+          gallery
+      }
+      ukWiki.page(page(city)).edit(galleries.mkString("\n"))
     }
 
     val list = cities.map(city => s"#[[${page(city)}|$city]]").mkString("\n")
@@ -547,18 +546,16 @@ object Output {
   }
 
   def missingGallery(monumentDB: MonumentDB) = {
-    val allMissing = monumentDB.allMonuments.toSeq.filter(m =>
-      m.gallery.isEmpty && m.photo.nonEmpty
-    )
+    val allMissing =
+      monumentDB.allMonuments.toSeq.filter(m => m.gallery.isEmpty && m.photo.nonEmpty)
     val grouped = allMissing.groupBy(_.page).toSeq.sortBy(_._1)
-    val text = s"Overall missing: ${allMissing.size}\n" + grouped.map {
-      case (page, monuments) =>
-        s"=== [[$page]] - ${monuments.size} ===\n" + monuments
-          .sortBy(_.id)
-          .map { m =>
-            s"#[[$page#${m.id}|${m.id}]] ${m.name}\n"
-          }
-          .mkString
+    val text = s"Overall missing: ${allMissing.size}\n" + grouped.map { case (page, monuments) =>
+      s"=== [[$page]] - ${monuments.size} ===\n" + monuments
+        .sortBy(_.id)
+        .map { m =>
+          s"#[[$page#${m.id}|${m.id}]] ${m.name}\n"
+        }
+        .mkString
     }.mkString
 
     val pageName =
