@@ -13,6 +13,7 @@ case class Monument(
     page: String = "",
     id: String,
     name: String,
+    nameDetail: Option[String] = None,
     year: Option[String] = None,
     description: Option[String] = None,
     article: Option[String] = None,
@@ -60,6 +61,7 @@ case class Monument(
     val paramValues = ListMap(
       "ID" -> Option(id),
       "name" -> Option(name),
+      "nameDetail" -> nameDetail,
       "stateId" -> stateId,
       "year" -> year,
       "description" -> description,

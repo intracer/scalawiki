@@ -12,9 +12,9 @@ object SubsetCreator {
 
   def main(args: Array[String]): Unit = {
 
-    val specialNomination = "конкурс статей"
+    val specialNomination = "дерев'яна архітектура"
 
-    val contest = Contest.WLMUkraine(2019)
+    val contest = Contest.WLMUkraine(2025)
     val query = MonumentQuery.create(contest)
     query.byMonumentTemplateAsync(contest.listTemplate.get).map { monuments =>
       createSubset(
@@ -23,7 +23,8 @@ object SubsetCreator {
         specialNomination,
         m => {
           val lowerCaseName = m.name.toLowerCase
-          Seq("голод", "1933", "1932").exists(lowerCaseName.contains)
+          val lowerCaseNameDetail = m.nameDetail.getOrElse("").toLowerCase
+          Seq("дер").exists(p => lowerCaseName.contains(p) || lowerCaseNameDetail.contains(p))
         }
       )
     }
@@ -116,7 +117,7 @@ object SubsetCreator {
     for (regionId <- regionIds) {
 
       val regionTitle = contest.country.regionName(regionId)
-      val regionLink = "Вікіпедія:Вікі любить пам'ятки/" + regionTitle
+      val regionLink = "Вікіпедія:Вікі любить пам'ятки/Пам'ятки дерев'яної архітектури України/" + regionTitle
 
       val regionMonuments =
         byRegion(regionId).filterNot(_.page.contains(specialNomination))
@@ -146,7 +147,7 @@ object SubsetCreator {
 
       // ukWiki.page(regionLink +" дерев'яна архітектура").edit(s, s"$regionTitle - дерев'яна архітектура")
       ukWiki
-        .page(s"$regionLink $specialNomination")
+        .page(s"$regionLink")
         .edit(s, Some(s"$regionTitle - $specialNomination"))
 
     }

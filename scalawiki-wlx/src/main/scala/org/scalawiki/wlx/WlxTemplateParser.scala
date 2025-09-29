@@ -15,6 +15,7 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
 
   private val id = getMappedName("ID")
   private val name = getMappedName("name")
+  private val nameDetail = getMappedName("nameDetail")
   private val year = getMappedName("year")
   private val description = getMappedName("description")
   private val city = getMappedName("city")
@@ -52,6 +53,7 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
       page = page,
       id = removeComments(byName(id).getOrElse(1.toString)).trim,
       name = byName(name).getOrElse(""),
+      nameDetail = byName(nameDetail),
       year = byName(year),
       description = byName(description),
       city = byName(city),
