@@ -1,12 +1,13 @@
 # ScalaWiki DuckDB Module
 
-This module provides DuckDB database integration for ScalaWiki using Quill.
+This module provides DuckDB database integration for ScalaWiki using Quill for type-safe, compile-time checked database queries.
 
 ## Features
 
 - **ImageRepository**: Repository for reading and writing `org.scalawiki.dto.Image` instances
-- **Quill Integration**: Uses Quill for type-safe database queries
-- **DuckDB Support**: Leverages DuckDB's embedded database capabilities
+- **Quill Integration**: Uses Quill for type-safe database queries with compile-time verification
+- **DuckDB Support**: Leverages DuckDB's embedded database capabilities for fast, serverless analytics
+- **SQL Injection Protection**: All queries use parameterized statements via Quill's lift mechanism
 
 ## Usage
 
