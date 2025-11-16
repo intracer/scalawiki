@@ -116,8 +116,9 @@ class ImageRepository(dataSource: DataSource) {
    * Find Images by monument ID
    */
   def findByMonumentId(monumentId: String): Seq[Image] = {
+    val pattern = s"%$monumentId%"
     ctx.run(query[ImageRow].filter(row => 
-      sql"${row.monumentIds} LIKE ${"%" + monumentId + "%"}".asCondition
+      sql"${row.monumentIds} LIKE ${lift(pattern)}".asCondition
     )).map(fromImageRow)
   }
 
