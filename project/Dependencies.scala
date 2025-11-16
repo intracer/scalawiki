@@ -7,6 +7,7 @@ object Dependencies {
   val BlameApiV = "15.10.15"
   val ChronicleMapV = "3.27ea1"
   val ChronoScalaV = "1.0.0"
+  val DuckDbV = "1.1.3"
   val FicusV = "1.5.2"
   val GuavaV = "33.4.0-jre"
   val H2V = "1.4.200"
@@ -15,6 +16,7 @@ object Dependencies {
   val JSoupV = "1.18.3"
   val LogbackClassicV = "1.5.15"
   val MockServerV = "5.15.0"
+  val QuillV = "4.8.6"
   val ReactiveStreamsV = "1.0.4"
   val RetryV = "0.3.6"
   val Scala213V = "2.13.15"
@@ -133,6 +135,14 @@ object Dependencies {
       val core = "org.specs2" %% "specs2-core" % SpecsV
       val matcherExtra = "org.specs2" %% "specs2-matcher-extra" % SpecsV
       val mock = "org.specs2" %% "specs2-mock" % SpecsV
+    }
+
+    object Quill {
+      val quillJdbc = "io.getquill" %% "quill-jdbc" % QuillV
+    }
+
+    object DuckDb {
+      val jdbc = "org.duckdb" % "duckdb_jdbc" % DuckDbV
     }
 
   }
