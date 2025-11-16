@@ -10,6 +10,7 @@ import javax.sql.DataSource
  */
 class ImageRepository(dataSource: DataSource) {
 
+  // DuckDB is compatible with PostgreSQL dialect for most operations
   private val ctx = new PostgresJdbcContext(NamingStrategy(SnakeCase), dataSource)
   import ctx._
 
