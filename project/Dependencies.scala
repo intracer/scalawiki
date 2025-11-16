@@ -5,7 +5,7 @@ object Dependencies {
   val AaltoXmlV = "1.3.3"
   val BetterFilesV = "3.9.2"
   val BlameApiV = "15.10.15"
-  val ChronicleMapV = "3.22.9"
+  val ChronicleMapV = "3.27ea1"
   val ChronoScalaV = "1.0.0"
   val FicusV = "1.5.2"
   val GuavaV = "33.4.0-jre"
@@ -74,7 +74,7 @@ object Dependencies {
     }
 
     object Play {
-      def PlayJsonV(isScala213: Boolean) = {
+      def PlayJsonV(isScala213: Boolean): String = {
         if (isScala213) {
           "2.9.4"
         } else {
@@ -84,10 +84,10 @@ object Dependencies {
 
       def TwirlV(isScala213: Boolean) = "1.5.2"
 
-      def json(isScala213: Boolean) =
+      def json(isScala213: Boolean): ModuleID =
         "com.typesafe.play" %% "play-json" % PlayJsonV(isScala213)
 
-      def twirlApi(isScala213: Boolean) =
+      def twirlApi(isScala213: Boolean): ModuleID =
         "com.typesafe.play" %% "twirl-api" % TwirlV(isScala213)
     }
 
