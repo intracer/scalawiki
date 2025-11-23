@@ -2,21 +2,24 @@ package org.scalawiki.duckdb
 
 import io.getquill._
 import org.scalawiki.dto.Image
+
+import java.io.Closeable
 import java.time.ZonedDateTime
 import javax.sql.DataSource
 
-/**
- * Repository for reading and writing Image instances using Quill to DuckDB database
- */
+/** Repository for reading and writing Image instances using Quill to DuckDB database
+  */
 class ImageRepository(dataSource: DataSource) {
 
   // DuckDB is compatible with PostgreSQL dialect for most operations
-  private val ctx = new PostgresJdbcContext(NamingStrategy(SnakeCase), dataSource)
+  private val ctx = new PostgresJdbcContext[SnakeCase](
+    SnakeCase,
+    dataSource.asInstanceOf[DataSource with Closeable]
+  )
   import ctx._
 
-  /**
-   * Database schema for Image
-   */
+  /** Database schema for Image
+    */
   case class ImageRow(
       title: String,
       url: Option[String] = None,
@@ -35,9 +38,8 @@ class ImageRepository(dataSource: DataSource) {
       mime: Option[String] = None
   )
 
-  /**
-   * Convert Image DTO to database row
-   */
+  /** Convert Image DTO to database row
+    */
   private def toImageRow(image: Image): ImageRow = {
     ImageRow(
       title = image.title,
@@ -58,9 +60,8 @@ class ImageRepository(dataSource: DataSource) {
     )
   }
 
-  /**
-   * Convert database row to Image DTO
-   */
+  /** Convert database row to Image DTO
+    */
   private def fromImageRow(row: ImageRow): Image = {
     Image(
       title = row.title,
@@ -77,83 +78,74 @@ class ImageRepository(dataSource: DataSource) {
       pageId = row.pageId,
       metadata = None,
       categories = if (row.categories.isEmpty) Set.empty else row.categories.split(",").toSet,
-      specialNominations = if (row.specialNominations.isEmpty) Set.empty else row.specialNominations.split(",").toSet,
+      specialNominations =
+        if (row.specialNominations.isEmpty) Set.empty else row.specialNominations.split(",").toSet,
       mime = row.mime
     )
   }
 
-  /**
-   * Insert an Image into the database
-   */
+  /** Insert an Image into the database
+    */
   def insert(image: Image): Long = {
     val row = toImageRow(image)
     ctx.run(query[ImageRow].insertValue(lift(row)))
   }
 
-  /**
-   * Insert multiple Images into the database
-   */
+  /** Insert multiple Images into the database
+    */
   def insertBatch(images: Seq[Image]): List[Long] = {
     val rows = images.map(toImageRow)
     ctx.run(liftQuery(rows).foreach(row => query[ImageRow].insertValue(row)))
   }
 
-  /**
-   * Find an Image by title
-   */
+  /** Find an Image by title
+    */
   def findByTitle(title: String): Option[Image] = {
     ctx.run(query[ImageRow].filter(_.title == lift(title))).headOption.map(fromImageRow)
   }
 
-  /**
-   * Find all Images
-   */
+  /** Find all Images
+    */
   def findAll(): Seq[Image] = {
     ctx.run(query[ImageRow]).map(fromImageRow)
   }
 
-  /**
-   * Find Images by monument ID
-   */
+  /** Find Images by monument ID
+    */
   def findByMonumentId(monumentId: String): Seq[Image] = {
     val pattern = s"%$monumentId%"
-    ctx.run(query[ImageRow].filter(row => 
-      sql"${row.monumentIds} LIKE ${lift(pattern)}".asCondition
-    )).map(fromImageRow)
+    ctx
+      .run(query[ImageRow].filter(row => sql"${row.monumentIds} LIKE ${lift(pattern)}".asCondition))
+      .map(fromImageRow)
   }
 
-  /**
-   * Find Images by author
-   */
+  /** Find Images by author
+    */
   def findByAuthor(author: String): Seq[Image] = {
     ctx.run(query[ImageRow].filter(_.author.exists(_ == lift(author)))).map(fromImageRow)
   }
 
-  /**
-   * Update an Image
-   */
+  /** Update an Image
+    */
   def update(image: Image): Long = {
     val row = toImageRow(image)
     ctx.run(query[ImageRow].filter(_.title == lift(row.title)).updateValue(lift(row)))
   }
 
-  /**
-   * Delete an Image by title
-   */
+  /** Delete an Image by title
+    */
   def delete(title: String): Long = {
     ctx.run(query[ImageRow].filter(_.title == lift(title)).delete)
   }
 
-  /**
-   * Count all Images
-   */
+  /** Count all Images
+    */
   def count(): Long = {
     ctx.run(query[ImageRow].size)
   }
 
-  /**
-   * Create the images table if it doesn't exist
-   */
+  /** Create the images table if it doesn't exist
+    */
   def createTable(): Unit = {
     val createTableSql = """
       CREATE TABLE IF NOT EXISTS image_row (
@@ -187,9 +179,8 @@ class ImageRepository(dataSource: DataSource) {
     }
   }
 
-  /**
-   * Drop the images table
-   */
+  /** Drop the images table
+    */
   def dropTable(): Unit = {
     val connection = dataSource.getConnection()
     try {
@@ -206,18 +197,17 @@ class ImageRepository(dataSource: DataSource) {
 }
 
 object ImageRepository {
-  /**
-   * Create a new ImageRepository with a DuckDB connection
-   */
+
+  /** Create a new ImageRepository with a DuckDB connection
+    */
   def apply(jdbcUrl: String): ImageRepository = {
     val ds = new org.duckdb.DuckDBDataSource()
     ds.setUrl(jdbcUrl)
     new ImageRepository(ds)
   }
 
-  /**
-   * Create a new ImageRepository with an in-memory DuckDB database
-   */
+  /** Create a new ImageRepository with an in-memory DuckDB database
+    */
   def inMemory(): ImageRepository = {
     apply("jdbc:duckdb:")
   }

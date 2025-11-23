@@ -16,7 +16,7 @@ object Dependencies {
   val JSoupV = "1.18.3"
   val LogbackClassicV = "1.5.15"
   val MockServerV = "5.15.0"
-  val QuillV = "4.8.6"
+  val QuillV = "4.8.5"
   val ReactiveStreamsV = "1.0.4"
   val RetryV = "0.3.6"
   val Scala213V = "2.13.15"
