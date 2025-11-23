@@ -47,8 +47,8 @@ lazy val commonSettings = Seq(
 
 lazy val scalawiki = (project in file("."))
   .settings(commonSettings)
-  .dependsOn(core, bots, dumps, wlx, `http-extensions`)
-  .aggregate(core, bots, dumps, wlx, `http-extensions`)
+  .dependsOn(core, bots, dumps, wlx, duckdb, `http-extensions`)
+  .aggregate(core, bots, dumps, wlx, duckdb, `http-extensions`)
 
 lazy val core = Project("scalawiki-core", file("scalawiki-core"))
   .settings(commonSettings: _*)
@@ -129,5 +129,18 @@ lazy val `http-extensions` = (project in file("http-extensions"))
       Library.Pekko.stream,
       Library.Pekko.http,
       "org.scalacheck" %% "scalacheck" % ScalaCheckV % Test
+    )
+  )
+
+lazy val duckdb = Project("scalawiki-duckdb", file("scalawiki-duckdb"))
+  .dependsOn(core % "compile->compile;test->test")
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      Library.Quill.quillJdbc,
+      Library.DuckDb.jdbc,
+      Library.Specs2.core % Test,
+      Library.Specs2.matcherExtra % Test,
+      Library.Specs2.mock % Test
     )
   )
