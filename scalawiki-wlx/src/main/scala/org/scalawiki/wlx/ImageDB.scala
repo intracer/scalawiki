@@ -1,10 +1,12 @@
 package org.scalawiki.wlx
 
+import org.apache.fory.Fory
+import org.apache.fory.serializer.scala.ScalaSerializers
 import org.scalawiki.dto.Image
-import org.scalawiki.wlx.ImageDB.allowList
 import org.scalawiki.wlx.dto.{Contest, Monument}
 import org.scalawiki.wlx.query.ImageQuery
 
+import java.nio.file.{Files, Paths}
 import java.time.ZonedDateTime
 import scala.concurrent.Future
 
@@ -35,12 +37,11 @@ case class ImageDB(
 
   private val jun30 = ZonedDateTime.parse(s"${contest.year}-06-30T23:59:59Z")
 
-  val filesList = recentlyTakenFiles
-    .toList
+  val filesList = recentlyTakenFiles.toList
     .flatMap(file => scala.io.Source.fromFile(file).getLines.toList)
 
   lazy val ineligible: Seq[Image] = withCorrectIds.filter { i =>
-    val after30 = //false
+    val after30 = // false
       i.metadata.exists(_.date.exists(_.isAfter(jun30))) &&
         !i.specialNominations.contains(s"WLM${contest.year}-UA-interior") &&
         (filesList.isEmpty || filesList.contains(i.title))
@@ -223,6 +224,14 @@ object ImageGrouping {
 object ImageDB {
 
   import scala.concurrent.ExecutionContext.Implicits.global
+// ForyBuilder#requireClassRegistration(false)
+  private val fory: Fory = Fory
+    .builder()
+    .withScalaOptimizationEnabled(true)
+    .requireClassRegistration(false)
+    .build()
+  ScalaSerializers.registerSerializers(fory)
+  fory.register(classOf[Image])
 
   def create(
       contest: Contest,
@@ -230,8 +239,57 @@ object ImageDB {
       monumentDb: Option[MonumentDB],
       minMpx: Option[Float] = None
   ): Future[ImageDB] = {
-    imageQuery.imagesFromCategory(contest).map { images =>
-      new ImageDB(contest, images, monumentDb, minMpx)
+  //  return Future.successful().map(_ => throw new IllegalArgumentException("Disabled cache"))
+    val cacheName = s"${contest.campaign}-${contest.year}.fory"
+    if (false && Files.exists(Paths.get(cacheName))) {
+      readCache(contest, imageQuery, monumentDb, minMpx, cacheName)
+    } else {
+      imageQuery.imagesFromCategory(contest).map { images =>
+//        try {
+//          println(s"Saving images to cache: $cacheName")
+//          val start = System.currentTimeMillis()
+//          val bytes = fory.serialize(images)
+//          Files.write(Paths.get(cacheName), bytes)
+//          val duration = System.currentTimeMillis() - start
+//          println(s"Saved images to cache $cacheName in $duration ms")
+//        } catch {
+//          case ex: Throwable =>
+//            println(s"Failed to save images to cache $cacheName: $ex")
+//            throw ex
+//        }
+        new ImageDB(contest, images, monumentDb, minMpx)
+      }
+    }
+  }
+
+  private def readCache(contest: Contest, imageQuery: ImageQuery, monumentDb: Option[MonumentDB], minMpx: Option[Float], cacheName: String) = {
+    try {
+      println(s"Loading images from cache: $cacheName")
+      val start = System.currentTimeMillis()
+      val bytes = Files.readAllBytes(Paths.get(cacheName))
+      val images = fory.deserialize[Iterable[Image]](bytes, classOf[Iterable[Image]])
+      val duration = System.currentTimeMillis() - start
+      println(s"Loaded images from cache $cacheName in $duration ms")
+      val db = new ImageDB(contest, images, monumentDb, minMpx)
+      Future.successful(db)
+    } catch {
+      case ex: Throwable =>
+        println(s"Failed to load images from cache $cacheName: $ex")
+        throw ex
+        imageQuery.imagesFromCategory(contest).map { images =>
+          //            try {
+          //              println(s"Saving images to cache: $cacheName")
+          //              val start = System.currentTimeMillis()
+          //              val bytes = fory.serialize(images)
+          //              Files.write(Paths.get(cacheName), bytes)
+          //              val duration = System.currentTimeMillis() - start
+          //              println(s"Saved images to cache $cacheName in $duration ms")
+          //            } catch {
+          //              case ex: Exception =>
+          //                println(s"Failed to save images to cache $cacheName: $ex")
+          //            }
+          new ImageDB(contest, images, monumentDb, minMpx)
+        }
     }
   }
 

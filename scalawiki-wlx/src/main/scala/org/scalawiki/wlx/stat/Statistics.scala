@@ -1,5 +1,6 @@
 package org.scalawiki.wlx.stat
 
+import org.apache.pekko.http.scaladsl.Http
 import org.scalawiki.MwBot
 import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.{Image, Site}
@@ -67,7 +68,7 @@ case class ContestStat(
   * @param bot
   *   scalawiki bot instance
   */
-class Statistics(
+case class Statistics(
     contest: Contest,
     startYear: Option[Int],
     monumentQuery: MonumentQuery,
@@ -141,7 +142,7 @@ class Statistics(
     }
   }
 
-  private def contestImages(monumentDb: Some[MonumentDB])(contest: Contest) =
+  private def contestImages(monumentDb: Option[MonumentDB])(contest: Contest): Future[ImageDB] =
     ImageDB.create(
       contest,
       imageQuery.getOrElse(getImageQuery(Some(contest.year))),
@@ -150,7 +151,7 @@ class Statistics(
     )
 
   private def imagesByTemplate(
-      monumentDb: Some[MonumentDB],
+      monumentDb: Option[MonumentDB],
       dbsByYear: Seq[ImageDB],
       totalPageIds: Iterable[Long]
   ): Future[ImageDB] = {
@@ -165,13 +166,15 @@ class Statistics(
   private def imageIdsByTemplate(): Future[Iterable[Long]] =
     totalImageQuery.imageIdsWithTemplate(contest)
 
-  def init(total: Boolean): Unit = {
+  def init(total: Boolean): Future[Unit] = {
     gatherData(total = total)
-      .map { stat =>
+      .flatMap { stat =>
         new ReporterRegistry(stat, config).output()
       }
-      .failed
-      .map(println)
+//      .failed
+//      .map { ex: Throwable =>
+//        bot.log.error(s"Error gathering statistics: ${ex.getMessage}", ex)
+//      }
   }
 
   def articleStatistics(monumentDb: MonumentDB): Unit = {
@@ -218,6 +221,12 @@ object Statistics {
       imageQueryWiki = Some(imageQueryWiki)
     )
 
-    stat.init(total = cfg.years.size > 1)
+    stat.init(total = cfg.years.size > 1).onComplete { result =>
+      result.recover { case ex: Throwable =>
+        stat.bot.log.error(s"Error in statistics: ${ex.getMessage}", ex)
+      }
+      Http.get(stat.bot.system).shutdownAllConnectionPools()
+      stat.bot.system.terminate()
+    }
   }
 }

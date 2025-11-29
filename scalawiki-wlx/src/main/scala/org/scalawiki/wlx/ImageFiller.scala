@@ -3,9 +3,11 @@ package org.scalawiki.wlx
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.Monument
 
+import scala.concurrent.Future
+
 object ImageFiller {
 
-  def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
+  def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Future[Unit] = {
     ListUpdater.updateLists(monumentDb, new ImageFillerUpdater(imageDb))
   }
 

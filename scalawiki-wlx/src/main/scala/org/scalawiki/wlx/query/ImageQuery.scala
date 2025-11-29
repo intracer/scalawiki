@@ -65,7 +65,7 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
         imagesByIds(idsSlice, withMetadata = true)
         for (pages <- bot.run(imagesByIds(idsSlice, withMetadata = true)))
           yield {
-            bot.log.info(s"Fetched ${fetched.addAndGet(pages.size)} of ${pageIds.size}")
+            bot.log.debug(s"Fetched ${fetched.addAndGet(pages.size)} of ${pageIds.size}")
             pages.flatMap(
               Image.fromPage(contest.fileTemplate, specialNominationTemplates)
             )

@@ -6,7 +6,7 @@ import org.scalawiki.wlx.stat.rating.Rater
 import org.scalawiki.wlx.stat.{ContestStat, StatConfig, Stats}
 import org.scalawiki.wlx.{ImageDB, ImageFiller, MonumentDB}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
@@ -22,6 +22,8 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
   private val commons = MwBot.fromHost(MwBot.commons)
 
   def monumentDbStat: Option[String] = stat.monumentDb.map(RR.monumentDbStat)
+
+  def when(cond: Boolean)(f: => Future[_]): Future[Any] = if (cond) f else Future.successful()
 
   //  def authorsMonuments: String =
   //    RR.authorsMonuments(stat.currentYearImageDb.get)
@@ -43,87 +45,95 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
 
   /** Outputs current year reports.
     */
-  def currentYear(): Unit = {
+  def currentYear(): Future[Unit] = {
     val imageDb = currentYearImageDb
-    new RecentlyTaken(stat).updateWiki(commons)
 
-    if (cfg.specialNominations) {
-      new SpecialNominations(stat, imageDb).statistics()
-    }
-
-    if (cfg.lowRes) {
-      Output.lessThan2MpGallery(contest, imageDb)
-    }
-
-    monumentDb.foreach { mDb =>
-      if (cfg.wrongIds) {
+    for {
+      _ <- new RecentlyTaken(stat).updateWiki(commons)
+      _ <- when(cfg.specialNominations) {
+        new SpecialNominations(stat, imageDb).statistics()
+      }
+      _ <- when(cfg.lowRes) {
+        Output.lessThan2MpGallery(contest, imageDb)
+      }
+      mDb <- monumentDb
+        .map(Future.successful)
+        .getOrElse(Future.failed(new IllegalStateException("Monument DB is required")))
+      _ <- when(cfg.wrongIds) {
         Output.wrongIds(imageDb, mDb)
       }
 
-      if (cfg.missingIds) {
+      _ <- when(cfg.missingIds) {
         Output.missingIds(imageDb, mDb)
       }
 
-      if (cfg.multipleIds) {
+      _ <- when(cfg.multipleIds) {
         Output.multipleIds(imageDb, mDb)
       }
 
-      if (cfg.fillLists && cfg.years.size == 1) {
+      _ <- when(cfg.fillLists && cfg.years.size == 1) {
         ImageFiller.fillLists(mDb, imageDb)
       }
 
-      if (cfg.missingGallery) {
+      _ <- when(cfg.missingGallery) {
         Output.missingGallery(mDb)
       }
 
-      if (cfg.placeDetection) {
+      _ <- when(cfg.placeDetection) {
         Output.unknownPlaces(mDb, imageDb)
         Output.unknownPlaces(mDb)
       }
 
-      if (cfg.mostPopularMonuments) {
+      _ <- when(cfg.mostPopularMonuments) {
         new MostPopularMonuments(stat).updateWiki(
           MwBot.fromHost(MwBot.commons)
         )
       }
-    }
+    } yield ()
   }
 
-  def allYears(): Unit = {
+  def allYears(): Future[Unit] = {
     val imageDb = totalImageDb
-    if (cfg.fillLists) {
-      ImageFiller.fillLists(monumentDb.get, imageDb)
-    }
 
-    if (cfg.regionalStat) {
-      Output.regionalStat(stat)
-    }
+    for {
+      _ <- when(cfg.fillLists) {
+        ImageFiller.fillLists(monumentDb.get, imageDb)
+      }
 
-    if (cfg.newMonuments) {
-      Output.newMonuments(stat)
-    }
+      _ <- when(cfg.regionalStat) {
+        Output.regionalStat(stat)
+      }
 
-    if (cfg.authorsStat) {
-      new AuthorsStat().authorsStat(stat, commons, cfg.gallery)
-    } else if (cfg.rateInputDistribution) {
-      Rater.create(stat)
-    }
+      _ <- when(cfg.newMonuments) {
+        Output.newMonuments(stat)
+      }
 
-    if (cfg.regionalGallery) {
-      Output.byRegion(monumentDb.get, imageDb)
-    }
+      _ <- when(cfg.authorsStat) {
+        new AuthorsStat().authorsStat(stat, commons, cfg.gallery)
+      }
+      _ <- when(cfg.rateInputDistribution) {
+        Future {
+          Rater.create(stat)
+        }
+      }
 
-    if (cfg.numberOfMonumentsByNumberOfPictures) {
-      // new NumberOfMonumentsByNumberOfPictures(stat, imageDb).updateWiki(commons)
-      val mDb = monumentDb.get
-      Gallery.gallery(imageDb, mDb)
-    }
+      _ <- when(cfg.regionalGallery) {
+        Output.byRegion(monumentDb.get, imageDb)
+      }
 
+      _ <- when(cfg.numberOfMonumentsByNumberOfPictures) {
+        // new NumberOfMonumentsByNumberOfPictures(stat, imageDb).updateWiki(commons)
+        val mDb = monumentDb.get
+        Future { Gallery.gallery(imageDb, mDb) }
+      }
+    } yield ()
   }
 
-  def output(): Unit = {
-    currentYear()
-    allYears()
+  def output(): Future[Unit] = {
+    for {
+      _ <- currentYear()
+      _ <- allYears()
+    } yield ()
   }
 
 }

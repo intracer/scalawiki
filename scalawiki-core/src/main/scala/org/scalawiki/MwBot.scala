@@ -296,7 +296,7 @@ class MwBotImpl(
 
   override def post(params: Map[String, String]): Future[String] = {
     val uri: Uri = Uri(apiUrl)
-    log.info(s"$host POST equivalent to: ${getUri(params)}")
+    log.debug(s"$host POST equivalent to: ${getUri(params)}")
     http.postUri(uri, params ++ Map("format" -> "json")) flatMap http.getBody
   }
 

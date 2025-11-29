@@ -7,7 +7,8 @@ import org.scalawiki.wlx.stat.rating.{RateSum, Rater}
 import org.scalawiki.wlx.stat.ContestStat
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
-import scala.concurrent.ExecutionContext
+import scala.collection.View
+import scala.concurrent.{ExecutionContext, Future}
 
 object Output {
 
@@ -377,7 +378,7 @@ object Output {
 
   def byRegion(monumentDb: MonumentDB, imageDb: ImageDB)(implicit
       ec: ExecutionContext
-  ) = {
+  ): Future[View[Unit]] = {
     val bot = MwBot.fromHost(MwBot.ukWiki)
 
     val country = monumentDb.contest.country
@@ -399,7 +400,7 @@ object Output {
       }
       .mapValues(_.keySet.map(_.name))
 
-    byParent.map { case (parent, regions) =>
+    Future.sequence(byParent.map { case (parent, regions) =>
       val pageName = s"Вікіпедія:${imageDb.contest.contestType.name}/$parent"
       val text = regions.toSeq.sorted
         .map { regionName =>
@@ -408,7 +409,7 @@ object Output {
         .mkString("\n")
 
       bot.page(pageName).edit(text).failed.map(println)
-    }
+    })
   }
 
   def lessThan2MpGallery(contest: Contest, imageDb: ImageDB) = {
@@ -446,7 +447,7 @@ object Output {
       .edit(text, Some("updating"))
   }
 
-  def wrongIds(imageDb: ImageDB, monumentDb: MonumentDB): Unit = {
+  def wrongIds(imageDb: ImageDB, monumentDb: MonumentDB): Future[Any] = {
     val bot = MwBot.fromHost(MwBot.commons)
 
     val wrongIdImages = imageDb.images
@@ -475,7 +476,7 @@ object Output {
       .edit(text, Some("updating"))
   }
 
-  def missingIds(imageDb: ImageDB, monumentDb: MonumentDB): Unit = {
+  def missingIds(imageDb: ImageDB, monumentDb: MonumentDB): Future[Any] = {
     val bot = MwBot.fromHost(MwBot.commons)
 
     val images = imageDb.images.filter(_.monumentIds.isEmpty)
@@ -493,7 +494,7 @@ object Output {
       .edit(text, Some("updating"))
   }
 
-  def multipleIds(imageDb: ImageDB, monumentDb: MonumentDB): Unit = {
+  def multipleIds(imageDb: ImageDB, monumentDb: MonumentDB): Future[Any] = {
     val bot = MwBot.fromHost(MwBot.commons)
 
     val images = imageDb.images.filter(image => image.monumentIds.size > 1)
@@ -506,7 +507,7 @@ object Output {
       .edit(text, Some("updating"))
   }
 
-  def regionalStat(stat: ContestStat): Unit = {
+  def regionalStat(stat: ContestStat)(implicit ec: ExecutionContext): Future[Unit] = {
     val bot = MwBot.fromHost(MwBot.commons)
 
     val contest = stat.contest
@@ -535,10 +536,13 @@ object Output {
     val category = s"\n[[Category:$categoryName]]"
     val regionalStat = toc + idsStat + authorsContributed + category
 
-    bot
-      .page(s"Commons:$categoryName/Regional statistics")
-      .edit(regionalStat, Some("updating"))
-    authorsStat.authorsContributedPerRegion(stat.totalImageDb, bot)
+    for {
+      _ <- bot
+        .page(s"Commons:$categoryName/Regional statistics")
+        .edit(regionalStat, Some("updating"))
+     _ <-  authorsStat.authorsContributedPerRegion(stat.totalImageDb, bot)
+    }
+    yield ()
   }
 
   def newMonuments(stat: ContestStat) = {

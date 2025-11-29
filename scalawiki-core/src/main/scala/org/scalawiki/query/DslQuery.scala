@@ -80,7 +80,7 @@ class DslQuery(
         s"${bot.host} Action completed with $pages pages in $estimatedTime seconds,  $action.pairs"
       )
     } else {
-      bot.log.info(s"${bot.host} pages: $pages action: $action.pairs")
+      bot.log.debug(s"${bot.host} pages: $pages action: $action.pairs")
     }
 
     val progress = new QueryProgress(pages, done, action, bot, context)

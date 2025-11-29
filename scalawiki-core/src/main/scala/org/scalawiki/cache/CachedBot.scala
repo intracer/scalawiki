@@ -82,7 +82,7 @@ class CachedBot(
     val key = paramsKey(params)
 
     if (cache.containsKey(key)) {
-      log.info(s"cached $host POST equivalent to: ${getUri(params)}")
+      log.debug(s"cached $host POST equivalent to: ${getUri(params)}")
     }
 
     try {

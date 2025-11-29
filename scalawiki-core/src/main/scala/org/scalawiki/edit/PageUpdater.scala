@@ -7,16 +7,16 @@ class PageUpdater(task: PageUpdateTask) extends WithBot {
   import scala.concurrent.ExecutionContext.Implicits.global
   import scala.concurrent._
 
-  def host = task.host
+  def host: String = task.host
 
-  def update() = {
+  def update(): Future[Unit] = {
     val titles = task.titles
     val results = titles.zipWithIndex.map { case (title, index) =>
       println(s"Processing page: $title, $index of ${titles.size}")
       updatePage(title)
     }
 
-    for (seq <- Future.sequence(results.toSeq)) {
+    for (seq <- Future.sequence(results.toSeq)) yield {
       val (successful, errors) = seq.partition(_ == "Success")
 
       println(s"Successful page updates: ${successful.size}")

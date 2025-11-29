@@ -7,6 +7,8 @@ import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.stat.ContestStat
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
+import scala.concurrent.{ExecutionContext, Future}
+
 class AuthorsStat(val uploadImages: Boolean = false) {
 
   var userImages: Option[String] = None
@@ -30,26 +32,28 @@ class AuthorsStat(val uploadImages: Boolean = false) {
     header + table.asWiki + userImages.getOrElse("")
   }
 
-  def authorsContributedPerRegion(imageDb: ImageDB, bot: MwBot) = {
+  def authorsContributedPerRegion(imageDb: ImageDB, bot: MwBot)(implicit ec: ExecutionContext) = {
     imageDb.monumentDb.map { monumentDb =>
-      monumentDb.regionIds.map { regionId =>
-        val country = monumentDb.contest.country
-        val regionName = country.regionName(regionId)
-        val authors =
-          imageDb
-            .authorsByRegion(regionId)
-            .toSeq
-            .sorted
-            .map(_.replace("Участник:", ""))
-            .filterNot(_.isBlank)
-        val listPage =
-          s"Commons:${imageDb.contest.name}/Автори " + regionName
-        val text = authors
-          .map(author => s"# {{#target:User_talk:$author|}}")
-          .mkString("\n")
-        bot.page(listPage).edit(text)
+      Future.sequence{
+        monumentDb.regionIds.map { regionId =>
+          val country = monumentDb.contest.country
+          val regionName = country.regionName(regionId)
+          val authors =
+            imageDb
+              .authorsByRegion(regionId)
+              .toSeq
+              .sorted
+              .map(_.replace("Участник:", ""))
+              .filterNot(_.isBlank)
+          val listPage =
+            s"Commons:${imageDb.contest.name}/Автори " + regionName
+          val text = authors
+            .map(author => s"# {{#target:User_talk:$author|}}")
+            .mkString("\n")
+          bot.page(listPage).edit(text)
+        }
       }
-    }
+    }.getOrElse(Future.successful())
   }
 
   def authorsContributedTable(

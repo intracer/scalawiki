@@ -9,9 +9,11 @@ import org.sweble.wikitext.engine.config.WikiConfig
 import org.sweble.wikitext.engine.utils.DefaultConfigEnWp
 import org.sweble.wikitext.parser.nodes.WtTemplate
 
+import scala.concurrent.Future
+
 object ListUpdater {
 
-  def updateLists(monumentDb: MonumentDB, monumentUpdater: MonumentUpdater) {
+  def updateLists(monumentDb: MonumentDB, monumentUpdater: MonumentUpdater): Future[Unit] = {
     val task = new ListUpdaterTask(MwBot.ukWiki, monumentDb, monumentUpdater)
     val updater = new PageUpdater(task)
     updater.update()

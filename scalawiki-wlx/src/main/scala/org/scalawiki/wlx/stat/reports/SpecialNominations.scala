@@ -6,11 +6,13 @@ import org.scalawiki.wlx.ImageDB
 import org.scalawiki.wlx.dto.{Contest, Country, SpecialNomination}
 import org.scalawiki.wlx.stat.ContestStat
 
+import scala.concurrent.Future
+
 class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
 
   private val contest: Contest = stat.contest
 
-  def statistics(): Unit = {
+  def statistics(): Future[Any] = {
 
     val stat = specialNomination()
 
