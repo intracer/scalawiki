@@ -14,7 +14,7 @@ object Output {
 
   def monumentsByType(
       /*imageDbs: Seq[ImageDB], totalImageDb: ImageDB,*/ monumentDb: MonumentDB
-  ) = {
+  ): Unit = {
     val regions = monumentDb.contest.country.regionById
 
     for ((typ, size) <- monumentDb._byType.mapValues(_.size).toSeq.sortBy(-_._2)) {
@@ -248,57 +248,88 @@ object Output {
     perRegion.mkString("\n")
   }
 
-  def byCity(imageDb: ImageDB) = {
+  def byCity(imageDb: ImageDB)(implicit ec: ExecutionContext): Future[Any] = {
 
     val ukWiki = MwBot.fromHost(MwBot.ukWiki)
-    //    val cities = Seq("Бар (місто)", "Бершадь", "Гайсин", "Гнівань", "Жмеринка", "Іллінці",
-    //      "Калинівка", "Козятин", "Ладижин", "Липовець", "Могилів-Подільський", "Немирів",
-    //      "Погребище", "Тульчин", "Хмільник", "Шаргород", "Ямпіль")
-
     val cities = Seq(
-      "Баштанка",
-      "Вознесенськ",
-      "Нова Одеса",
-      "Новий Буг",
-      "Очаків",
-      "Снігурівка",
-      "Южноукраїнськ"
+      "Олесько",
+      "Щирець",
+      "Стрий",
+      "Сокаль",
+      "Самбір",
+      "Старий Самбір",
+      "Перемишляни",
+      "Борислав",
+      "Сасів",
+      "Угнів",
+      "Сколе",
+      "Буськ",
+      "Новий Розділ",
+      "Турка",
+      "Рава-Руська",
+      "Немирів",
+      "Східниця",
+      "Золочів",
+      "Радехів",
+      "Угнів",
+      "Топорів",
+      "Комарно",
+      "Жидачів",
+      "Ходорів",
+      "Бібрка",
+      "Нові Стрілища",
+      "Миколаїв",
+      "Берездівці",
+      "Рудки",
+      "Стара Сіль",
+      "Добромиль"
     )
 
     val monumentDb = imageDb.monumentDb.get
 
-    val all = monumentDb.monuments.filter { m =>
-      val city =
-        m.city.getOrElse("").replaceAll("\\[", " ").replaceAll("\\]", " ")
-      m.photo.isDefined && cities.map(_ + " ").exists(city.contains) && !city
-        .contains("район") && Set("48").contains(m.regionId)
-    }
+    val all = monumentDb.monuments
+//      .filter { m =>
+//      val city =
+//        m.city.getOrElse("").replaceAll("\\[", " ").replaceAll("\\]", " ")
+//      m.photo.isDefined && cities.map(_ + " ").exists(city.contains) && !city.contains("район") // && Set("48").contains(m.regionId)
+//    }
 
     def cityShort(city: String) =
       cities.find(city.contains).getOrElse("").split(" ")(0)
 
-    def page(city: String) = "User:Ilya/Миколаївська область/" + city
+    def page(city: String) = "User:Ilya/Міста ЄС/" + city
 
-    all.groupBy(m => cityShort(m.city.getOrElse(""))).foreach { case (city, monuments) =>
-      val galleries = monuments.map { m =>
-        val images = imageDb.byId(m.id)
-        val gallery = Image.gallery(images.map(_.title))
+    val pageEdits =
+      all.groupBy(m => cityShort(m.city.getOrElse(""))).map { case (city, monuments) =>
+        val galleries = monuments.flatMap { m =>
+          val images = imageDb.byId(m.id)
+          if (images.isEmpty) None else Some {
+            val gallery = Image.gallery(images.map(_.title))
 
-        s"""== ${m.name.replaceAll("\\[\\[", "[[:uk:")} ==
-               |'''Рік:''' ${m.year.getOrElse("")}, '''Адреса:''' ${m.place
-            .getOrElse("")}, '''Тип:''' ${m.typ.getOrElse("")},
-               |'''Охоронний номер:''' ${m.stateId
-            .getOrElse("")}\n""".stripMargin +
-          gallery
+            s"""== ${m.name.replaceAll("\\[\\[", "[[:uk:")} ==
+               |'''Рік:''' ${m.year.getOrElse("")}, '''Адреса:''' ${
+              m.place
+                .getOrElse("")
+            }, '''Тип:''' ${m.typ.getOrElse("")},
+               |'''Охоронний номер:''' ${
+              m.stateId
+                .getOrElse("")
+            }\n""".stripMargin + gallery
+          }
+        }
+        if (galleries.isEmpty) Future.successful(())
+        else
+        ukWiki.page(page(city)).edit(galleries.mkString("\n"))
       }
-      ukWiki.page(page(city)).edit(galleries.mkString("\n"))
-    }
 
     val list = cities.map(city => s"#[[${page(city)}|$city]]").mkString("\n")
-    ukWiki.page("User:Ilya/Миколаївська область").edit(list)
+    for {
+      _ <- Future.sequence(pageEdits)
+      _ <- ukWiki.page("User:Ilya/Міста ЄС").edit(list)
+    } yield ()
   }
 
-  def articleStatistics(monumentDb: MonumentDB, imageDb: ImageDB) = {
+  def articleStatistics(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
     val byRegionAndId = imageDb._byAuthorAndId
     for ((regId, byId) <- byRegionAndId.grouped) {
       val monuments = monumentDb.byRegion(regId).filter { m =>
@@ -412,7 +443,7 @@ object Output {
     })
   }
 
-  def lessThan2MpGallery(contest: Contest, imageDb: ImageDB) = {
+  def lessThan2MpGallery(contest: Contest, imageDb: ImageDB): Future[Any] = {
     val bot = MwBot.fromHost(MwBot.commons)
     val lessThan2Mp = imageDb.byMegaPixelFilterAuthorMap(_ < 2)
     val gallery =
@@ -540,18 +571,17 @@ object Output {
       _ <- bot
         .page(s"Commons:$categoryName/Regional statistics")
         .edit(regionalStat, Some("updating"))
-     _ <-  authorsStat.authorsContributedPerRegion(stat.totalImageDb, bot)
-    }
-    yield ()
+      _ <- authorsStat.authorsContributedPerRegion(stat.totalImageDb, bot)
+    } yield ()
   }
 
-  def newMonuments(stat: ContestStat) = {
+  def newMonuments(stat: ContestStat): Future[Any] = {
     new NewMonuments(stat).updateWiki(MwBot.fromHost(MwBot.commons))
   }
 
-  def missingGallery(monumentDB: MonumentDB) = {
+  def missingGallery(monumentDB: MonumentDB): Future[Any] = {
     val allMissing =
-      monumentDB.allMonuments.toSeq.filter(m => m.gallery.isEmpty && m.photo.nonEmpty)
+      monumentDB.allMonuments.filter(m => m.gallery.isEmpty && m.photo.nonEmpty)
     val grouped = allMissing.groupBy(_.page).toSeq.sortBy(_._1)
     val text = s"Overall missing: ${allMissing.size}\n" + grouped.map { case (page, monuments) =>
       s"=== [[$page]] - ${monuments.size} ===\n" + monuments
@@ -568,7 +598,7 @@ object Output {
     MwBot.fromHost(MwBot.ukWiki).page(pageName).edit(text, Some("updating"))
   }
 
-  def unknownPlaces(monumentDB: MonumentDB) = {
+  def unknownPlaces(monumentDB: MonumentDB): Future[Any] = {
     val places = monumentDB.unknownPlaces()
     val tables = monumentDB.unknownPlacesTables()
     val text =

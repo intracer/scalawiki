@@ -3,14 +3,22 @@ package org.scalawiki.wlx.stat.reports
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.ImageDB
-import org.scalawiki.wlx.dto.{Contest, Country, SpecialNomination}
+import org.scalawiki.wlx.dto.{Contest, Country, Monument, SpecialNomination}
 import org.scalawiki.wlx.stat.ContestStat
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
 
   private val contest: Contest = stat.contest
+
+  def statisticsByCity()(implicit ec: ExecutionContext): Future[Any] = {
+    val monumentsMap = SpecialNomination.getMonumentsMap(nominations, stat)
+    val jewsNomination = SpecialNomination.nominations.find(_.name == "Єврейська спадщина")
+      .getOrElse(throw new IllegalStateException("No Jewish heritage nomination found"))
+    val imageDb = specialNominationImageDb(monumentsMap, jewsNomination)
+    Output.byCity(imageDb)
+  }
 
   def statistics(): Future[Any] = {
 
@@ -29,15 +37,7 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
   def specialNomination(): String = {
     val monumentsMap = SpecialNomination.getMonumentsMap(nominations, stat)
     val imageDbs = nominations.map { nomination =>
-      val specialNominationImageDb =
-        if (monumentsMap.get(nomination).exists(_.nonEmpty)) {
-          imageDb.subSet(monumentsMap(nomination), withFalseIds = true)
-        } else {
-          imageDb.subSet { i =>
-            nomination.fileTemplate.exists(i.specialNominations.contains)
-          }
-        }
-      nomination -> specialNominationImageDb
+      nomination -> specialNominationImageDb(monumentsMap, nomination)
     }.toMap
 
     val headers = Seq(
@@ -84,6 +84,16 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
     val table = Table(headers, rows)
 
     table.asWiki + s"\n[[Category:${contest.name}]]"
+  }
+
+  private def specialNominationImageDb(monumentsMap: Map[SpecialNomination, Seq[Monument]], nomination: SpecialNomination) = {
+    if (monumentsMap.get(nomination).exists(_.nonEmpty)) {
+      imageDb.subSet(monumentsMap(nomination), withFalseIds = true)
+    } else {
+      imageDb.subSet { i =>
+        nomination.fileTemplate.exists(i.specialNominations.contains)
+      }
+    }
   }
 
   private def newlyPicturedText(imagesPage: String, imageDb: ImageDB, newMonumentIds: Set[String]): String = {
