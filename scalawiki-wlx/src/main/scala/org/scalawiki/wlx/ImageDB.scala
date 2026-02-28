@@ -1,7 +1,7 @@
 package org.scalawiki.wlx
 
-import org.apache.fory.Fory
-import org.apache.fory.serializer.scala.ScalaSerializers
+//import org.apache.fory.Fory
+//import org.apache.fory.serializer.scala.ScalaSerializers
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.{Contest, Monument}
 import org.scalawiki.wlx.query.ImageQuery
@@ -225,13 +225,13 @@ object ImageDB {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 // ForyBuilder#requireClassRegistration(false)
-  private val fory: Fory = Fory
-    .builder()
-    .withScalaOptimizationEnabled(true)
-    .requireClassRegistration(false)
-    .build()
-  ScalaSerializers.registerSerializers(fory)
-  fory.register(classOf[Image])
+//  private val fory: Fory = Fory
+//    .builder()
+//    .withScalaOptimizationEnabled(true)
+//    .requireClassRegistration(false)
+//    .build()
+//  ScalaSerializers.registerSerializers(fory)
+//  fory.register(classOf[Image])
 
   def create(
       contest: Contest,
@@ -242,7 +242,8 @@ object ImageDB {
   //  return Future.successful().map(_ => throw new IllegalArgumentException("Disabled cache"))
     val cacheName = s"${contest.campaign}-${contest.year}.fory"
     if (false && Files.exists(Paths.get(cacheName))) {
-      readCache(contest, imageQuery, monumentDb, minMpx, cacheName)
+      Future.failed(new IllegalArgumentException("Disabled cache"))
+      //readCache(contest, imageQuery, monumentDb, minMpx, cacheName)
     } else {
       imageQuery.imagesFromCategory(contest).map { images =>
 //        try {
@@ -262,36 +263,36 @@ object ImageDB {
     }
   }
 
-  private def readCache(contest: Contest, imageQuery: ImageQuery, monumentDb: Option[MonumentDB], minMpx: Option[Float], cacheName: String) = {
-    try {
-      println(s"Loading images from cache: $cacheName")
-      val start = System.currentTimeMillis()
-      val bytes = Files.readAllBytes(Paths.get(cacheName))
-      val images = fory.deserialize[Iterable[Image]](bytes, classOf[Iterable[Image]])
-      val duration = System.currentTimeMillis() - start
-      println(s"Loaded images from cache $cacheName in $duration ms")
-      val db = new ImageDB(contest, images, monumentDb, minMpx)
-      Future.successful(db)
-    } catch {
-      case ex: Throwable =>
-        println(s"Failed to load images from cache $cacheName: $ex")
-        throw ex
-        imageQuery.imagesFromCategory(contest).map { images =>
-          //            try {
-          //              println(s"Saving images to cache: $cacheName")
-          //              val start = System.currentTimeMillis()
-          //              val bytes = fory.serialize(images)
-          //              Files.write(Paths.get(cacheName), bytes)
-          //              val duration = System.currentTimeMillis() - start
-          //              println(s"Saved images to cache $cacheName in $duration ms")
-          //            } catch {
-          //              case ex: Exception =>
-          //                println(s"Failed to save images to cache $cacheName: $ex")
-          //            }
-          new ImageDB(contest, images, monumentDb, minMpx)
-        }
-    }
-  }
+//  private def readCache(contest: Contest, imageQuery: ImageQuery, monumentDb: Option[MonumentDB], minMpx: Option[Float], cacheName: String) = {
+//    try {
+//      println(s"Loading images from cache: $cacheName")
+//      val start = System.currentTimeMillis()
+//      val bytes = Files.readAllBytes(Paths.get(cacheName))
+//      val images = fory.deserialize[Iterable[Image]](bytes, classOf[Iterable[Image]])
+//      val duration = System.currentTimeMillis() - start
+//      println(s"Loaded images from cache $cacheName in $duration ms")
+//      val db = new ImageDB(contest, images, monumentDb, minMpx)
+//      Future.successful(db)
+//    } catch {
+//      case ex: Throwable =>
+//        println(s"Failed to load images from cache $cacheName: $ex")
+//        throw ex
+//        imageQuery.imagesFromCategory(contest).map { images =>
+//          //            try {
+//          //              println(s"Saving images to cache: $cacheName")
+//          //              val start = System.currentTimeMillis()
+//          //              val bytes = fory.serialize(images)
+//          //              Files.write(Paths.get(cacheName), bytes)
+//          //              val duration = System.currentTimeMillis() - start
+//          //              println(s"Saved images to cache $cacheName in $duration ms")
+//          //            } catch {
+//          //              case ex: Exception =>
+//          //                println(s"Failed to save images to cache $cacheName: $ex")
+//          //            }
+//          new ImageDB(contest, images, monumentDb, minMpx)
+//        }
+//    }
+//  }
 
   private val allowList = Set[Long](139033190, 139033189, 138896313, 138896491, 138679587,
     139500804, 139899874, 139899873, 139643873, 139473382, 139843450, 138561292, 138543453,
