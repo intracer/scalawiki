@@ -71,6 +71,7 @@ object Dependencies {
       val stream = "org.apache.pekko" %% "pekko-stream" % PekkoV
       val http = "org.apache.pekko" %% "pekko-http" % PekkoHttpV
       val httpCaching = "org.apache.pekko" %% "pekko-http-caching" % PekkoHttpV
+      val streamTestkit = "org.apache.pekko" %% "pekko-stream-testkit" % PekkoV % Test
     }
 
     object Play {

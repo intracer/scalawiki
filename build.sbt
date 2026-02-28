@@ -1,5 +1,6 @@
 import sbt.Keys._
 import Dependencies._
+import Dependencies.Library._
 
 ThisBuild / Test / fork := true
 
@@ -17,9 +18,9 @@ lazy val commonSettings = Seq(
   licenses += ("Apache-2.0", url("http://opensource.org/licenses/Apache-2.0")),
   Keys.resolvers ++= Dependencies.resolvers,
   libraryDependencies ++= Seq(
-    Library.Specs2.core % Test,
-    Library.Specs2.matcherExtra % Test,
-    Library.Specs2.mock % Test,
+    Specs2.core % Test,
+    Specs2.matcherExtra % Test,
+    Specs2.mock % Test,
     "com.google.jimfs" % "jimfs" % JimFsV % Test,
     "org.mock-server" % "mockserver-netty" % MockServerV % Test
   ),
@@ -54,11 +55,11 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= {
     Seq(
-      Library.Pekko.actor,
-      Library.Pekko.stream,
-      Library.Pekko.http,
-      Library.Pekko.httpCaching,
-      Library.Play.json(isScala213.value),
+      Pekko.actor,
+      Pekko.stream,
+      Pekko.http,
+      Pekko.httpCaching,
+      Play.json(isScala213.value),
       "com.typesafe" % "config" % TypesafeConfigV,
       "com.iheart" %% "ficus" % FicusV,
       "jp.ne.opt" %% "chronoscala" % ChronoScalaV,
@@ -69,7 +70,7 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
       ),
       "javax.xml.bind" % "jaxb-api" % "2.3.1",
       "de.fau.cs.osr.ptk" % "ptk-common" % "3.0.8",
-      Library.Commons.codec,
+      Commons.codec,
       "org.jsoup" % "jsoup" % JSoupV,
       "com.softwaremill.retry" %% "retry" % RetryV,
       "net.openhft" % "chronicle-map" % ChronicleMapV,
@@ -86,13 +87,13 @@ lazy val bots = Project("scalawiki-bots", file("scalawiki-bots"))
       "com.github.pathikrit" %% "better-files" % BetterFilesV,
       "org.rogach" %% "scallop" % ScallopV,
       "org.xwiki.commons" % "xwiki-commons-blame-api" % BlameApiV,
-      Library.Commons.io,
-      Library.Poi.scratchpad,
-      Library.Poi.ooxml,
-      Library.Poi.ooxmlFull,
-      Library.Poi.poi,
-      Library.Poi.converter,
-      Library.Play.twirlApi(isScala213.value),
+      Commons.io,
+      Poi.scratchpad,
+      Poi.ooxml,
+      Poi.ooxmlFull,
+      Poi.poi,
+      Poi.converter,
+      Play.twirlApi(isScala213.value),
       "com.github.tototoshi" %% "scala-csv" % ScalaCsvV
     )
   )
@@ -105,7 +106,7 @@ lazy val dumps = Project("scalawiki-dumps", file("scalawiki-dumps"))
     libraryDependencies ++=
       Seq(
         "com.fasterxml" % "aalto-xml" % AaltoXmlV,
-        Library.Commons.compress,
+        Commons.compress,
         "org.glassfish.jaxb" % "txw2" % "3.0.2" // scala-steward:off
       )
   )
@@ -117,7 +118,8 @@ lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
     libraryDependencies ++= Seq(
       "de.sciss" %% "scala-chart" % ScalaChartV,
       "com.github.tototoshi" %% "scala-csv" % ScalaCsvV,
-      "org.apache.fory" %% "fory-scala" % "0.13.1"
+      "org.apache.fory" %% "fory-scala" % "0.15.0",
+      Pekko.streamTestkit
     ),
     assembly / mainClass := Some("org.scalawiki.wlx.stat.Statistics")
   )
@@ -126,9 +128,9 @@ lazy val `http-extensions` = (project in file("http-extensions"))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      Library.Pekko.actor,
-      Library.Pekko.stream,
-      Library.Pekko.http,
+      Pekko.actor,
+      Pekko.stream,
+      Pekko.http,
       "org.scalacheck" %% "scalacheck" % ScalaCheckV % Test
     )
   )

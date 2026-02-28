@@ -38,7 +38,7 @@ case class Image(
     height: Option[Int] = None,
     author: Option[String] = None,
     uploader: Option[User] = None,
-    year: Option[String] = None,
+    year: Option[Int] = None,
     date: Option[ZonedDateTime] = None,
     monumentIds: Seq[String] = Nil,
     pageId: Option[Long] = None,
