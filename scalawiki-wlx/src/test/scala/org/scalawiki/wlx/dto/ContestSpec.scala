@@ -35,6 +35,7 @@ class ContestSpec extends Specification {
       lc.namesMap.keySet === Set(
         "ID",
         "name",
+        "nameDetail",
         "year",
         "city",
         "cityType",

@@ -14,6 +14,7 @@ class ListConfigSpec extends Specification {
       lc.namesMap === ListMap(
         "ID" -> "ID",
         "name" -> "назва",
+        "nameDetail" -> "назва-уточн",
         "year" -> "рік",
         "city" -> "нас_пункт",
         "cityType" -> "тип-нп",

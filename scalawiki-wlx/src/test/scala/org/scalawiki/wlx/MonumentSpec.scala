@@ -202,6 +202,7 @@ class MonumentSpec extends Specification {
         "{{ВЛП-рядок",
         s"|${names("ID")} = id1",
         s"|${names("name")} = name1",
+        s"|${names("nameDetail")} = ",
         s"|${names("year")} = ",
         s"|${names("city")} = ",
         s"|${names("cityType")} = ",
@@ -215,7 +216,7 @@ class MonumentSpec extends Specification {
         s"}}",
         ""
       )
-      lines === expected
+      lines should_=== expected
     }
 
   }
@@ -234,7 +235,7 @@ class MonumentSpec extends Specification {
         .monumentsFromText(listText, "page", "ВЛП-рядок", listConfig = WlmUa)
         .toSeq
       list.size === 2
-      list(0).id === "05-105-0001"
+      list.head.id === "05-105-0001"
       list(1).id === "05-105-0012"
     }
 
@@ -248,7 +249,7 @@ class MonumentSpec extends Specification {
         )
         .toSeq
       list.size === 2
-      list(0).id === "05-105-0001"
+      list.head.id === "05-105-0001"
       list(1).id === "05-105-0012"
     }
   }
