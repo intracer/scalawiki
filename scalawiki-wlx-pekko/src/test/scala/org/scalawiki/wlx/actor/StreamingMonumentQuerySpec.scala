@@ -5,7 +5,7 @@ import org.apache.pekko.stream.scaladsl.Sink
 import org.scalawiki.{MwBot, MwBotImpl}
 import org.scalawiki.dto.Site
 import org.scalawiki.util.{HttpStub, MockBotSpec, TestHttpClient}
-import org.scalawiki.wlx.dto.Contest
+import org.scalawiki.wlx.dto.{Contest, Monument}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
@@ -32,8 +32,8 @@ class StreamingMonumentQuerySpec
     ActorSystem("StreamingMonumentQuerySpec")
   )
 
-  implicit val system: ActorSystem    = bot.system
-  implicit val ec: ExecutionContext   = system.dispatcher
+  implicit val system: ActorSystem = bot.system
+  implicit val ec: ExecutionContext = system.dispatcher
 
   override def afterAll(): Unit = {
     bot.system.terminate()
@@ -46,7 +46,7 @@ class StreamingMonumentQuerySpec
 
     "complete stream with monument template pages" in {
       val pageContent =
-        """{{Monument Ukraine
+        """{{ВЛП-рядок
           || ID = 01-101-0001
           || назва = Тестовий пам'ятник
           || рік = 1900
@@ -90,14 +90,14 @@ class StreamingMonumentQuerySpec
           Seq(
             HttpStub(
               Map(
-                "action"       -> "query",
-                "generator"    -> "embeddedin",
-                "geititle"     -> "Template:ВЛП-рядок",
+                "action" -> "query",
+                "generator" -> "embeddedin",
+                "geititle" -> "Template:ВЛП-рядок",
                 "geinamespace" -> "4|0",
-                "geilimit"     -> "100",
-                "prop"         -> "revisions",
-                "rvprop"       -> "content|ids|timestamp|user|userid",
-                "continue"     -> ""
+                "geilimit" -> "100",
+                "prop" -> "revisions",
+                "rvprop" -> "content|ids|timestamp|user|userid",
+                "continue" -> ""
               ),
               response
             )
@@ -112,7 +112,34 @@ class StreamingMonumentQuerySpec
 
       val monuments = future.futureValue
       // Stream completes without error; template name mismatch means no monuments parsed
-      monuments shouldBe a[Seq[_]]
+      monuments shouldBe Seq(
+        Monument(
+          page = "Список пам'яток Тестового району",
+          id = "01-101-0001",
+          name = "Тестовий пам'ятник",
+          nameDetail = None,
+          year = Some("1900"),
+          description = None,
+          article = None,
+          city = Some("Тест"),
+          cityType = None,
+          place = Some("вул. Тестова, 1"),
+          user = None,
+          area = None,
+          lat = Some("50.0"),
+          lon = Some("30.0"),
+          typ = Some("місцевий"),
+          subType = None,
+          photo = None,
+          gallery = None,
+          resolution = None,
+          stateId = Some("1234"),
+          contest = None,
+          source = None,
+          otherParams = Map(),
+          listConfig = contest.uploadConfigs.headOption.map(_.listConfig)
+        )
+      )
     }
   }
 
