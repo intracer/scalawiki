@@ -74,8 +74,8 @@ object StatisticsActor {
           Effect.none.thenRun { currentState: StatisticsState =>
             val startYear = contests.headOption.map(_.year).getOrElse(contest.year)
             val stat = currentState.toContestStat(contest, startYear, cfg)
-            // Use an empty reporter list for now — Task 10 adds the real reporters
-            val reporters: List[NamedReporter] = Nil
+            implicit val ec = context.executionContext
+            val reporters: List[NamedReporter] = ReporterRegistry.toNamedReporters(stat, cfg)
             val replyAdapter: ActorRef[ReporterSupervisorActor.Response] =
               context.messageAdapter {
                 case ReporterSupervisorActor.AllReportsDone => AllReportsDoneInternal
