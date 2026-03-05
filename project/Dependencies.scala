@@ -16,6 +16,7 @@ object Dependencies {
   val LogbackClassicV = "1.5.15"
   val MockServerV = "5.15.0"
   val ReactiveStreamsV = "1.0.4"
+  val ScalaTestV = "3.2.19"
   val RetryV = "0.3.6"
   val Scala213V = "2.13.15"
   val ScalaChartV = "0.8.0"
@@ -72,6 +73,11 @@ object Dependencies {
       val http = "org.apache.pekko" %% "pekko-http" % PekkoHttpV
       val httpCaching = "org.apache.pekko" %% "pekko-http-caching" % PekkoHttpV
       val streamTestkit = "org.apache.pekko" %% "pekko-stream-testkit" % PekkoV % Test
+      val actorTyped = "org.apache.pekko" %% "pekko-actor-typed" % PekkoV
+      val persistenceTyped = "org.apache.pekko" %% "pekko-persistence-typed" % PekkoV
+      val serializationJackson = "org.apache.pekko" %% "pekko-serialization-jackson" % PekkoV
+      val persistenceTestkit = "org.apache.pekko" %% "pekko-persistence-testkit" % PekkoV % Test
+      val actorTestkitTyped = "org.apache.pekko" %% "pekko-actor-testkit-typed" % PekkoV % Test
     }
 
     object Play {
@@ -126,6 +132,10 @@ object Dependencies {
         "com.fasterxml.jackson.core" % "jackson-annotations" % JacksonV
       val databind =
         "com.fasterxml.jackson.core" % "jackson-databind" % JacksonV
+    }
+
+    object ScalaTest {
+      val core = "org.scalatest" %% "scalatest" % ScalaTestV % Test
     }
 
     object Specs2 {

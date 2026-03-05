@@ -48,8 +48,8 @@ lazy val commonSettings = Seq(
 
 lazy val scalawiki = (project in file("."))
   .settings(commonSettings)
-  .dependsOn(core, bots, dumps, wlx, `http-extensions`)
-  .aggregate(core, bots, dumps, wlx, `http-extensions`)
+  .dependsOn(core, bots, dumps, wlx, `http-extensions`, `wlx-pekko`)
+  .aggregate(core, bots, dumps, wlx, `http-extensions`, `wlx-pekko`)
 
 lazy val core = Project("scalawiki-core", file("scalawiki-core"))
   .settings(commonSettings: _*)
@@ -132,5 +132,20 @@ lazy val `http-extensions` = (project in file("http-extensions"))
       Pekko.stream,
       Pekko.http,
       "org.scalacheck" %% "scalacheck" % ScalaCheckV % Test
+    )
+  )
+
+lazy val `wlx-pekko` = Project("scalawiki-wlx-pekko", file("scalawiki-wlx-pekko"))
+  .dependsOn(wlx % "compile->compile;test->test", core % "compile->compile;test->test")
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      Pekko.actorTyped,
+      Pekko.persistenceTyped,
+      Pekko.serializationJackson,
+      Pekko.persistenceTestkit,
+      Pekko.actorTestkitTyped,
+      // ScalaTest instead of Specs2: required for ScalaTestWithActorTestKit (Pekko Typed testkit integration)
+      ScalaTest.core
     )
   )
