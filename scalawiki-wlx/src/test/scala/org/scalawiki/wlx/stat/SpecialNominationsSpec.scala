@@ -19,11 +19,6 @@ class SpecialNominationsSpec extends Specification {
           Seq("Template:WLM-music-navbar")
         ),
         new SpecialNomination(
-          "Пам'ятки дерев'яної архітектури України",
-          Some("WLM-рядок"),
-          Seq("Template:WLM Дерев'яна архітектура")
-        ),
-        new SpecialNomination(
           "Замки і фортеці України",
           Some("WLM-рядок"),
           Seq("Template:WLM замки і фортеці")
