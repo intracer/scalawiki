@@ -125,7 +125,14 @@ class StreamingImageQuerySpec
 
       val images = future.futureValue
       images should not be empty
-      images.head.title shouldBe "File:Test monument.jpg"
+      val image = images.head
+      image.title shouldBe "File:Test monument.jpg"
+      image.pageId shouldBe Some(100L)
+      image.monumentIds shouldBe List("01-101-0001")
+      image.author shouldBe Some("TestUser")
+      image.width shouldBe Some(1024)
+      image.height shouldBe Some(768)
+      image.size shouldBe Some(123456L)
     }
   }
 
