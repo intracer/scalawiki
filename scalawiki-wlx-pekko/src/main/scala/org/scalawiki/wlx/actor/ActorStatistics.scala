@@ -1,7 +1,11 @@
 package org.scalawiki.wlx.actor
 
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.Scheduler
 import org.apache.pekko.actor.typed.scaladsl.AskPattern._
 import org.apache.pekko.actor.typed.scaladsl.adapter._
+import org.apache.pekko.pattern.StatusReply
+import org.apache.pekko.util.Timeout
 import org.scalawiki.MwBot
 import org.scalawiki.wlx.stat.{StatParams, Statistics}
 
@@ -27,10 +31,10 @@ object ActorStatistics {
       "statistics-actor"
     )
 
-    implicit val scheduler = bot.system.toTyped.scheduler
-    implicit val timeout: org.apache.pekko.util.Timeout = 60.minutes
+    implicit val scheduler: Scheduler = bot.system.toTyped.scheduler
+    implicit val timeout: Timeout = 60.minutes
 
-    val done = actor.ask[org.apache.pekko.pattern.StatusReply[org.apache.pekko.Done]](
+    val done = actor.ask[StatusReply[Done]](
       ref => GatherData(total = cfg.years.size > 1, replyTo = ref)
     )
 

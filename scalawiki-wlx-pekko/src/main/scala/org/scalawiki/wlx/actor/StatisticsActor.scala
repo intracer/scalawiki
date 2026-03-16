@@ -57,7 +57,6 @@ object StatisticsActor {
         case GatherData(total, replyTo) =>
           Effect.none.thenRun { currentState: StatisticsState =>
             if (!currentState.isComplete(expectedYears) && bot != null) {
-              import org.apache.pekko.actor.typed.scaladsl.adapter._
               DataFetchingStream.run(
                 contest  = contest,
                 contests = contests,

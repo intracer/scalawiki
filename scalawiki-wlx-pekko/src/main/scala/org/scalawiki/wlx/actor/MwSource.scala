@@ -43,7 +43,7 @@ object MwSource {
               val nextState: State =
                 if (parser.continue.isEmpty) None
                 else Some(parser.continue)
-              Some((nextState, newPages.toSeq))
+              Some((nextState, newPages))
 
             case Failure(ex) =>
               throw ex

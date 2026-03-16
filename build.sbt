@@ -27,7 +27,7 @@ lazy val commonSettings = Seq(
   dependencyOverrides ++= Dependencies.overrides,
   initialize := {
     val _ = initialize.value
-    val required = VersionNumber("1.8")
+    val required = VersionNumber("17")
     val curr = VersionNumber(sys.props("java.specification.version"))
     assert(
       CompatibleJavaVersion(curr, required),

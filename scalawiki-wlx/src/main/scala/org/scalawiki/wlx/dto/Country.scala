@@ -297,7 +297,7 @@ object Country {
           Option(locale.getLanguage)
             .filter(_.nonEmpty)
         }
-        countryCode -> langs
+        countryCode -> langs.distinct
       }
   }
 
