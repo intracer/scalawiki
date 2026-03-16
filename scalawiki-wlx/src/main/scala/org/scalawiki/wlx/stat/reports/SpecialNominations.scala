@@ -84,7 +84,11 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
     table.asWiki + s"\n[[Category:${contest.name}]]"
   }
 
-  private def newlyPicturedText(imagesPage: String, imageDb: ImageDB, newMonumentIds: Set[String]): String = {
+  private def newlyPicturedText(
+      imagesPage: String,
+      imageDb: ImageDB,
+      newMonumentIds: Set[String]
+  ): String = {
     val newlyPicturedText = if (newMonumentIds.nonEmpty) {
       val newPicturedImagesPage = imagesPage + " newly pictured"
       galleryByRegion(
