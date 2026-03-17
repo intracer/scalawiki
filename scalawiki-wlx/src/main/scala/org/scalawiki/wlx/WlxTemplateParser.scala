@@ -39,6 +39,11 @@ class WlxTemplateParser(val config: ListConfig, val page: String) {
     templates.map(templateToMonument)
   }
 
+  def parseToMaps(wiki: String): Iterable[Map[String, String]] = {
+    val templates = TemplateParser.parse(wiki, config.templateName)
+    templates.map(_.params)
+  }
+
   def templateToMonument(template: Template): Monument = {
     def byName(name: Option[String]) =
       name.flatMap(template.getParamOpt).filter(_.trim.nonEmpty)
