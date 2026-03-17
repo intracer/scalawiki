@@ -59,7 +59,7 @@ object UaUkJsonMapping {
     // .fields returns an IndexedSeq in that order.
     // Do NOT convert through Map at any point — doing so will lose insertion order.
     val sqlDataObj = (json \ "sql_data").as[JsObject]
-    val sqlEntries: scala.collection.immutable.Seq[(String, SqlEntry)] = sqlDataObj.fields.toIndexedSeq.map {
+    val sqlEntries: Seq[(String, SqlEntry)] = sqlDataObj.fields.toSeq.map {
       case (key, obj) =>
         val entryType = (obj \ "type").as[String]
         val value     = (obj \ "value").as[String]
@@ -104,26 +104,30 @@ object UaUkJsonMapping {
       }
     }
 
-    // Step 2 — Field
-    for ((sqlKey, entry) <- mapping.sqlMap if entry.entryType == "Field") {
-      if (intermediate.contains(entry.value)) {
-        if (sqlKey != entry.value) {
-          if (!intermediate.contains(sqlKey)) {
-            // case C: rename
-            intermediate = intermediate.updated(sqlKey, intermediate(entry.value)) - entry.value
-          } else {
-            // case D: sqlKey already present, just drop old key
-            intermediate = intermediate - entry.value
+    // Step 2 — Field (in sql_data insertion order)
+    for (sqlKey <- mapping.sqlKeyOrder) {
+      mapping.sqlMap.get(sqlKey).filter(_.entryType == "Field").foreach { entry =>
+        if (intermediate.contains(entry.value)) {
+          if (sqlKey != entry.value) {
+            if (!intermediate.contains(sqlKey)) {
+              // case C: rename
+              intermediate = intermediate.updated(sqlKey, intermediate(entry.value)) - entry.value
+            } else {
+              // case D: sqlKey already present, just drop old key
+              intermediate = intermediate - entry.value
+            }
           }
+          // case B: sqlKey == entry.value → no-op
         }
-        // case B: sqlKey == entry.value → no-op
+        // case A: entry.value absent → skip
       }
-      // case A: entry.value absent → skip
     }
 
-    // Step 3 — Text
-    for ((sqlKey, entry) <- mapping.sqlMap if entry.entryType == "Text") {
-      intermediate = intermediate.updated(sqlKey, entry.value)
+    // Step 3 — Text (in sql_data insertion order)
+    for (sqlKey <- mapping.sqlKeyOrder) {
+      mapping.sqlMap.get(sqlKey).filter(_.entryType == "Text").foreach { entry =>
+        intermediate = intermediate.updated(sqlKey, entry.value)
+      }
     }
 
     intermediate
