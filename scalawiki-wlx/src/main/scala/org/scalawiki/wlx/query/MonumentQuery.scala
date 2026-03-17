@@ -11,7 +11,6 @@ import org.scalawiki.wlx.dto.lists.OtherTemplateListConfig
 import org.scalawiki.wlx.dto.{Contest, Monument}
 
 import java.time.ZonedDateTime
-import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
