@@ -70,11 +70,14 @@ Step 1 (Level 1):
 
 Step 2 (Level 2 — Field):
   For each (sqlKey, sqlEntry) in sqlMap where sqlEntry.entryType == "Field":
-    if intermediateRow contains sqlEntry.value:
-      if sqlKey == sqlEntry.value: no-op (rename to self)
-      else if intermediateRow already contains sqlKey: keep existing sqlKey value, drop sqlEntry.value key
-      else: rename key sqlEntry.value → sqlKey
-    else (sqlEntry.value absent from intermediateRow): no column emitted for this sql_data entry
+    case A: sqlEntry.value absent from intermediateRow
+            → do nothing (no column emitted for this sql_data entry)
+    case B: sqlEntry.value present, sqlKey == sqlEntry.value
+            → no-op (rename to self)
+    case C: sqlEntry.value present, sqlKey != sqlEntry.value, sqlKey absent from intermediateRow
+            → rename key sqlEntry.value → sqlKey
+    case D: sqlEntry.value present, sqlKey != sqlEntry.value, sqlKey already in intermediateRow
+            → keep existing sqlKey value, remove sqlEntry.value key (no overwrite)
 
 Step 3 (Level 2 — Text):
   For each (sqlKey, sqlEntry) in sqlMap where sqlEntry.entryType == "Text":
@@ -159,10 +162,17 @@ case class UaUkMapping(
 )
 
 object UaUkJsonMapping {
-  def load(resourcePath: String): UaUkMapping   // reads from classpath resources
+  // Reads ua_uk.json from classpath; preserves sql_data key insertion order in sqlKeyOrder
+  def load(resourcePath: String): UaUkMapping
+
+  // Applies two-level mapping to a single monument row (see algorithm above)
   def applyMapping(row: Map[String, String], mapping: UaUkMapping): Map[String, String]
+
+  // Returns the ordered union of column names across all mapped rows:
+  //   1. sql_data keys (Field + Text) in sqlKeyOrder insertion order
+  //   2. All remaining keys found in any mapped row, alphabetically sorted
+  // Rows must already have applyMapping applied before passing to this method.
   def headerColumns(rows: Iterable[Map[String, String]], mapping: UaUkMapping): Seq[String]
-  // sql_data keys (insertion order) ++ remaining keys (alphabetical)
 }
 ```
 
