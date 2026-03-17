@@ -6,6 +6,7 @@ import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.{PageIdsParam, Query}
 import org.scalawiki.dto.{Namespace, Page}
 import org.scalawiki.query.QueryLibrary
+import org.scalawiki.wlx.WlxTemplateParser
 import org.scalawiki.wlx.dto.lists.OtherTemplateListConfig
 import org.scalawiki.wlx.dto.{Contest, Monument}
 
@@ -28,6 +29,22 @@ trait MonumentQuery {
       date: Option[ZonedDateTime] = None,
       listTemplate: Option[String] = None
   ): Future[Iterable[Monument]]
+
+  def byMonumentTemplateMapsAsync(
+      generatorTemplate: String = defaultListTemplate,
+      date: Option[ZonedDateTime] = None,
+      listTemplate: Option[String] = None
+  ): Future[Iterable[Map[String, String]]]
+
+  final def byMonumentTemplateMaps(
+      generatorTemplate: String = defaultListTemplate,
+      date: Option[ZonedDateTime] = None,
+      listTemplate: Option[String] = None
+  ): Iterable[Map[String, String]] =
+    Await.result(
+      byMonumentTemplateMapsAsync(generatorTemplate, date, listTemplate),
+      Timeout
+    )
 
   def byPageAsync(
       page: String,
@@ -62,19 +79,21 @@ class MonumentQueryApi(
 
   def getHost: Option[String] = contest.listsHost
 
-  override def byMonumentTemplateAsync(
+  /** Shared page-fetching logic for both Monument parsing and raw-map extraction.
+    * Does NOT include reportDifferentRegionIds side-effects — those stay in byMonumentTemplateAsync.
+    *
+    * @param parser (pageName, wikiText) => Iterable[T] — applied per page
+    */
+  private def byMonumentTemplateGeneric[T](
       generatorTemplate: String,
-      date: Option[ZonedDateTime] = None,
-      listTemplate: Option[String] = None
-  ): Future[Iterable[Monument]] = {
-    val differentRegionIds = new ArrayBuffer[String]()
-
+      date: Option[ZonedDateTime],
+      listTemplate: Option[String],
+      parser: (String, String) => Iterable[T]
+  ): Future[Iterable[T]] = {
     val title =
       if (generatorTemplate.startsWith("Template")) generatorTemplate
       else "Template:" + generatorTemplate
-    val listConfig = listTemplate.fold(defaultListConfig)(
-      new OtherTemplateListConfig(_, defaultListConfig)
-    )
+
     if (date.isEmpty) {
       bot
         .page(title)
@@ -86,41 +105,77 @@ class MonumentQueryApi(
           None,
           "100"
         ) map { pages =>
-        val monuments = pages.flatMap { page =>
-          if (!page.title.contains("новий АТУ")) {
-            val monuments = Monument.monumentsFromText(
-              page.text.getOrElse(""),
-              page.title,
-              listTemplate.getOrElse(generatorTemplate),
-              listConfig
-            )
-            val regionIds =
-              monuments.map(_.id.split("-").init.mkString("-")).toSet
-            if (regionIds.size > 1 && reportDifferentRegionIds) {
-              differentRegionIds.append(
-                s"* [[${page.title}]]: ${regionIds.toSeq.sorted.mkString(", ")}"
-              )
-            }
-            monuments
-          } else Nil
+        pages.flatMap { page =>
+          if (!page.title.contains("новий АТУ"))
+            parser(page.title, page.text.getOrElse(""))
+          else Nil
         }
-        if (reportDifferentRegionIds) {
-          Await.result(
-            bot
-              .page(s"Вікіпедія:${contest.name}/differentRegionIds")
-              .edit(differentRegionIds.sorted.mkString("\n")),
-            10.seconds
+      }
+    } else {
+      articlesWithTemplate(title).flatMap { ids =>
+        Future.traverse(ids)(id => pageRevisions(id, date.get)).map { pages =>
+          pages.flatten.flatMap(page =>
+            parser(page.title, page.text.getOrElse(""))
           )
+        }
+      }
+    }
+  }
+
+  override def byMonumentTemplateAsync(
+      generatorTemplate: String,
+      date: Option[ZonedDateTime] = None,
+      listTemplate: Option[String] = None
+  ): Future[Iterable[Monument]] = {
+    val differentRegionIds = new ArrayBuffer[String]()
+    val listConfig = listTemplate.fold(defaultListConfig)(
+      new OtherTemplateListConfig(_, defaultListConfig)
+    )
+    val template = listTemplate.getOrElse(generatorTemplate)
+
+    byMonumentTemplateGeneric(
+      generatorTemplate,
+      date,
+      listTemplate,
+      (page, text) => {
+        val monuments = Monument.monumentsFromText(text, page, template, listConfig)
+        if (date.isEmpty) {
+          val regionIds = monuments.map(_.id.split("-").init.mkString("-")).toSet
+          if (regionIds.size > 1 && reportDifferentRegionIds) {
+            differentRegionIds.append(
+              s"* [[$page]]: ${regionIds.toSeq.sorted.mkString(", ")}"
+            )
+          }
         }
         monuments
       }
-    } else {
-      monumentsByDate(
-        title,
-        listTemplate.getOrElse(generatorTemplate),
-        date.get
-      )
+    ).map { monuments =>
+      if (date.isEmpty && reportDifferentRegionIds) {
+        Await.result(
+          bot
+            .page(s"Вікіпедія:${contest.name}/differentRegionIds")
+            .edit(differentRegionIds.sorted.mkString("\n")),
+          10.seconds
+        )
+      }
+      monuments
     }
+  }
+
+  override def byMonumentTemplateMapsAsync(
+      generatorTemplate: String,
+      date: Option[ZonedDateTime] = None,
+      listTemplate: Option[String] = None
+  ): Future[Iterable[Map[String, String]]] = {
+    val listConfig = listTemplate.fold(defaultListConfig)(
+      new OtherTemplateListConfig(_, defaultListConfig)
+    )
+    byMonumentTemplateGeneric(
+      generatorTemplate,
+      date,
+      listTemplate,
+      (page, text) => new WlxTemplateParser(listConfig, page).parseToMaps(text)
+    )
   }
 
   override def byPageAsync(
