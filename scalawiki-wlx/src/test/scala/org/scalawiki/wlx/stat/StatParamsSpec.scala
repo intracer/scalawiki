@@ -149,4 +149,17 @@ class StatParamsSpec extends Specification {
     }
   }
 
+  "--export-csv" should {
+
+    "be absent by default" in {
+      val cfg = StatParams.parse(Seq("--campaign", "WLM-UA"))
+      cfg.exportCsv must beNone
+    }
+
+    "be set to Some(filename) when --export-csv myfile.csv is given" in {
+      val cfg = StatParams.parse(Seq("--campaign", "WLM-UA", "--export-csv", "myfile.csv"))
+      cfg.exportCsv must beSome("myfile.csv")
+    }
+  }
+
 }
