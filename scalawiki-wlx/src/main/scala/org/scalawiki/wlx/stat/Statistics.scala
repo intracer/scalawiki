@@ -226,22 +226,22 @@ object Statistics {
     if (cfg.exportCsv.isDefined) {
       val monumentQuery = MonumentQuery.create(contest)
       runExport(contest, cfg, monumentQuery)
+    } else {
+      val cacheName = s"${cfg.campaign}-${contest.year}"
+      val imageQueryWiki = ImageQuery.create(
+        new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 100)
+      )
+
+      val stat = new Statistics(
+        contest,
+        startYear = Some(cfg.years.head),
+        monumentQuery = MonumentQuery.create(contest, reportDifferentRegionIds = true),
+        config = Some(cfg),
+        imageQuery = None,
+        imageQueryWiki = Some(imageQueryWiki)
+      )
+
+      stat.init(total = cfg.years.size > 1)
     }
-
-    val cacheName = s"${cfg.campaign}-${contest.year}"
-    val imageQueryWiki = ImageQuery.create(
-      new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 100)
-    )
-
-    val stat = new Statistics(
-      contest,
-      startYear = Some(cfg.years.head),
-      monumentQuery = MonumentQuery.create(contest, reportDifferentRegionIds = true),
-      config = Some(cfg),
-      imageQuery = None,
-      imageQueryWiki = Some(imageQueryWiki)
-    )
-
-    stat.init(total = cfg.years.size > 1)
   }
 }
