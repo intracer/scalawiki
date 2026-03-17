@@ -37,9 +37,12 @@ Two-level mapping applied in sequence:
 
 ### Level 1 — `fields` array
 
-Each entry maps a localized source name to an English dest name:
-- If `dest` is non-empty: rename key `source` → `dest` in the output row
-- If `dest` is empty string: **drop the field from the output** (these are intentionally suppressed internal/exclusion fields like `виключена`, `паспорт`, `наказ`)
+Each entry maps a localized source name to an English dest name. One source may appear multiple times with different dest values (e.g., `"галерея"` → `"commonscat"` and `"галерея"` → `"gallery"`); in this case the source value is emitted under all non-empty dest names.
+
+- If `dest` is non-empty: emit `dest → value` (one source may produce multiple output columns)
+- If `dest` is empty string: keep the field under its original source name (so it appears in the CSV and can be identified for future mapping)
+
+Consequently, `fieldMap` in `UaUkMapping` is `Map[String, Seq[String]]` (source → list of dest names; empty-dest entries are represented as `source → Seq(source)` i.e. identity mapping).
 
 ### Level 2 — `sql_data` object
 
@@ -60,9 +63,8 @@ Input: row = Map[String, String], mapping = UaUkMapping
 Step 1 (Level 1):
   For each (key, value) in row:
     if fieldMap contains key:
-      dest = fieldMap(key)
-      if dest.nonEmpty → emit (dest, value)
-      else             → drop the field
+      for each dest in fieldMap(key): emit (dest, value)
+      // if dest was empty in JSON, fieldMap(key) = Seq(key) → emits (key, value) unchanged
     else → emit (key, value)
   Result: intermediateRow
 
@@ -124,6 +126,8 @@ def byMonumentTemplateMapsAsync(...): Future[Iterable[Map[String, String]]] =
 
 Note: `WlxTemplateParser` is an instance class requiring a `ListConfig` and page name; it is constructed per page inside the parser lambda.
 
+Note: The `reportDifferentRegionIds` side-effect logic (tracking pages with differing region IDs and optionally editing a wiki page) currently lives in `byMonumentTemplateAsync`. After the refactor it must remain in the `byMonumentTemplateAsync` wrapper, **not** inside `byMonumentTemplateGeneric`.
+
 ### `MonumentQuery` trait — add async + blocking methods
 
 ```scala
@@ -149,9 +153,9 @@ Follows the same pattern as the existing `byMonumentTemplate` / `byMonumentTempl
 case class SqlEntry(entryType: String, value: String)  // entryType: "Field" | "Text" | "Raw"
 
 case class UaUkMapping(
-    fieldMap: Map[String, String],       // source → dest (empty dest = suppress)
-    sqlMap: Map[String, SqlEntry],       // sqlKey → SqlEntry (ordered, LinkedHashMap)
-    sqlKeyOrder: Seq[String]             // insertion order of sql_data keys
+    fieldMap: Map[String, Seq[String]],  // source → dest names (empty JSON dest → Seq(source) = identity)
+    sqlMap: Map[String, SqlEntry],       // sqlKey → SqlEntry
+    sqlKeyOrder: Seq[String]             // sql_data key insertion order — load() must preserve this
 )
 
 object UaUkJsonMapping {
@@ -221,7 +225,7 @@ Example: `WLM-UA-2026-03-17-1430.csv`
 - `applyMapping`: dest re-mapped via sql_data Field (`rayon` → `adm2`)
 - `applyMapping`: Text literal injected (`adm0` = `"ua"`, `lang` = `"uk"`)
 - `applyMapping`: Raw entry (`adm1`) is skipped — not injected
-- `applyMapping`: empty-dest source field (`паспорт`) is dropped from output
+- `applyMapping`: empty-dest source field (`паспорт`) is kept under its original source name
 - `applyMapping`: field absent from all mappings kept as-is (original name)
 - `headerColumns`: sql_data keys come first in insertion order, then remaining keys alphabetically
 - Full round-trip: realistic monument row maps to expected output map
