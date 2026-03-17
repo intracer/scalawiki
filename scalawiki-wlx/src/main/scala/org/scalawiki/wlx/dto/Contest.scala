@@ -69,13 +69,14 @@ object Contest {
 
   private val opts = ConfigParseOptions.defaults.setAllowMissing(false)
 
-  def load(name: String): Option[Contest] = {
-    Try {
-      ConfigFactory.load(name, opts, ConfigResolveOptions.defaults)
-    }.map(fromConfig)
-      .getOrElse {
+  def load(name: String): Try[Contest] = {
+
+    Try(ConfigFactory.load(name, opts, ConfigResolveOptions.defaults))
+      .flatMap(cfg => fromConfig(cfg).toRight(new RuntimeException("fromConfig failed")).toTry)
+      .recoverWith { ex =>
+        println(ex)
         val Campaign = "(\\w+)_(\\w+).conf".r
-        name match {
+        val cfg = name match {
           case Campaign(typeCode, countryCode) =>
             for (
               contestType <- ContestType.byCode(typeCode);
@@ -83,18 +84,21 @@ object Contest {
             ) yield Contest(contestType, country, ZonedDateTime.now.getYear)
           case _ => None
         }
+        cfg.toRight(ex).toTry
       }
   }
 
-  def byCampaign(campaign: String): Option[Contest] = {
+  def byCampaign(campaign: String): Try[Contest] = {
     load(campaign.replace("-", "_") + ".conf")
   }
 
   def fromConfig(config: Config): Option[Contest] = {
-    val (typeStr, countryStr, year) = (
+    val (typeStr, countryStr, year, code, lang) = (
       config.getString("type"),
       config.getString("country"),
-      ZonedDateTime.now.getYear
+      ZonedDateTime.now.getYear,
+      config.getString("campaign").split("-").tail.mkString("-"),
+      config.getString("lang")
     )
 
     val uploadConfig = UploadConfig.fromConfig(config)
@@ -103,6 +107,7 @@ object Contest {
       contestType <- ContestType.byCode(typeStr.toLowerCase);
       country <- Country.fromJavaLocales
         .find(country => country.name == countryStr || country.code == countryStr)
+        .orElse(Some(new Country(code, countryStr, Seq(lang))))
     )
       yield new Contest(
         contestType = contestType,
@@ -131,6 +136,9 @@ object Contest {
 
   def WLMUkraine(year: Int): Contest =
     load("wlm_ua.conf").get.copy(year = year)
+
+  def WLMEngland(year: Int): Contest =
+    load("wlm_gb-eng.conf").get.copy(year = year)
 
   def WLEUkraine(year: Int): Contest =
     load("wle_ua.conf").get.copy(year = year)

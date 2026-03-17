@@ -284,6 +284,8 @@ object Country {
 
   val Azerbaijan = new Country("AZ", "Azerbaijan", Seq("az"))
 
+  val England = new Country("gb-eng", "England", Seq("en"))
+
   val Ukraine: Country =
     new Country("UA", "Ukraine", Seq("uk"), Koatuu.regions(() => Some(Ukraine)))
 

@@ -200,9 +200,14 @@ class MonumentQueryApi(
 
 object MonumentQuery {
 
-  def create(contest: Contest, reportDifferentRegionIds: Boolean = false)(
-      implicit bot: MwBot = MwBot.fromHost(MwBot.ukWiki)
-  ): MonumentQuery =
+  def create(contest: Contest, reportDifferentRegionIds: Boolean = false): MonumentQuery = {
+    val bot: MwBot = MwBot.fromHost(contest.listsHost.get)
+    create(contest, bot, reportDifferentRegionIds)
+  }
+
+  def create(contest: Contest, bot: MwBot, reportDifferentRegionIds: Boolean): MonumentQuery = {
     new MonumentQueryApi(contest, reportDifferentRegionIds)(bot)
+  }
+
 
 }
