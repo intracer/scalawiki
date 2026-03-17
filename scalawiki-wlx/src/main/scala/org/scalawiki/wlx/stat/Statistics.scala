@@ -189,6 +189,25 @@ class Statistics(
 
 object Statistics {
 
+  def defaultCsvFilename(campaign: String): String = {
+    val now = java.time.LocalDateTime.now()
+    val fmt = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm")
+    s"$campaign-${now.format(fmt)}.csv"
+  }
+
+  def runExport(
+      contest: Contest,
+      cfg: StatConfig,
+      monumentQuery: MonumentQuery
+  ): Unit = {
+    import scala.concurrent.Await
+    import scala.concurrent.duration._
+    val path = cfg.exportCsv.filter(_.nonEmpty).getOrElse(defaultCsvFilename(cfg.campaign))
+    val maps = Await.result(monumentQuery.byMonumentTemplateMapsAsync(), 2.minutes)
+    val mapping = org.scalawiki.wlx.UaUkJsonMapping.load("monuments_config/ua_uk.json")
+    org.scalawiki.wlx.MonumentCsvExporter.export(maps, mapping, path)
+  }
+
   def getContest(cfg: StatConfig): Contest = {
     val contest = Contest.byCampaign(cfg.campaign).getOrElse {
       throw new IllegalArgumentException(s"Unknown campaign: ${cfg.campaign}")
@@ -203,6 +222,11 @@ object Statistics {
   def main(args: Array[String]): Unit = {
     val cfg = StatParams.parse(args)
     val contest = getContest(cfg)
+
+    if (cfg.exportCsv.isDefined) {
+      val monumentQuery = MonumentQuery.create(contest)
+      runExport(contest, cfg, monumentQuery)
+    }
 
     val cacheName = s"${cfg.campaign}-${contest.year}"
     val imageQueryWiki = ImageQuery.create(
