@@ -29,7 +29,7 @@ object MonumentCsvExporter {
 
     val headers = UaUkJsonMapping.headerColumns(mappedRows, mapping)
 
-    val writer = CSVWriter.open(new File(outputPath))
+    val writer = CSVWriter.open(new File(outputPath), "UTF-8")
     try {
       writer.writeRow(headers)
       mappedRows.foreach { row =>

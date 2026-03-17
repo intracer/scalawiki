@@ -25,8 +25,10 @@ class MonumentCsvExporterSpec extends Specification {
     }
   }
 
-  def parseCsv(content: String): List[List[String]] =
-    CSVReader.open(new StringReader(content)).all()
+  def parseCsv(content: String): List[List[String]] = {
+    val reader = CSVReader.open(new StringReader(content))
+    try reader.all() finally reader.close()
+  }
 
   "MonumentCsvExporter" should {
 
