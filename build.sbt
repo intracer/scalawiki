@@ -147,6 +147,8 @@ lazy val `spark-streaming` = Project("spark-streaming", file("spark-streaming"))
       "org.scalatest"     %% "scalatest"            % ScalaTestV        % Test,
       "com.google.jimfs"   % "jimfs"                % JimFsV            % Test
     ),
+    // commonSettings sets -target:jvm-1.8; override for Spark 3.5 which requires JVM 11+ at runtime.
+    scalacOptions := Seq("-target:jvm-11"),
     // ThisBuild sets fork := true globally. Spark tests need SPARK_LOCAL_IP to
     // avoid hostname resolution issues in forked JVMs.
     Test / envVars += "SPARK_LOCAL_IP" -> "127.0.0.1",

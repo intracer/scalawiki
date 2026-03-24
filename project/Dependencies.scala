@@ -22,14 +22,14 @@ object Dependencies {
   val ScalaCheckV = "1.18.1"
   val ScalaCsvV = "2.0.0"
   val ScalaParserCombinatorsV = "2.4.0"
+  val ScalaTestV = "3.2.19"
   val ScalaXmlV = "2.3.0"
   val ScallopV = "5.2.0"
   val Slf4jV = "2.0.16"
+  val SparkV = "3.5.6"
+  val SparkTestingBaseV = "3.5.6_2.1.3"
   val SwcEngineV = "3.1.9"
   val TypesafeConfigV = "1.4.3"
-  val ScalaTestV        = "3.2.19"
-  val SparkV            = "3.5.6"
-  val SparkTestingBaseV = "3.5.6_2.1.3"
 
   val resolvers = Seq(
     "Typesafe Repo" at "https://repo.typesafe.com/typesafe/releases/",
