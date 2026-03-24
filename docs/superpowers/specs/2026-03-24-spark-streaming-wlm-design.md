@@ -15,10 +15,9 @@ New sbt module `spark-streaming` at `spark-streaming/` inside the scalawiki proj
 
 **Dependencies:**
 - `org.apache.spark` %% `spark-sql` (Spark 3.5, Scala 2.13) — `spark-core` is a transitive dependency and need not be listed separately
+- `com.holdenkarau` %% `spark-testing-base` % `3.5.6_2.1.3` (test scope)
 - `org.scalatest` %% `scalatest` (test scope)
 - `com.google.jimfs` % `jimfs` % `1.3.0` (test scope) — in-memory filesystem for `ImageUploadSimulatorSpec`
-
-Note: `com.holdenkarau` %% `spark-testing-base` has no published artifact for Spark 3.5 / Scala 2.13 and is therefore excluded. Tests use a shared `SparkSession` managed via ScalaTest's `BeforeAndAfterAll`, and streaming tests use `MemoryStream` directly.
 
 Assembly plugin configured for fat JAR deployment.
 
@@ -141,14 +140,13 @@ WlmStreamingApp (Spark Structured Streaming)
 
 ## Testing
 
-**Framework:** ScalaTest. No `spark-testing-base` — instead, a shared `SparkSession` is created once per suite in `BeforeAndAfterAll` and stopped in `afterAll`. Streaming tests use `MemoryStream` from `org.apache.spark.sql.execution.streaming`.
+**Framework:** ScalaTest + `spark-testing-base` (`com.holdenkarau` %% `spark-testing-base` % `3.5.6_2.1.3`). `DataFrameSuiteBase` and `StreamingSuiteBase` manage `SparkSession` lifecycle automatically.
 
-### `MemoryStream` encoder
+### `MemoryStream` encoder note (Spark 3.5)
 
-`MemoryStream[Row]` requires an implicit `Encoder[Row]` in scope. In Spark 3.5, `RowEncoder.apply(schema)` was removed; the correct API is `RowEncoder.encoderFor(schema)`. Each streaming test suite that uses `MemoryStream[Row]` must declare:
+`MemoryStream[Row]` requires an implicit `Encoder[Row]`. In Spark 3.5, `RowEncoder.apply(schema)` was removed; use `RowEncoder.encoderFor(schema)`:
 
 ```scala
-val schema: StructType = ... // the transformed stream schema: author, monument, region, upload_date_ts
 implicit val encoder: Encoder[Row] = RowEncoder.encoderFor(schema)
 implicit val sqlContext: SQLContext = spark.sqlContext
 val memStream = MemoryStream[Row]
@@ -156,21 +154,21 @@ val memStream = MemoryStream[Row]
 
 ### `WindowedQuerySpec` test wiring
 
-`WindowedQuerySpec` builds a standalone test streaming query — it does not invoke `WlmStreamingApp` directly. The wiring is:
+`WindowedQuerySpec` builds a standalone test query — it does not invoke `WlmStreamingApp` directly:
 
-1. Create `MemoryStream[Row]` with the transformed stream schema (author, monument, region, upload_date_ts) using `RowEncoder.encoderFor(schema)` as above.
-2. Apply the windowed aggregation directly to `memStream.toDF()` (same transformation as in production, but sourced from `MemoryStream` instead of a file stream).
-3. Write results to a memory sink: `.writeStream.format("memory").queryName("windowed_test").outputMode("append").start()`.
-4. Call `memStream.addData(rows)` to inject rows with fixed timestamps, then `query.processAllAvailable()` to drive micro-batches.
-5. To force a window to close, the injected data must include a sentinel row whose timestamp is at least `window_end + watermark_duration` later than the last event in the window — without this, the watermark will not advance and `processAllAvailable()` will return an empty result table. For example, to close a 10-minute window ending at T+10 with a 2-minute watermark, inject a row timestamped T+12 or later.
-6. Read results from `spark.table("windowed_test")` and assert against expected (window, author, region, monuments_pictured) tuples.
-7. Verify late rows (timestamps older than the watermark relative to the latest event time) do not appear in results.
+1. Create `MemoryStream[Row]` with the transformed stream schema (`author`, `monument`, `region`, `upload_date_ts`) using `RowEncoder.encoderFor` as above.
+2. Apply the windowed aggregation to `memStream.toDF()` (same logic as production).
+3. Start the query with a memory sink: `.writeStream.format("memory").queryName("windowed_test").outputMode("append").start()`.
+4. Inject rows via `memStream.addData(rows)`, then call `query.processAllAvailable()`.
+5. To force a window to close, include a sentinel row timestamped at least `window_end + watermark_duration` after the last in-window event — without it the watermark will not advance and results will be empty. Example: to close a 10-minute window ending at T+10 with a 2-minute watermark, add a row at T+12 or later.
+6. Read results from `spark.table("windowed_test")` and assert expected `(window, author, region, monuments_pictured)` tuples.
+7. Verify late rows (older than the current watermark) do not appear.
 
 | Test class | Extends | What it tests |
 |------------|---------|---------------|
-| `TransformationsSpec` | `AnyFunSpec` with `BeforeAndAfterAll` | Transformation pipeline on static DataFrames: `monument_id` splitting, region extraction, null `upload_date` handling, multi-monument rows produce one row per monument |
-| `CumulativeQuerySpec` | `AnyFunSpec` with `BeforeAndAfterAll` | Cumulative aggregation: runs `approx_count_distinct` on a **static DataFrame** (not a streaming source) to verify correct `monuments_pictured` counts per `(author, region)` on known input |
-| `WindowedQuerySpec` | `AnyFunSpec` with `BeforeAndAfterAll` | Windowed aggregation with append mode: standalone test query using `MemoryStream[Row]` as source and `format("memory")` as sink, as described above; fixed timestamps verify correct window bucketing; late rows excluded |
+| `TransformationsSpec` | `DataFrameSuiteBase` | Transformation pipeline on static DataFrames: `monument_id` splitting, region extraction, null `upload_date` handling, multi-monument rows produce one row per monument |
+| `CumulativeQuerySpec` | `DataFrameSuiteBase` | Cumulative aggregation: runs `approx_count_distinct` on a **static DataFrame** (not a streaming source) to verify correct `monuments_pictured` counts per `(author, region)` on known input |
+| `WindowedQuerySpec` | `StreamingSuiteBase` | Windowed aggregation with append mode: standalone test query using `MemoryStream[Row]` as source and `format("memory")` as sink, as described above; fixed timestamps verify correct window bucketing; late rows excluded |
 | `ImageUploadSimulatorSpec` | `AnyFunSpec` | Simulator copies files to target directory at expected pace; `ImageUploadSimulator` accepts a `java.nio.file.FileSystem` parameter for injection; uses jimfs in-memory filesystem in tests |
 
 No live streaming integration test — unit tests cover all logic.
