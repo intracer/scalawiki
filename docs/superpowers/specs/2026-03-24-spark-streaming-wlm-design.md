@@ -14,10 +14,9 @@ New sbt module `spark-streaming` at `spark-streaming/` inside the scalawiki proj
 **No dependency on other scalawiki modules** — it reads exported CSVs as plain files and is fully self-contained.
 
 **Dependencies:**
-- `org.apache.spark` %% `spark-sql` (Spark 3.5, Scala 2.13)
-- `org.apache.spark` %% `spark-core` (Spark 3.5)
+- `org.apache.spark` %% `spark-sql` (Spark 3.5, Scala 2.13) — `spark-core` is a transitive dependency and need not be listed separately
 - `org.scalatest` %% `scalatest` (test scope)
-- `com.google.jimfs` % `jimfs` % `1.3.0` (test scope) — in-memory filesystem for `ImageUploadSimulatorSpec`
+- `com.google.jimfs` % `jimfs` % `1.3.1` (test scope) — in-memory filesystem for `ImageUploadSimulatorSpec`
 
 Note: `com.holdenkarau` %% `spark-testing-base` has no published artifact for Spark 3.5 / Scala 2.13 and is therefore excluded. Tests use a shared `SparkSession` managed via ScalaTest's `BeforeAndAfterAll`, and streaming tests use `MemoryStream` directly.
 
@@ -88,7 +87,19 @@ transformedStream
 
 **Sinks (one `StreamingQuery`):**
 
-Query 2 is also started as a single `StreamingQuery` using `foreachBatch`. Inside the function, each micro-batch result DataFrame is written twice: once to the console (via `show(truncate = false)`) and once as Parquet to `<outputDir>/windowed/` (append mode). Parquet file sinks do support append mode natively in Spark Structured Streaming, but using `foreachBatch` mirrors the Query 1 pattern and avoids managing two separate `StreamingQuery` handles for the same aggregation.
+Query 2 is also started as a single `StreamingQuery` using `foreachBatch`. The outer `writeStream` must declare `.outputMode("append")` to match the windowed aggregation with watermark. Inside the `foreachBatch` function, each micro-batch result DataFrame is written twice: once to the console (via `show(truncate = false)`) and once as Parquet to `<outputDir>/windowed/`. Parquet file sinks do support append mode natively in Spark Structured Streaming, but using `foreachBatch` mirrors the Query 1 pattern and avoids managing two separate `StreamingQuery` handles for the same aggregation.
+
+```scala
+windowedAgg
+  .writeStream
+  .outputMode("append")
+  .option("checkpointLocation", s"$checkpointDir/windowed")
+  .foreachBatch { (batchDf: DataFrame, _: Long) =>
+    batchDf.show(truncate = false)
+    batchDf.write.mode("append").parquet(s"$outputDir/windowed")
+  }
+  .start()
+```
 
 **Checkpoint:** `<checkpointDir>/windowed/`
 
@@ -139,7 +150,8 @@ WlmStreamingApp (Spark Structured Streaming)
 ```scala
 val schema: StructType = ... // the transformed stream schema: author, monument, region, upload_date_ts
 implicit val encoder: Encoder[Row] = RowEncoder.encoderFor(schema)
-val memStream = MemoryStream[Row](id = 1, sqlContext = spark.sqlContext)
+implicit val sqlContext: SQLContext = spark.sqlContext
+val memStream = MemoryStream[Row]
 ```
 
 ### `WindowedQuerySpec` test wiring
@@ -150,8 +162,9 @@ val memStream = MemoryStream[Row](id = 1, sqlContext = spark.sqlContext)
 2. Apply the windowed aggregation directly to `memStream.toDF()` (same transformation as in production, but sourced from `MemoryStream` instead of a file stream).
 3. Write results to a memory sink: `.writeStream.format("memory").queryName("windowed_test").outputMode("append").start()`.
 4. Call `memStream.addData(rows)` to inject rows with fixed timestamps, then `query.processAllAvailable()` to drive micro-batches.
-5. Read results from `spark.table("windowed_test")` and assert against expected (window, author, region, monuments_pictured) tuples.
-6. Verify late rows (timestamps older than the watermark relative to the latest event time) do not appear in results.
+5. To force a window to close, the injected data must include a sentinel row whose timestamp is at least `window_end + watermark_duration` later than the last event in the window — without this, the watermark will not advance and `processAllAvailable()` will return an empty result table. For example, to close a 10-minute window ending at T+10 with a 2-minute watermark, inject a row timestamped T+12 or later.
+6. Read results from `spark.table("windowed_test")` and assert against expected (window, author, region, monuments_pictured) tuples.
+7. Verify late rows (timestamps older than the watermark relative to the latest event time) do not appear in results.
 
 | Test class | Extends | What it tests |
 |------------|---------|---------------|
