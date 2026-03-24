@@ -59,7 +59,11 @@ object ImageCsvExporter {
 
     val path = filename(campaign, imageDb.contest.year, isCurrent, outputDir)
     val file = new File(path)
-    Option(file.getParentFile).foreach(_.mkdirs())
+    Option(file.getParentFile).foreach { dir =>
+      if (!dir.exists() && !dir.mkdirs()) {
+        throw new java.io.IOException(s"Failed to create output directory: ${dir.getAbsolutePath}")
+      }
+    }
     val writer = CSVWriter.open(file, "UTF-8")
     try {
       writer.writeRow(columns)

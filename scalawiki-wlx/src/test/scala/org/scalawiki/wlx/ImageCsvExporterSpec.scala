@@ -58,7 +58,7 @@ class ImageCsvExporterSpec extends Specification {
 
     "produce <campaign>-<year>-images.csv for a previous year (outputDir non-empty)" in {
       val name = ImageCsvExporter.filename("WLM-UA", 2022, isCurrent = false, outputDir = "output")
-      name must_== "output/WLM-UA-2022-images.csv"
+      name must_== s"output${java.io.File.separator}WLM-UA-2022-images.csv"
     }
 
     "produce bare <campaign>-<year>-images.csv when outputDir is empty" in {
@@ -73,7 +73,7 @@ class ImageCsvExporterSpec extends Specification {
 
     "include outputDir prefix for current year when outputDir is non-empty" in {
       val name = ImageCsvExporter.filename("WLM-UA", 2025, isCurrent = true, outputDir = "out")
-      name must startWith("out/WLM-UA-2025-")
+      name must startWith(s"out${java.io.File.separator}WLM-UA-2025-")
     }
   }
 

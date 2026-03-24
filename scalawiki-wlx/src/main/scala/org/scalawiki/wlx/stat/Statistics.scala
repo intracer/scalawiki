@@ -228,6 +228,9 @@ object Statistics {
       runExport(contest, cfg, monumentQuery)
     }
 
+    // Run the full statistics pipeline when either:
+    // - no monument CSV export was requested (normal run), or
+    // - image CSV export was requested (needs stats pipeline to populate dbsByYear)
     if (cfg.exportCsv.isEmpty || cfg.exportImagesCsv.isDefined) {
       val cacheName = s"${cfg.campaign}-${contest.year}"
       val imageQueryWiki = ImageQuery.create(
