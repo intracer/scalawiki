@@ -162,4 +162,22 @@ class StatParamsSpec extends Specification {
     }
   }
 
+  "--export-images-csv" should {
+
+    "be absent by default" in {
+      val cfg = StatParams.parse(Seq("--campaign", "WLM-UA"))
+      cfg.exportImagesCsv must beNone
+    }
+
+    "be set to Some(dir) when --export-images-csv output is given" in {
+      val cfg = StatParams.parse(Seq("--campaign", "WLM-UA", "--export-images-csv", "output"))
+      cfg.exportImagesCsv must beSome("output")
+    }
+
+    "be set to Some(empty string) when --export-images-csv is given with empty string" in {
+      val cfg = StatParams.parse(Seq("--campaign", "WLM-UA", "--export-images-csv", ""))
+      cfg.exportImagesCsv must beSome("")
+    }
+  }
+
 }
