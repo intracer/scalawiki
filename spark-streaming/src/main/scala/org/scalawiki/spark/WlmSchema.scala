@@ -25,9 +25,9 @@ object WlmSchema {
 
   /** Output schema of Transformations.transform — fed into both streaming queries. */
   val transformedSchema: StructType = StructType(Seq(
-    StructField("author",         StringType),
-    StructField("monument",       StringType),
-    StructField("region",         StringType),
-    StructField("upload_date_ts", TimestampType)
+    StructField("author",         StringType,    nullable = true),
+    StructField("monument",       StringType,    nullable = false), // non-null: produced by explode
+    StructField("region",         StringType,    nullable = false), // non-null: regexp_replace on non-null monument
+    StructField("upload_date_ts", TimestampType, nullable = true)
   ))
 }

@@ -72,5 +72,7 @@ class TransformationsSpec extends AnyFunSuite with DataFrameSuiteBase {
     val result = Transformations.transform(input)
     val fields = result.schema.fieldNames.toSeq
     assert(fields == Seq("author", "monument", "region", "upload_date_ts"))
+    // Verify schema matches the declared contract in WlmSchema
+    assert(result.schema == WlmSchema.transformedSchema)
   }
 }
