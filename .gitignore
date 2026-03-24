@@ -3,6 +3,7 @@
 # For Scala Metals
 .metals
 .bloop
+.bsp
 
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm

@@ -43,10 +43,11 @@ object UaUkJsonMapping {
     fields.foreach { entry =>
       val src  = (entry \ "source").as[String]
       val dest = (entry \ "dest").as[String]
-      val resolved = if (dest.nonEmpty) dest else src  // empty dest → identity
-      fieldMapBuilder
-        .getOrElseUpdate(src, scala.collection.mutable.ListBuffer.empty)
-        .append(resolved)
+      if (dest.nonEmpty) { // empty dest → identity
+        fieldMapBuilder
+          .getOrElseUpdate(src, scala.collection.mutable.ListBuffer.empty)
+          .append(dest)
+      }
     }
 
     // Note: for duplicate sources (e.g. галерея), dest names are ordered by appearance in the fields array.
@@ -100,7 +101,7 @@ object UaUkJsonMapping {
     for ((key, value) <- row) {
       mapping.fieldMap.get(key) match {
         case Some(dests) => dests.foreach { dest => intermediate = intermediate.updated(dest, value) }
-        case None        => intermediate = intermediate.updated(key, value)
+        case None        => //intermediate = intermediate.updated(key, value)
       }
     }
 
