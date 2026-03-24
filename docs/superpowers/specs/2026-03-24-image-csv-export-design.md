@@ -33,25 +33,29 @@ New file: `scalawiki-wlx/src/main/scala/org/scalawiki/wlx/ImageCsvExporter.scala
 
 ### Columns (in order)
 
-| Column | Source |
-|--------|--------|
-| `title` | `image.title` |
-| `author` | `image.author` |
-| `upload_date` | `image.date` |
-| `monument_id` | `image.monumentIds` (`;`-joined) |
-| `page_id` | `image.pageId` |
-| `width` | `image.width` |
-| `height` | `image.height` |
-| `size_bytes` | `image.size` |
-| `mime` | `image.mime` |
-| `camera` | `image.metadata.flatMap(_.camera)` |
-| `exif_date` | `image.metadata.flatMap(_.date)` |
-| `categories` | `image.categories` (`;`-joined) |
-| `special_nominations` | `image.specialNominations` (`;`-joined) |
-| `url` | `image.url` |
-| `page_url` | `image.pageUrl` |
+| Column | Source | Notes |
+|--------|--------|-------|
+| `title` | `image.title` | |
+| `author` | `image.author` | |
+| `upload_date` | `image.date` | ISO-8601 string (`.toString` on `ZonedDateTime`) |
+| `monument_id` | `image.monumentIds` | `;`-joined |
+| `page_id` | `image.pageId` | |
+| `width` | `image.width` | |
+| `height` | `image.height` | |
+| `size_bytes` | `image.size` | |
+| `mime` | `image.mime` | |
+| `camera` | `image.metadata.flatMap(_.camera)` | |
+| `exif_date` | `image.metadata.flatMap(_.date)` | ISO-8601 string (`.toString` on `ZonedDateTime`) |
+| `categories` | `image.categories` | `;`-joined |
+| `special_nominations` | `image.specialNominations` | `;`-joined |
+| `url` | `image.url` | |
+| `page_url` | `image.pageUrl` | |
 
-Multi-value fields (`monumentIds`, `categories`, `specialNominations`) are joined with `;`.
+All `Option` values serialize to empty string when `None`. Both `upload_date` and `exif_date` are `Option[ZonedDateTime]`; use `.toString` (ISO-8601) when present.
+
+### Empty image sets
+
+If `imageDb.images` is empty, the exporter writes nothing (mirrors `MonumentCsvExporter` behaviour).
 
 ### Filename Convention
 
@@ -62,7 +66,7 @@ Multi-value fields (`monumentIds`, `categories`, `specialNominations`) are joine
 - Output directory prepended when non-empty:
   e.g. `output/WLM-UA-2024-images.csv`
 
-"Current year" is defined as `contest.year` (the last year in the configured range).
+"Current year" is `stat.contest.year`, which equals `cfg.years.last` (set via `Statistics.getContest()`). All `ImageDB` instances in `dbsByYear` share the same campaign; `stat.contest.campaign` is the canonical source.
 
 ### Interface
 
@@ -81,11 +85,31 @@ Uses `com.github.tototoshi.csv.CSVWriter` (same dependency as `MonumentCsvExport
 
 ## Wiring
 
-In `ReporterRegistry.output()`, after `currentYear()` and `allYears()`:
+### `Statistics.main()` guard
+
+Currently, `Statistics.main()` uses an if/else: when `cfg.exportCsv.isDefined` the stats/`ReporterRegistry` path is skipped entirely. This must be updated so that `--export-images-csv` always runs through the stats flow, even when `--export-csv` is also set:
+
+```scala
+if (cfg.exportCsv.isDefined) {
+  runExport(contest, cfg, MonumentQuery.create(contest))  // monument CSV export
+}
+
+if (cfg.exportCsv.isEmpty || cfg.exportImagesCsv.isDefined) {
+  // normal stats flow (includes image CSV export via ReporterRegistry)
+  val stat = new Statistics(...)
+  stat.init(total = cfg.years.size > 1)
+}
+```
+
+This means both flags can be used together. If only `--export-csv` is set, the stats flow is still skipped (no change to existing behaviour).
+
+### `ReporterRegistry.output()`
+
+After `currentYear()` and `allYears()`:
 
 ```scala
 cfg.exportImagesCsv.foreach { dir =>
-  val currentYear = stat.contest.year
+  val currentYear = stat.contest.year  // = cfg.years.last
   stat.dbsByYear.foreach { imageDb =>
     ImageCsvExporter.export(
       imageDb,
@@ -97,13 +121,14 @@ cfg.exportImagesCsv.foreach { dir =>
 }
 ```
 
-`stat.dbsByYear` is always populated (even for single-year runs), so no special casing is needed. When no other stat flags are set, other reporters are no-ops and only the CSVs are written.
+`stat.dbsByYear` is always populated (built from `contests` which always has at least one element). When no other stat flags are set, other reporters are no-ops and only the CSVs are written.
 
 ## Data Flow
 
 ```
 Statistics.main(args)
   └─ StatParams.parse(args) → StatConfig(exportImagesCsv = Some(dir))
+  └─ [if exportCsv set] runExport() → monument CSV (unchanged)
   └─ Statistics.init(total)
        └─ gatherData() → ContestStat(dbsByYear = [ImageDB(2022), ..., ImageDB(2025)])
        └─ ReporterRegistry.output()
