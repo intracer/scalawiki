@@ -16,7 +16,7 @@ New sbt module `spark-streaming` at `spark-streaming/` inside the scalawiki proj
 **Dependencies:**
 - `org.apache.spark` %% `spark-sql` (Spark 3.5, Scala 2.13) — `spark-core` is a transitive dependency and need not be listed separately
 - `org.scalatest` %% `scalatest` (test scope)
-- `com.google.jimfs` % `jimfs` % `1.3.1` (test scope) — in-memory filesystem for `ImageUploadSimulatorSpec`
+- `com.google.jimfs` % `jimfs` % `1.3.0` (test scope) — in-memory filesystem for `ImageUploadSimulatorSpec`
 
 Note: `com.holdenkarau` %% `spark-testing-base` has no published artifact for Spark 3.5 / Scala 2.13 and is therefore excluded. Tests use a shared `SparkSession` managed via ScalaTest's `BeforeAndAfterAll`, and streaming tests use `MemoryStream` directly.
 
