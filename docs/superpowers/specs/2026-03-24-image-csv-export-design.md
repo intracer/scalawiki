@@ -26,6 +26,7 @@ exportImagesCsv: Option[String] = None
 - Argument is the output directory (empty string = current directory).
 - Independent of the existing `--export-csv` (monument export) flag — both can coexist.
 - Wired in `StatParams.parse()` via `conf.exportImagesCsv.toOption`.
+- Takes a **directory** (not a filename), because multiple files are written (one per year). This differs intentionally from `--export-csv` which takes a single filename.
 
 ## `ImageCsvExporter` Object
 
@@ -61,10 +62,15 @@ If `imageDb.images` is empty, the exporter writes nothing (mirrors `MonumentCsvE
 
 - **Previous years:** `<campaign>-<year>-images.csv`
   e.g. `WLM-UA-2024-images.csv`
-- **Current year:** `<campaign>-<year>-<MM>-<dd>-<HHmm>.csv`
-  e.g. `WLM-UA-2025-03-24-1430.csv`
-- Output directory prepended when non-empty:
-  e.g. `output/WLM-UA-2024-images.csv`
+- **Current year:** `<campaign>-<contestYear>-<MM>-<dd>-<HHmm>.csv`
+  where `<contestYear>` is the contest year and `<MM>-<dd>-<HHmm>` is the run timestamp from `LocalDateTime.now()`.
+  e.g. contest year 2025, run on 2026-03-24 at 14:30 → `WLM-UA-2025-03-24-1430.csv`
+  Format string: `s"$campaign-$contestYear-${LocalDateTime.now().format(DateTimeFormatter.ofPattern("MM-dd-HHmm"))}.csv"`
+- Output directory prepended when non-empty; when empty, filename is written to the current working directory (no path prefix):
+  ```scala
+  if (outputDir.nonEmpty) s"$outputDir/$name" else name
+  ```
+  e.g. `output/WLM-UA-2024-images.csv` or `WLM-UA-2024-images.csv`
 
 "Current year" is `stat.contest.year`, which equals `cfg.years.last` (set via `Statistics.getContest()`). All `ImageDB` instances in `dbsByYear` share the same campaign; `stat.contest.campaign` is the canonical source.
 
@@ -121,7 +127,9 @@ cfg.exportImagesCsv.foreach { dir =>
 }
 ```
 
-`stat.dbsByYear` is always populated (built from `contests` which always has at least one element). When no other stat flags are set, other reporters are no-ops and only the CSVs are written.
+`stat.dbsByYear` is always populated: `Statistics` builds `contests` from `startYear to currentYear`, which always has at least one element. For a single-year run, `dbsByYear` contains exactly one `ImageDB`.
+
+**Note:** When `--export-images-csv` is set without other stat flags, the full statistics flow still runs (including wiki image queries via `CachedBot`). This is accepted behaviour — image data must be fetched to populate `dbsByYear` regardless. The cache layer (`CachedBot`) mitigates repeated network overhead.
 
 ## Data Flow
 
