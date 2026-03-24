@@ -27,6 +27,9 @@ object Dependencies {
   val Slf4jV = "2.0.16"
   val SwcEngineV = "3.1.9"
   val TypesafeConfigV = "1.4.3"
+  val ScalaTestV        = "3.2.19"
+  val SparkV            = "3.5.6"
+  val SparkTestingBaseV = "3.5.6_2.1.3"
 
   val resolvers = Seq(
     "Typesafe Repo" at "https://repo.typesafe.com/typesafe/releases/",

@@ -48,7 +48,7 @@ lazy val commonSettings = Seq(
 lazy val scalawiki = (project in file("."))
   .settings(commonSettings)
   .dependsOn(core, bots, dumps, wlx, `http-extensions`)
-  .aggregate(core, bots, dumps, wlx, `http-extensions`)
+  .aggregate(core, bots, dumps, wlx, `http-extensions`, `spark-streaming`)
 
 lazy val core = Project("scalawiki-core", file("scalawiki-core"))
   .settings(commonSettings: _*)
@@ -130,4 +130,32 @@ lazy val `http-extensions` = (project in file("http-extensions"))
       Library.Pekko.http,
       "org.scalacheck" %% "scalacheck" % ScalaCheckV % Test
     )
+  )
+
+lazy val `spark-streaming` = Project("spark-streaming", file("spark-streaming"))
+  .settings(commonSettings: _*)
+  .settings(
+    // commonSettings injects Specs2 + MockServer into every module's test classpath.
+    // Strip them here — this module uses ScalaTest and spark-testing-base only.
+    libraryDependencies := libraryDependencies.value.filterNot { m =>
+      m.organization == "org.specs2" || m.organization == "org.mock-server"
+    },
+    libraryDependencies ++= Seq(
+      "org.apache.spark"  %% "spark-sql"           % SparkV,
+      "com.typesafe"       % "config"               % TypesafeConfigV,
+      "com.holdenkarau"   %% "spark-testing-base"  % SparkTestingBaseV % Test,
+      "org.scalatest"     %% "scalatest"            % ScalaTestV        % Test,
+      "com.google.jimfs"   % "jimfs"                % JimFsV            % Test
+    ),
+    // ThisBuild sets fork := true globally. Spark tests need SPARK_LOCAL_IP to
+    // avoid hostname resolution issues in forked JVMs.
+    Test / envVars += "SPARK_LOCAL_IP" -> "127.0.0.1",
+    Test / javaOptions ++= Seq("-Xmx2G", "-XX:+UseG1GC"),
+    assembly / mainClass := Some("org.scalawiki.spark.WlmStreamingApp"),
+    assembly / assemblyMergeStrategy := {
+      case PathList("META-INF", "services", _*) => MergeStrategy.concat
+      case PathList("META-INF", _*)             => MergeStrategy.discard
+      case "reference.conf"                     => MergeStrategy.concat
+      case _                                    => MergeStrategy.first
+    }
   )
