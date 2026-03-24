@@ -45,7 +45,7 @@ object ImageCsvExporter {
     } else {
       s"$campaign-$contestYear-images.csv"
     }
-    if (outputDir.nonEmpty) s"$outputDir/$name" else name
+    if (outputDir.nonEmpty) s"$outputDir${java.io.File.separator}$name" else name
   }
 
   def export(

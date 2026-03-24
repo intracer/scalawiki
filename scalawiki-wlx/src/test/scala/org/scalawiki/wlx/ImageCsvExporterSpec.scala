@@ -115,7 +115,7 @@ class ImageCsvExporterSpec extends Specification {
       val rows = parseCsv(content)
       val header = rows.head
       val row    = rows(1)
-      row(header.indexOf("exif_date")) must not beEmpty
+      row(header.indexOf("exif_date")) must_== "2022-09-15T10:30Z"
     }
 
     "serialize multi-value fields with semicolon separator" in {
