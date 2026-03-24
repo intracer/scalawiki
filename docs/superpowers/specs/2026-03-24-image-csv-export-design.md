@@ -65,6 +65,7 @@ If `imageDb.images` is empty, the exporter writes nothing (mirrors `MonumentCsvE
 - **Current year:** `<campaign>-<contestYear>-<MM>-<dd>-<HHmm>.csv`
   where `<contestYear>` is the contest year and `<MM>-<dd>-<HHmm>` is the run timestamp from `LocalDateTime.now()`.
   e.g. contest year 2025, run on 2026-03-24 at 14:30 → `WLM-UA-2025-03-24-1430.csv`
+  Note: `2025` is the contest year; `03-24-1430` is the run date/time. These are distinct and the ordering makes this unambiguous given the campaign prefix.
   Format string: `s"$campaign-$contestYear-${LocalDateTime.now().format(DateTimeFormatter.ofPattern("MM-dd-HHmm"))}.csv"`
 - Output directory prepended when non-empty; when empty, filename is written to the current working directory (no path prefix):
   ```scala
@@ -102,6 +103,10 @@ if (cfg.exportCsv.isDefined) {
 
 if (cfg.exportCsv.isEmpty || cfg.exportImagesCsv.isDefined) {
   // normal stats flow (includes image CSV export via ReporterRegistry)
+  // All existing setup from the current `else` branch must be preserved here:
+  // - CachedBot / imageQueryWiki construction
+  // - Statistics instantiation with all parameters
+  // - stat.init(total = cfg.years.size > 1)
   val stat = new Statistics(...)
   stat.init(total = cfg.years.size > 1)
 }
@@ -111,12 +116,17 @@ This means both flags can be used together. If only `--export-csv` is set, the s
 
 ### `ReporterRegistry.output()`
 
+`ReporterRegistry` receives `cfg: StatConfig` as a constructor parameter (second arg). Use it directly — do not pull from `stat.config`.
+
+Each `ImageDB` in `stat.dbsByYear` carries its contest year via `imageDb.contest.year`; this is the reliable per-entry year field.
+
 After `currentYear()` and `allYears()`:
 
 ```scala
 cfg.exportImagesCsv.foreach { dir =>
   val currentYear = stat.contest.year  // = cfg.years.last
   stat.dbsByYear.foreach { imageDb =>
+    // imageDb.contest.year is the year for this entry
     ImageCsvExporter.export(
       imageDb,
       stat.contest.campaign,
