@@ -126,12 +126,12 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
     allYears()
 
     cfg.exportImagesCsv.foreach { dir =>
-      val currentYear = stat.contest.year
+      val contestYear = stat.contest.year
       stat.dbsByYear.foreach { imageDb =>
         ImageCsvExporter.export(
           imageDb,
           stat.contest.campaign,
-          isCurrent = imageDb.contest.year == currentYear,
+          isCurrent = imageDb.contest.year == contestYear,
           outputDir = dir
         )
       }

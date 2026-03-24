@@ -58,7 +58,9 @@ object ImageCsvExporter {
     if (images.isEmpty) return
 
     val path = filename(campaign, imageDb.contest.year, isCurrent, outputDir)
-    val writer = CSVWriter.open(new File(path), "UTF-8")
+    val file = new File(path)
+    Option(file.getParentFile).foreach(_.mkdirs())
+    val writer = CSVWriter.open(file, "UTF-8")
     try {
       writer.writeRow(columns)
       images.foreach { image =>
