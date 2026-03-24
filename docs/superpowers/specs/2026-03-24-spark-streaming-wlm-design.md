@@ -41,7 +41,7 @@ size_bytes, mime, camera, exif_date, categories, special_nominations,
 url, page_url
 ```
 
-Spark reads the input directory as a CSV stream with `header = true` and schema inference.
+Spark reads the input directory as a CSV stream with `header = true` and an **explicit `StructType` schema** defined in `WlmStreamingApp`. Spark Structured Streaming requires an explicit schema for file-based streaming sources — `inferSchema` is not supported on streaming reads and raises an `AnalysisException` at startup. All 15 columns are declared as `StringType` except `upload_date` which is parsed in the transformation step.
 
 ### Transformation Pipeline
 
@@ -57,12 +57,14 @@ Applied once to the raw stream; result is shared by both queries:
 
 ### Query 1 — Cumulative (complete mode)
 
-Groups by `(author, region)` and counts distinct monuments. Runs in **complete mode** — rewrites the full result table each micro-batch.
+Groups by `(author, region)` and counts approximate distinct monuments. Runs in **complete mode** — rewrites the full result table each micro-batch.
+
+Exact `countDistinct` is not supported in Spark Structured Streaming (requires tracking unbounded historical state); `approx_count_distinct` (HyperLogLog) is the correct streaming substitute.
 
 ```scala
 transformedStream
   .groupBy("author", "region")
-  .agg(countDistinct("monument").as("monuments_pictured"))
+  .agg(approx_count_distinct("monument").as("monuments_pictured"))
 ```
 
 **Sinks:**
@@ -79,7 +81,7 @@ Uses a configurable tumbling window on `upload_date_ts` (default: 10 minutes) wi
 transformedStream
   .withWatermark("upload_date_ts", "2 minutes")
   .groupBy(window("upload_date_ts", "10 minutes"), "author", "region")
-  .agg(countDistinct("monument").as("monuments_pictured"))
+  .agg(approx_count_distinct("monument").as("monuments_pictured"))
 ```
 
 **Sinks:**
@@ -128,7 +130,7 @@ WlmStreamingApp (Spark Structured Streaming)
 |------------|---------|---------------|
 | `TransformationsSpec` | `DataFrameSuiteBase` | Transformation pipeline on static DataFrames: `monument_id` splitting, region extraction, null `upload_date` handling, multi-monument rows produce one row per monument |
 | `CumulativeQuerySpec` | `DataFrameSuiteBase` | Cumulative aggregation: correct `monuments_pictured` counts per `(author, region)` on known input |
-| `WindowedQuerySpec` | `DataFrameSuiteBase` | Windowed aggregation: fixed timestamps verify counts appear in the correct window |
+| `WindowedQuerySpec` | `StreamingSuiteBase` | Windowed aggregation with append mode: fixed timestamps verify counts appear in the correct window, watermark advances correctly, late rows are excluded |
 | `ImageUploadSimulatorSpec` | `AnyFunSpec` | Simulator copies files to target directory at expected pace; uses jimfs in-memory filesystem |
 
 No live streaming integration test — unit tests cover all logic.
