@@ -152,7 +152,30 @@ lazy val `spark-streaming` = Project("spark-streaming", file("spark-streaming"))
     // ThisBuild sets fork := true globally. Spark tests need SPARK_LOCAL_IP to
     // avoid hostname resolution issues in forked JVMs.
     Test / envVars += "SPARK_LOCAL_IP" -> "127.0.0.1",
-    Test / javaOptions ++= Seq("-Xmx2G", "-XX:+UseG1GC"),
+    Test / javaOptions ++= Seq(
+      "-Xmx2G",
+      "-XX:+UseG1GC",
+      "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED",
+      "--add-opens=java.base/java.lang=ALL-UNNAMED",
+      "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
+      "--add-opens=java.base/java.io=ALL-UNNAMED",
+      "--add-opens=java.base/java.net=ALL-UNNAMED",
+      "--add-opens=java.base/java.nio=ALL-UNNAMED",
+      "--add-opens=java.base/java.util=ALL-UNNAMED",
+      "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
+      "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
+      "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
+      "--add-opens=java.base/sun.nio.cs=ALL-UNNAMED",
+      "--add-opens=java.base/sun.security.action=ALL-UNNAMED",
+      "--add-opens=java.base/sun.util.calendar=ALL-UNNAMED"
+    ),
+    // Force Jackson Databind to match what spark's scala module 2.15.2 requires (< 2.16.0).
+    // Without this, a newer version pulled transitively causes ExceptionInInitializerError.
+    dependencyOverrides ++= Seq(
+      "com.fasterxml.jackson.core"   % "jackson-databind"       % "2.15.4",
+      "com.fasterxml.jackson.core"   % "jackson-core"           % "2.15.4",
+      "com.fasterxml.jackson.core"   % "jackson-annotations"    % "2.15.4"
+    ),
     assembly / mainClass := Some("org.scalawiki.spark.WlmStreamingApp"),
     assembly / assemblyMergeStrategy := {
       case PathList("META-INF", "services", _*) => MergeStrategy.concat
