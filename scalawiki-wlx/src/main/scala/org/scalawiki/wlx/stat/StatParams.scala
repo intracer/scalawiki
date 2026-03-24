@@ -32,7 +32,8 @@ case class StatConfig(
     previousYearsGallery: Boolean = false,
     numberOfMonumentsByNumberOfPictures: Boolean = false,
     recentlyTakenFiles: Option[String] = None,
-    exportCsv: Option[String] = None
+    exportCsv: Option[String] = None,
+    exportImagesCsv: Option[String] = None
 )
 
 import org.rogach.scallop._
@@ -112,6 +113,8 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
     opt[String](name = "recently-taken-files", descr = "recently taken files")
   val exportCsv =
     opt[String](name = "export-csv", descr = "Export monuments to CSV. Optional filename; defaults to <campaign>-YYYY-MM-DD-HHmm.csv")
+  val exportImagesCsv =
+    opt[String](name = "export-images-csv", descr = "Export images to CSV files per year. Argument is output directory (default: current dir).")
   verify()
 
 }
@@ -154,7 +157,8 @@ object StatParams {
       minMpx = conf.minMpx.toOption,
       previousYearsGallery = conf.previousYearsGallery.getOrElse(false),
       recentlyTakenFiles = conf.recentlyTakenFiles.toOption,
-      exportCsv = conf.exportCsv.toOption
+      exportCsv = conf.exportCsv.toOption,
+      exportImagesCsv = conf.exportImagesCsv.toOption
     )
   }
 }
