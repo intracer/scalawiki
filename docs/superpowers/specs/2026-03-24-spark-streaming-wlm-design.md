@@ -16,8 +16,10 @@ New sbt module `spark-streaming` at `spark-streaming/` inside the scalawiki proj
 **Dependencies:**
 - `org.apache.spark` %% `spark-sql` (Spark 3.5, Scala 2.13)
 - `org.apache.spark` %% `spark-core` (Spark 3.5)
-- `com.holdenkarau` %% `spark-testing-base` (test scope)
 - `org.scalatest` %% `scalatest` (test scope)
+- `com.google.jimfs` % `jimfs` (test scope) — in-memory filesystem for `ImageUploadSimulatorSpec`
+
+Note: `com.holdenkarau` %% `spark-testing-base` has no published artifact for Spark 3.5 / Scala 2.13 and is therefore excluded. Tests use a shared `SparkSession` managed via ScalaTest's `BeforeAndAfterAll`, and streaming tests use `MemoryStream` directly.
 
 Assembly plugin configured for fat JAR deployment.
 
@@ -67,11 +69,9 @@ transformedStream
   .agg(approx_count_distinct("monument").as("monuments_pictured"))
 ```
 
-**Sinks:**
-- Console (`truncate = false`) — driven directly by complete mode
-- Parquet files → `<outputDir>/cumulative/` — written via `foreachBatch` sink, which supports complete mode by overwriting the output path each micro-batch
+**Sinks (one `StreamingQuery`):**
 
-Note: Spark file sinks (e.g. `.parquet(path)`) do not support complete mode directly. `foreachBatch` is the standard workaround: it receives the full result DataFrame each batch and writes it as a regular batch Parquet write.
+Query 1 is started as a single `StreamingQuery` using the `foreachBatch` sink. Inside the `foreachBatch` function, each micro-batch result DataFrame is written twice: once to the console (via `show(truncate = false)`) and once as Parquet to `<outputDir>/cumulative/` (overwrite mode). This single-query approach is required because Spark file sinks do not support complete output mode directly — `foreachBatch` receives the full result DataFrame each micro-batch and writes it as a regular batch operation.
 
 **Checkpoint:** `<checkpointDir>/cumulative/`
 
@@ -109,12 +109,14 @@ WlmStreamingApp (Spark Structured Streaming)
   Transformation pipeline
   (parse timestamp → explode monuments → extract region)
         │
-        ├──► Query 1 (complete mode)
+        ├──► Query 1 (complete mode, single StreamingQuery via foreachBatch)
         │      groupBy(author, region)
         │      approx_count_distinct(monument)
         │         │
-        │         ├──► console
-        │         └──► output/cumulative/ (Parquet via foreachBatch)
+        │         └──► foreachBatch { batchDf =>
+        │                batchDf.show(truncate=false)          // console
+        │                batchDf.write.parquet(cumulative/)    // Parquet
+        │              }
         │
         └──► Query 2 (windowed, append mode + watermark)
                groupBy(window, author, region)
@@ -126,13 +128,13 @@ WlmStreamingApp (Spark Structured Streaming)
 
 ## Testing
 
-**Framework:** ScalaTest + `spark-testing-base` (`com.holdenkarau` %% `spark-testing-base`)
+**Framework:** ScalaTest. No `spark-testing-base` — instead, a shared `SparkSession` is created once per suite in `BeforeAndAfterAll` and stopped in `afterAll`. Streaming tests use `MemoryStream` from `org.apache.spark.sql.execution.streaming`.
 
 | Test class | Extends | What it tests |
 |------------|---------|---------------|
-| `TransformationsSpec` | `DataFrameSuiteBase` | Transformation pipeline on static DataFrames: `monument_id` splitting, region extraction, null `upload_date` handling, multi-monument rows produce one row per monument |
-| `CumulativeQuerySpec` | `DataFrameSuiteBase` | Cumulative aggregation: runs `approx_count_distinct` on a **static DataFrame** (not a streaming source) to verify correct `monuments_pictured` counts per `(author, region)` on known input |
-| `WindowedQuerySpec` | `StreamingSuiteBase` | Windowed aggregation with append mode: fixed timestamps verify counts appear in the correct window, watermark advances correctly, late rows are excluded |
+| `TransformationsSpec` | `AnyFunSpec` with `BeforeAndAfterAll` | Transformation pipeline on static DataFrames: `monument_id` splitting, region extraction, null `upload_date` handling, multi-monument rows produce one row per monument |
+| `CumulativeQuerySpec` | `AnyFunSpec` with `BeforeAndAfterAll` | Cumulative aggregation: runs `approx_count_distinct` on a **static DataFrame** (not a streaming source) to verify correct `monuments_pictured` counts per `(author, region)` on known input |
+| `WindowedQuerySpec` | `AnyFunSpec` with `BeforeAndAfterAll` | Windowed aggregation with append mode: uses `MemoryStream[Row]` as source; `addData()` injects rows with fixed timestamps; `processAllAvailable()` drives micro-batches; results are collected from a memory sink and asserted against expected window/author/region/count tuples; late rows (older than watermark) are verified as excluded |
 | `ImageUploadSimulatorSpec` | `AnyFunSpec` | Simulator copies files to target directory at expected pace; uses jimfs in-memory filesystem |
 
 No live streaming integration test — unit tests cover all logic.
