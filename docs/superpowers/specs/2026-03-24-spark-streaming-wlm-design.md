@@ -17,7 +17,7 @@ New sbt module `spark-streaming` at `spark-streaming/` inside the scalawiki proj
 - `org.apache.spark` %% `spark-sql` (Spark 3.5, Scala 2.13)
 - `org.apache.spark` %% `spark-core` (Spark 3.5)
 - `org.scalatest` %% `scalatest` (test scope)
-- `com.google.jimfs` % `jimfs` (test scope) — in-memory filesystem for `ImageUploadSimulatorSpec`
+- `com.google.jimfs` % `jimfs` % `1.3.0` (test scope) — in-memory filesystem for `ImageUploadSimulatorSpec`
 
 Note: `com.holdenkarau` %% `spark-testing-base` has no published artifact for Spark 3.5 / Scala 2.13 and is therefore excluded. Tests use a shared `SparkSession` managed via ScalaTest's `BeforeAndAfterAll`, and streaming tests use `MemoryStream` directly.
 
@@ -61,7 +61,7 @@ Applied once to the raw stream; result is shared by both queries:
 
 Groups by `(author, region)` and counts approximate distinct monuments. Runs in **complete mode** — rewrites the full result table each micro-batch.
 
-Exact `countDistinct` is not supported in Spark Structured Streaming (requires tracking unbounded historical state); `approx_count_distinct` (HyperLogLog) is the correct streaming substitute.
+Spark Structured Streaming does not support `countDistinct` on streaming sources; `approx_count_distinct` (HyperLogLog) is the supported approximate substitute.
 
 ```scala
 transformedStream
@@ -86,9 +86,9 @@ transformedStream
   .agg(approx_count_distinct("monument").as("monuments_pictured"))
 ```
 
-**Sinks:**
-- Console (`truncate = false`)
-- Parquet files → `<outputDir>/windowed/`
+**Sinks (one `StreamingQuery`):**
+
+Query 2 is also started as a single `StreamingQuery` using `foreachBatch`. Inside the function, each micro-batch result DataFrame is written twice: once to the console (via `show(truncate = false)`) and once as Parquet to `<outputDir>/windowed/` (append mode). Parquet file sinks do support append mode natively in Spark Structured Streaming, but using `foreachBatch` mirrors the Query 1 pattern and avoids managing two separate `StreamingQuery` handles for the same aggregation.
 
 **Checkpoint:** `<checkpointDir>/windowed/`
 
@@ -118,24 +118,47 @@ WlmStreamingApp (Spark Structured Streaming)
         │                batchDf.write.parquet(cumulative/)    // Parquet
         │              }
         │
-        └──► Query 2 (windowed, append mode + watermark)
+        └──► Query 2 (windowed, append mode + watermark, single StreamingQuery via foreachBatch)
                groupBy(window, author, region)
                approx_count_distinct(monument)
                   │
-                  ├──► console
-                  └──► output/windowed/ (Parquet)
+                  └──► foreachBatch { batchDf =>
+                         batchDf.show(truncate=false)         // console
+                         batchDf.write.parquet(windowed/)     // Parquet
+                       }
 ```
 
 ## Testing
 
 **Framework:** ScalaTest. No `spark-testing-base` — instead, a shared `SparkSession` is created once per suite in `BeforeAndAfterAll` and stopped in `afterAll`. Streaming tests use `MemoryStream` from `org.apache.spark.sql.execution.streaming`.
 
+### `MemoryStream` encoder
+
+`MemoryStream[Row]` requires an implicit `Encoder[Row]` in scope. In Spark 3.5, `RowEncoder.apply(schema)` was removed; the correct API is `RowEncoder.encoderFor(schema)`. Each streaming test suite that uses `MemoryStream[Row]` must declare:
+
+```scala
+val schema: StructType = ... // the transformed stream schema: author, monument, region, upload_date_ts
+implicit val encoder: Encoder[Row] = RowEncoder.encoderFor(schema)
+val memStream = MemoryStream[Row](id = 1, sqlContext = spark.sqlContext)
+```
+
+### `WindowedQuerySpec` test wiring
+
+`WindowedQuerySpec` builds a standalone test streaming query — it does not invoke `WlmStreamingApp` directly. The wiring is:
+
+1. Create `MemoryStream[Row]` with the transformed stream schema (author, monument, region, upload_date_ts) using `RowEncoder.encoderFor(schema)` as above.
+2. Apply the windowed aggregation directly to `memStream.toDF()` (same transformation as in production, but sourced from `MemoryStream` instead of a file stream).
+3. Write results to a memory sink: `.writeStream.format("memory").queryName("windowed_test").outputMode("append").start()`.
+4. Call `memStream.addData(rows)` to inject rows with fixed timestamps, then `query.processAllAvailable()` to drive micro-batches.
+5. Read results from `spark.table("windowed_test")` and assert against expected (window, author, region, monuments_pictured) tuples.
+6. Verify late rows (timestamps older than the watermark relative to the latest event time) do not appear in results.
+
 | Test class | Extends | What it tests |
 |------------|---------|---------------|
 | `TransformationsSpec` | `AnyFunSpec` with `BeforeAndAfterAll` | Transformation pipeline on static DataFrames: `monument_id` splitting, region extraction, null `upload_date` handling, multi-monument rows produce one row per monument |
 | `CumulativeQuerySpec` | `AnyFunSpec` with `BeforeAndAfterAll` | Cumulative aggregation: runs `approx_count_distinct` on a **static DataFrame** (not a streaming source) to verify correct `monuments_pictured` counts per `(author, region)` on known input |
-| `WindowedQuerySpec` | `AnyFunSpec` with `BeforeAndAfterAll` | Windowed aggregation with append mode: uses `MemoryStream[Row]` as source; `addData()` injects rows with fixed timestamps; `processAllAvailable()` drives micro-batches; results are collected from a memory sink and asserted against expected window/author/region/count tuples; late rows (older than watermark) are verified as excluded |
-| `ImageUploadSimulatorSpec` | `AnyFunSpec` | Simulator copies files to target directory at expected pace; uses jimfs in-memory filesystem |
+| `WindowedQuerySpec` | `AnyFunSpec` with `BeforeAndAfterAll` | Windowed aggregation with append mode: standalone test query using `MemoryStream[Row]` as source and `format("memory")` as sink, as described above; fixed timestamps verify correct window bucketing; late rows excluded |
+| `ImageUploadSimulatorSpec` | `AnyFunSpec` | Simulator copies files to target directory at expected pace; `ImageUploadSimulator` accepts a `java.nio.file.FileSystem` parameter for injection; uses jimfs in-memory filesystem in tests |
 
 No live streaming integration test — unit tests cover all logic.
 
