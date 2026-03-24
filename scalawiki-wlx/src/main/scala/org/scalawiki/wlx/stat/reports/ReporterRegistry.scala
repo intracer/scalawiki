@@ -4,7 +4,7 @@ import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.stat.rating.Rater
 import org.scalawiki.wlx.stat.{ContestStat, StatConfig, Stats}
-import org.scalawiki.wlx.{ImageDB, ImageFiller, MonumentDB}
+import org.scalawiki.wlx.{ImageCsvExporter, ImageDB, ImageFiller, MonumentDB}
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
@@ -124,6 +124,18 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
   def output(): Unit = {
     currentYear()
     allYears()
+
+    cfg.exportImagesCsv.foreach { dir =>
+      val currentYear = stat.contest.year
+      stat.dbsByYear.foreach { imageDb =>
+        ImageCsvExporter.export(
+          imageDb,
+          stat.contest.campaign,
+          isCurrent = imageDb.contest.year == currentYear,
+          outputDir = dir
+        )
+      }
+    }
   }
 
 }

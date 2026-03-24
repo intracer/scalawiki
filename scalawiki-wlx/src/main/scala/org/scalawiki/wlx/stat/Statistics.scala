@@ -226,7 +226,9 @@ object Statistics {
     if (cfg.exportCsv.isDefined) {
       val monumentQuery = MonumentQuery.create(contest)
       runExport(contest, cfg, monumentQuery)
-    } else {
+    }
+
+    if (cfg.exportCsv.isEmpty || cfg.exportImagesCsv.isDefined) {
       val cacheName = s"${cfg.campaign}-${contest.year}"
       val imageQueryWiki = ImageQuery.create(
         new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 100)
