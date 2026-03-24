@@ -27,7 +27,7 @@ Assembly plugin configured for fat JAR deployment.
 | `ImageUploadSimulator` | Copies exported CSV files one-by-one into the watched input directory at a configurable interval (e.g. one file per 5 seconds), simulating an upload stream |
 | `WlmStreamingApp` | Spark Structured Streaming application: reads from the input directory, runs two queries (cumulative + windowed), writes results to console and Parquet |
 
-Configuration via `application.conf` (Typesafe Config): input directory, output directory, simulator interval, window duration, watermark duration.
+Configuration via `application.conf` (Typesafe Config): input directory, output directory, checkpoint directory, simulator interval, window duration, watermark duration.
 
 ## Input Schema and Data Transformation
 
@@ -48,7 +48,7 @@ Spark reads the input directory as a CSV stream with `header = true` and an **ex
 Applied once to the raw stream; result is shared by both queries:
 
 1. **Parse timestamp:** `upload_date` (ISO-8601 string) → `upload_date_ts: TimestampType` via `to_timestamp`. Nulls tolerated — rows without a valid date are excluded from the windowed query but included in the cumulative query.
-2. **Explode monuments:** `split(monument_id, ";")` then `explode` → one row per monument-image pair. Column renamed to `monument`.
+2. **Explode monuments:** `split(monument_id, ";")` then `explode` → one row per monument-image pair. Column renamed to `monument`. Rows where `monument_id` is null or empty are silently dropped by `explode` — this is accepted behavior (images with no monument association are excluded from all aggregations).
 3. **Extract region:** `regexp_replace(monument, "-\\d+$", "")` strips the trailing `-NNNN` segment.
    - Example: `14-101-0001` → `14-101`
 4. **Select:** retain `author`, `monument`, `region`, `upload_date_ts`.
@@ -68,8 +68,10 @@ transformedStream
 ```
 
 **Sinks:**
-- Console (`truncate = false`)
-- Parquet files → `<outputDir>/cumulative/`
+- Console (`truncate = false`) — driven directly by complete mode
+- Parquet files → `<outputDir>/cumulative/` — written via `foreachBatch` sink, which supports complete mode by overwriting the output path each micro-batch
+
+Note: Spark file sinks (e.g. `.parquet(path)`) do not support complete mode directly. `foreachBatch` is the standard workaround: it receives the full result DataFrame each batch and writes it as a regular batch Parquet write.
 
 **Checkpoint:** `<checkpointDir>/cumulative/`
 
@@ -109,14 +111,14 @@ WlmStreamingApp (Spark Structured Streaming)
         │
         ├──► Query 1 (complete mode)
         │      groupBy(author, region)
-        │      countDistinct(monument)
+        │      approx_count_distinct(monument)
         │         │
         │         ├──► console
-        │         └──► output/cumulative/ (Parquet)
+        │         └──► output/cumulative/ (Parquet via foreachBatch)
         │
         └──► Query 2 (windowed, append mode + watermark)
                groupBy(window, author, region)
-               countDistinct(monument)
+               approx_count_distinct(monument)
                   │
                   ├──► console
                   └──► output/windowed/ (Parquet)
@@ -129,7 +131,7 @@ WlmStreamingApp (Spark Structured Streaming)
 | Test class | Extends | What it tests |
 |------------|---------|---------------|
 | `TransformationsSpec` | `DataFrameSuiteBase` | Transformation pipeline on static DataFrames: `monument_id` splitting, region extraction, null `upload_date` handling, multi-monument rows produce one row per monument |
-| `CumulativeQuerySpec` | `DataFrameSuiteBase` | Cumulative aggregation: correct `monuments_pictured` counts per `(author, region)` on known input |
+| `CumulativeQuerySpec` | `DataFrameSuiteBase` | Cumulative aggregation: runs `approx_count_distinct` on a **static DataFrame** (not a streaming source) to verify correct `monuments_pictured` counts per `(author, region)` on known input |
 | `WindowedQuerySpec` | `StreamingSuiteBase` | Windowed aggregation with append mode: fixed timestamps verify counts appear in the correct window, watermark advances correctly, late rows are excluded |
 | `ImageUploadSimulatorSpec` | `AnyFunSpec` | Simulator copies files to target directory at expected pace; uses jimfs in-memory filesystem |
 
