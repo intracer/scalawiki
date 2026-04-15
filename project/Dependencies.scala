@@ -79,7 +79,7 @@ object Dependencies {
     object Play {
       def PlayJsonV(isScala213: Boolean) = {
         if (isScala213) {
-          "2.9.4"
+          "3.0.6"
         } else {
           "2.7.4" // scala-steward:off
         }
@@ -88,7 +88,7 @@ object Dependencies {
       def TwirlV(isScala213: Boolean) = "1.5.2"
 
       def json(isScala213: Boolean) =
-        "com.typesafe.play" %% "play-json" % PlayJsonV(isScala213)
+        "org.playframework" %% "play-json" % PlayJsonV(isScala213)
 
       def twirlApi(isScala213: Boolean) =
         "com.typesafe.play" %% "twirl-api" % TwirlV(isScala213)

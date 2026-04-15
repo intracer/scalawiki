@@ -24,7 +24,7 @@ object WlmStreamingApp {
     val rawStream = spark.readStream
       .schema(WlmSchema.csvSchema)
       .option("header", "true")
-      .csv(inputDir)
+      .csv("images")
 
     val transformed = Transformations.transform(rawStream)
 
@@ -40,15 +40,15 @@ object WlmStreamingApp {
       .start()
 
     // Query 2: windowed (append mode + watermark) — foreachBatch writes console + Parquet
-    val q2 = Queries.windowedAgg(transformed, windowDur, watermarkDur)
-      .writeStream
-      .outputMode("append")
-      .option("checkpointLocation", s"$checkpointDir/windowed")
-      .foreachBatch { (batchDf: DataFrame, _: Long) =>
-        batchDf.show(truncate = false)
-        batchDf.write.mode("append").parquet(s"$outputDir/windowed")
-      }
-      .start()
+//    val q2 = Queries.windowedAgg(transformed, windowDur, watermarkDur)
+//      .writeStream
+//      .outputMode("append")
+//      .option("checkpointLocation", s"$checkpointDir/windowed")
+//      .foreachBatch { (batchDf: DataFrame, _: Long) =>
+//        batchDf.show(truncate = false)
+//        batchDf.write.mode("append").parquet(s"$outputDir/windowed")
+//      }
+//      .start()
 
     spark.streams.awaitAnyTermination()
   }

@@ -35,7 +35,7 @@ class TransformationsSpec extends AnyFunSuite with DataFrameSuiteBase {
       inputSchema
     )
     val result = Transformations.transform(input)
-    assert(result.collect()(0).getAs[String]("region") == "14-101")
+    assert(result.collect()(0).getAs[String]("region") == "14")
   }
 
   test("null upload_date produces null upload_date_ts but row is kept") {

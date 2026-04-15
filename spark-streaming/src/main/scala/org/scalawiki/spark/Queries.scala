@@ -14,6 +14,7 @@ object Queries {
   def cumulativeAgg(df: DataFrame): DataFrame =
     df.groupBy("author", "region")
       .agg(approx_count_distinct("monument").as("monuments_pictured"))
+      .sort(col("monuments_pictured").desc)
 
   /**
    * Windowed aggregation: approximate distinct monuments per (window, author, region).
