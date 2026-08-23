@@ -89,6 +89,15 @@ class CachedBot(
       val fn = (_: String) => Await.result(super.post(params), 30.minutes)
       val value = cache.computeIfAbsent(key, fn)
 
+      // computeIfAbsent may return a previously cached error/rate-limit body (not
+      // valid JSON) just as easily as a freshly fetched one. Don't let a non-JSON
+      // response linger in the persistent cache: evict it so the next attempt
+      // (this retry included) re-fetches from the network instead of replaying
+      // the same failure forever.
+      if (!CachedBot.looksLikeJson(value)) {
+        cache.remove(key)
+      }
+
       Future.successful(value)
     } catch {
       case t: Throwable =>
@@ -98,6 +107,11 @@ class CachedBot(
 }
 
 object CachedBot {
+
+  def looksLikeJson(body: String): Boolean = {
+    val trimmed = body.trim
+    trimmed.startsWith("{") || trimmed.startsWith("[")
+  }
 
   import scala.collection.JavaConverters._
 

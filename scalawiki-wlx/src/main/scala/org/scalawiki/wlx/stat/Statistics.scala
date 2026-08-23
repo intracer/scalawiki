@@ -6,7 +6,9 @@ import org.scalawiki.dto.{Image, Site}
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
 import org.scalawiki.wlx.stat.reports.ReporterRegistry
-import org.scalawiki.wlx.{ImageDB, MonumentDB}
+import org.scalawiki.wlx.{ImageCsvExporter, ImageCsvImporter, ImageDB, MonumentDB}
+
+import java.io.{File, FileNotFoundException}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -120,14 +122,24 @@ class Statistics(
     val monumentDb = Some(MonumentDB.getMonumentDb(contest, monumentQuery))
 
     val byYearFutures = contests.map(contestImages(monumentDb))
-    val totalPageIdsFuture = if (total) imageIdsByTemplate() else Future.successful(Nil)
+    val totalFromCsv = totalImagesCsvPath.filter(new File(_).exists())
+    val totalPageIdsFuture =
+      if (total && totalFromCsv.isEmpty) imageIdsByTemplate() else Future.successful(Nil)
     for {
       byYear <- Future.sequence(byYearFutures)
       currentYearImages = byYear.last
       totalPageIds <- totalPageIdsFuture
       totalImages <-
-        if (total) imagesByTemplate(monumentDb, byYear, totalPageIds)
-        else Future.successful(currentYearImages)
+        if (!total) Future.successful(currentYearImages)
+        else
+          totalFromCsv match {
+            case Some(path) =>
+              Future.successful(
+                new ImageDB(contest, ImageCsvImporter.imagesFromCsv(path), monumentDb, config.minMpx)
+              )
+            case None =>
+              imagesByTemplate(monumentDb, byYear, totalPageIds)
+          }
     } yield {
       ContestStat(
         contest,
@@ -141,13 +153,35 @@ class Statistics(
     }
   }
 
-  private def contestImages(monumentDb: Some[MonumentDB])(contest: Contest) =
-    ImageDB.create(
-      contest,
-      imageQuery.getOrElse(getImageQuery(Some(contest.year))),
-      monumentDb,
-      config.minMpx
-    )
+  private def contestImages(monumentDb: Some[MonumentDB])(yearContest: Contest): Future[ImageDB] = {
+    val csvImages = if (yearContest.year != currentYear) imagesFromCsvOpt(yearContest.year) else None
+    csvImages match {
+      case Some(images) =>
+        Future.successful(new ImageDB(yearContest, images, monumentDb, config.minMpx))
+      case None =>
+        ImageDB.create(
+          yearContest,
+          imageQuery.getOrElse(getImageQuery(Some(yearContest.year))),
+          monumentDb,
+          config.minMpx
+        )
+    }
+  }
+
+  private def totalImagesCsvPath: Option[String] =
+    config.imagesFromCsv.map(dir => ImageCsvExporter.totalFilename(contest.campaign, dir))
+
+  private def imagesFromCsvOpt(year: Int): Option[Seq[Image]] =
+    config.imagesFromCsv.map { dir =>
+      val path = ImageCsvExporter.filename(contest.campaign, year, isCurrent = false, dir)
+      if (!new File(path).exists()) {
+        throw new FileNotFoundException(
+          s"--images-from-csv was set but $path is missing. " +
+            s"Run --export-images-csv for campaign=${contest.campaign} year=$year first."
+        )
+      }
+      ImageCsvImporter.imagesFromCsv(path)
+    }
 
   private def imagesByTemplate(
       monumentDb: Some[MonumentDB],

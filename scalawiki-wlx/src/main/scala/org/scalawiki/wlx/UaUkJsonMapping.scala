@@ -2,7 +2,7 @@ package org.scalawiki.wlx
 
 import play.api.libs.json._
 
-import scala.io.Source
+import scala.io.{Codec, Source}
 
 /** A single sql_data entry.
   * @param entryType "Field" (rename an existing key), "Text" (inject literal), or "Raw" (skip)
@@ -30,7 +30,7 @@ object UaUkJsonMapping {
     * @param resourcePath e.g. "monuments_config/ua_uk.json"
     */
   def load(resourcePath: String): UaUkMapping = {
-    val source = Source.fromResource(resourcePath)
+    val source = Source.fromResource(resourcePath)(Codec.UTF8)
     val raw    = try source.mkString finally source.close()
     val json   = Json.parse(raw)
 

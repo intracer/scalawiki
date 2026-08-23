@@ -41,7 +41,10 @@ class DslQuery(
     onProgress(pages.size)
 
     implicit val success: retry.Success[String] =
-      retry.Success[String](_ => true)
+      retry.Success[String] { body =>
+        val trimmed = body.trim
+        trimmed.startsWith("{") || trimmed.startsWith("[")
+      }
 
     retry.Backoff()(odelay.Timer.default)(() =>
       bot.post(params.toMap)

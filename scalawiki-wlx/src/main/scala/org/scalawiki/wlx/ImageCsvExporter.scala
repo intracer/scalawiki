@@ -48,16 +48,30 @@ object ImageCsvExporter {
     if (outputDir.nonEmpty) s"$outputDir${java.io.File.separator}$name" else name
   }
 
+  def totalFilename(campaign: String, outputDir: String): String = {
+    val name = s"$campaign-all-images.csv"
+    if (outputDir.nonEmpty) s"$outputDir${java.io.File.separator}$name" else name
+  }
+
   def export(
       imageDb: ImageDB,
       campaign: String,
       isCurrent: Boolean,
       outputDir: String
-  ): Unit = {
+  ): Unit =
+    exportTo(imageDb, filename(campaign, imageDb.contest.year, isCurrent, outputDir))
+
+  def exportTotal(
+      imageDb: ImageDB,
+      campaign: String,
+      outputDir: String
+  ): Unit =
+    exportTo(imageDb, totalFilename(campaign, outputDir))
+
+  private def exportTo(imageDb: ImageDB, path: String): Unit = {
     val images = imageDb.images.toSeq
     if (images.isEmpty) return
 
-    val path = filename(campaign, imageDb.contest.year, isCurrent, outputDir)
     val file = new File(path)
     Option(file.getParentFile).foreach { dir =>
       if (!dir.exists() && !dir.mkdirs()) {

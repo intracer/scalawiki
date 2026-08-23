@@ -137,6 +137,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
           outputDir = dir
         )
       }
+      ImageCsvExporter.exportTotal(totalImageDb, stat.contest.campaign, outputDir = dir)
     }
   }
 

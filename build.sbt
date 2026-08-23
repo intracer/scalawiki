@@ -3,6 +3,19 @@ import Dependencies._
 
 ThisBuild / Test / fork := true
 
+// ChronicleMap (net.openhft.*) needs reflective access to JDK internals that JPMS
+// strongly encapsulates by default on JDK 16+ (CI runs JDK 11, where this isn't enforced).
+ThisBuild / Test / javaOptions ++= Seq(
+  "--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED",
+  "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED",
+  "--add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED",
+  "--add-opens=java.base/java.lang=ALL-UNNAMED",
+  "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+  "--add-opens=java.base/java.io=ALL-UNNAMED",
+  "--add-opens=java.base/java.util=ALL-UNNAMED",
+  "--add-opens=java.base/java.nio=ALL-UNNAMED"
+)
+
 lazy val isScala213 = settingKey[Boolean]("Is the scala version 2.13.")
 
 lazy val commonSettings = Seq(
