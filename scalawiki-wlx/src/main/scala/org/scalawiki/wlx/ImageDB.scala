@@ -13,7 +13,8 @@ case class ImageDB(
     images: Iterable[Image],
     monumentDb: Option[MonumentDB],
     minMpx: Option[Float] = None,
-    recentlyTakenFiles: Option[String] = None
+    recentlyTakenFiles: Option[String] = None,
+    ignoreRecentlyTaken: Boolean = false
 ) {
 
   def this(contest: Contest, images: Seq[Image]) = this(contest, images, None)
@@ -40,7 +41,7 @@ case class ImageDB(
     .flatMap(file => scala.io.Source.fromFile(file).getLines.toList)
 
   lazy val ineligible: Seq[Image] = withCorrectIds.filter { i =>
-    val after30 = //false
+    val after30 = !ignoreRecentlyTaken &&
       i.metadata.exists(_.date.exists(_.isAfter(jun30))) &&
         !i.specialNominations.contains(s"WLM${contest.year}-UA-interior") &&
         (filesList.isEmpty || filesList.contains(i.title))

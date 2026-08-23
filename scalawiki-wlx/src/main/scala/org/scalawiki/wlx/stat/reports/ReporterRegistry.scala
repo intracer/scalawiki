@@ -2,6 +2,7 @@ package org.scalawiki.wlx.stat.reports
 
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
+import org.scalawiki.wlx.dto.SpecialNomination
 import org.scalawiki.wlx.stat.rating.Rater
 import org.scalawiki.wlx.stat.{ContestStat, StatConfig, Stats}
 import org.scalawiki.wlx.{ImageCsvExporter, ImageDB, ImageFiller, MonumentDB}
@@ -93,6 +94,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
     val imageDb = totalImageDb
     if (cfg.fillLists) {
       ImageFiller.fillLists(monumentDb.get, imageDb)
+      fillSpecialNominationLists(monumentDb.get, imageDb)
     }
 
     if (cfg.regionalStat) {
@@ -135,6 +137,31 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
           outputDir = dir
         )
       }
+    }
+  }
+
+  /** Special nomination monument lists (e.g. thematic lists like "Музичні пам'ятки в
+    * Україні") often live on separate wiki pages from the regular per-region monument
+    * lists that `monumentDb` is built from, so `ImageFiller.fillLists` never visits
+    * them. Fill each nomination's own list pages too, reusing the same image data.
+    */
+  private def fillSpecialNominationLists(mDb: MonumentDB, imageDb: ImageDB): Unit = {
+    val nominations = SpecialNomination.nominations.filter(_.listTemplate.nonEmpty)
+    val monumentsMap = SpecialNomination.getMonumentsMap(nominations, stat)
+
+    for {
+      nomination <- nominations
+      listTemplate <- nomination.listTemplate
+      monuments = monumentsMap.getOrElse(nomination, Nil)
+      if monuments.nonEmpty
+    } {
+      val nominationContest = mDb.contest.copy(
+        uploadConfigs = mDb.contest.uploadConfigs match {
+          case head +: tail => head.copy(listTemplate = listTemplate) +: tail
+          case empty        => empty
+        }
+      )
+      ImageFiller.fillLists(new MonumentDB(nominationContest, monuments.toSeq), imageDb)
     }
   }
 

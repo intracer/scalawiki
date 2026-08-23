@@ -1,6 +1,6 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.dto.{Image, User}
+import org.scalawiki.dto.{Image, ImageMetadata, User}
 import org.scalawiki.wlx.dto._
 import org.scalawiki.wlx.dto.lists.ListConfig
 import org.specs2.mutable.Specification
@@ -187,5 +187,49 @@ class ImageDbSpec extends Specification {
       )
     }
 
+  }
+
+  "recently taken filter" should {
+    val recentlyTakenContest = Contest.WLMUkraine(2025)
+    val recentImage = new Image(
+      "File:Recent.jpg",
+      width = Some(4000),
+      height = Some(3000),
+      monumentIds = List("32-204-0093"),
+      metadata = Some(ImageMetadata(Map("DateTimeOriginal" -> "2025:07:27 10:17:47"))),
+      pageId = Some(1L)
+    )
+    val monumentDb = Some(
+      new MonumentDB(
+        recentlyTakenContest,
+        Seq(
+          Monument(
+            id = "32-204-0093",
+            name = "monument",
+            listConfig = Some(ListConfig.WlmUa)
+          )
+        )
+      )
+    )
+
+    "mark images taken after June 30th as ineligible by default" in {
+      val imageDb =
+        ImageDB(recentlyTakenContest, Seq(recentImage), monumentDb)
+
+      imageDb.sansIneligible must beEmpty
+      imageDb.containsId("32-204-0093") must beFalse
+    }
+
+    "not mark images taken after June 30th as ineligible when ignoreRecentlyTaken is set" in {
+      val imageDb = ImageDB(
+        recentlyTakenContest,
+        Seq(recentImage),
+        monumentDb,
+        ignoreRecentlyTaken = true
+      )
+
+      imageDb.sansIneligible must contain(recentImage)
+      imageDb.containsId("32-204-0093") must beTrue
+    }
   }
 }

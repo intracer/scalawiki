@@ -508,37 +508,41 @@ object Output {
 
   def regionalStat(stat: ContestStat): Unit = {
     val bot = MwBot.fromHost(MwBot.commons)
+    try {
+      val contest = stat.contest
+      val categoryName = contest.contestType.name + " in " + contest.country.name
+      val monumentDb = stat.monumentDb
 
-    val contest = stat.contest
-    val categoryName = contest.contestType.name + " in " + contest.country.name
-    val monumentDb = stat.monumentDb
+      val authorsStat = new AuthorsStat()
 
-    val authorsStat = new AuthorsStat()
+      val idsStat = monumentDb
+        .map(_ =>
+          new MonumentsPicturedByRegion(
+            stat,
+            uploadImages = false,
+            gallery = true
+          ).asText
+        )
+        .getOrElse("")
 
-    val idsStat = monumentDb
-      .map(_ =>
-        new MonumentsPicturedByRegion(
-          stat,
-          uploadImages = false,
-          gallery = true
-        ).asText
+      val authorsContributed = authorsStat.authorsContributed(
+        stat.dbsByYear,
+        stat.totalImageDb,
+        monumentDb
       )
-      .getOrElse("")
 
-    val authorsContributed = authorsStat.authorsContributed(
-      stat.dbsByYear,
-      stat.totalImageDb,
-      monumentDb
-    )
+      val toc = "__TOC__"
+      val category = s"\n[[Category:$categoryName]]"
+      val regionalStat = toc + idsStat + authorsContributed + category
 
-    val toc = "__TOC__"
-    val category = s"\n[[Category:$categoryName]]"
-    val regionalStat = toc + idsStat + authorsContributed + category
-
-    bot
-      .page(s"Commons:$categoryName/Regional statistics")
-      .edit(regionalStat, Some("updating"))
-    authorsStat.authorsContributedPerRegion(stat.totalImageDb, bot)
+      bot
+        .page(s"Commons:$categoryName/Regional statistics")
+        .edit(regionalStat, Some("updating"))
+      authorsStat.authorsContributedPerRegion(stat.totalImageDb, bot)
+    } catch {
+      case ex: Throwable =>
+        bot.log.error("Failed to update regions", ex)
+    }
   }
 
   def newMonuments(stat: ContestStat) = {

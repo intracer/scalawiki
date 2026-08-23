@@ -6,7 +6,8 @@ import org.scalawiki.wlx.dto.Monument
 object ImageFiller {
 
   def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
-    ListUpdater.updateLists(monumentDb, new ImageFillerUpdater(imageDb))
+    val fillListsDb = imageDb.copy(ignoreRecentlyTaken = true)
+    ListUpdater.updateLists(monumentDb, new ImageFillerUpdater(fillListsDb))
   }
 
   def bestImage(images: Seq[Image]): Image =
