@@ -68,6 +68,16 @@ class Rater2026Spec extends Specification {
       )
     }
 
+    "expose one rating-table column label per rater" in {
+      rater.asInstanceOf[RateSum].raters.map(_.label) === Seq(
+        "base",
+        "authors <br> bonus",
+        "images <br> bonus",
+        "interior <br> bonus",
+        "old photos <br> bonus"
+      )
+    }
+
     "rate a fresh monument in a non-occupied region: 1 + 12 + 0 + 5 + 0" in {
       rater.rate(freshNonWar, "participant") === 18.0
     }

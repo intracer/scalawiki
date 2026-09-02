@@ -67,4 +67,24 @@ class NumberOfInteriorImagesBonusSpec extends Specification {
       rater.rate(manyInterior, "any") === 0.0
     }
   }
+
+  "NumberOfInteriorImagesBonus.isInterior" should {
+    def image(nominations: Set[String] = Set.empty, categories: Set[String] = Set.empty) =
+      Image("File:x.jpg").copy(specialNominations = nominations, categories = categories)
+
+    "recognise an interior special nomination of any year" in {
+      NumberOfInteriorImagesBonus.isInterior(image(nominations = Set("WLM2023-UA-interior"))) must beTrue
+      NumberOfInteriorImagesBonus.isInterior(image(nominations = Set("WLM2026-UA-interior"))) must beTrue
+      NumberOfInteriorImagesBonus.isInterior(image(nominations = Set("WLM2026-UA-інтер'єр"))) must beTrue
+    }
+
+    "not treat an exterior nomination as interior" in {
+      NumberOfInteriorImagesBonus.isInterior(image(nominations = Set("WLM2026-UA-exterior"))) must beFalse
+    }
+
+    "recognise interior categories in English and Ukrainian" in {
+      NumberOfInteriorImagesBonus.isInterior(image(categories = Set("Interior of St Sophia"))) must beTrue
+      NumberOfInteriorImagesBonus.isInterior(image(categories = Set("Інтер'єр Софійського собору"))) must beTrue
+    }
+  }
 }

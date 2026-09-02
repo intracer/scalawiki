@@ -36,6 +36,8 @@ case class NumberOfMonuments(
     } else "Not a known monument = 0"
   }
 
+  override def label: String = "base"
+
   override def withRating: Boolean = false
 }
 
@@ -54,4 +56,6 @@ case class NewlyPicturedBonus(stat: ContestStat, newlyPicturedRate: Double) exte
     else
       "Not newly pictured = 0"
   }
+
+  override def label: String = "newly pictured <br> bonus"
 }

@@ -5,7 +5,7 @@ import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.cmd.query.{Generator, Query}
 import org.scalawiki.dto.{Image, Namespace}
 import org.scalawiki.query.QueryLibrary
-import org.scalawiki.wlx.dto.Contest
+import org.scalawiki.wlx.dto.{Contest, SpecialNomination}
 import org.scalawiki.{ActionBot, MwBot}
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -25,6 +25,17 @@ trait ImageQuery {
 }
 
 class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
+
+  /** File templates of every special nomination, regardless of contest year.
+    *
+    * Recognition must not depend on `contest.year`: a photo uploaded for the
+    * 2024 interior nomination still carries `{{WLM2024-UA-interior}}` when it
+    * turns up in an all-time / prior-year fetch, and downstream logic (e.g.
+    * [[org.scalawiki.wlx.stat.rating.NumberOfInteriorImagesBonus]]) needs to see
+    * it. Consumers that care about a specific year filter by exact template name.
+    */
+  private val allSpecialNominationTemplates: Set[String] =
+    SpecialNomination.nominations.flatMap(_.fileTemplate).toSet
 
   override def imagesFromCategory(contest: Contest): Future[Iterable[Image]] = {
     val generator: Generator = Generator(
@@ -59,7 +70,7 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
     bot.log.info(s"imagesWithTemplateByIds pageIds size: ${pageIds.size}")
     val blockSize = 50
     val fetched = new AtomicInteger(0)
-    val specialNominationTemplates = contest.specialNominations.flatMap(_.fileTemplate).toSet
+    val specialNominationTemplates = allSpecialNominationTemplates
     Future
       .sequence(pageIds.toSeq.sorted.grouped(blockSize).map { idsSlice =>
         imagesByIds(idsSlice, withMetadata = true)
@@ -75,7 +86,7 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
   }
 
   private def imagesByGenerator(contest: Contest, generator: Generator): Future[Iterable[Image]] = {
-    val specialNominationTemplates = contest.specialNominations.flatMap(_.fileTemplate).toSet
+    val specialNominationTemplates = allSpecialNominationTemplates
     for (pages <- bot.run(imagesByGenerator(generator, withMetadata = true)))
       yield pages.flatMap(
         Image.fromPage(contest.fileTemplate, specialNominationTemplates)

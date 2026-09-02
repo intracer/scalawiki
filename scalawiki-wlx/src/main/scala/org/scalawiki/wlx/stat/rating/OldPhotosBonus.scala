@@ -12,6 +12,11 @@ import java.time.{LocalDate, ZoneOffset, ZonedDateTime}
   * A photo's date is taken from EXIF metadata (DateTimeOriginal) when available,
   * otherwise from the upload/revision timestamp. If any known photo has no date at
   * all we cannot assert that "all photos are old", so no bonus is given.
+  *
+  * "Already known" only covers prior-year contest uploads (see
+  * [[Rater.oldImagesByMonumentId]]); photos on Commons or Wikipedia that were
+  * never entered into the contest are not considered, so a monument that was
+  * photographed outside the contest after `beforeDate` may still get the bonus.
   */
 case class OldPhotosBonus(
     stat: ContestStat,
@@ -24,11 +29,8 @@ case class OldPhotosBonus(
   private def imageDate(i: Image): Option[ZonedDateTime] =
     i.metadata.flatMap(_.date).orElse(i.date)
 
-  val oldImagesByMonument: Map[String, Seq[Image]] =
-    oldImages.toSeq.groupBy(_.monumentId.getOrElse(""))
-
   def qualifies(monumentId: String): Boolean = {
-    val images = oldImagesByMonument.getOrElse(monumentId, Nil)
+    val images = oldImagesByMonumentId.getOrElse(monumentId, Nil)
     images.nonEmpty && images.forall(i => imageDate(i).exists(_.isBefore(cutoff)))
   }
 
@@ -40,4 +42,6 @@ case class OldPhotosBonus(
       s"All existing photos are dated before $beforeDate = $bonus"
     else
       s"Not all existing photos are dated before $beforeDate = 0"
+
+  override def label: String = "old photos <br> bonus"
 }

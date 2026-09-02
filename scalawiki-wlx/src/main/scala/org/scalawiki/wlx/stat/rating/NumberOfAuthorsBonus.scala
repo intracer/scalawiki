@@ -6,8 +6,7 @@ import org.scalawiki.wlx.stat.reports.RateInputDistribution
 
 case class NumberOfAuthorsBonus(stat: ContestStat, rateRanges: RateRanges)
   extends Rater {
-  val authorsByMonument: Map[String, Set[String]] = oldImages
-    .groupBy(_.monumentId.getOrElse(""))
+  val authorsByMonument: Map[String, Set[String]] = oldImagesByMonumentId
     .mapValues { images =>
       images.map(_.author.getOrElse("")).toSet
     }
@@ -63,4 +62,6 @@ case class NumberOfAuthorsBonus(stat: ContestStat, rateRanges: RateRanges)
     //    Set("Петро Халява", "SnizhokAM").contains(author) &&
     //      authorsByMonument.getOrElse(monumentId, Set.empty).contains(author)
   }
+
+  override def label: String = "authors <br> bonus"
 }

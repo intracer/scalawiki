@@ -64,13 +64,13 @@ object Output {
         Some(oldImageDb.subSet(_.author.contains(author)))
       else None
 
-    val rateConfig = contest.rateConfig
-    val tableHeader = "{| class=\"wikitable\"\n! rate !! base " +
-      (if (rateConfig.numberOfAuthorsBonus || rater.withRating)
-         "!! authors <br> bonus "
-       else "") +
-      (if (rateConfig.numberOfImagesBonus) "!! images <br> bonus " else "") +
-      "!! objects !! ids \n|-\n"
+    val rateColumns = rater match {
+      case rateSum: RateSum => rateSum.raters.map(_.label)
+      case single           => Seq(single.label)
+    }
+    val tableHeader = "{| class=\"wikitable\"\n! rate !! " +
+      (rateColumns :+ "objects" :+ "ids").mkString(" !! ") +
+      " \n|-\n"
 
     val tableTotal = rater match {
       case rateSum: RateSum =>
