@@ -14,6 +14,7 @@ case class StatConfig(
     rateConfig: RateConfig = RateConfig(),
     gallery: Boolean = false,
     fillLists: Boolean = false,
+    fillListsRating: Boolean = false,
     wrongIds: Boolean = false,
     missingIds: Boolean = false,
     multipleIds: Boolean = false,
@@ -71,6 +72,11 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
   val baseRate = opt[Double](name = "base-rate", descr = "base rate")
   val gallery = opt[Boolean](name = "gallery", descr = "gallery")
   val fillLists = opt[Boolean](name = "fill-lists", descr = "fill lists")
+  val fillListsRating = opt[Boolean](
+    name = "fill-lists-rating",
+    descr =
+      "fill the rating (бали) field in monument lists with the points a new photo would score; run with a year range"
+  )
   val wrongIds = opt[Boolean](name = "wrong-ids", descr = "report wrong ids")
   val missingIds =
     opt[Boolean](name = "missing-ids", descr = "report missing ids")
@@ -143,6 +149,7 @@ object StatParams {
       rateConfig = rating.RateConfig(conf),
       gallery = conf.gallery.getOrElse(false),
       fillLists = conf.fillLists.getOrElse(false),
+      fillListsRating = conf.fillListsRating.getOrElse(false),
       wrongIds = conf.wrongIds.getOrElse(false),
       missingIds = conf.missingIds.getOrElse(false),
       multipleIds = conf.multipleIds.getOrElse(false),

@@ -280,7 +280,9 @@ object Statistics {
         imageQueryWiki = Some(imageQueryWiki)
       )
 
-      stat.init(total = cfg.years.size > 1)
+      // rating fill needs the all-time image DB to know which monuments already
+      // have photos, even when a single year is requested
+      stat.init(total = cfg.years.size > 1 || cfg.fillListsRating)
     }
   }
 }

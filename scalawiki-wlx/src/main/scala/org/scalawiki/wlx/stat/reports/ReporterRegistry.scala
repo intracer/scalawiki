@@ -5,7 +5,7 @@ import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.dto.SpecialNomination
 import org.scalawiki.wlx.stat.rating.Rater
 import org.scalawiki.wlx.stat.{ContestStat, StatConfig, Stats}
-import org.scalawiki.wlx.{ImageCsvExporter, ImageDB, ImageFiller, MonumentDB}
+import org.scalawiki.wlx.{ImageCsvExporter, ImageDB, ImageFiller, MonumentDB, RatingListFiller}
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
@@ -95,6 +95,10 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
     if (cfg.fillLists) {
       ImageFiller.fillLists(monumentDb.get, imageDb)
       fillSpecialNominationLists(monumentDb.get, imageDb)
+    }
+
+    if (cfg.fillListsRating) {
+      RatingListFiller.fillLists(stat)
     }
 
     if (cfg.regionalStat) {
