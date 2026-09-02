@@ -52,6 +52,11 @@ lazy val commonSettings = Seq(
   assembly / test := {},
   assembly / assemblyMergeStrategy := {
     case PathList("org", "xmlpull", "v1", xs @ _*) => MergeStrategy.first
+    // JPMS module descriptors from multiple deps collide and are irrelevant on the classpath
+    case "module-info.class"                       => MergeStrategy.discard
+    case x if x.endsWith("/module-info.class")     => MergeStrategy.discard
+    case PathList("META-INF", "versions", _, "module-info.class") =>
+      MergeStrategy.discard
     case x =>
       val oldStrategy = (assembly / assemblyMergeStrategy).value
       oldStrategy(x)

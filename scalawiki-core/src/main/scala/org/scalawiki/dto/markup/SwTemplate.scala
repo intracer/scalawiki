@@ -58,16 +58,27 @@ case class SwTemplate(wtNode: WtTemplate) extends SwNode {
     * does not carry yet, so [[getArg]] finds nothing to update.
     */
   def addTemplateParam(name: String, value: String): Unit = {
-    val args = wtNode.getArgs
     val f = NodeFactory
     val arg = f.tmplArg(
       f.name(f.list(f.text(name))),
       f.value(f.list(f.text(" " + value + "\n")))
     )
-    // round-trip data: "| " before the name, " =" between name and value, "" after.
-    // Relies on the previous argument ending with a newline, which monument list
-    // rows always do.
-    arg.setRtd("| ", RtData.SEP, " =", RtData.SEP, "")
-    args.add(arg)
+    // Round-trip data: separator before the name, " =" between name and value,
+    // "" after. Monument list rows put one parameter per line, so start a new
+    // line ourselves unless the preceding value already ends with one (which
+    // would otherwise glue "| name =" onto the previous line).
+    val prevEndsWithNl =
+      args.lastOption.exists(a => getText(a.getValue).endsWith("\n"))
+    arg.setRtd(
+      if (prevEndsWithNl) "| " else "\n| ",
+      RtData.SEP,
+      " =",
+      RtData.SEP,
+      ""
+    )
+    wtNode.getArgs.add(arg)
+    // keep `args` (which getArg reads) in sync with the AST so a later
+    // setTemplateParam for this name updates it instead of appending a duplicate
+    args += arg
   }
 }

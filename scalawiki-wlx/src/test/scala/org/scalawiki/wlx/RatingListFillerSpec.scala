@@ -32,7 +32,9 @@ class RatingListFillerSpec extends Specification {
   private def task(ms: Seq[Monument], rates: Map[String, Double]) = {
     val s = stat(ms)
     val db = s.monumentDb.get
-    new ListUpdaterTask(host, db, new RatingUpdater(db, new StubRater(s, rates)))
+    val updater =
+      new RatingUpdater(RatingListFiller.ratings(db, new StubRater(s, rates)))
+    new ListUpdaterTask(host, db, updater)
   }
 
   private def row(id: String, bali: Option[String]): String = {
@@ -71,6 +73,22 @@ class RatingListFillerSpec extends Specification {
       val (text, comment) =
         task(monuments(id1), Map(id1 -> 12.0)).updatePage("p", row(id1, None))
       text === row(id1, Some("12"))
+      comment === "updated 1 monument(s)"
+    }
+
+    "append the rating field without gluing it onto a single-line row" in {
+      val singleLine = s"{{ВЛП-рядок|ID=$id1|назва=name|фото=}}"
+      val (text, comment) =
+        task(monuments(id1), Map(id1 -> 12.0)).updatePage("p", singleLine)
+
+      text.contains("| бали = 12") must beTrue
+      text.contains("=| бали") must beFalse
+      new WlxTemplateParser(listConfig, "p")
+        .parse(text)
+        .head
+        .otherParams
+        .get("бали")
+        .map(_.trim) === Some("12")
       comment === "updated 1 monument(s)"
     }
 

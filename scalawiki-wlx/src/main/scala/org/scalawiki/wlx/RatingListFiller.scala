@@ -26,33 +26,42 @@ object RatingListFiller {
       .flatMap(c => Try(c.getString("ratingListParam")).toOption)
       .getOrElse(DefaultParam)
 
+  /** Points a new photo would score, as the wiki string to write, keyed by
+    * monument id; monuments that would score nothing are absent.
+    *
+    * Computed once, up front and single-threaded: `Rater` implementations keep
+    * non-synchronized mutable state (e.g. `NumberOfImagesInPlaceBonus`), and
+    * [[ListUpdater]] runs page updates — and therefore the updater callbacks that
+    * would otherwise call `Rater.rate` — concurrently.
+    */
+  def ratings(monumentDb: MonumentDB, rater: Rater): Map[String, String] =
+    monumentDb.monuments.iterator.flatMap { m =>
+      val rate = rater.rate(m.id, "")
+      if (rate > 0) Some(m.id -> RatingUpdater.format(rate)) else None
+    }.toMap
+
   def fillLists(stat: ContestStat): Unit = {
     val monumentDb = stat.monumentDb.getOrElse {
       throw new IllegalStateException("RatingListFiller needs a monument database")
     }
-    val updater = new RatingUpdater(monumentDb, Rater.create(stat), paramName(stat))
+    val updater =
+      new RatingUpdater(ratings(monumentDb, Rater.create(stat)), paramName(stat))
     ListUpdater.updateLists(monumentDb, updater)
+    // thematic nominations live on their own list pages, like ImageFiller does
+    ListUpdater.updateSpecialNominationLists(stat, updater)
   }
 }
 
 class RatingUpdater(
-    monumentDb: MonumentDB,
-    rater: Rater,
+    ratings: Map[String, String],
     paramName: String = RatingListFiller.DefaultParam
 ) extends MonumentUpdater {
 
-  private def ratingValue(monument: Monument): Option[String] =
-    if (!monumentDb.ids.contains(monument.id)) None
-    else {
-      val rate = rater.rate(monument.id, "")
-      if (rate > 0) Some(RatingUpdater.format(rate)) else None
-    }
-
   override def updatedParams(monument: Monument): Map[String, String] =
-    ratingValue(monument).map(paramName -> _).toMap
+    ratings.get(monument.id).map(paramName -> _).toMap
 
   override def needsUpdate(monument: Monument): Boolean =
-    ratingValue(monument).exists { value =>
+    ratings.get(monument.id).exists { value =>
       !monument.otherParams.get(paramName).map(_.trim).contains(value)
     }
 }

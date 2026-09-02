@@ -4,17 +4,49 @@ import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.SwTemplate
 import org.scalawiki.edit.{PageUpdateTask, PageUpdater}
 import org.scalawiki.wikitext.SwebleParser
-import org.scalawiki.wlx.dto.Monument
+import org.scalawiki.wlx.dto.{Monument, SpecialNomination}
+import org.scalawiki.wlx.stat.ContestStat
 import org.sweble.wikitext.engine.config.WikiConfig
 import org.sweble.wikitext.engine.utils.DefaultConfigEnWp
 import org.sweble.wikitext.parser.nodes.WtTemplate
 
 object ListUpdater {
 
-  def updateLists(monumentDb: MonumentDB, monumentUpdater: MonumentUpdater) {
+  def updateLists(monumentDb: MonumentDB, monumentUpdater: MonumentUpdater): Unit = {
     val task = new ListUpdaterTask(MwBot.ukWiki, monumentDb, monumentUpdater)
     val updater = new PageUpdater(task)
     updater.update()
+  }
+
+  /** Run `monumentUpdater` over the separate wiki pages that hold special
+    * nomination (thematic) monument lists. [[updateLists]] never visits them
+    * because they are not part of the per-region `monumentDb`. Mirrors
+    * `ReporterRegistry.fillSpecialNominationLists`.
+    */
+  def updateSpecialNominationLists(
+      stat: ContestStat,
+      monumentUpdater: MonumentUpdater
+  ): Unit = {
+    val nominations = SpecialNomination.nominations.filter(_.listTemplate.nonEmpty)
+    val monumentsMap = SpecialNomination.getMonumentsMap(nominations, stat)
+
+    for {
+      nomination <- nominations
+      listTemplate <- nomination.listTemplate
+      monuments = monumentsMap.getOrElse(nomination, Nil)
+      if monuments.nonEmpty
+    } {
+      val nominationContest = stat.contest.copy(
+        uploadConfigs = stat.contest.uploadConfigs match {
+          case head +: tail => head.copy(listTemplate = listTemplate) +: tail
+          case empty        => empty
+        }
+      )
+      updateLists(
+        new MonumentDB(nominationContest, monuments.toSeq),
+        monumentUpdater
+      )
+    }
   }
 }
 

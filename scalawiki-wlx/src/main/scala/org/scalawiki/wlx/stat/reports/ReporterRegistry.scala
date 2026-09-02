@@ -5,7 +5,15 @@ import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.dto.SpecialNomination
 import org.scalawiki.wlx.stat.rating.Rater
 import org.scalawiki.wlx.stat.{ContestStat, StatConfig, Stats}
-import org.scalawiki.wlx.{ImageCsvExporter, ImageDB, ImageFiller, MonumentDB, RatingListFiller}
+import org.scalawiki.wlx.{
+  ImageCsvExporter,
+  ImageDB,
+  ImageFiller,
+  ImageFillerUpdater,
+  ListUpdater,
+  MonumentDB,
+  RatingListFiller
+}
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
@@ -94,7 +102,7 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
     val imageDb = totalImageDb
     if (cfg.fillLists) {
       ImageFiller.fillLists(monumentDb.get, imageDb)
-      fillSpecialNominationLists(monumentDb.get, imageDb)
+      fillSpecialNominationLists(imageDb)
     }
 
     if (cfg.fillListsRating) {
@@ -150,25 +158,11 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
     * lists that `monumentDb` is built from, so `ImageFiller.fillLists` never visits
     * them. Fill each nomination's own list pages too, reusing the same image data.
     */
-  private def fillSpecialNominationLists(mDb: MonumentDB, imageDb: ImageDB): Unit = {
-    val nominations = SpecialNomination.nominations.filter(_.listTemplate.nonEmpty)
-    val monumentsMap = SpecialNomination.getMonumentsMap(nominations, stat)
-
-    for {
-      nomination <- nominations
-      listTemplate <- nomination.listTemplate
-      monuments = monumentsMap.getOrElse(nomination, Nil)
-      if monuments.nonEmpty
-    } {
-      val nominationContest = mDb.contest.copy(
-        uploadConfigs = mDb.contest.uploadConfigs match {
-          case head +: tail => head.copy(listTemplate = listTemplate) +: tail
-          case empty        => empty
-        }
-      )
-      ImageFiller.fillLists(new MonumentDB(nominationContest, monuments.toSeq), imageDb)
-    }
-  }
+  private def fillSpecialNominationLists(imageDb: ImageDB): Unit =
+    ListUpdater.updateSpecialNominationLists(
+      stat,
+      new ImageFillerUpdater(imageDb.copy(ignoreRecentlyTaken = true))
+    )
 
 }
 
