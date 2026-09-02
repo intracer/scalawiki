@@ -4,6 +4,8 @@ import com.typesafe.config.Config
 import org.scalawiki.wlx.ImageDB
 import org.scalawiki.wlx.stat.ContestStat
 
+import java.time.LocalDate
+import scala.collection.JavaConverters._
 import scala.util.Try
 
 trait Rater {
@@ -69,10 +71,19 @@ object Rater {
 
   def fromConfig(stat: ContestStat, config: Config): Rater = {
     val rateCfg = config.getConfig(s"rates.${stat.contest.year}")
+
+    val regionRates: Map[String, Double] =
+      if (rateCfg.hasPath("war-region-base-rate")) {
+        val warCfg = rateCfg.getConfig("war-region-base-rate")
+        val rate = warCfg.getDouble("rate")
+        warCfg.getStringList("regions").asScala.map(_ -> rate).toMap
+      } else Map.empty
+
     val raters = Seq(
       NumberOfMonuments(
         stat,
-        Try(rateCfg.getDouble("base-rate")).toOption.getOrElse(1)
+        Try(rateCfg.getDouble("base-rate")).toOption.getOrElse(1),
+        regionRates
       )
     ) ++
       (if (rateCfg.hasPath("number-of-authors-bonus")) {
@@ -88,6 +99,24 @@ object Rater {
            NumberOfImagesInPlaceBonus(
              stat,
              RateRanges(rateCfg.getConfig("number-of-images-bonus"))
+           )
+         )
+       } else Nil) ++
+      (if (rateCfg.hasPath("number-of-interior-images-bonus")) {
+         Seq(
+           NumberOfInteriorImagesBonus(
+             stat,
+             RateRanges(rateCfg.getConfig("number-of-interior-images-bonus"))
+           )
+         )
+       } else Nil) ++
+      (if (rateCfg.hasPath("old-photos-bonus")) {
+         val oldPhotosCfg = rateCfg.getConfig("old-photos-bonus")
+         Seq(
+           OldPhotosBonus(
+             stat,
+             oldPhotosCfg.getDouble("bonus"),
+             LocalDate.parse(oldPhotosCfg.getString("before-date"))
            )
          )
        } else Nil)

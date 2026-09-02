@@ -19,7 +19,7 @@ class RaterSpec extends Specification {
         case RateSum(
               _,
               List(
-                NumberOfMonuments(_, 1),
+                NumberOfMonuments(_, 1, _),
                 NumberOfAuthorsBonus(_, numberOfAuthorsRates),
                 NumberOfImagesInPlaceBonus(_, numberOfImagesInPlaceRates)
               )
@@ -42,7 +42,7 @@ class RaterSpec extends Specification {
         case RateSum(
               _,
               List(
-                NumberOfMonuments(_, 1),
+                NumberOfMonuments(_, 1, _),
                 NumberOfAuthorsBonus(_, numberOfAuthorsRates),
                 NumberOfImagesInPlaceBonus(_, numberOfImagesInPlaceRates)
               )
@@ -57,6 +57,43 @@ class RaterSpec extends Specification {
       }
     }
 
+    "parse wlm 2026" in {
+      val rater = loadRater(WLM, 2026)
+
+      rater match {
+        case RateSum(
+              _,
+              List(
+                NumberOfMonuments(_, 1, regionRates),
+                NumberOfAuthorsBonus(_, numberOfAuthorsRates),
+                NumberOfImagesInPlaceBonus(_, numberOfImagesInPlaceRates),
+                NumberOfInteriorImagesBonus(_, numberOfInteriorImagesRates),
+                OldPhotosBonus(_, oldPhotosBonus, oldPhotosBeforeDate)
+              )
+            ) =>
+          regionRates === Map(
+            "01" -> 10.0,
+            "14" -> 10.0,
+            "23" -> 10.0,
+            "44" -> 10.0,
+            "65" -> 10.0,
+            "85" -> 10.0
+          )
+          numberOfAuthorsRates === RateRanges(
+            Map((0, 0) -> 12.0, (1, 3) -> 6.0, (4, 6) -> 3.0, (7, 9) -> 1.0)
+          )
+          numberOfImagesInPlaceRates === RateRanges(
+            Map((0, 0) -> 10.0, (1, 3) -> 6.0, (4, 9) -> 3.0, (10, 49) -> 1.0)
+          )
+          numberOfInteriorImagesRates === RateRanges(
+            Map((0, 0) -> 5.0, (1, 5) -> 3.0)
+          )
+          oldPhotosBonus === 5.0
+          oldPhotosBeforeDate === java.time.LocalDate.of(2020, 1, 1)
+        case other => ko(s"unexpected rater $other")
+      }
+    }
+
     "parse wle 2020" in {
       val rater = loadRater(WLE, 2020)
 
@@ -64,7 +101,7 @@ class RaterSpec extends Specification {
         case RateSum(
               _,
               List(
-                NumberOfMonuments(_, 1),
+                NumberOfMonuments(_, 1, _),
                 NumberOfAuthorsBonus(_, numberOfAuthorsRates)
               )
             ) =>
