@@ -10,12 +10,18 @@ import org.sweble.wikitext.engine.config.WikiConfig
 import org.sweble.wikitext.engine.utils.DefaultConfigEnWp
 import org.sweble.wikitext.parser.nodes.WtTemplate
 
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+
 object ListUpdater {
 
   def updateLists(monumentDb: MonumentDB, monumentUpdater: MonumentUpdater): Unit = {
     val task = new ListUpdaterTask(MwBot.ukWiki, monumentDb, monumentUpdater)
     val updater = new PageUpdater(task)
-    updater.update()
+    // block until the whole batch is done: PageUpdater processes pages serially,
+    // and the callers (RatingListFiller, ImageFiller, updateSpecialNominationLists)
+    // expect one list pass to finish before the next starts.
+    Await.result(updater.update(), Duration.Inf)
   }
 
   /** Run `monumentUpdater` over the separate wiki pages that hold special
