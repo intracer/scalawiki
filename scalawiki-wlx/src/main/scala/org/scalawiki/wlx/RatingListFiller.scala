@@ -2,7 +2,7 @@ package org.scalawiki.wlx
 
 import org.scalawiki.wlx.dto.Monument
 import org.scalawiki.wlx.stat.ContestStat
-import org.scalawiki.wlx.stat.rating.Rater
+import org.scalawiki.wlx.stat.rating.{RateSum, Rater}
 
 import scala.util.Try
 
@@ -26,19 +26,37 @@ object RatingListFiller {
       .flatMap(c => Try(c.getString("ratingListParam")).toOption)
       .getOrElse(DefaultParam)
 
-  /** Points a new photo would score, as the wiki string to write, keyed by
-    * monument id; monuments that would score nothing are absent.
+  /** Points an ordinary new photo would score, as the wiki string to write, keyed
+    * by monument id; monuments that would score nothing are absent.
+    *
+    * Raters that only a specific kind of upload can earn (the interior-photo
+    * bonus, п. 7.3.5 — see [[Rater.appliesToRegularPhoto]]) are dropped: the list
+    * figure is a hint for a generic photo, and the interior bonus is both
+    * conditional on an interior shot and meaningless for monuments with no
+    * interior.
     *
     * Computed once, up front and single-threaded: `Rater` implementations keep
     * non-synchronized mutable state (e.g. `NumberOfImagesInPlaceBonus`), and
     * [[ListUpdater]] runs page updates — and therefore the updater callbacks that
     * would otherwise call `Rater.rate` — concurrently.
     */
-  def ratings(monumentDb: MonumentDB, rater: Rater): Map[String, String] =
-    monumentDb.monuments.iterator.flatMap { m =>
-      val rate = rater.rate(m.id, "")
-      if (rate > 0) Some(m.id -> RatingUpdater.format(rate)) else None
-    }.toMap
+  def ratings(monumentDb: MonumentDB, rater: Rater): Map[String, String] = {
+    val regularPhotoRater: Option[Rater] = (rater match {
+      case sum: RateSum => sum.raters
+      case single       => Seq(single)
+    }).filter(_.appliesToRegularPhoto) match {
+      case Seq()       => None
+      case Seq(single) => Some(single)
+      case many        => Some(RateSum(rater.stat, many))
+    }
+
+    regularPhotoRater.fold(Map.empty[String, String]) { r =>
+      monumentDb.monuments.iterator.flatMap { m =>
+        val rate = r.rate(m.id, "")
+        if (rate > 0) Some(m.id -> RatingUpdater.format(rate)) else None
+      }.toMap
+    }
+  }
 
   def fillLists(stat: ContestStat): Unit = {
     val monumentDb = stat.monumentDb.getOrElse {

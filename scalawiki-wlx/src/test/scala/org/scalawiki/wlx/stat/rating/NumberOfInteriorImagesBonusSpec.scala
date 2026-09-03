@@ -66,6 +66,10 @@ class NumberOfInteriorImagesBonusSpec extends Specification {
     "give 0 when 6 or more interior photos exist" in {
       rater.rate(manyInterior, "any") === 0.0
     }
+
+    "not apply to a regular photo (only interior shots earn it, п. 7.3.5)" in {
+      rater.appliesToRegularPhoto must beFalse
+    }
   }
 
   "NumberOfInteriorImagesBonus.isInterior" should {

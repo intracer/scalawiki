@@ -4,7 +4,7 @@ import com.typesafe.config.ConfigFactory
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.{Contest, ContestType, Country, Monument}
 import org.scalawiki.wlx.stat.ContestStat
-import org.scalawiki.wlx.{ImageDB, MonumentDB}
+import org.scalawiki.wlx.{ImageDB, MonumentDB, RatingListFiller}
 import org.specs2.mutable.Specification
 
 import java.time.ZonedDateTime
@@ -88,6 +88,15 @@ class Rater2026Spec extends Specification {
 
     "rate a monument with only pre-2020 photos by 2 authors: 1 + 6 + 0 + 5 + 5" in {
       rater.rate(oldPhotosMon, "participant") === 17.0
+    }
+
+    "leave the interior bonus (п. 7.3.5) out of the list rating hint" in {
+      // base + authors + place + old-photos only, no interior +5/+3
+      RatingListFiller.ratings(monumentDb.get, rater) === Map(
+        freshNonWar -> "13", // 1 + 12 + 0 + 0
+        freshWar -> "22", //    10 + 12 + 0 + 0
+        oldPhotosMon -> "12" //   1 +  6 + 0 + 5
+      )
     }
 
     "explain the score breakdown" in {

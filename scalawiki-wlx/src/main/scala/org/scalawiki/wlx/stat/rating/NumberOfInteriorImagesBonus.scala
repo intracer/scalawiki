@@ -12,6 +12,13 @@ import org.scalawiki.wlx.stat.ContestStat
   * The bonus is added once per (monument, author) pair — as with the other
   * per-monument bonuses — regardless of how many photos the author uploaded.
   *
+  * Per п. 7.3.5 this bonus is earned only by an *interior* photo, so it is not
+  * part of the generic per-monument rating hint written to the lists (see
+  * [[Rater.appliesToRegularPhoto]] / [[org.scalawiki.wlx.RatingListFiller]]) —
+  * that hint stands for an ordinary upload, and many monuments (crosses, graves,
+  * kurhany, archaeological sites, free-standing monuments, …) have no interior at
+  * all.
+  *
   * "Already known" here means prior-year contest uploads that carry an interior
   * marker (see [[NumberOfInteriorImagesBonus.isInterior]]); interior photos on
   * Commons or Wikipedia that were never entered into the contest are not counted
@@ -35,6 +42,8 @@ case class NumberOfInteriorImagesBonus(
   }
 
   override def label: String = "interior <br> bonus"
+
+  override def appliesToRegularPhoto: Boolean = false
 }
 
 object NumberOfInteriorImagesBonus {
