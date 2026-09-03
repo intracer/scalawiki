@@ -68,6 +68,11 @@ trait MwBot extends ActionBot {
 
   def token: String
 
+  /** Drop any cached CSRF/edit token so the next [[token]] read fetches a fresh
+    * one. Call this when the wiki rejects an edit with `badtoken` (the token
+    * expired mid-run). No-op for bots that do not cache a token. */
+  def invalidateToken(): Unit = ()
+
   def await[T](future: Future[T]): T
 
   def system: ActorSystem
@@ -168,7 +173,17 @@ class MwBotImpl(
     }
   }
 
-  override lazy val token: String = await(getToken)
+  @volatile private var tokenCache: Option[String] = None
+
+  override def token: String = synchronized {
+    tokenCache.getOrElse {
+      val fetched = await(getToken)
+      tokenCache = Some(fetched)
+      fetched
+    }
+  }
+
+  override def invalidateToken(): Unit = synchronized { tokenCache = None }
 
   override lazy val mediaWikiVersion: MediaWikiVersion = await(
     getMediaWikiVersion

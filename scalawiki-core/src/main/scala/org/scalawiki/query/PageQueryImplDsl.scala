@@ -9,7 +9,7 @@ import org.scalawiki.dto.cmd.query._
 import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
-import org.scalawiki.dto.{Namespace, Page}
+import org.scalawiki.dto.{MwException, Namespace, Page}
 import org.scalawiki.json.MwReads._
 import retry.Success
 
@@ -143,36 +143,45 @@ class PageQueryImplDsl(
       titles => Title(titles.head)
     )
 
-    val action = Action(
-      Edit(
-        page,
-        Text(text),
-        Token(token.fold(bot.token)(identity))
-      )
-    )
+    val action = Action(Edit(page, Text(text)))
 
-    val params = action.pairs.toMap ++
+    val baseParams = action.pairs.toMap ++
       Map(
         "action" -> "edit",
         "format" -> "json",
         "utf8" -> "",
         "bot" -> "x",
-        "assert" -> "user",
         "assert" -> "bot"
       ) ++ section
         .map(s => "section" -> s)
         .toSeq ++ summary.map(s => "summary" -> s).toSeq
 
     import scala.concurrent.ExecutionContext.Implicits.global
+
+    // The CSRF token is resolved per attempt, not captured once: over a long
+    // batch run MediaWiki's edit token expires, and every later edit then fails
+    // with `badtoken`. On that error drop the bot's cached token so the retry
+    // (and every page after it) fetches a fresh one.
     def performEdit(): Future[String] = {
+      val editToken = token.getOrElse(bot.token)
+      val params = baseParams + ("token" -> editToken)
       bot.log.info(s"Request ${bot.host} edit page: $page, summary: $summary")
-      if (multi)
-        bot.postMultiPart(editResponseReads, params)
-      else
-        bot.post(editResponseReads, params)
-    }.map { s =>
-      bot.log.info(s"Response ${bot.host} edit page: $page: $s")
-      s
+      val response =
+        if (multi) bot.postMultiPart(editResponseReads, params)
+        else bot.post(editResponseReads, params)
+      response
+        .map { s =>
+          bot.log.info(s"Response ${bot.host} edit page: $page: $s")
+          s
+        }
+        .recoverWith {
+          case e: MwException if e.code == "badtoken" && token.isEmpty =>
+            bot.log.warning(
+              s"${bot.host} edit page: $page: stale CSRF token, refreshing"
+            )
+            bot.invalidateToken()
+            Future.failed(e)
+        }
     }
 
     implicit def stringSuccess: Success[String] = Success(_ == "Success")
