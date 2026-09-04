@@ -164,16 +164,23 @@ class Statistics(
   // (and `<campaign>-all-images.csv` for the all-time DB). Later runs read those
   // CSVs directly and skip the sequential JSON parse of the ChronicleMap.
   //
-  // - `--images-from-csv <dir>` keeps its strict semantics (files must exist).
+  // - `--images-from-csv <dir>` keeps its strict semantics (files must exist);
+  //   `--csv-cache-refresh` does not apply there (those files are user-managed
+  //   via `--export-images-csv`).
   // - otherwise the cache lives under `csv-cache/` and is filled on demand.
-  // - past contest years are frozen once written; the current contest year is
-  //   incrementally synced (diff the category id list, fetch only new files).
+  // - past contest years are frozen once written. The current contest year is
+  //   incrementally synced (diff the category id list, fetch only new files) and
+  //   its CSV is written to the same `<campaign>-<year>-images.csv` path that
+  //   next year's run will read as the frozen past-year copy -- so the last
+  //   mid-contest sync of year N becomes the permanent record of year N. Delete
+  //   that CSV to force a full refetch (removing only the `.cache` does nothing,
+  //   the CSV short-circuits before the ChronicleMap is consulted).
   // - `--csv-cache-refresh` ignores existing CSVs and overwrites them.
 
   private val csvStrictDir: Option[String] = config.imagesFromCsv
   private val csvAutoCache: Boolean = config.csvCache && csvStrictDir.isEmpty
   private val csvDir: String = config.effectiveCsvCacheDir
-  private val csvRefresh: Boolean = config.csvCacheRefresh
+  private val csvRefresh: Boolean = config.csvCacheRefresh && csvAutoCache
 
   private lazy val liveImageQuery: ImageQuery = ImageQuery.create
 

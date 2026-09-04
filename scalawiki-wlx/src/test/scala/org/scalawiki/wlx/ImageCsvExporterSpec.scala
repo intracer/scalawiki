@@ -148,6 +148,40 @@ class ImageCsvExporterSpec extends Specification {
       col("page_url")    must_== ""
     }
 
+    "create the output directory when it does not exist yet" in {
+      val base = Files.createTempDirectory("image-csv-mkdir")
+      val dir  = base.resolve("nested").resolve("csv-cache")
+      val imageDb = new ImageDB(prevContest, Seq(fullImage), None)
+      ImageCsvExporter.export(imageDb, prevContest.campaign, isCurrent = false, dir.toString)
+      Files.exists(java.nio.file.Paths.get(
+        ImageCsvExporter.filename(prevContest.campaign, prevContest.year, isCurrent = false, dir.toString)
+      )) must beTrue
+    }
+
+    "not race when several years export into the same fresh directory concurrently" in {
+      import scala.concurrent.ExecutionContext.Implicits.global
+      val dir = Files.createTempDirectory("image-csv-race").resolve("csv-cache")
+      val years = 2012 to 2024
+      val futures = years.map { y =>
+        scala.concurrent.Future {
+          val c = Contest.WLMUkraine(y)
+          ImageCsvExporter.export(
+            new ImageDB(c, Seq(fullImage.copy(pageId = Some(y.toLong))), None),
+            c.campaign, isCurrent = false, dir.toString
+          )
+        }
+      }
+      scala.concurrent.Await.result(
+        scala.concurrent.Future.sequence(futures), scala.concurrent.duration.Duration("10s")
+      )
+      years.foreach { y =>
+        Files.exists(java.nio.file.Paths.get(
+          ImageCsvExporter.filename(Contest.WLMUkraine(y).campaign, y, isCurrent = false, dir.toString)
+        )) must beTrue
+      }
+      ok
+    }
+
     "write no file when images is empty" in {
       val dir = Files.createTempDirectory("image-csv-empty")
       val imageDb = new ImageDB(prevContest, Seq.empty, None)

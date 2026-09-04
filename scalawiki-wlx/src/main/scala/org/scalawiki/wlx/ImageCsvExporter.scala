@@ -74,9 +74,9 @@ object ImageCsvExporter {
 
     val file = new File(path)
     Option(file.getParentFile).foreach { dir =>
-      if (!dir.exists() && !dir.mkdirs()) {
-        throw new java.io.IOException(s"Failed to create output directory: ${dir.getAbsolutePath}")
-      }
+      // idempotent: no exception when the directory already exists, which lets
+      // several per-year exports create the cache dir concurrently without racing
+      java.nio.file.Files.createDirectories(dir.toPath)
     }
     val writer = CSVWriter.open(file, "UTF-8")
     try {

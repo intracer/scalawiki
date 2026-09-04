@@ -73,3 +73,6 @@ hs_err_pid*
 .vagrant
 .temp
 native
+
+# WLX stats image CSV cache (see Statistics.scala)
+/csv-cache/

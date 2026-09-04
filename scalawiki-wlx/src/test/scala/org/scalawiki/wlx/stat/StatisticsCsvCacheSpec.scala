@@ -48,7 +48,8 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
       imageQuery: ImageQuery,
       startYear: Option[Int] = None,
       csvCache: Boolean = true,
-      csvCacheRefresh: Boolean = false
+      csvCacheRefresh: Boolean = false,
+      imagesFromCsv: Option[String] = None
   ): Statistics = {
     val monumentQuery = mock[MonumentQuery]
     monumentQuery.byMonumentTemplate(date = None) returns monuments
@@ -57,7 +58,8 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
       campaign = campaign,
       csvCacheDir = dir.toString,
       csvCache = csvCache,
-      csvCacheRefresh = csvCacheRefresh
+      csvCacheRefresh = csvCacheRefresh,
+      imagesFromCsv = imagesFromCsv
     )
     new Statistics(contest, startYear, monumentQuery, Some(imageQuery), None, mock[MwBot], cfg)
   }
@@ -164,6 +166,24 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
       there was no(q).imageIdsFromCategory(contest)
       // cache file left untouched
       ImageCsvImporter.imagesFromCsv(yearCsv(dir, 2016).toString).map(_.title) must_== Seq("File:Cached.jpg")
+    }
+  }
+
+  "--images-from-csv with --csv-cache-refresh" should {
+    "still read the strict CSVs (refresh applies only to the automatic cache)" in {
+      val dir = cacheDir()
+      ImageCsvExporter.export(new ImageDB(prevContest, Seq(img("File:Strict.jpg", 1L)), None), campaign,
+        isCurrent = false, dir.toString)
+
+      val q = newImageQuery()
+      q.imagesFromCategory(prevContest) returns Future.failed(new RuntimeException("should not fetch"))
+      q.imagesFromCategory(contest) returns Future.successful(Nil)
+
+      val data = stats(dir, q, startYear = Some(2015), csvCacheRefresh = true,
+        imagesFromCsv = Some(dir.toString)).gatherData(total = false).await
+
+      data.imageDbByYear(2015).map(_.images.map(_.title).toSeq) must beSome(Seq("File:Strict.jpg"))
+      there was no(q).imagesFromCategory(prevContest)
     }
   }
 }
