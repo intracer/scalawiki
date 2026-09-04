@@ -30,7 +30,8 @@ class PageQueryImplDsl(
   override def revisions(
       namespaces: Set[Int],
       props: Set[String],
-      continueParam: Option[(String, String)]
+      continueParam: Option[(String, String)],
+      limit: Option[String]
   ): Future[Iterable[Page]] = {
 
     import org.scalawiki.dto.cmd.query.prop.rvprop._
@@ -40,20 +41,24 @@ class PageQueryImplDsl(
       titles => TitlesParam(titles.toSeq)
     )
 
+    // `limit == None` means "current revision only": omit `rvlimit` (MediaWiki
+    // then returns just the latest revision and no `rvcontinue`) and cap
+    // DslQuery at the number of pages asked for, so it cannot page backwards
+    // through the whole history with content even if a continuation appears.
+    val revisionParams: Seq[RvParam] =
+      RvProp(RvPropArgs.byNames(props.toSeq): _*) +: limit.map(RvLimit(_)).toSeq
+
     val action = Action(
       Query(
         pages,
-        Prop(
-          Info(),
-          Revisions(
-            RvProp(RvPropArgs.byNames(props.toSeq): _*),
-            RvLimit("max")
-          )
-        )
+        Prop(Info(), Revisions(revisionParams: _*))
       )
     )
 
-    bot.run(action, context)
+    val runLimit =
+      if (limit.isEmpty) Some(query.fold(_.size, _.size).toLong) else None
+
+    bot.run(action, context, runLimit)
   }
 
   override def revisionsByGenerator(

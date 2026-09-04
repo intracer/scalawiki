@@ -78,8 +78,8 @@ class PageUpdater(task: PageUpdateTask) extends WithBot {
   /** Read the page, apply [[PageUpdateTask.updatePage]], and save the result
     * against the exact revision that was read.
     *
-    * The text is fetched via `prop=revisions` (not `action=raw`) so we also get
-    * the base revision's id and timestamp. Those go back to `action=edit` as
+    * The current revision is fetched via `prop=revisions` (not `action=raw`) so
+    * we also get its id and timestamp. Those go back to `action=edit` as
     * `baserevid` / `basetimestamp` (+ `starttimestamp`): if another user or bot
     * edited the page between our read and our write, MediaWiki rejects the save
     * with an `editconflict` / `pagedeleted` error instead of silently
@@ -93,33 +93,50 @@ class PageUpdater(task: PageUpdateTask) extends WithBot {
     val startTimestamp = now()
     bot
       .page(title)
-      .revisions(Set.empty[Int], Set("ids", "content", "timestamp"))
+      // `limit = None`: fetch only the current revision, not the whole history
+      // with content.
+      .revisions(
+        Set.empty[Int],
+        Set("ids", "content", "timestamp"),
+        limit = None
+      )
       .flatMap { pages =>
         // rvdir defaults to "older", so the first revision is the current one.
         val revision = pages.headOption.flatMap(_.revisions.headOption)
-        val pageText = revision.flatMap(_.content).getOrElse("")
 
-        val (newText: String, comment: String) =
-          task.updatePage(title, pageText)
-
-        bot
-          .page(title)
-          .edit(
-            newText,
-            Some(comment),
-            basetimestamp = revision.flatMap(_.timestamp),
-            baseRevId = revision.flatMap(_.revId),
-            startTimestamp = Some(startTimestamp)
-          )
-          .recoverWith {
-            case e: MwException
-                if Edit.conflictCodes.contains(e.code) && retriesLeft > 0 =>
-              println(
-                s"$title: edit conflict (${e.code}), re-reading and retrying " +
-                  s"($retriesLeft attempt(s) left)"
+        revision.flatMap(_.content) match {
+          case None =>
+            // No current revision: the page is missing or was deleted. Don't
+            // create it from empty text — surface it as an error for this page.
+            Future.failed(
+              new NoSuchElementException(
+                s"$title: no current revision (page missing or deleted), skipping"
               )
-              updatePage(title, retriesLeft - 1)
-          }
+            )
+
+          case Some(pageText) =>
+            val (newText: String, comment: String) =
+              task.updatePage(title, pageText)
+
+            bot
+              .page(title)
+              .edit(
+                newText,
+                Some(comment),
+                basetimestamp = revision.flatMap(_.timestamp),
+                baseRevId = revision.flatMap(_.revId),
+                startTimestamp = Some(startTimestamp)
+              )
+              .recoverWith {
+                case e: MwException
+                    if Edit.conflictCodes.contains(e.code) && retriesLeft > 0 =>
+                  println(
+                    s"$title: edit conflict (${e.code}), re-reading and retrying " +
+                      s"($retriesLeft attempt(s) left)"
+                  )
+                  updatePage(title, retriesLeft - 1)
+              }
+        }
       }
   }
 

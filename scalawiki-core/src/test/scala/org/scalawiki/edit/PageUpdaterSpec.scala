@@ -118,7 +118,6 @@ class PageUpdaterSpec extends Specification with MockBotSpec {
             "titles" -> title,
             "prop" -> "info|revisions",
             "rvprop" -> "ids|content|timestamp",
-            "rvlimit" -> "max",
             "continue" -> ""
           ),
           s"""{"query":{"pages":{"1":{"pageid":1,"ns":0,"title":"$title",
@@ -178,7 +177,6 @@ class PageUpdaterSpec extends Specification with MockBotSpec {
             "titles" -> "P1",
             "prop" -> "info|revisions",
             "rvprop" -> "ids|content|timestamp",
-            "rvlimit" -> "max",
             "continue" -> ""
           ),
           s"""{"query":{"pages":{"1":{"pageid":1,"ns":0,"title":"P1",
@@ -223,6 +221,33 @@ class PageUpdaterSpec extends Specification with MockBotSpec {
 
       val results = Await.result(updater.update(), 30.seconds)
       results.count(_._2.isSuccess) === 1
+    }
+
+    "fail the page (not create it) when it has no current revision" in {
+      val missing =
+        """{"query":{"pages":{"-1":{"ns":0,"title":"P1","missing":""}}}}"""
+
+      val mockBot = getBot(
+        HttpStub(
+          Map(
+            "action" -> "query",
+            "titles" -> "P1",
+            "prop" -> "info|revisions",
+            "rvprop" -> "ids|content|timestamp",
+            "continue" -> ""
+          ),
+          missing
+        )
+      )
+
+      val updater = new PageUpdater(new FakeTask(Seq("P1"))) {
+        override implicit def bot: MwBot = mockBot
+        override protected def now() = fixedStart
+      }
+
+      val results = Await.result(updater.update(), 30.seconds)
+      results.map(_._1) === Seq("P1")
+      results.head._2.isFailure === true
     }
   }
 }

@@ -18,10 +18,16 @@ trait SinglePageQuery {
       continueParam: Option[(String, String)] = None
   ): Future[Iterable[Page]]
 
+  /** @param limit
+    *   value for the `rvlimit` API parameter, or `None` to omit it entirely.
+    *   `Some("max")` (the default) walks the whole revision history; `None`
+    *   asks MediaWiki for the current revision only.
+    */
   def revisions(
       namespaces: Set[Int] = Set.empty,
       props: Set[String] = Set.empty,
-      continueParam: Option[(String, String)] = None
+      continueParam: Option[(String, String)] = None,
+      limit: Option[String] = Some("max")
   ): Future[Iterable[Page]]
 
   def revisionsByGenerator(

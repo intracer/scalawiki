@@ -188,7 +188,8 @@ class MonumentQueryApi(
         .page(page)
         .revisions(
           Set.empty,
-          Set("content", "timestamp", "user", "userid", "comment")
+          Set("content", "timestamp", "user", "userid", "comment"),
+          limit = None // only the current revision is used below
         )
         .map { revs =>
           revs.headOption
@@ -231,6 +232,9 @@ class MonumentQueryApi(
   def pageRevisions(id: Long, date: ZonedDateTime): Future[Option[Page]] = {
     import org.scalawiki.dto.cmd.query.prop.rvprop._
 
+    // rvstart + default rvdir=older enumerates backwards from `date`; only the
+    // first hit (the revision current as of `date`) is used, so ask for exactly
+    // one and cap DslQuery so it can't page through the rest of the history.
     val action = Action(
       Query(
         PageIdsParam(Seq(id)),
@@ -238,14 +242,14 @@ class MonumentQueryApi(
           Info(),
           Revisions(
             RvProp(Content, Ids, Size, User, UserId, Timestamp),
-            RvLimit("max"),
+            RvLimit("1"),
             RvStart(date)
           )
         )
       )
     )
 
-    bot.run(action).map { pages =>
+    bot.run(action, limit = Some(1L)).map { pages =>
       pages.headOption
     }
   }
