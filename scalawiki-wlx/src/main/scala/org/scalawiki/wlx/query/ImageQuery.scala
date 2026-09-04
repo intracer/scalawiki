@@ -2,12 +2,16 @@ package org.scalawiki.wlx.query
 
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list._
+import org.scalawiki.dto.cmd.query.prop.{Prop, Revisions}
+import org.scalawiki.dto.cmd.query.prop.rvprop.{RvProp, Ids => RvIds, Timestamp => RvTimestamp}
 import org.scalawiki.dto.cmd.query.{Generator, Query}
 import org.scalawiki.dto.{Image, Namespace}
 import org.scalawiki.query.QueryLibrary
 import org.scalawiki.wlx.dto.{Contest, SpecialNomination}
+import org.scalawiki.wlx.query.ImageQuery.PageRevInfo
 import org.scalawiki.{ActionBot, MwBot}
 
+import java.time.ZonedDateTime
 import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -20,12 +24,16 @@ trait ImageQuery {
 
   def imagesWithTemplateByIds(contest: Contest, pageIds: Set[Long]): Future[Iterable[Image]]
 
-  def imageIdsWithTemplate(contest: Contest): Future[Iterable[Long]]
-
-  /** Page ids of all files in the contest images category, without imageinfo.
-    * Cheap (ids + titles only) — used to diff against a CSV cache.
+  /** Page id + latest revision (id, timestamp) of every file carrying the
+    * contest file template. Cheap (no imageinfo, no content) — used to diff a
+    * CSV cache: new / changed / deleted files.
     */
-  def imageIdsFromCategory(contest: Contest): Future[Iterable[Long]]
+  def imageIdsWithTemplate(contest: Contest): Future[Seq[PageRevInfo]]
+
+  /** Page id + latest revision (id, timestamp) of every file in the contest
+    * images category, without imageinfo. Cheap — used to diff against a CSV cache.
+    */
+  def imageIdsFromCategory(contest: Contest): Future[Seq[PageRevInfo]]
 
 }
 
@@ -53,7 +61,7 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
   override def imagesFromCategory(contest: Contest): Future[Iterable[Image]] =
     imagesByGenerator(contest, categoryGenerator(contest))
 
-  override def imageIdsFromCategory(contest: Contest): Future[Iterable[Long]] =
+  override def imageIdsFromCategory(contest: Contest): Future[Seq[PageRevInfo]] =
     imageIdsByGenerator(categoryGenerator(contest))
 
   override def imagesWithTemplate(contest: Contest): Future[Iterable[Image]] =
@@ -63,7 +71,7 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
       }
       .getOrElse(Future.successful(Nil))
 
-  override def imageIdsWithTemplate(contest: Contest): Future[Iterable[Long]] =
+  override def imageIdsWithTemplate(contest: Contest): Future[Seq[PageRevInfo]] =
     contest.fileTemplate
       .map { template =>
         imageIdsByGenerator(generatorWithTemplate(template, Set(Namespace.FILE)))
@@ -100,13 +108,33 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
       )
   }
 
-  private def imageIdsByGenerator(generator: Generator): Future[Iterable[Long]] = {
-    bot.run(Action(Query(generator))).map(_.flatMap(_.id))
+  private def imageIdsByGenerator(generator: Generator): Future[Seq[PageRevInfo]] = {
+    val action = Action(
+      Query(
+        generator,
+        Prop(Revisions(RvProp(RvIds, RvTimestamp)))
+      )
+    )
+    bot.run(action).map { pages =>
+      pages.flatMap { page =>
+        for {
+          pageId <- page.id
+          rev <- page.revisions.headOption
+          revId <- rev.revId
+          ts <- rev.timestamp
+        } yield PageRevInfo(pageId, revId, ts)
+      }.toIndexedSeq
+    }
   }
 
 }
 
 object ImageQuery {
+
+  /** Page id + its latest revision (id and timestamp). The cheap change token
+    * used to diff a CSV image cache against the wiki.
+    */
+  case class PageRevInfo(pageId: Long, revId: Long, timestamp: ZonedDateTime)
 
   def create(implicit bot: ActionBot = MwBot.fromHost(MwBot.commons)): ImageQuery =
     new ImageQueryApi(bot)

@@ -12,7 +12,8 @@ object ImageCsvExporter {
   val columns: Seq[String] = Seq(
     "title", "author", "upload_date", "monument_id", "page_id",
     "width", "height", "size_bytes", "mime", "camera", "exif_date",
-    "categories", "special_nominations", "url", "page_url"
+    "categories", "special_nominations", "url", "page_url",
+    "last_revid", "last_revision_ts"
   )
 
   def imageToRow(image: Image): Map[String, String] = Map(
@@ -30,7 +31,9 @@ object ImageCsvExporter {
     "categories"          -> image.categories.mkString(";"),
     "special_nominations" -> image.specialNominations.mkString(";"),
     "url"                 -> image.url.getOrElse(""),
-    "page_url"            -> image.pageUrl.getOrElse("")
+    "page_url"            -> image.pageUrl.getOrElse(""),
+    "last_revid"          -> image.revId.map(_.toString).getOrElse(""),
+    "last_revision_ts"    -> image.revTs.map(_.toString).getOrElse("")
   )
 
   def filename(

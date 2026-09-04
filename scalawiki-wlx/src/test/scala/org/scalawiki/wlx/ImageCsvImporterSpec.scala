@@ -56,6 +56,32 @@ class ImageCsvImporterSpec extends Specification {
       imported must_== Seq(minimalImage)
     }
 
+    "round-trip the last revision id and timestamp" in {
+      val withRev = fullImage.copy(
+        revId = Some(987654321L),
+        revTs = Some(ZonedDateTime.parse("2024-01-02T03:04:05Z"))
+      )
+      val imported = roundTrip(Seq(withRev))
+      imported must_== Seq(withRev)
+      imported.head.revId must beSome(987654321L)
+      imported.head.revTs must beSome(ZonedDateTime.parse("2024-01-02T03:04:05Z"))
+    }
+
+    "leave revId / revTs empty for a CSV without those columns" in {
+      // a header row from before the columns existed
+      val dir = Files.createTempDirectory("image-csv-legacy")
+      val path = dir.resolve("legacy.csv").toString
+      val w = new java.io.PrintWriter(path)
+      try {
+        w.println("title,page_id,monument_id")
+        w.println("File:Legacy.jpg,42,14-101-0001")
+      } finally w.close()
+      val imported = ImageCsvImporter.imagesFromCsv(path)
+      imported.map(_.title) must_== Seq("File:Legacy.jpg")
+      imported.head.revId must beNone
+      imported.head.revTs must beNone
+    }
+
     "round-trip metadata with only camera present" in {
       val cameraOnly = fullImage.copy(metadata = Some(ImageMetadata(Map("Model" -> "Nikon D850"))))
       val imported = roundTrip(Seq(cameraOnly))

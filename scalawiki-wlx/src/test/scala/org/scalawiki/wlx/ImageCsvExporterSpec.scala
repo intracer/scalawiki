@@ -79,13 +79,14 @@ class ImageCsvExporterSpec extends Specification {
 
   "ImageCsvExporter.export" should {
 
-    "write all 15 expected header columns in the correct order" in {
+    "write all 17 expected header columns in the correct order" in {
       val content = exportAndRead(Seq(fullImage), prevContest, isCurrent = false)
       val header = parseCsv(content).head
       header must_== List(
         "title", "author", "upload_date", "monument_id", "page_id",
         "width", "height", "size_bytes", "mime", "camera", "exif_date",
-        "categories", "special_nominations", "url", "page_url"
+        "categories", "special_nominations", "url", "page_url",
+        "last_revid", "last_revision_ts"
       )
     }
 

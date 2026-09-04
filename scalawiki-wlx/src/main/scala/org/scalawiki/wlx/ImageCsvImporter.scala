@@ -52,7 +52,9 @@ object ImageCsvImporter {
       metadata = metadata,
       categories = splitSet(row.getOrElse("categories", "")),
       specialNominations = splitSet(row.getOrElse("special_nominations", "")),
-      mime = optStr(row.getOrElse("mime", ""))
+      mime = optStr(row.getOrElse("mime", "")),
+      revId = optLong(row.getOrElse("last_revid", "")),
+      revTs = optStr(row.getOrElse("last_revision_ts", "")).map(ZonedDateTime.parse)
     )
   }
 

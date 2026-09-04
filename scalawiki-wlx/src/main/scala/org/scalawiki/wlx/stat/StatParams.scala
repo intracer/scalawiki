@@ -38,7 +38,8 @@ case class StatConfig(
     imagesFromCsv: Option[String] = None,
     csvCache: Boolean = true,
     csvCacheDir: String = "csv-cache",
-    csvCacheRefresh: Boolean = false
+    csvCacheRefresh: Boolean = false,
+    csvCacheResync: Boolean = false
 ) {
 
   /** Directory holding the automatic image CSV cache. An explicit
@@ -140,6 +141,8 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
     opt[String](name = "csv-cache-dir", descr = "Directory for the automatic image CSV cache (default: csv-cache).")
   val csvCacheRefresh =
     opt[Boolean](name = "csv-cache-refresh", descr = "Ignore existing image CSV caches this run: refetch from the wiki and overwrite them.")
+  val csvCacheResync =
+    opt[Boolean](name = "csv-cache-resync", descr = "Re-check cached images (past years + all-images) against the wiki via a cheap id+revision sweep: refetch only rows whose file page changed since caching, drop deleted/de-categorised ones. The current year's cache always does this.")
   verify()
 
 }
@@ -188,7 +191,8 @@ object StatParams {
       imagesFromCsv = conf.imagesFromCsv.toOption,
       csvCache = !conf.noCsvCache.getOrElse(false),
       csvCacheDir = conf.csvCacheDir.getOrElse("csv-cache"),
-      csvCacheRefresh = conf.csvCacheRefresh.getOrElse(false)
+      csvCacheRefresh = conf.csvCacheRefresh.getOrElse(false),
+      csvCacheResync = conf.csvCacheResync.getOrElse(false)
     )
   }
 }

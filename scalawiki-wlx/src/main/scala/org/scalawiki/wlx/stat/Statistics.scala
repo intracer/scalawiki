@@ -4,11 +4,13 @@ import org.scalawiki.MwBot
 import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.{Image, Site}
 import org.scalawiki.wlx.dto.Contest
+import org.scalawiki.wlx.query.ImageQuery.PageRevInfo
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
 import org.scalawiki.wlx.stat.reports.ReporterRegistry
 import org.scalawiki.wlx.{ImageCsvExporter, ImageCsvImporter, ImageDB, MonumentDB}
 
 import java.io.{File, FileNotFoundException}
+import java.time.ZonedDateTime
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -122,24 +124,26 @@ class Statistics(
     val monumentDb = Some(MonumentDB.getMonumentDb(contest, monumentQuery))
 
     val byYearFutures = contests.map(contestImages(monumentDb))
-    val totalFromCsv =
+    val totalCsvPath =
       if (csvRefresh) None else totalCsvReadPath.filter(new File(_).exists())
-    val totalPageIdsFuture =
-      if (total && totalFromCsv.isEmpty) imageIdsByTemplate() else Future.successful(Nil)
+    val totalPageRevsFuture =
+      if (total && totalCsvPath.isEmpty) imageRevsByTemplate() else Future.successful(Nil)
     for {
       byYear <- Future.sequence(byYearFutures)
       currentYearImages = byYear.last
-      totalPageIds <- totalPageIdsFuture
+      totalPageRevs <- totalPageRevsFuture
       totalImages <-
         if (!total) Future.successful(currentYearImages)
         else
-          totalFromCsv match {
+          totalCsvPath match {
+            case Some(path) if csvResync =>
+              resyncTotalCsv(monumentDb, path)
             case Some(path) =>
               Future.successful(
                 new ImageDB(contest, ImageCsvImporter.imagesFromCsv(path), monumentDb, config.minMpx)
               )
             case None =>
-              imagesByTemplate(monumentDb, byYear, totalPageIds).map { db =>
+              imagesByTemplate(monumentDb, byYear, totalPageRevs).map { db =>
                 writeTotalCsvCache(db)
                 db
               }
@@ -168,21 +172,53 @@ class Statistics(
   //   `--csv-cache-refresh` does not apply there (those files are user-managed
   //   via `--export-images-csv`).
   // - otherwise the cache lives under `csv-cache/` and is filled on demand.
-  // - past contest years are frozen once written. The current contest year is
-  //   incrementally synced (diff the category id list, fetch only new files) and
-  //   its CSV is written to the same `<campaign>-<year>-images.csv` path that
-  //   next year's run will read as the frozen past-year copy -- so the last
-  //   mid-contest sync of year N becomes the permanent record of year N. Delete
-  //   that CSV to force a full refetch (removing only the `.cache` does nothing,
-  //   the CSV short-circuits before the ChronicleMap is consulted).
+  // - the current contest year is always incrementally synced against the wiki:
+  //   a cheap id + latest-revision sweep of the category tells us which files are
+  //   new (fetch metadata), which changed since caching (revid differs -> refetch)
+  //   and which are gone (dropped). Its CSV is written to the same
+  //   `<campaign>-<year>-images.csv` path that next year's run reads as the frozen
+  //   past-year copy -- so the last mid-contest sync of year N becomes the
+  //   permanent record of year N.
+  // - past contest years and the all-images CSV are frozen (read verbatim) unless
+  //   `--csv-cache-resync` is given, which runs the same new/changed/deleted sweep
+  //   against them. Rows written before the `last_revid` column existed fall back
+  //   to a per-row timestamp: a change counts only if the live revision post-dates
+  //   the contest's end for that year (`contestEndInstant`).
+  // - delete a CSV to force a full refetch (removing only the `.cache` does
+  //   nothing, the CSV short-circuits before the ChronicleMap is consulted).
   // - `--csv-cache-refresh` ignores existing CSVs and overwrites them.
 
   private val csvStrictDir: Option[String] = config.imagesFromCsv
   private val csvAutoCache: Boolean = config.csvCache && csvStrictDir.isEmpty
   private val csvDir: String = config.effectiveCsvCacheDir
   private val csvRefresh: Boolean = config.csvCacheRefresh && csvAutoCache
+  private val csvResync: Boolean = config.csvCacheResync && csvAutoCache && !csvRefresh
 
   private lazy val liveImageQuery: ImageQuery = ImageQuery.create
+
+  private val knownContestYears: Seq[Int] = contests.map(_.year)
+
+  /** End of the upload window for a contest year: `contest.endDate` ("dd-MM")
+    * applied to `year` when configured, otherwise the end of that calendar year.
+    * Used as the "cache was accurate until" instant for CSV rows written before
+    * the `last_revid` column existed.
+    */
+  private def contestEndInstant(year: Int): ZonedDateTime = {
+    val fromConfig = contest.endDate match {
+      case s if s.matches("""\d{1,2}-\d{1,2}""") =>
+        val Array(d, m) = s.split("-")
+        scala.util
+          .Try(ZonedDateTime.parse(f"$year%04d-${m.toInt}%02d-${d.toInt}%02dT23:59:59Z"))
+          .toOption
+      case _ => None
+    }
+    fromConfig.getOrElse(ZonedDateTime.parse(f"$year%04d-12-31T23:59:59Z"))
+  }
+
+  /** The contest year an image counts against: the latest known contest year not
+    * after its upload year (falls back to the upload year itself). */
+  private def contestYearFor(uploadYear: Int): Int =
+    knownContestYears.filter(_ <= uploadYear).lastOption.getOrElse(uploadYear)
 
   private def yearCsvPath(year: Int): String =
     ImageCsvExporter.filename(contest.campaign, year, isCurrent = false, csvDir)
@@ -206,9 +242,31 @@ class Statistics(
 
   private def pastYearImages(monumentDb: Some[MonumentDB])(yearContest: Contest): Future[ImageDB] = {
     val year = yearContest.year
-    pastYearCsv(year) match {
-      case Some(images) =>
-        Future.successful(new ImageDB(yearContest, images, monumentDb, config.minMpx))
+    val path = yearCsvPath(year)
+    csvStrictDir match {
+      case Some(_) =>
+        // strict, user-managed CSVs: read verbatim (throws if missing)
+        Future.successful(
+          new ImageDB(yearContest, imagesFromCsvOpt(year).getOrElse(Nil), monumentDb, config.minMpx)
+        )
+      case None if csvAutoCache && !csvRefresh && new File(path).exists() =>
+        val cached = ImageCsvImporter.imagesFromCsv(path)
+        if (!csvResync)
+          Future.successful(new ImageDB(yearContest, cached, monumentDb, config.minMpx))
+        else {
+          val query = imageQuery.getOrElse(liveImageQuery)
+          query.imageIdsFromCategory(yearContest).flatMap { liveRevs =>
+            syncImageDb(
+              yearContest,
+              monumentDb,
+              cached,
+              writeCsvCache,
+              liveRevs,
+              _ => contestEndInstant(year),
+              ids => query.imagesWithTemplateByIds(yearContest, ids)
+            )
+          }
+        }
       case None =>
         fetchImageDb(yearContest, monumentDb).map { db =>
           writeCsvCache(db)
@@ -217,51 +275,111 @@ class Statistics(
     }
   }
 
-  /** Images for a past contest year from CSV, when a CSV should be used. */
-  private def pastYearCsv(year: Int): Option[Seq[Image]] = csvStrictDir match {
-    case Some(_) => imagesFromCsvOpt(year) // strict: throws if the file is missing
-    case None =>
-      val path = yearCsvPath(year)
-      if (csvAutoCache && !csvRefresh && new File(path).exists())
-        Some(ImageCsvImporter.imagesFromCsv(path))
-      else None
-  }
-
   private def currentYearImages(monumentDb: Some[MonumentDB])(yearContest: Contest): Future[ImageDB] = {
     val path = yearCsvPath(yearContest.year)
-    if (csvAutoCache && !csvRefresh && new File(path).exists())
-      syncCurrentYear(monumentDb, yearContest, path)
-    else
+    if (csvAutoCache && !csvRefresh && new File(path).exists()) {
+      val cached = ImageCsvImporter.imagesFromCsv(path)
+      val query = imageQuery.getOrElse(liveImageQuery)
+      query.imageIdsFromCategory(yearContest).flatMap { liveRevs =>
+        syncImageDb(
+          yearContest,
+          monumentDb,
+          cached,
+          writeCsvCache,
+          liveRevs,
+          _ => contestEndInstant(yearContest.year),
+          ids => query.imagesWithTemplateByIds(yearContest, ids)
+        )
+      }
+    } else
       fetchImageDb(yearContest, monumentDb).map { db =>
         writeCsvCache(db)
         db
       }
   }
 
-  /** Refresh the current-year CSV cache without a full refetch: keep cached
-    * images still in the category, pull metadata only for newly uploaded ones.
+  /** Incrementally reconcile a cached image set against a fresh id + latest-revision
+    * sweep of the wiki:
+    *   - ids in the sweep but not the cache  -> fetched (new uploads)
+    *   - ids in both whose revision changed  -> refetched (page edited / reuploaded)
+    *   - ids in the cache but not the sweep  -> dropped (deleted / de-categorised)
+    *   - unchanged rows are kept as-is (revid/timestamp backfilled from the sweep)
+    *
+    * "changed" is `revId` mismatch when the cached row has one; otherwise (rows
+    * written before the column existed) the live revision timestamp being after
+    * `fallbackTs(row)`.
+    *
+    * `extraImages` are appended unconditionally (e.g. uk.wikipedia-hosted images
+    * for the all-images CSV, which live in a different page-id space).
     */
-  private def syncCurrentYear(
-      monumentDb: Some[MonumentDB],
+  private def syncImageDb(
       yearContest: Contest,
+      monumentDb: Option[MonumentDB],
+      cached: Seq[Image],
+      writeCache: ImageDB => Unit,
+      liveRevs: Seq[PageRevInfo],
+      fallbackTs: Image => ZonedDateTime,
+      fetch: Set[Long] => Future[Iterable[Image]],
+      extraImages: Iterable[Image] = Nil
+  ): Future[ImageDB] = {
+    val liveById = liveRevs.iterator.map(r => r.pageId -> r).toMap
+    val cachedById = cached.iterator.flatMap(i => i.pageId.map(_ -> i)).toMap
+
+    val newIds = liveById.keySet -- cachedById.keySet
+    val changedIds = (liveById.keySet intersect cachedById.keySet).filter { id =>
+      val live = liveById(id)
+      val row = cachedById(id)
+      row.revId match {
+        case Some(rid) => rid != live.revId
+        case None      => live.timestamp.isAfter(row.revTs.getOrElse(fallbackTs(row)))
+      }
+    }
+    val refetch = newIds ++ changedIds
+
+    val kept = cached.collect {
+      case i if i.pageId.exists(id => liveById.contains(id) && !changedIds.contains(id)) =>
+        val live = liveById(i.pageId.get)
+        i.copy(revId = Some(live.revId), revTs = Some(live.timestamp))
+    }
+
+    val fetchedFuture =
+      if (refetch.isEmpty) Future.successful(Iterable.empty[Image]) else fetch(refetch)
+    fetchedFuture.map { fetched =>
+      val db = new ImageDB(
+        yearContest,
+        (kept ++ fetched ++ extraImages).toSeq,
+        monumentDb,
+        config.minMpx
+      )
+      writeCache(db)
+      db
+    }
+  }
+
+  /** Resync the all-images CSV: revid sweep of the Commons contest template,
+    * unioned with a fresh fetch of the uk.wikipedia-hosted images (small set,
+    * different page-id space, so always refetched rather than diffed). */
+  private def resyncTotalCsv(
+      monumentDb: Option[MonumentDB],
       path: String
   ): Future[ImageDB] = {
     val cached = ImageCsvImporter.imagesFromCsv(path)
-    val cachedIds = cached.flatMap(_.pageId).toSet
-    val query = imageQuery.getOrElse(liveImageQuery)
     for {
-      liveIdsIt <- query.imageIdsFromCategory(yearContest)
-      liveIds = liveIdsIt.toSet
-      newIds = liveIds -- cachedIds
-      newImages <-
-        if (newIds.isEmpty) Future.successful(Iterable.empty[Image])
-        else query.imagesWithTemplateByIds(yearContest, newIds)
-    } yield {
-      val kept = cached.filter(_.pageId.exists(liveIds.contains))
-      val db = new ImageDB(yearContest, (kept ++ newImages).toSeq, monumentDb, config.minMpx)
-      writeCsvCache(db)
-      db
-    }
+      commonsRevs <- totalImageQuery.imageIdsWithTemplate(contest)
+      wiki <- imageQueryWiki.map(_.imagesWithTemplate(contest)).getOrElse(Future.successful(Nil))
+      wikiIds = wiki.flatMap(_.pageId).toSet
+      cachedCommons = cached.filterNot(_.pageId.exists(wikiIds.contains))
+      db <- syncImageDb(
+        contest,
+        monumentDb,
+        cachedCommons,
+        writeTotalCsvCache,
+        commonsRevs,
+        row => contestEndInstant(contestYearFor(row.date.map(_.getYear).getOrElse(currentYear - 1))),
+        ids => totalImageQuery.imagesWithTemplateByIds(contest, ids),
+        extraImages = wiki
+      )
+    } yield db
   }
 
   private def fetchImageDb(
@@ -290,17 +408,17 @@ class Statistics(
   private def imagesByTemplate(
       monumentDb: Some[MonumentDB],
       dbsByYear: Seq[ImageDB],
-      totalPageIds: Iterable[Long]
+      totalPageRevs: Seq[PageRevInfo]
   ): Future[ImageDB] = {
     val idsByYear = dbsByYear.flatMap(_.images.flatMap(_.pageId)).toSet
-    val missingPageIds = totalPageIds.toSet -- idsByYear
+    val missingPageIds = totalPageRevs.map(_.pageId).toSet -- idsByYear
     for {
       commons <- totalImageQuery.imagesWithTemplateByIds(contest, missingPageIds)
       wiki <- imageQueryWiki.map(_.imagesWithTemplate(contest)).getOrElse(Future.successful(Nil))
     } yield new ImageDB(contest, dbsByYear.flatMap(_.images) ++ commons ++ wiki, monumentDb)
   }
 
-  private def imageIdsByTemplate(): Future[Iterable[Long]] =
+  private def imageRevsByTemplate(): Future[Seq[PageRevInfo]] =
     totalImageQuery.imageIdsWithTemplate(contest)
 
   def init(total: Boolean): Unit = {
