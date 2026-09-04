@@ -1,5 +1,7 @@
 package org.scalawiki.query
 
+import java.time.ZonedDateTime
+
 import org.scalawiki.dto.Page
 
 import scala.concurrent.Future
@@ -48,7 +50,10 @@ trait SinglePageQuery {
       summary: Option[String] = None,
       section: Option[String] = None,
       token: Option[String] = None,
-      multi: Boolean = true
+      multi: Boolean = true,
+      basetimestamp: Option[ZonedDateTime] = None,
+      baseRevId: Option[Long] = None,
+      startTimestamp: Option[ZonedDateTime] = None
   ): Future[Any] // TODO specific result
 
   def upload(

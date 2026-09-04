@@ -3,6 +3,8 @@ package org.scalawiki.query
 import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
+import java.time.ZonedDateTime
+
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.edit._
 import org.scalawiki.dto.cmd.query._
@@ -135,7 +137,10 @@ class PageQueryImplDsl(
       summary: Option[String] = None,
       section: Option[String] = None,
       token: Option[String] = None,
-      multi: Boolean = false
+      multi: Boolean = false,
+      basetimestamp: Option[ZonedDateTime] = None,
+      baseRevId: Option[Long] = None,
+      startTimestamp: Option[ZonedDateTime] = None
   ) = {
 
     val page = query.fold(
@@ -143,7 +148,16 @@ class PageQueryImplDsl(
       titles => Title(titles.head)
     )
 
-    val action = Action(Edit(page, Text(text)))
+    // `basetimestamp` / `baserevid` make MediaWiki reject the edit with an
+    // `editconflict` error if the page's current revision has moved past the one
+    // we read, instead of silently clobbering the intervening edit;
+    // `starttimestamp` catches the page being deleted meanwhile (`pagedeleted`).
+    val conflictParams: Seq[EditParam[Any]] =
+      basetimestamp.map(BaseTimestamp(_)).toSeq ++
+        baseRevId.map(BaseRevId(_)).toSeq ++
+        startTimestamp.map(StartTimestamp(_)).toSeq
+
+    val action = Action(Edit(Seq[EditParam[Any]](page, Text(text)) ++ conflictParams: _*))
 
     val baseParams = action.pairs.toMap ++
       Map(
@@ -185,7 +199,13 @@ class PageQueryImplDsl(
     }
 
     implicit def stringSuccess: Success[String] = Success(_ == "Success")
-    retry.Backoff()(odelay.Timer.default)(() => performEdit())
+    // Don't burn the whole backoff budget replaying an edit that lost a race:
+    // an edit-conflict error won't clear until the page is re-read and the edit
+    // rebuilt, which is the caller's job (see PageUpdater).
+    val policy = retry.FailFast(retry.Backoff()(odelay.Timer.default)) {
+      case e: MwException => Edit.conflictCodes.contains(e.code)
+    }
+    policy(() => performEdit())
   }
 
   override def upload(

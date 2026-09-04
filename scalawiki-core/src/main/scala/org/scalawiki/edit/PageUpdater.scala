@@ -1,9 +1,20 @@
 package org.scalawiki.edit
 
+import java.time.ZonedDateTime
+
 import org.scalawiki.WithBot
+import org.scalawiki.dto.MwException
+import org.scalawiki.dto.cmd.edit.Edit
 
 import scala.concurrent._
 import scala.util.{Failure, Success, Try}
+
+object PageUpdater {
+
+  /** How many times to re-read a page and re-apply the edit after MediaWiki
+    * rejects it with an edit conflict before giving up on that page. */
+  val conflictRetries = 3
+}
 
 class PageUpdater(task: PageUpdateTask) extends WithBot {
 
@@ -56,11 +67,60 @@ class PageUpdater(task: PageUpdateTask) extends WithBot {
     done
   }
 
-  def updatePage(title: String): Future[Any] = {
-    bot.pageText(title).flatMap { pageText =>
-      val (newText: String, comment: String) = task.updatePage(title, pageText)
-      bot.page(title).edit(newText, Some(comment))
-    }
+  def updatePage(title: String): Future[Any] =
+    updatePage(title, PageUpdater.conflictRetries)
+
+  /** The moment we started looking at the page, sent as `starttimestamp` so
+    * MediaWiki can reject the save if the page was deleted in the meantime.
+    * Overridable so tests get a deterministic value. */
+  protected def now(): ZonedDateTime = ZonedDateTime.now()
+
+  /** Read the page, apply [[PageUpdateTask.updatePage]], and save the result
+    * against the exact revision that was read.
+    *
+    * The text is fetched via `prop=revisions` (not `action=raw`) so we also get
+    * the base revision's id and timestamp. Those go back to `action=edit` as
+    * `baserevid` / `basetimestamp` (+ `starttimestamp`): if another user or bot
+    * edited the page between our read and our write, MediaWiki rejects the save
+    * with an `editconflict` / `pagedeleted` error instead of silently
+    * overwriting that change. We then re-read the now-current page, re-run the
+    * task against it and try again — up to `retriesLeft` times. Re-applying is
+    * safe: the task rewrites individual template parameters of the monuments it
+    * cares about and leaves everything else (including the other editor's
+    * changes) untouched.
+    */
+  def updatePage(title: String, retriesLeft: Int): Future[Any] = {
+    val startTimestamp = now()
+    bot
+      .page(title)
+      .revisions(Set.empty[Int], Set("ids", "content", "timestamp"))
+      .flatMap { pages =>
+        // rvdir defaults to "older", so the first revision is the current one.
+        val revision = pages.headOption.flatMap(_.revisions.headOption)
+        val pageText = revision.flatMap(_.content).getOrElse("")
+
+        val (newText: String, comment: String) =
+          task.updatePage(title, pageText)
+
+        bot
+          .page(title)
+          .edit(
+            newText,
+            Some(comment),
+            basetimestamp = revision.flatMap(_.timestamp),
+            baseRevId = revision.flatMap(_.revId),
+            startTimestamp = Some(startTimestamp)
+          )
+          .recoverWith {
+            case e: MwException
+                if Edit.conflictCodes.contains(e.code) && retriesLeft > 0 =>
+              println(
+                s"$title: edit conflict (${e.code}), re-reading and retrying " +
+                  s"($retriesLeft attempt(s) left)"
+              )
+              updatePage(title, retriesLeft - 1)
+          }
+      }
   }
 
 }
