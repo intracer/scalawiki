@@ -122,7 +122,8 @@ class Statistics(
     val monumentDb = Some(MonumentDB.getMonumentDb(contest, monumentQuery))
 
     val byYearFutures = contests.map(contestImages(monumentDb))
-    val totalFromCsv = totalImagesCsvPath.filter(new File(_).exists())
+    val totalFromCsv =
+      if (csvRefresh) None else totalCsvReadPath.filter(new File(_).exists())
     val totalPageIdsFuture =
       if (total && totalFromCsv.isEmpty) imageIdsByTemplate() else Future.successful(Nil)
     for {
@@ -138,7 +139,10 @@ class Statistics(
                 new ImageDB(contest, ImageCsvImporter.imagesFromCsv(path), monumentDb, config.minMpx)
               )
             case None =>
-              imagesByTemplate(monumentDb, byYear, totalPageIds)
+              imagesByTemplate(monumentDb, byYear, totalPageIds).map { db =>
+                writeTotalCsvCache(db)
+                db
+              }
           }
     } yield {
       ContestStat(
@@ -153,23 +157,116 @@ class Statistics(
     }
   }
 
-  private def contestImages(monumentDb: Some[MonumentDB])(yearContest: Contest): Future[ImageDB] = {
-    val csvImages = if (yearContest.year != currentYear) imagesFromCsvOpt(yearContest.year) else None
-    csvImages match {
+  // ---- image CSV cache -----------------------------------------------------
+  //
+  // A second-tier cache next to the ChronicleMap `.cache` files: once an
+  // `ImageDB` has been built it is serialized to `<csvDir>/<campaign>-<year>-images.csv`
+  // (and `<campaign>-all-images.csv` for the all-time DB). Later runs read those
+  // CSVs directly and skip the sequential JSON parse of the ChronicleMap.
+  //
+  // - `--images-from-csv <dir>` keeps its strict semantics (files must exist).
+  // - otherwise the cache lives under `csv-cache/` and is filled on demand.
+  // - past contest years are frozen once written; the current contest year is
+  //   incrementally synced (diff the category id list, fetch only new files).
+  // - `--csv-cache-refresh` ignores existing CSVs and overwrites them.
+
+  private val csvStrictDir: Option[String] = config.imagesFromCsv
+  private val csvAutoCache: Boolean = config.csvCache && csvStrictDir.isEmpty
+  private val csvDir: String = config.effectiveCsvCacheDir
+  private val csvRefresh: Boolean = config.csvCacheRefresh
+
+  private lazy val liveImageQuery: ImageQuery = ImageQuery.create
+
+  private def yearCsvPath(year: Int): String =
+    ImageCsvExporter.filename(contest.campaign, year, isCurrent = false, csvDir)
+
+  private def totalCsvReadPath: Option[String] =
+    csvStrictDir
+      .map(dir => ImageCsvExporter.totalFilename(contest.campaign, dir))
+      .orElse(if (csvAutoCache) Some(ImageCsvExporter.totalFilename(contest.campaign, csvDir)) else None)
+
+  private def writeCsvCache(imageDb: ImageDB): Unit =
+    if (csvAutoCache)
+      ImageCsvExporter.export(imageDb, contest.campaign, isCurrent = false, csvDir)
+
+  private def writeTotalCsvCache(imageDb: ImageDB): Unit =
+    if (csvAutoCache)
+      ImageCsvExporter.exportTotal(imageDb, contest.campaign, csvDir)
+
+  private def contestImages(monumentDb: Some[MonumentDB])(yearContest: Contest): Future[ImageDB] =
+    if (yearContest.year != currentYear) pastYearImages(monumentDb)(yearContest)
+    else currentYearImages(monumentDb)(yearContest)
+
+  private def pastYearImages(monumentDb: Some[MonumentDB])(yearContest: Contest): Future[ImageDB] = {
+    val year = yearContest.year
+    pastYearCsv(year) match {
       case Some(images) =>
         Future.successful(new ImageDB(yearContest, images, monumentDb, config.minMpx))
       case None =>
-        ImageDB.create(
-          yearContest,
-          imageQuery.getOrElse(getImageQuery(Some(yearContest.year))),
-          monumentDb,
-          config.minMpx
-        )
+        fetchImageDb(yearContest, monumentDb).map { db =>
+          writeCsvCache(db)
+          db
+        }
     }
   }
 
-  private def totalImagesCsvPath: Option[String] =
-    config.imagesFromCsv.map(dir => ImageCsvExporter.totalFilename(contest.campaign, dir))
+  /** Images for a past contest year from CSV, when a CSV should be used. */
+  private def pastYearCsv(year: Int): Option[Seq[Image]] = csvStrictDir match {
+    case Some(_) => imagesFromCsvOpt(year) // strict: throws if the file is missing
+    case None =>
+      val path = yearCsvPath(year)
+      if (csvAutoCache && !csvRefresh && new File(path).exists())
+        Some(ImageCsvImporter.imagesFromCsv(path))
+      else None
+  }
+
+  private def currentYearImages(monumentDb: Some[MonumentDB])(yearContest: Contest): Future[ImageDB] = {
+    val path = yearCsvPath(yearContest.year)
+    if (csvAutoCache && !csvRefresh && new File(path).exists())
+      syncCurrentYear(monumentDb, yearContest, path)
+    else
+      fetchImageDb(yearContest, monumentDb).map { db =>
+        writeCsvCache(db)
+        db
+      }
+  }
+
+  /** Refresh the current-year CSV cache without a full refetch: keep cached
+    * images still in the category, pull metadata only for newly uploaded ones.
+    */
+  private def syncCurrentYear(
+      monumentDb: Some[MonumentDB],
+      yearContest: Contest,
+      path: String
+  ): Future[ImageDB] = {
+    val cached = ImageCsvImporter.imagesFromCsv(path)
+    val cachedIds = cached.flatMap(_.pageId).toSet
+    val query = imageQuery.getOrElse(liveImageQuery)
+    for {
+      liveIdsIt <- query.imageIdsFromCategory(yearContest)
+      liveIds = liveIdsIt.toSet
+      newIds = liveIds -- cachedIds
+      newImages <-
+        if (newIds.isEmpty) Future.successful(Iterable.empty[Image])
+        else query.imagesWithTemplateByIds(yearContest, newIds)
+    } yield {
+      val kept = cached.filter(_.pageId.exists(liveIds.contains))
+      val db = new ImageDB(yearContest, (kept ++ newImages).toSeq, monumentDb, config.minMpx)
+      writeCsvCache(db)
+      db
+    }
+  }
+
+  private def fetchImageDb(
+      yearContest: Contest,
+      monumentDb: Some[MonumentDB]
+  ): Future[ImageDB] =
+    ImageDB.create(
+      yearContest,
+      imageQuery.getOrElse(getImageQuery(Some(yearContest.year))),
+      monumentDb,
+      config.minMpx
+    )
 
   private def imagesFromCsvOpt(year: Int): Option[Seq[Image]] =
     config.imagesFromCsv.map { dir =>

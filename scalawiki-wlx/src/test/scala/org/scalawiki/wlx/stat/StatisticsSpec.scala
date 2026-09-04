@@ -28,7 +28,8 @@ class StatisticsSpec(implicit ee: ExecutionEnv)
     imageQuery.imagesFromCategory(contest) returns Future.successful(images)
     monumentQuery.byMonumentTemplate(date = None) returns monuments
 
-    val cfg = StatConfig(campaign = contest.campaign)
+    // csvCache off: this spec exercises the fetch path, not the on-disk cache
+    val cfg = StatConfig(campaign = contest.campaign, csvCache = false)
 
     new Statistics(contest, None, monumentQuery, Some(imageQuery), None, bot, cfg)
   }
@@ -72,7 +73,8 @@ class StatisticsSpec(implicit ee: ExecutionEnv)
     imageQuery.imagesFromCategory(contest) returns Future.failed(new RuntimeException("Error 123"))
     monumentQuery.byMonumentTemplate(date = None) returns monuments
 
-    val stat = new Statistics(contest, None, monumentQuery, Some(imageQuery), None, bot)
+    val cfg = StatConfig(campaign = contest.campaign, csvCache = false)
+    val stat = new Statistics(contest, None, monumentQuery, Some(imageQuery), None, bot, cfg)
 
     stat.gatherData(false) must throwA[RuntimeException].await
   }

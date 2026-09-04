@@ -35,8 +35,18 @@ case class StatConfig(
     recentlyTakenFiles: Option[String] = None,
     exportCsv: Option[String] = None,
     exportImagesCsv: Option[String] = None,
-    imagesFromCsv: Option[String] = None
-)
+    imagesFromCsv: Option[String] = None,
+    csvCache: Boolean = true,
+    csvCacheDir: String = "csv-cache",
+    csvCacheRefresh: Boolean = false
+) {
+
+  /** Directory holding the automatic image CSV cache. An explicit
+    * `--images-from-csv` dir wins (and keeps its strict "must exist" semantics);
+    * otherwise the `csv-cache/` subdir of the working directory.
+    */
+  def effectiveCsvCacheDir: String = imagesFromCsv.getOrElse(csvCacheDir)
+}
 
 import org.rogach.scallop._
 
@@ -124,6 +134,12 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
     opt[String](name = "export-images-csv", descr = "Export images to CSV files per year. Argument is output directory (default: current dir).")
   val imagesFromCsv =
     opt[String](name = "images-from-csv", descr = "Read past years' images from CSV files instead of querying/caching from the wiki. Argument is the directory containing <campaign>-<year>-images.csv / <campaign>-all-images.csv files produced by --export-images-csv.")
+  val noCsvCache =
+    opt[Boolean](name = "no-csv-cache", descr = "Disable the automatic image CSV cache (csv-cache/ dir); always fetch/parse from the wiki + ChronicleMap.")
+  val csvCacheDir =
+    opt[String](name = "csv-cache-dir", descr = "Directory for the automatic image CSV cache (default: csv-cache).")
+  val csvCacheRefresh =
+    opt[Boolean](name = "csv-cache-refresh", descr = "Ignore existing image CSV caches this run: refetch from the wiki and overwrite them.")
   verify()
 
 }
@@ -169,7 +185,10 @@ object StatParams {
       recentlyTakenFiles = conf.recentlyTakenFiles.toOption,
       exportCsv = conf.exportCsv.toOption,
       exportImagesCsv = conf.exportImagesCsv.toOption,
-      imagesFromCsv = conf.imagesFromCsv.toOption
+      imagesFromCsv = conf.imagesFromCsv.toOption,
+      csvCache = !conf.noCsvCache.getOrElse(false),
+      csvCacheDir = conf.csvCacheDir.getOrElse("csv-cache"),
+      csvCacheRefresh = conf.csvCacheRefresh.getOrElse(false)
     )
   }
 }

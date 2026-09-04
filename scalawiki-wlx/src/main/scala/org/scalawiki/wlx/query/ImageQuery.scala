@@ -22,6 +22,11 @@ trait ImageQuery {
 
   def imageIdsWithTemplate(contest: Contest): Future[Iterable[Long]]
 
+  /** Page ids of all files in the contest images category, without imageinfo.
+    * Cheap (ids + titles only) — used to diff against a CSV cache.
+    */
+  def imageIdsFromCategory(contest: Contest): Future[Iterable[Long]]
+
 }
 
 class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
@@ -37,17 +42,19 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
   private val allSpecialNominationTemplates: Set[String] =
     SpecialNomination.nominations.flatMap(_.fileTemplate).toSet
 
-  override def imagesFromCategory(contest: Contest): Future[Iterable[Image]] = {
-    val generator: Generator = Generator(
-      CategoryMembers(
-        CmTitle(contest.imagesCategory),
-        CmNamespace(Seq(Namespace.FILE)),
-        CmLimit("max")
-      )
+  private def categoryGenerator(contest: Contest): Generator = Generator(
+    CategoryMembers(
+      CmTitle(contest.imagesCategory),
+      CmNamespace(Seq(Namespace.FILE)),
+      CmLimit("max")
     )
+  )
 
-    imagesByGenerator(contest, generator)
-  }
+  override def imagesFromCategory(contest: Contest): Future[Iterable[Image]] =
+    imagesByGenerator(contest, categoryGenerator(contest))
+
+  override def imageIdsFromCategory(contest: Contest): Future[Iterable[Long]] =
+    imageIdsByGenerator(categoryGenerator(contest))
 
   override def imagesWithTemplate(contest: Contest): Future[Iterable[Image]] =
     contest.fileTemplate
