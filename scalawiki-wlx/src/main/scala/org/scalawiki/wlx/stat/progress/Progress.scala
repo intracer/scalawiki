@@ -173,8 +173,20 @@ object Progress {
 
   private trait CloseableTask extends ProgressTask { def close(): Unit }
 
+  private val barLegendShown = new java.util.concurrent.atomic.AtomicBoolean(false)
+
+  /** The me.tongfei bar renders `<name> 42% [===>   ] 42/100 (0:00:12 / 0:00:41) 3.5/s`
+    * — the parenthesised pair is *time elapsed / estimated time remaining*, with
+    * no labels. Spell it out once, the first time a bar appears. */
+  private def showBarLegend(): Unit =
+    if (barLegendShown.compareAndSet(false, true))
+      System.err.println(
+        "    bar key:  done/total  |  elapsed / remaining  |  items per second"
+      )
+
   private def newTask(label: String, total: Long): CloseableTask =
-    if (live) new BarTask(label, total) else new LogTask(label, total)
+    if (live) { showBarLegend(); new BarTask(label, total) }
+    else new LogTask(label, total)
 
   /** Backed by a real progress bar on stderr. */
   private class BarTask(label: String, total: Long) extends CloseableTask {
