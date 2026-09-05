@@ -558,8 +558,15 @@ class Statistics(
         Progress.bar("Generating reports", 0L) { task =>
           new ReporterRegistry(stat, config, Some(task)).output()
         }
+      // Publishing is the long pole on a cached run: dozens of throttled edits
+      // draining a few at a time. Drive a bar off WriteWatcher's counters.
       val writeFailures =
-        Progress.phase("Publishing edits")(WriteWatcher.awaitQuiescence())
+        Progress.bar("Publishing edits", WriteWatcher.submittedCount) { task =>
+          WriteWatcher.awaitQuiescence(onProgress = (done, submitted) => {
+            task.total(submitted)
+            task.stepTo(done)
+          })
+        }
 
       if (stepErrors.nonEmpty || writeFailures.nonEmpty) {
         Progress.note("\n=== Publish summary: INCOMPLETE ===")

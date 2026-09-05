@@ -194,6 +194,10 @@ object WriteWatcher {
 
   def completedCount: Long = completed.get()
 
+  /** Total writes ever handed to [[submit]] (queued, running, and finished).
+    * Grows if writes are spawned from earlier writes' completion callbacks. */
+  def submittedCount: Long = started.get()
+
   /** Block until the write queue has been empty and idle for `settle`, or until
     * `hardLimit` elapses, whichever comes first. Writes spawned from the
     * completion callback of an earlier write are still picked up as long as they
@@ -204,9 +208,17 @@ object WriteWatcher {
   def awaitQuiescence(
       settle: FiniteDuration = 3.seconds,
       hardLimit: Duration = 3.hours,
-      pollInterval: FiniteDuration = 200.millis
+      pollInterval: FiniteDuration = 200.millis,
+      onProgress: (Long, Long) => Unit = (_, _) => ()
   ): Seq[(String, Throwable)] = {
     if (!enabled) return Nil
+
+    // (completed, submitted) on every poll, so a caller can render a progress
+    // bar for the publish phase. `submitted` may still climb as retries queue.
+    def reportProgress(): Unit =
+      try onProgress(completed.get(), started.get())
+      catch { case NonFatal(_) => }
+    reportProgress()
 
     val deadlineNanos = hardLimit match {
       case f: FiniteDuration => System.nanoTime() + f.toNanos
@@ -220,6 +232,7 @@ object WriteWatcher {
 
     while (!done) {
       Thread.sleep(pollInterval.toMillis)
+      reportProgress()
       val now = System.nanoTime()
       val idle = inFlightCount == 0
       val doneNow = completed.get()

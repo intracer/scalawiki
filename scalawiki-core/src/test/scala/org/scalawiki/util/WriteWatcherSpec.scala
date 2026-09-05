@@ -88,6 +88,38 @@ class WriteWatcherSpec extends Specification {
       } finally WriteWatcher.reset()
     }
 
+    "report (completed, submitted) progress while draining" in {
+      WriteWatcher.reset()
+      WriteWatcher.enable()
+      try {
+        val gates = (1 to 8).map(_ => Promise[Int]())
+        val futures = gates.map(p => WriteWatcher.submit("w")(() => p.future))
+
+        WriteWatcher.submittedCount === 8L
+
+        @volatile var lastDone = -1L
+        @volatile var lastSubmitted = -1L
+        val progress = Future {
+          WriteWatcher.awaitQuiescence(
+            settle = 300.millis,
+            onProgress = (done, submitted) => { lastDone = done; lastSubmitted = submitted }
+          )
+        }
+
+        Thread.sleep(150)
+        lastDone === 0L
+        gates.take(5).zipWithIndex.foreach { case (p, i) => p.success(i) }
+        Thread.sleep(300)
+        lastDone must be_>=(5L)
+        gates.drop(5).zipWithIndex.foreach { case (p, i) => p.success(i) }
+
+        Await.result(progress, 5.seconds) === Nil
+        Await.result(Future.sequence(futures), 5.seconds)
+        lastDone === 8L
+        lastSubmitted === 8L
+      } finally WriteWatcher.reset()
+    }
+
     "propagate a benign failure to the caller but not record it" in {
       WriteWatcher.reset()
       WriteWatcher.enable()
