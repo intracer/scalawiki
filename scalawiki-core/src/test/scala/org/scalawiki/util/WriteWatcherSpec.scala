@@ -67,6 +67,27 @@ class WriteWatcherSpec extends Specification {
       } finally WriteWatcher.reset()
     }
 
+    "drain writes submitted from an earlier write's completion callback" in {
+      WriteWatcher.reset()
+      WriteWatcher.enable()
+      try {
+        val count = new AtomicInteger(0)
+        def chain(n: Int): Future[Int] =
+          WriteWatcher.submit(s"w$n") { () =>
+            Future {
+              count.incrementAndGet()
+              if (n > 0) { chain(n - 1); () }
+              n
+            }
+          }
+        Await.result(chain(30), 5.seconds) === 30
+        WriteWatcher.awaitQuiescence(settle = 500.millis) === Nil
+        count.get() === 31
+        WriteWatcher.completedCount === 31L
+        WriteWatcher.inFlightCount === 0
+      } finally WriteWatcher.reset()
+    }
+
     "propagate a benign failure to the caller but not record it" in {
       WriteWatcher.reset()
       WriteWatcher.enable()

@@ -2,7 +2,7 @@ package org.scalawiki.util
 
 import org.apache.pekko.event.LoggingAdapter
 
-import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentLinkedQueue}
 
 import scala.concurrent.duration._
@@ -43,7 +43,14 @@ object WriteWatcher {
   @volatile private var logger: Option[LoggingAdapter] = None
 
   private val queue = new ConcurrentLinkedQueue[() => Unit]()
-  private val running = new AtomicInteger(0)
+
+  /** Number of writes actually in flight (a queued write is not counted until
+    * [[drain]] starts it). Guarded by [[lock]]: the queue `poll` that hands out a
+    * slot and the decrement when a write finishes both happen while holding it,
+    * so a write can never sit in the queue with a slot free. */
+  private val lock = new Object
+  private var running = 0
+
   private val seq = new AtomicLong(0L)
   private val started = new AtomicLong(0L)
   private val completed = new AtomicLong(0L)
@@ -64,7 +71,7 @@ object WriteWatcher {
     enabled = false
     logger = None
     queue.clear()
-    running.set(0)
+    lock.synchronized { running = 0 }
     failures.clear()
     seq.set(0L)
     started.set(0L)
@@ -98,9 +105,9 @@ object WriteWatcher {
       try desc
       catch { case _: Throwable => "wiki write" }
     val promise = Promise[T]()
-    queue.add(() => runTask(id, d, benign, op, promise))
     started.incrementAndGet()
-    pump()
+    queue.add(() => runTask(id, d, benign, op, promise))
+    drain()
     promise.future
   }
 
@@ -111,24 +118,32 @@ object WriteWatcher {
   )(future: Future[T])(implicit ec: ExecutionContext): Future[T] =
     submit(desc)(() => future)
 
-  private def pump()(implicit ec: ExecutionContext): Unit = {
-    var continue = true
-    while (continue) {
-      val cur = running.get()
-      if (cur >= maxConcurrent) {
-        continue = false
-      } else if (running.compareAndSet(cur, cur + 1)) {
-        // slot acquired; hand it to the next queued task, or give it back
-        val runnable = queue.poll()
-        if (runnable == null) {
-          running.decrementAndGet()
-          continue = false
-        } else {
-          runnable()
-        }
+  /** Start queued writes until [[maxConcurrent]] are in flight.
+    *
+    * The `poll` that takes a write off the queue and the `running` bump that
+    * reserves its slot happen together under [[lock]]; every completion likewise
+    * decrements `running` under `lock` and then calls `drain` again. So a write
+    * enqueued concurrently with a `drain` that finds every slot busy is always
+    * picked up by the next completing write — it can't be stranded in the queue
+    * while a slot sits free (the race in the previous lock-free version, which
+    * could hang the last write until `awaitQuiescence` timed out).
+    *
+    * Each write is started (`op()` invoked) outside the lock. */
+  private def drain()(implicit ec: ExecutionContext): Unit = {
+    var next: () => Unit = null
+    do {
+      next = lock.synchronized {
+        if (running >= maxConcurrent) null
+        else
+          queue.poll() match {
+            case null => null
+            case task =>
+              running += 1
+              task
+          }
       }
-      // CAS lost: another thread changed `running`, retry the loop
-    }
+      if (next != null) next()
+    } while (next != null)
   }
 
   private def runTask[T](
@@ -138,12 +153,12 @@ object WriteWatcher {
       op: () => Future[T],
       promise: Promise[T]
   )(implicit ec: ExecutionContext): Unit = {
-    // the caller (pump) has already reserved the running slot
+    // `drain` has already reserved the running slot.
     val fut =
       try op()
       catch { case NonFatal(e) => Future.failed[T](e) }
     fut.onComplete { result =>
-      running.decrementAndGet()
+      lock.synchronized { running -= 1 }
       completed.incrementAndGet()
       result match {
         case Failure(e) if benign(e) =>
@@ -164,7 +179,7 @@ object WriteWatcher {
         case _ =>
       }
       promise.complete(result)
-      pump()
+      drain()
     }
   }
 
@@ -175,7 +190,7 @@ object WriteWatcher {
   def recordedFailures: Seq[(String, Throwable)] =
     failures.values().asScala.toVector
 
-  def inFlightCount: Int = running.get() + queue.size()
+  def inFlightCount: Int = lock.synchronized(running) + queue.size()
 
   def completedCount: Long = completed.get()
 
