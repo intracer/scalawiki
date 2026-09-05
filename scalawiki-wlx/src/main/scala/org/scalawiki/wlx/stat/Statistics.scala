@@ -4,24 +4,16 @@ import org.scalawiki.MwBot
 import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.{Image, Site}
 import org.scalawiki.wlx.dto.Contest
-import org.scalawiki.wlx.query.ImageQuery.PageRevInfo
-import org.scalawiki.wlx.query.MonumentQuery.MonumentListPage
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
+import org.scalawiki.wlx.stat.cache.{ImageDbProvider, MonumentDbProvider}
 import org.scalawiki.wlx.stat.progress.Progress
-import org.scalawiki.wlx.stat.reports.ReporterRegistry
+import org.scalawiki.wlx.stat.reports.ReportRunner
 import org.scalawiki.util.WriteWatcher
-import org.scalawiki.wlx.{ImageCsvExporter, ImageCsvImporter, ImageDB, MonumentDB, MonumentDbCache}
-
-import org.slf4j.LoggerFactory
-
-import java.io.{File, FileNotFoundException}
-import java.nio.file.{Files, Paths}
-import java.time.{ZoneOffset, ZonedDateTime}
+import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.util.Try
 import scala.util.control.NonFatal
 
 /** Holds fetched contest data
@@ -67,7 +59,12 @@ case class ContestStat(
     } yield f(imageDb)
 }
 
-/** Coordinates fetching contest statistics and creating reports/galleries etc. Needs refactoring.
+/** Coordinates fetching contest statistics and creating reports/galleries etc.
+  *
+  * The heavy lifting lives in focused collaborators:
+  *   - [[MonumentDbProvider]] — the monument DB and its CSV cache / revision sync
+  *   - [[ImageDbProvider]] — the per-year and all-time image DBs and their CSV cache
+  *   - [[ReportRunner]] — running reports and waiting for wiki writes to settle
   *
   * @param contest
   *   contest: contest type (WLM/WLE), country, year, etc.
@@ -109,19 +106,16 @@ class Statistics(
       config.getOrElse(StatConfig(contest.campaign))
     )
 
-  private val logger = LoggerFactory.getLogger(classOf[Statistics])
-
   private val currentYear = contest.year
 
   private val contests =
     (startYear.getOrElse(currentYear) to currentYear).map(y => contest.copy(year = y))
 
-  private lazy val totalImageQuery: ImageQuery = imageQuery.getOrElse(getImageQuery())
+  private lazy val monumentProvider =
+    new MonumentDbProvider(contest, monumentQuery, config)
 
-  def getImageQuery(year: Option[Int] = None): ImageQuery = {
-    val cacheName = s"${contest.campaign}-${year.getOrElse("all")}"
-    ImageQuery.create(new CachedBot(Site.commons, cacheName, true))
-  }
+  private lazy val imageProvider =
+    new ImageDbProvider(contest, imageQuery, imageQueryWiki, config)
 
   /** Fetches contest data
     *
@@ -132,7 +126,10 @@ class Statistics(
     *   asynchronously returned contest data
     */
   def gatherData(total: Boolean): Future[ContestStat] = {
-    val monumentDb = Some(gatherMonumentDb())
+    val monumentDb = Some(monumentProvider.gather())
+
+    // started before the per-year fetches so the cheap all-time sweep overlaps them
+    val totalPageRevsFuture = imageProvider.prefetchTotalPageRevs(total)
 
     val byYearLabel =
       if (contests.sizeIs > 1) s"Fetching images ${contests.head.year}-${contests.last.year}"
@@ -140,43 +137,23 @@ class Statistics(
     val byYearF =
       Progress.barF(byYearLabel, contests.size.toLong) { task =>
         Future.sequence(contests.map { yearContest =>
-          contestImages(monumentDb)(yearContest).map { db =>
+          imageProvider.perYear(monumentDb)(yearContest).map { db =>
             task.step()
             db
           }
         })
       }
 
-    val totalCsvPath =
-      if (csvRefresh) None else totalCsvReadPath.filter(new File(_).exists())
-    val totalPageRevsFuture =
-      if (total && totalCsvPath.isEmpty) imageRevsByTemplate() else Future.successful(Nil)
     for {
       byYear <- byYearF
-      currentYearImages = byYear.last
       totalPageRevs <- totalPageRevsFuture
-      totalImages <-
-        if (!total) Future.successful(currentYearImages)
-        else
-          totalCsvPath match {
-            case Some(path) if csvResync =>
-              resyncTotalCsv(monumentDb, byYear, path)
-            case Some(path) =>
-              Future.successful(
-                new ImageDB(contest, ImageCsvImporter.imagesFromCsv(path), monumentDb, config.minMpx)
-              )
-            case None =>
-              imagesByTemplate(monumentDb, byYear, totalPageRevs).map { db =>
-                writeTotalCsvCache(db)
-                db
-              }
-          }
+      totalImages <- imageProvider.total(monumentDb, byYear, totalPageRevs, total)
     } yield {
       ContestStat(
         contest,
         startYear.getOrElse(contest.year),
         monumentDb,
-        currentYearImages,
+        byYear.last,
         totalImages,
         byYear,
         Some(config)
@@ -184,492 +161,8 @@ class Statistics(
     }
   }
 
-  // ---- image CSV cache -----------------------------------------------------
-  //
-  // A second-tier cache above the `http-cache/` request cache: once an
-  // `ImageDB` has been built it is serialized to `<csvDir>/<campaign>-<year>-images.csv`
-  // (and `<campaign>-all-images.csv` for the all-time DB). Later runs read those
-  // CSVs directly and skip the sequential JSON parse of the raw API responses.
-  //
-  // - `--images-from-csv <dir>` keeps its strict semantics (files must exist);
-  //   `--csv-cache-refresh` does not apply there (those files are user-managed
-  //   via `--export-images-csv`).
-  // - otherwise the cache lives under `csv-cache/` and is filled on demand.
-  // - the current contest year is always incrementally synced against the wiki:
-  //   a cheap id + latest-revision sweep of the category tells us which files are
-  //   new (fetch metadata), which changed since caching (revid differs -> refetch)
-  //   and which are gone (dropped). Its CSV is written to the same
-  //   `<campaign>-<year>-images.csv` path that next year's run reads as the frozen
-  //   past-year copy -- so the last mid-contest sync of year N becomes the
-  //   permanent record of year N.
-  // - past contest years and the all-images CSV are frozen (read verbatim) unless
-  //   `--csv-cache-resync` is given, which runs the same new/changed/deleted sweep
-  //   against them. For rows written before the `last_revid` column existed we
-  //   have no revid to compare, so a change is assumed only when the live
-  //   revision post-dates the moment the CSV was last written (its file mtime).
-  // - deletions are only trusted when the sweep looks complete: the number of
-  //   ids it returned is checked against `categoryinfo.files` (and, failing that,
-  //   against the cached row count). A short sweep (truncated pagination, a
-  //   transient API hiccup) keeps every cached row rather than wiping the CSV.
-  // - delete a CSV to force a full refetch (clearing only `http-cache/` does
-  //   nothing, the CSV short-circuits before the request cache is consulted).
-  // - `--csv-cache-refresh` ignores existing CSVs and overwrites them.
-
-  private val csvStrictDir: Option[String] = config.imagesFromCsv
-  private val csvAutoCache: Boolean = config.csvCache && csvStrictDir.isEmpty
-  private val csvDir: String = config.effectiveCsvCacheDir
-  private val csvRefresh: Boolean = config.csvCacheRefresh && csvAutoCache
-  private val csvResync: Boolean = config.csvCacheResync && csvAutoCache && !csvRefresh
-
-  // Monument lists share the CSV cache toggle; `--monument-cache-refresh` (or the
-  // shared `--csv-cache-refresh`) forces a full refetch instead of a revision diff.
-  private val monumentCacheActive: Boolean = csvAutoCache
-  private val monumentRefresh: Boolean =
-    monumentCacheActive && (config.monumentCacheRefresh || config.csvCacheRefresh)
-
-  private lazy val liveImageQuery: ImageQuery = ImageQuery.create
-
-  /** When the CSV at `path` was last written — the instant the cache was known
-    * accurate. Used as the "changed since" cut-off for rows that predate the
-    * `last_revid` column (no revid to diff). Falls back to "now" (nothing looks
-    * changed) if the mtime can't be read, keeping the first resync cheap. */
-  private def cacheWrittenAt(path: String): ZonedDateTime =
-    Try(Files.getLastModifiedTime(Paths.get(path)).toInstant.atZone(ZoneOffset.UTC))
-      .getOrElse(ZonedDateTime.now(ZoneOffset.UTC))
-
-  /** Whether an id sweep of `swept` entries can be trusted to be exhaustive
-    * enough to act on deletions. `categoryinfo.files` is the reference when
-    * available (it lags reality by a job-queue cycle, hence the 10% slack);
-    * without it, only a sweep that still covers most of the cached rows is
-    * trusted. An empty sweep against a non-empty cache never is. */
-  private def sweepLooksComplete(swept: Int, cachedCount: Int, expectedFiles: Option[Long]): Boolean =
-    if (swept == 0 && cachedCount > 0) false
-    else
-      expectedFiles match {
-        case Some(expected) => swept >= expected * 0.9
-        case None           => swept >= cachedCount * 0.5
-      }
-
-  // -- monument list cache ------------------------------------------------
-
-  private def monumentCachePath: String =
-    MonumentDbCache.filename(contest.campaign, csvDir)
-
-  private def monumentListConfig = contest.uploadConfigs.head.listConfig
-
-  /** Best-effort: a cache-write failure (read-only dir, disk full) must not fail
-    * the run or trigger a full refetch — the wiki data we just built is fine. */
-  private def persistMonumentCache(pages: Iterable[MonumentListPage]): Unit =
-    if (monumentCacheActive)
-      try {
-        MonumentDbCache.write(monumentCachePath, pages)
-        val (np, nm) = (pages.size, pages.iterator.map(_.monuments.size).sum)
-        logger.info(s"[monument-cache] wrote $nm monuments from $np pages to $monumentCachePath")
-      } catch {
-        case NonFatal(e) =>
-          logger.warn(s"[monument-cache] could not write $monumentCachePath: $e")
-      }
-
-  /** The monument DB for `contest`, via the CSV cache when it is enabled:
-    *   - no cache file / `--monument-cache-refresh` / cache off -> full fetch,
-    *     then (best effort) write the cache;
-    *   - otherwise -> a cheap embeddedin id+revision sweep, refetch only the
-    *     list pages whose revision changed, drop the ones the sweep confirms are
-    *     gone, reuse the rest; rewrite the cache. */
-  private def gatherMonumentDb(): MonumentDB = {
-    val path = monumentCachePath
-    val template = monumentQuery.defaultListTemplate
-
-    def fullFetch(): MonumentDB =
-      Progress.phase("Fetching monument lists")(
-        MonumentDB.getMonumentDb(contest, monumentQuery)
-      )
-
-    // After a full fetch the parsed monuments carry only their source page
-    // title; pair each page with its current revision via one cheap sweep so the
-    // next run can diff against it.
-    def writeFullCache(db: MonumentDB): Unit =
-      if (monumentCacheActive)
-        try {
-          val revs = Await
-            .result(monumentQuery.listPageRevs(template), 2.minutes)
-            .map(r => r.title -> r)
-            .toMap
-          persistMonumentCache(db.monuments.groupBy(_.page).toSeq.map { case (title, ms) =>
-            val r = revs.get(title)
-            MonumentListPage(title, r.flatMap(_.revId), r.flatMap(_.timestamp), ms.toSeq)
-          })
-        } catch {
-          case NonFatal(e) =>
-            logger.warn(s"[monument-cache] revision sweep for cache write failed: $e")
-        }
-
-    if (!monumentCacheActive || monumentRefresh || !new File(path).exists()) {
-      val db = fullFetch()
-      writeFullCache(db)
-      db
-    } else
-      try syncMonumentDb(path, template)
-      catch {
-        case NonFatal(e) =>
-          logger.warn(s"[monument-cache] sync failed ($e); refetching in full")
-          val db = fullFetch()
-          writeFullCache(db)
-          db
-      }
-  }
-
-  private def syncMonumentDb(path: String, template: String): MonumentDB = {
-    val listConfig = monumentListConfig
-    val cached = MonumentDbCache.read(path, listConfig)
-    val cachedByTitle = cached.map(p => p.title -> p).toMap
-
-    val live = Progress.phase("Checking monument lists")(
-      Await.result(monumentQuery.listPageRevs(template), 2.minutes)
-    )
-    val liveTitles = live.map(_.title).toSet
-
-    val changedTitles = live.iterator.collect {
-      case r
-          if cachedByTitle
-            .get(r.title)
-            .forall(c => r.revId.isEmpty || c.revId != r.revId) =>
-        r.title
-    }.toSet
-
-    // A truncated sweep must not read as a mass deletion.
-    val sweepComplete =
-      !(live.isEmpty && cached.nonEmpty) && live.size >= cached.size * 0.5
-    val dropTitles: Set[String] =
-      if (sweepComplete) cachedByTitle.keySet -- liveTitles else Set.empty
-
-    val refreshed: Seq[MonumentListPage] =
-      if (changedTitles.isEmpty) Nil
-      else
-        Progress.bar("Fetching changed monument lists", changedTitles.size.toLong) { task =>
-          val pages =
-            Await.result(monumentQuery.monumentsByPages(changedTitles, None), 2.minutes)
-          task.stepTo(pages.size.toLong)
-          pages
-        }
-
-    val reused =
-      (cachedByTitle -- dropTitles -- changedTitles).values.toVector
-    val merged: Seq[MonumentListPage] = reused ++ refreshed
-
-    logger.info(
-      s"[monument-cache] ${cached.size} cached pages: ${changedTitles.size} changed/new, " +
-        s"${dropTitles.size} removed, ${reused.size} reused" +
-        (if (sweepComplete) "" else " (sweep looked short - deletions skipped)")
-    )
-    persistMonumentCache(merged)
-
-    val monuments = merged.flatMap(_.monuments)
-    val filtered =
-      if (contest.country.code == "ru")
-        monuments.filter(_.page.contains("Природные памятники России"))
-      else monuments
-    new MonumentDB(contest, filtered)
-  }
-
-  private def yearCsvPath(year: Int): String =
-    ImageCsvExporter.filename(contest.campaign, year, isCurrent = false, csvDir)
-
-  private def totalCsvReadPath: Option[String] =
-    csvStrictDir
-      .map(dir => ImageCsvExporter.totalFilename(contest.campaign, dir))
-      .orElse(if (csvAutoCache) Some(ImageCsvExporter.totalFilename(contest.campaign, csvDir)) else None)
-
-  private def writeCsvCache(imageDb: ImageDB): Unit =
-    if (csvAutoCache)
-      ImageCsvExporter.export(imageDb, contest.campaign, isCurrent = false, csvDir)
-
-  private def writeTotalCsvCache(imageDb: ImageDB): Unit =
-    if (csvAutoCache)
-      ImageCsvExporter.exportTotal(imageDb, contest.campaign, csvDir)
-
-  private def contestImages(monumentDb: Some[MonumentDB])(yearContest: Contest): Future[ImageDB] =
-    if (yearContest.year != currentYear) pastYearImages(monumentDb)(yearContest)
-    else currentYearImages(monumentDb)(yearContest)
-
-  private def pastYearImages(monumentDb: Some[MonumentDB])(yearContest: Contest): Future[ImageDB] = {
-    val year = yearContest.year
-    val path = yearCsvPath(year)
-    csvStrictDir match {
-      case Some(_) =>
-        // strict, user-managed CSVs: read verbatim (throws if missing)
-        Future.successful(
-          new ImageDB(yearContest, imagesFromCsvOpt(year).getOrElse(Nil), monumentDb, config.minMpx)
-        )
-      case None if csvAutoCache && !csvRefresh && new File(path).exists() =>
-        val cached = ImageCsvImporter.imagesFromCsv(path)
-        if (!csvResync)
-          Future.successful(new ImageDB(yearContest, cached, monumentDb, config.minMpx))
-        else
-          syncYearFromCategory(yearContest, monumentDb, cached, path)
-      case None =>
-        fetchImageDb(yearContest, monumentDb).map { db =>
-          writeCsvCache(db)
-          db
-        }
-    }
-  }
-
-  private def currentYearImages(monumentDb: Some[MonumentDB])(yearContest: Contest): Future[ImageDB] = {
-    val path = yearCsvPath(yearContest.year)
-    if (csvAutoCache && !csvRefresh && new File(path).exists())
-      syncYearFromCategory(yearContest, monumentDb, ImageCsvImporter.imagesFromCsv(path), path)
-    else
-      fetchImageDb(yearContest, monumentDb).map { db =>
-        writeCsvCache(db)
-        db
-      }
-  }
-
-  /** Reconcile a per-year CSV cache against a fresh category id + revision sweep.
-    * Shared by the always-on current-year sync and the `--csv-cache-resync`
-    * past-year sync. */
-  private def syncYearFromCategory(
-      yearContest: Contest,
-      monumentDb: Some[MonumentDB],
-      cached: Seq[Image],
-      path: String
-  ): Future[ImageDB] = {
-    val query = imageQuery.getOrElse(liveImageQuery)
-    // "changed since" cut-off for pre-last_revid rows: once a past year's upload
-    // window has closed nothing legitimate changes after it, so it is the exact
-    // instant the cache became authoritative. Mid-contest (window end still in
-    // the future) fall back to when the CSV was last written.
-    val now = ZonedDateTime.now(ZoneOffset.UTC)
-    val cutoff = yearContest
-      .dates()
-      .flatMap(_.uploadEndInstant)
-      .filter(_.isBefore(now))
-      .getOrElse(cacheWrittenAt(path))
-    for {
-      liveRevs <- query.imageIdsFromCategory(yearContest)
-      expectedFiles <- query.categoryFileCount(yearContest)
-      db <- syncImageDb(
-        yearContest,
-        monumentDb,
-        cached,
-        writeCsvCache,
-        liveRevs,
-        _ => cutoff,
-        ids => query.imagesWithTemplateByIds(yearContest, ids),
-        sweepComplete =
-          sweepLooksComplete(liveRevs.size, cached.count(_.pageId.isDefined), expectedFiles)
-      )
-    } yield db
-  }
-
-  /** Incrementally reconcile a cached image set against a fresh id + latest-revision
-    * sweep of the wiki:
-    *   - ids in the sweep but not the cache  -> fetched (new uploads)
-    *   - ids in both whose revision changed  -> refetched (page edited / reuploaded)
-    *   - ids in the cache but not the sweep  -> dropped, *only* when `sweepComplete`
-    *   - everything else kept as-is (revid/timestamp backfilled from the sweep)
-    *
-    * "changed" is a `revId` mismatch when both the cached row and the sweep entry
-    * expose one; for rows written before the column existed (no cached revid) it
-    * is the live revision timestamp being after `fallbackTs(row)`. A sweep entry
-    * with no revid (revision-deleted current revision) is treated as unchanged.
-    *
-    * `extraImages` are appended unconditionally (e.g. uk.wikipedia-hosted images
-    * for the all-images CSV, which live in a different page-id space).
-    */
-  private def syncImageDb(
-      yearContest: Contest,
-      monumentDb: Option[MonumentDB],
-      cached: Seq[Image],
-      writeCache: ImageDB => Unit,
-      liveRevs: Seq[PageRevInfo],
-      fallbackTs: Image => ZonedDateTime,
-      fetch: Set[Long] => Future[Iterable[Image]],
-      extraImages: Iterable[Image] = Nil,
-      sweepComplete: Boolean = true
-  ): Future[ImageDB] = {
-    val liveById = liveRevs.iterator.map(r => r.pageId -> r).toMap
-    val cachedById = cached.iterator.flatMap(i => i.pageId.map(_ -> i)).toMap
-
-    val newIds = liveById.keySet -- cachedById.keySet
-    val changedIds = (liveById.keySet intersect cachedById.keySet).filter { id =>
-      val live = liveById(id)
-      val row = cachedById(id)
-      (row.revId, live.revId) match {
-        case (Some(cachedRev), Some(liveRev)) => cachedRev != liveRev
-        case (Some(_), None)                  => false // revdel'd sweep entry: can't tell, keep
-        case (None, _) =>
-          live.timestamp.exists(_.isAfter(row.revTs.getOrElse(fallbackTs(row))))
-      }
-    }
-    val refetch = newIds ++ changedIds
-
-    val goneIds =
-      if (sweepComplete) cachedById.keySet -- liveById.keySet
-      else {
-        val missing = cachedById.keySet -- liveById.keySet
-        if (missing.nonEmpty)
-          logger.warn(
-            s"[csv-cache] ${yearContest.year}: sweep returned ${liveById.size} ids for " +
-              s"${cachedById.size} cached rows — treating it as incomplete, keeping " +
-              s"${missing.size} unmatched row(s) instead of deleting them"
-          )
-        Set.empty[Long]
-      }
-
-    def backfill(i: Image): Image =
-      i.pageId.flatMap(liveById.get) match {
-        case Some(live) =>
-          i.copy(revId = live.revId.orElse(i.revId), revTs = live.timestamp.orElse(i.revTs))
-        case None => i
-      }
-
-    val kept = cached.collect {
-      case i
-          if i.pageId.exists(id => !refetch.contains(id) && !goneIds.contains(id)) ||
-            i.pageId.isEmpty =>
-        backfill(i)
-    }
-
-    val fetchedFuture =
-      if (refetch.isEmpty) Future.successful(Iterable.empty[Image]) else fetch(refetch)
-    fetchedFuture.map { fetched =>
-      val fetchedIds = fetched.flatMap(_.pageId).toSet
-      // A partial refetch (transient error resolving some ids) must not silently
-      // drop a row we still know about: fall back to the stale cached copy.
-      val missedRefetch = refetch -- fetchedIds
-      val staleKept = cached.filter(_.pageId.exists(id => missedRefetch.contains(id) && !newIds.contains(id)))
-      if (missedRefetch.nonEmpty)
-        logger.warn(
-          s"[csv-cache] ${yearContest.year}: refetch returned ${fetchedIds.size}/${refetch.size} " +
-            s"images; keeping ${staleKept.size} stale row(s), ${(missedRefetch -- staleKept.flatMap(_.pageId).toSet).size} new id(s) lost this run"
-        )
-
-      val db = new ImageDB(
-        yearContest,
-        dedupByPageId(kept ++ fetched ++ staleKept ++ extraImages),
-        monumentDb,
-        config.minMpx
-      )
-      writeCache(db)
-      db
-    }
-  }
-
-  /** Keep the first image seen for each page id (rows with no page id pass
-    * through). Order of preference is the caller's list order. */
-  private def dedupByPageId(images: Iterable[Image]): Seq[Image] = {
-    val seen = scala.collection.mutable.Set.empty[Long]
-    images.iterator.filter { i =>
-      i.pageId match {
-        case Some(id) => seen.add(id)
-        case None     => true
-      }
-    }.toVector
-  }
-
-  /** A cached row is hosted on a project wiki (not Commons) when its stored
-    * `page_url` points somewhere other than commons.wikimedia.org. Those rows are
-    * outside the Commons template sweep's page-id space, so the sweep must never
-    * be allowed to treat them as deleted. */
-  private def isProjectWikiHosted(image: Image): Boolean =
-    image.pageUrl.exists(url => !url.contains("commons.wikimedia.org"))
-
-  /** Resync the all-images CSV: a live revid sweep of the Commons contest
-    * template diffed against the Commons-hosted cached rows, plus a fresh fetch
-    * of the uk.wikipedia-hosted images (small set, different page-id space, so
-    * always refetched rather than diffed), plus the per-year images (kept in sync
-    * with the full-rebuild path, which unions them too). */
-  private def resyncTotalCsv(
-      monumentDb: Option[MonumentDB],
-      dbsByYear: Seq[ImageDB],
-      path: String
-  ): Future[ImageDB] = {
-    val cached = ImageCsvImporter.imagesFromCsv(path)
-    val (cachedWiki, cachedCommons) = cached.partition(isProjectWikiHosted)
-    val writtenAt = cacheWrittenAt(path)
-    val query = imageQuery.getOrElse(liveImageQuery)
-    val perYearImages = dbsByYear.flatMap(_.images)
-    for {
-      commonsRevs <- query.imageIdsWithTemplate(contest)
-      freshWiki <- imageQueryWiki.map(_.imagesWithTemplate(contest)).getOrElse(Future.successful(Nil))
-      // an empty uk.wiki refetch when one was configured means the fetch failed;
-      // fall back to the cached wiki rows and, since some of those may sit in
-      // cachedCommons (rows cached without a page_url can't be told apart), also
-      // stop trusting the sweep for deletions this run
-      wikiFetchTrustworthy = freshWiki.nonEmpty || imageQueryWiki.isEmpty
-      wiki =
-        if (wikiFetchTrustworthy) freshWiki
-        else {
-          logger.warn(
-            "[csv-cache] all-images: uk.wiki refetch returned nothing — keeping all cached " +
-              "rows and skipping Commons deletion detection this run"
-          )
-          cachedWiki
-        }
-      db <- syncImageDb(
-        contest,
-        monumentDb,
-        cachedCommons,
-        writeTotalCsvCache,
-        commonsRevs,
-        _ => writtenAt,
-        ids => query.imagesWithTemplateByIds(contest, ids),
-        extraImages = wiki ++ perYearImages,
-        sweepComplete = wikiFetchTrustworthy &&
-          sweepLooksComplete(commonsRevs.size, cachedCommons.count(_.pageId.isDefined), None)
-      )
-    } yield db
-  }
-
-  private def fetchImageDb(
-      yearContest: Contest,
-      monumentDb: Some[MonumentDB]
-  ): Future[ImageDB] =
-    ImageDB.create(
-      yearContest,
-      imageQuery.getOrElse(getImageQuery(Some(yearContest.year))),
-      monumentDb,
-      config.minMpx
-    )
-
-  private def imagesFromCsvOpt(year: Int): Option[Seq[Image]] =
-    config.imagesFromCsv.map { dir =>
-      val path = ImageCsvExporter.filename(contest.campaign, year, isCurrent = false, dir)
-      if (!new File(path).exists()) {
-        throw new FileNotFoundException(
-          s"--images-from-csv was set but $path is missing. " +
-            s"Run --export-images-csv for campaign=${contest.campaign} year=$year first."
-        )
-      }
-      ImageCsvImporter.imagesFromCsv(path)
-    }
-
-  private def imagesByTemplate(
-      monumentDb: Some[MonumentDB],
-      dbsByYear: Seq[ImageDB],
-      totalPageRevs: Seq[PageRevInfo]
-  ): Future[ImageDB] = {
-    val idsByYear = dbsByYear.flatMap(_.images.flatMap(_.pageId)).toSet
-    val missingPageIds = totalPageRevs.map(_.pageId).toSet -- idsByYear
-    Progress.phaseF(s"Fetching all-time images (${missingPageIds.size} files)") {
-      for {
-        commons <- totalImageQuery.imagesWithTemplateByIds(contest, missingPageIds)
-        wiki <- imageQueryWiki.map(_.imagesWithTemplate(contest)).getOrElse(Future.successful(Nil))
-      } yield new ImageDB(contest, dbsByYear.flatMap(_.images) ++ commons ++ wiki, monumentDb)
-    }
-  }
-
-  private def imageRevsByTemplate(): Future[Seq[PageRevInfo]] =
-    totalImageQuery.imageIdsWithTemplate(contest)
-
   /** Fetch contest data, run every configured report, and block until every
     * wiki write has settled.
-    *
-    * Unlike the old fire-and-forget version this waits for the whole pipeline,
-    * isolates each report step (one failing step no longer aborts the rest),
-    * and reports what did not publish.
     *
     * @return the number of failures (report steps that threw + wiki writes that
     *         errored). 0 means a clean run.
@@ -678,41 +171,7 @@ class Statistics(
     Progress.configure(config.progress)
     try {
       val stat = Await.result(gatherData(total = total), Duration.Inf)
-
-      val stepErrors =
-        Progress.bar("Generating reports", 0L) { task =>
-          new ReporterRegistry(stat, config, Some(task)).output()
-        }
-      // Publishing is the long pole on a cached run: dozens of throttled edits
-      // draining a few at a time. Drive a bar off WriteWatcher's counters.
-      val writeFailures =
-        Progress.bar("Publishing edits", WriteWatcher.submittedCount) { task =>
-          WriteWatcher.awaitQuiescence(onProgress = (done, submitted) => {
-            task.total(submitted)
-            task.stepTo(done)
-          })
-        }
-
-      if (stepErrors.nonEmpty || writeFailures.nonEmpty) {
-        Progress.note("\n=== Publish summary: INCOMPLETE ===")
-        if (stepErrors.nonEmpty) {
-          Progress.note(s"report steps that failed: ${stepErrors.size}")
-          stepErrors.foreach { case (name, e) => Progress.note(s"  - $name: $e") }
-        }
-        if (writeFailures.nonEmpty) {
-          Progress.note(
-            s"wiki writes that errored: ${writeFailures.size} " +
-              "(edit conflicts the list updater retries are excluded)"
-          )
-          writeFailures.foreach { case (desc, e) => Progress.note(s"  - $desc: $e") }
-        }
-      } else {
-        Progress.note(
-          s"\n=== Publish summary: OK (${WriteWatcher.completedCount} wiki writes) ==="
-        )
-      }
-
-      stepErrors.size + writeFailures.size
+      new ReportRunner(stat, config).run()
     } finally Progress.close()
   }
 
