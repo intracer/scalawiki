@@ -2,7 +2,7 @@ package org.scalawiki.wlx.dto
 
 import org.specs2.mutable.Specification
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate, ZoneId}
 
 class ContestSpec extends Specification {
 
@@ -85,6 +85,18 @@ class ContestSpec extends Specification {
       wle.dates(2020).get.uploadEnd === Some(LocalDate.of(2020, 7, 31))
       wle.dates(2023).get.latestAllowedPicturedDate === Some(LocalDate.of(2022, 2, 23))
       wle.dates(2024).get.latestAllowedPicturedDate === Some(LocalDate.of(2024, 3, 31))
+    }
+
+    "interpret the dates as end-of-day in the configured Kyiv time zone" in {
+      val wle = Contest.byCampaign("wle-ua").get.dates(2016).get
+      wle.zone === ZoneId.of("Europe/Kyiv")
+      // 2016-05-31 is firmly EEST (+03:00): end of day == 20:59:59 UTC
+      wle.uploadEndInstant.map(_.toInstant) === Some(Instant.parse("2016-05-31T20:59:59Z"))
+
+      val wlm = Contest.byCampaign("wlm-ua").get.dates(2025).get
+      // 2025-08-31 EEST (+03:00)
+      wlm.latestAllowedPicturedInstant.map(_.toInstant) ===
+        Some(Instant.parse("2025-08-31T20:59:59Z"))
     }
 
     "return None for an unknown year or a config-less contest" in {

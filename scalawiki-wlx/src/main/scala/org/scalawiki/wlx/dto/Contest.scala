@@ -64,11 +64,16 @@ case class Contest(
       )
 
   /** Calendar dates for `forYear` (defaults to this contest's year) from the
-    * `dates.<year>` block of the campaign `.conf`, when present. */
+    * `dates.<year>` block of the campaign `.conf`, when present. Dates are
+    * end-of-day in `dates.timezone` (per-year `timezone` overrides it; UTC when
+    * neither is set). */
   def dates(forYear: Int = year): Option[ContestDates] =
     config
       .filter(_.hasPath(s"dates.$forYear"))
-      .map(c => ContestDates.fromConfig(c.getConfig(s"dates.$forYear")))
+      .map { c =>
+        val campaignZone = ContestDates.zoneOf(c.getConfig("dates"))
+        ContestDates.fromConfig(c.getConfig(s"dates.$forYear"), campaignZone)
+      }
 
 }
 
