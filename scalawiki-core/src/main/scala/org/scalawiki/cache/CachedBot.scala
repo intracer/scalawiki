@@ -1,8 +1,13 @@
 package org.scalawiki.cache
 
-import java.io.File
+import java.io.{File, IOException}
 import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, StandardCopyOption}
+import java.nio.file.{
+  AtomicMoveNotSupportedException,
+  FileSystemException,
+  Files,
+  StandardCopyOption
+}
 import java.security.MessageDigest
 
 import org.rogach.scallop.ScallopConf
@@ -29,15 +34,28 @@ object Cache {
   * (UTF-8). This replaced a ChronicleMap-backed store: the file cache is smaller,
   * faster to read, plain text, and needs no `--add-opens` / `--add-exports` JVM
   * flags to run on JDK 17+.
+  *
+  * Writes go through a temp file + atomic rename, so a reader never sees a
+  * half-written entry; per-key locking keeps a key's value function to a single
+  * run per process. Concurrent processes may still both compute a cold key, but
+  * the rename makes that safe.
   */
 class Cache(name: String, persistent: Boolean = true, root: File = Cache.defaultRoot) {
 
   private val dir: File = new File(root, name)
 
-  private val memory: TrieMap[String, String] =
-    if (persistent) null else TrieMap.empty[String, String]
+  private val memory: TrieMap[String, String] = TrieMap.empty[String, String]
+
+  /** Per-key locks so a given key's value function runs at most once per
+    * process, the way `ChronicleMap.computeIfAbsent` used to guarantee.
+    * (Across processes the atomic rename below still keeps readers consistent.)
+    */
+  private val locks: TrieMap[String, AnyRef] = TrieMap.empty[String, AnyRef]
 
   if (persistent) dir.mkdirs()
+
+  private def lockFor(key: String): AnyRef =
+    locks.getOrElseUpdate(key, new Object)
 
   private def fileFor(key: String): File = {
     val digest = MessageDigest.getInstance("SHA-256").digest(key.getBytes(StandardCharsets.UTF_8))
@@ -47,34 +65,57 @@ class Cache(name: String, persistent: Boolean = true, root: File = Cache.default
   def containsKey(key: String): Boolean =
     if (persistent) fileFor(key).isFile else memory.contains(key)
 
-  def remove(key: String): Unit =
+  def remove(key: String): Unit = lockFor(key).synchronized {
     if (persistent) Files.deleteIfExists(fileFor(key).toPath)
     else memory.remove(key)
+  }
 
-  def computeIfAbsent(key: String, fn: String => String): String = {
-    if (persistent) {
-      val target = fileFor(key)
-      if (target.isFile) {
-        new String(Files.readAllBytes(target.toPath), StandardCharsets.UTF_8)
-      } else {
-        val value = fn(key)
-        val tmp = File.createTempFile(target.getName, ".tmp", dir)
-        Files.write(tmp.toPath, value.getBytes(StandardCharsets.UTF_8))
-        try {
-          Files.move(
-            tmp.toPath,
-            target.toPath,
-            StandardCopyOption.REPLACE_EXISTING,
-            StandardCopyOption.ATOMIC_MOVE
-          )
-        } catch {
-          case _: java.nio.file.AtomicMoveNotSupportedException =>
-            Files.move(tmp.toPath, target.toPath, StandardCopyOption.REPLACE_EXISTING)
+  def computeIfAbsent(key: String, fn: String => String): String =
+    lockFor(key).synchronized {
+      if (!persistent) memory.getOrElseUpdate(key, fn(key))
+      else {
+        val target = fileFor(key)
+        readFile(target).getOrElse {
+          val value = fn(key)
+          writeAtomically(target, value)
+          value
         }
-        value
       }
-    } else {
-      memory.getOrElseUpdate(key, fn(key))
+    }
+
+  /** An existing cache file's content, or `None` if it is absent or could not
+    * be read — e.g. a concurrent eviction deleted it between the check and the
+    * read; the caller then simply recomputes. */
+  private def readFile(target: File): Option[String] =
+    try {
+      if (target.isFile)
+        Some(new String(Files.readAllBytes(target.toPath), StandardCharsets.UTF_8))
+      else None
+    } catch {
+      case _: IOException => None
+    }
+
+  private def writeAtomically(target: File, value: String): Unit = {
+    val tmp = File.createTempFile(target.getName, ".tmp", dir)
+    try {
+      Files.write(tmp.toPath, value.getBytes(StandardCharsets.UTF_8))
+      try {
+        Files.move(
+          tmp.toPath,
+          target.toPath,
+          StandardCopyOption.REPLACE_EXISTING,
+          StandardCopyOption.ATOMIC_MOVE
+        )
+      } catch {
+        case _: AtomicMoveNotSupportedException =>
+          Files.move(tmp.toPath, target.toPath, StandardCopyOption.REPLACE_EXISTING)
+        case _: FileSystemException if target.isFile =>
+        // Another process wrote an equivalent entry first (and on Windows may
+        // still hold it open, blocking the replace). Its content will do.
+      }
+    } finally {
+      // No-op after a successful move; cleans up if write/move threw.
+      Files.deleteIfExists(tmp.toPath)
     }
   }
 
@@ -155,7 +196,9 @@ object CachedBot {
     if (!dir.isDirectory) {
       throw new IllegalArgumentException(s"Cache directory $cacheDir is absent")
     }
-    val entries = Option(dir.listFiles()).getOrElse(Array.empty[File]).filter(_.isFile)
+    val entries = Option(dir.listFiles())
+      .getOrElse(Array.empty[File])
+      .filter(f => f.isFile && !f.getName.endsWith(".tmp"))
     val valueSizes = entries.map(_.length()).toSeq
 
     println("entries: " + entries.length)
