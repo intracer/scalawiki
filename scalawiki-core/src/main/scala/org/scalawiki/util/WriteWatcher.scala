@@ -77,9 +77,16 @@ object WriteWatcher {
     * [[maxConcurrent]] writes are in flight; the returned future still completes
     * with `op`'s result (or failure). When disabled `op` runs immediately, so
     * behaviour is unchanged for library/test callers.
+    *
+    * `benign` classifies a failure the caller expects and handles itself (an
+    * edit conflict that [[org.scalawiki.edit.PageUpdater]] resolves by re-reading
+    * and retrying, say). Such a failure still propagates through the returned
+    * future, but it is not counted or logged as a dropped write, so a run where
+    * every page ultimately published is not reported as `INCOMPLETE`.
     */
   def submit[T](
-      desc: => String
+      desc: => String,
+      benign: Throwable => Boolean = _ => false
   )(op: () => Future[T])(implicit ec: ExecutionContext): Future[T] = {
     if (!enabled) {
       return try op()
@@ -91,7 +98,7 @@ object WriteWatcher {
       try desc
       catch { case _: Throwable => "wiki write" }
     val promise = Promise[T]()
-    queue.add(() => runTask(id, d, op, promise))
+    queue.add(() => runTask(id, d, benign, op, promise))
     started.incrementAndGet()
     pump()
     promise.future
@@ -127,6 +134,7 @@ object WriteWatcher {
   private def runTask[T](
       id: Long,
       desc: String,
+      benign: Throwable => Boolean,
       op: () => Future[T],
       promise: Promise[T]
   )(implicit ec: ExecutionContext): Unit = {
@@ -138,6 +146,13 @@ object WriteWatcher {
       running.decrementAndGet()
       completed.incrementAndGet()
       result match {
+        case Failure(e) if benign(e) =>
+          // Expected, caller-handled failure (e.g. an edit conflict that
+          // PageUpdater resolves by re-reading and retrying). Not a dropped
+          // write, so don't record it; just note it quietly.
+          logger.foreach(
+            _.info(s"wiki write rejected, caller will retry: $desc: ${e.getMessage}")
+          )
         case Failure(e) =>
           failures.put(id, (desc, e))
           logger match {
@@ -153,10 +168,10 @@ object WriteWatcher {
     }
   }
 
-  /** (description, throwable) for every write that has failed so far. A write
-    * that the caller later retries and lands (e.g.
-    * [[org.scalawiki.edit.PageUpdater]] re-reading after an edit conflict) still
-    * shows up here for its failed attempt. */
+  /** (description, throwable) for every write that has failed so far, excluding
+    * failures the caller flagged as `benign` in [[submit]] (edit conflicts it
+    * retries itself). A non-benign failure the caller happens to retry by hand
+    * still shows up here for its failed attempt. */
   def recordedFailures: Seq[(String, Throwable)] =
     failures.values().asScala.toVector
 

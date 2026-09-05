@@ -541,7 +541,7 @@ class Statistics(
       if (writeFailures.nonEmpty) {
         println(
           s"wiki writes that errored: ${writeFailures.size} " +
-            "(list-updater edits may have been retried and still landed)"
+            "(edit conflicts the list updater retries are excluded)"
         )
         writeFailures.foreach { case (desc, e) => println(s"  - $desc: $e") }
       }

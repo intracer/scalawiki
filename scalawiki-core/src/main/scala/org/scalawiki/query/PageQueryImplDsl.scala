@@ -208,15 +208,22 @@ class PageQueryImplDsl(
     // Don't burn the whole backoff budget replaying an edit that lost a race:
     // an edit-conflict error won't clear until the page is re-read and the edit
     // rebuilt, which is the caller's job (see PageUpdater).
-    val policy = retry.FailFast(retry.Backoff()(odelay.Timer.default)) {
+    val isConflict: PartialFunction[Throwable, Boolean] = {
       case e: MwException => Edit.conflictCodes.contains(e.code)
+      case _              => false
     }
+    val policy = retry.FailFast(retry.Backoff()(odelay.Timer.default))(isConflict)
     // Many callers (contest report generators) fire edits and discard the
     // future. Route it through WriteWatcher so, when the CLI has enabled it,
     // the edits are throttled to a safe concurrency, failures are logged
     // instead of vanishing, and the process can wait for every write to finish
     // before it exits. When not enabled this runs the edit immediately, as before.
-    WriteWatcher.submit(s"edit ${bot.host} / $page")(() => policy(() => performEdit()))
+    // Edit conflicts are `benign` here: FailFast surfaces them on purpose so the
+    // caller (PageUpdater) can re-read and retry, so they must not be counted as
+    // dropped writes.
+    WriteWatcher.submit(s"edit ${bot.host} / $page", isConflict)(() =>
+      policy(() => performEdit())
+    )
   }
 
   override def upload(

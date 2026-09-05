@@ -66,5 +66,21 @@ class WriteWatcherSpec extends Specification {
         failures.map(_._2) === Seq(boom)
       } finally WriteWatcher.reset()
     }
+
+    "propagate a benign failure to the caller but not record it" in {
+      WriteWatcher.reset()
+      WriteWatcher.enable()
+      try {
+        val conflict = new RuntimeException("editconflict")
+        val f = WriteWatcher.submit("conflicted", benign = _ => true)(() =>
+          Future.failed[Int](conflict)
+        )
+        Await.result(f.failed, 2.seconds) === conflict
+
+        val failures = WriteWatcher.awaitQuiescence(settle = 300.millis)
+        failures === Nil
+        WriteWatcher.completedCount === 1L
+      } finally WriteWatcher.reset()
+    }
   }
 }
