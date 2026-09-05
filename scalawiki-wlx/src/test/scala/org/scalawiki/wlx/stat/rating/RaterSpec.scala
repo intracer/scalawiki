@@ -113,6 +113,27 @@ class RaterSpec extends Specification {
       }
     }
 
+    "parse wle 2026 (Регламент п. 7.3, same as 2025: 20 / 4 / 2 / 0.5 балів)" in {
+      val rater = loadRater(WLE, 2026)
+
+      rater match {
+        case RateSum(
+              _,
+              List(
+                NumberOfMonuments(_, 0.5, _),
+                NumberOfAuthorsBonus(_, numberOfAuthorsRates)
+              )
+            ) =>
+          // base 0.5 + bonus 19.5 / 3.5 / 1.5 -> 20 / 4 / 2 total;
+          // a repeat by the same author gets base only (0.5)
+          numberOfAuthorsRates === RateRanges(
+            Map((0, 0) -> 19.5, (1, 3) -> 3.5, (4, 9) -> 1.5),
+            sameAuthorZeroBonus = true
+          )
+        case other => ko(s"unexpected rater $other")
+      }
+    }
+
 //    "05-101-0380" in {
 //      val monumentId = "05-101-0380"
 //      val rater = Rater.fromConfig(contestStat, ConfigFactory.load("wlm_ua.conf"))
