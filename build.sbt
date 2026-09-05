@@ -3,17 +3,11 @@ import Dependencies._
 
 ThisBuild / Test / fork := true
 
-// ChronicleMap (net.openhft.*) needs reflective access to JDK internals that JPMS
-// strongly encapsulates by default on JDK 16+ (CI runs JDK 11, where this isn't enforced).
+// UTF-8 stdout/stderr so Cyrillic in reports/tests isn't mangled to '?'.
 ThisBuild / Test / javaOptions ++= Seq(
-  "--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED",
-  "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED",
-  "--add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED",
-  "--add-opens=java.base/java.lang=ALL-UNNAMED",
-  "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
-  "--add-opens=java.base/java.io=ALL-UNNAMED",
-  "--add-opens=java.base/java.util=ALL-UNNAMED",
-  "--add-opens=java.base/java.nio=ALL-UNNAMED"
+  "-Dfile.encoding=UTF-8",
+  "-Dsun.stdout.encoding=UTF-8",
+  "-Dsun.stderr.encoding=UTF-8"
 )
 
 lazy val isScala213 = settingKey[Boolean]("Is the scala version 2.13.")
@@ -90,7 +84,6 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
       Library.Commons.codec,
       "org.jsoup" % "jsoup" % JSoupV,
       "com.softwaremill.retry" %% "retry" % RetryV,
-      "net.openhft" % "chronicle-map" % ChronicleMapV,
       "org.rogach" %% "scallop" % ScallopV
     )
   })

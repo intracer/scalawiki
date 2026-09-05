@@ -136,7 +136,7 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
   val imagesFromCsv =
     opt[String](name = "images-from-csv", descr = "Read past years' images from CSV files instead of querying/caching from the wiki. Argument is the directory containing <campaign>-<year>-images.csv / <campaign>-all-images.csv files produced by --export-images-csv.")
   val noCsvCache =
-    opt[Boolean](name = "no-csv-cache", descr = "Disable the automatic image CSV cache (csv-cache/ dir); always fetch/parse from the wiki + ChronicleMap.")
+    opt[Boolean](name = "no-csv-cache", descr = "Disable the automatic image CSV cache (csv-cache/ dir); always fetch/parse from the wiki (the http-cache/ request cache still applies).")
   val csvCacheDir =
     opt[String](name = "csv-cache-dir", descr = "Directory for the automatic image CSV cache (default: csv-cache).")
   val csvCacheRefresh =

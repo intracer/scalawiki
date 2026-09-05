@@ -1,51 +1,82 @@
 package org.scalawiki.cache
 
 import java.io.File
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, StandardCopyOption}
+import java.security.MessageDigest
 
-import net.openhft.chronicle.map.{ChronicleMap, ChronicleMapBuilder}
 import org.rogach.scallop.ScallopConf
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.{MwBot, MwBotImpl}
 import org.scalawiki.dto.{MwException, Page, Site}
 import org.scalawiki.http.HttpClient
 
+import scala.collection.concurrent.TrieMap
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class Caller(fn: String => String)
-    extends java.util.function.Function[String, String] {
-  override def apply(t: String): String = {
-    fn.apply(t)
-  }
+object Cache {
+
+  /** Root directory for all persistent caches, relative to the working dir. */
+  val defaultRoot: File = new File("http-cache")
 }
 
-class Cache(
-    name: String,
-    entries: Int = 12 * 1024,
-    valueSize: Int = 128 * 1024,
-    persistent: Boolean = true
-) {
+/** A plain filesystem key -> file cache.
+  *
+  * Each entry is one file under `<root>/<name>/` (root defaults to `http-cache/`),
+  * named by the SHA-256 hex of the key, holding the response body verbatim
+  * (UTF-8). This replaced a ChronicleMap-backed store: the file cache is smaller,
+  * faster to read, plain text, and needs no `--add-opens` / `--add-exports` JVM
+  * flags to run on JDK 17+.
+  */
+class Cache(name: String, persistent: Boolean = true, root: File = Cache.defaultRoot) {
 
-  private val builder: ChronicleMapBuilder[String, String] = ChronicleMap
-    .of(classOf[String], classOf[String])
-    .averageKeySize(1024)
-    .averageValueSize(valueSize)
-    .entries(entries)
-    .name(name)
+  private val dir: File = new File(root, name)
 
-  val cache = if (persistent) {
-    builder.createPersistedTo(new File(name))
-  } else {
-    builder.create()
+  private val memory: TrieMap[String, String] =
+    if (persistent) null else TrieMap.empty[String, String]
+
+  if (persistent) dir.mkdirs()
+
+  private def fileFor(key: String): File = {
+    val digest = MessageDigest.getInstance("SHA-256").digest(key.getBytes(StandardCharsets.UTF_8))
+    new File(dir, digest.map("%02x".format(_)).mkString)
   }
 
-  def containsKey(key: String): Boolean = cache.containsKey(key)
+  def containsKey(key: String): Boolean =
+    if (persistent) fileFor(key).isFile else memory.contains(key)
 
-  def remove(key: String): String = cache.remove(key)
+  def remove(key: String): Unit =
+    if (persistent) Files.deleteIfExists(fileFor(key).toPath)
+    else memory.remove(key)
 
-  def computeIfAbsent(key: String, fn: String => String): String =
-    cache.computeIfAbsent(key, new Caller(fn))
+  def computeIfAbsent(key: String, fn: String => String): String = {
+    if (persistent) {
+      val target = fileFor(key)
+      if (target.isFile) {
+        new String(Files.readAllBytes(target.toPath), StandardCharsets.UTF_8)
+      } else {
+        val value = fn(key)
+        val tmp = File.createTempFile(target.getName, ".tmp", dir)
+        Files.write(tmp.toPath, value.getBytes(StandardCharsets.UTF_8))
+        try {
+          Files.move(
+            tmp.toPath,
+            target.toPath,
+            StandardCopyOption.REPLACE_EXISTING,
+            StandardCopyOption.ATOMIC_MOVE
+          )
+        } catch {
+          case _: java.nio.file.AtomicMoveNotSupportedException =>
+            Files.move(tmp.toPath, target.toPath, StandardCopyOption.REPLACE_EXISTING)
+        }
+        value
+      }
+    } else {
+      memory.getOrElseUpdate(key, fn(key))
+    }
+  }
 
 }
 
@@ -54,12 +85,10 @@ class CachedBot(
     site: Site,
     name: String,
     persistent: Boolean,
-    http: HttpClient = HttpClient.get(MwBot.system),
-    entries: Int = 12 * 1024,
-    valueSize: Int = 128 * 1024
+    http: HttpClient = HttpClient.get(MwBot.system)
 ) extends MwBotImpl(site) {
 
-  val cache = new Cache(name + ".cache", entries, valueSize, persistent)
+  val cache = new Cache(name, persistent)
 
   override def run(
       action: Action,
@@ -113,26 +142,23 @@ object CachedBot {
     trimmed.startsWith("{") || trimmed.startsWith("[")
   }
 
-  import scala.collection.JavaConverters._
-
   class CachedArgs(arguments: Seq[String]) extends ScallopConf(arguments) {
-    val cache = opt[String](descr = "cache file")
+    val cache = opt[String](descr = "cache directory")
     verify()
   }
 
   def main(args: Array[String]): Unit = {
     val parsed = new CachedArgs(args)
 
-    val cacheFile = parsed.cache()
-    val file = new File(cacheFile)
-    if (!file.exists()) {
-      throw new IllegalArgumentException(s"File $cacheFile is absent")
+    val cacheDir = parsed.cache()
+    val dir = new File(cacheDir)
+    if (!dir.isDirectory) {
+      throw new IllegalArgumentException(s"Cache directory $cacheDir is absent")
     }
-    val cache = new Cache(cacheFile)
-    val keys = cache.cache.keySet().asScala.toSeq.sorted
-    val valueSizes = cache.cache.values().asScala.map(_.length).toSeq
+    val entries = Option(dir.listFiles()).getOrElse(Array.empty[File]).filter(_.isFile)
+    val valueSizes = entries.map(_.length()).toSeq
 
-    println("keys: " + keys.size)
+    println("entries: " + entries.length)
     if (valueSizes.nonEmpty) {
       println(
         s"values: total size: ${valueSizes.sum / (1024 * 1024)} MB, avg size: ${valueSizes.sum / (valueSizes.size * 1024)} KB"

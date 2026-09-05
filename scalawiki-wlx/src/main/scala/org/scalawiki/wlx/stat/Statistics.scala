@@ -165,10 +165,10 @@ class Statistics(
 
   // ---- image CSV cache -----------------------------------------------------
   //
-  // A second-tier cache next to the ChronicleMap `.cache` files: once an
+  // A second-tier cache above the `http-cache/` request cache: once an
   // `ImageDB` has been built it is serialized to `<csvDir>/<campaign>-<year>-images.csv`
   // (and `<campaign>-all-images.csv` for the all-time DB). Later runs read those
-  // CSVs directly and skip the sequential JSON parse of the ChronicleMap.
+  // CSVs directly and skip the sequential JSON parse of the raw API responses.
   //
   // - `--images-from-csv <dir>` keeps its strict semantics (files must exist);
   //   `--csv-cache-refresh` does not apply there (those files are user-managed
@@ -190,8 +190,8 @@ class Statistics(
   //   ids it returned is checked against `categoryinfo.files` (and, failing that,
   //   against the cached row count). A short sweep (truncated pagination, a
   //   transient API hiccup) keeps every cached row rather than wiping the CSV.
-  // - delete a CSV to force a full refetch (removing only the `.cache` does
-  //   nothing, the CSV short-circuits before the ChronicleMap is consulted).
+  // - delete a CSV to force a full refetch (clearing only `http-cache/` does
+  //   nothing, the CSV short-circuits before the request cache is consulted).
   // - `--csv-cache-refresh` ignores existing CSVs and overwrites them.
 
   private val csvStrictDir: Option[String] = config.imagesFromCsv
@@ -582,7 +582,7 @@ object Statistics {
     if (cfg.exportCsv.isEmpty || cfg.exportImagesCsv.isDefined) {
       val cacheName = s"${cfg.campaign}-${contest.year}"
       val imageQueryWiki = ImageQuery.create(
-        new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 100)
+        new CachedBot(Site.ukWiki, cacheName + "-wiki", true)
       )
 
       val stat = new Statistics(
