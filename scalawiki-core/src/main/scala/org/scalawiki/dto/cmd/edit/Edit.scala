@@ -13,21 +13,6 @@ case class Edit(override val params: EditParam[Any]*)
 
 }
 
-object Edit {
-
-  /** API `error.code` values that mean the page has moved on under us since we
-    * read it: another edit landed between our read and our write
-    * (`editconflict`), the page was deleted (`pagedeleted`), or it was created
-    * by someone else while we were preparing a create (`articleexists`).
-    *
-    * Retrying such an edit unchanged just replays the same stale base revision,
-    * so the caller must re-read the page and rebuild the edit instead. See
-    * `org.scalawiki.edit.PageUpdater`.
-    */
-  val conflictCodes: Set[String] =
-    Set("editconflict", "pagedeleted", "articleexists")
-}
-
 trait EditParam[+T] extends Parameter[T]
 
 case class Title(override val arg: String)

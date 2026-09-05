@@ -209,7 +209,7 @@ class PageQueryImplDsl(
     // an edit-conflict error won't clear until the page is re-read and the edit
     // rebuilt, which is the caller's job (see PageUpdater).
     val isConflict: PartialFunction[Throwable, Boolean] = {
-      case e: MwException => Edit.conflictCodes.contains(e.code)
+      case e: MwException => e.conflict
       case _              => false
     }
     val policy = retry.FailFast(retry.Backoff()(odelay.Timer.default))(isConflict)

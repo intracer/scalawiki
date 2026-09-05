@@ -4,7 +4,6 @@ import java.time.ZonedDateTime
 
 import org.scalawiki.WithBot
 import org.scalawiki.dto.MwException
-import org.scalawiki.dto.cmd.edit.Edit
 
 import scala.concurrent._
 import scala.util.{Failure, Success, Try}
@@ -128,8 +127,7 @@ class PageUpdater(task: PageUpdateTask) extends WithBot {
                 startTimestamp = Some(startTimestamp)
               )
               .recoverWith {
-                case e: MwException
-                    if Edit.conflictCodes.contains(e.code) && retriesLeft > 0 =>
+                case e: MwException if e.conflict && retriesLeft > 0 =>
                   println(
                     s"$title: edit conflict (${e.code}), re-reading and retrying " +
                       s"($retriesLeft attempt(s) left)"

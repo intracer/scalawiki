@@ -244,7 +244,17 @@ class MwBotImpl(
       parseJson(reads, body).getOrElse {
         val exception =
           parseJson(errorReads, body).getOrElse(MwException("", body))
-        log.error(exception, "mediawiki error")
+        // Expected errors (edit conflicts, an expired CSRF token, replication
+        // lag / rate limiting) are recovered by the retry / re-read machinery
+        // above — log them without a stack trace so a normal, self-correcting
+        // event on a long run doesn't read as a failure. Throttling stays at
+        // WARN so the operator sees it; conflicts / token refresh are routine.
+        if (exception.transient && exception.code != "badtoken")
+          log.warning(s"mediawiki ${exception.code}: ${exception.info} — backing off")
+        else if (exception.expected)
+          log.info(s"mediawiki ${exception.code}: ${exception.info}")
+        else
+          log.error(exception, "mediawiki error")
         throw exception
       }
     }
