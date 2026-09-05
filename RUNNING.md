@@ -115,6 +115,30 @@ Flags:
 `--images-from-csv DIR` still works as before (strict: the per-year files must
 already exist in `DIR`; `--csv-cache-resync` does not touch them).
 
+## Monument list cache
+
+The monument lists are cached the same way, one CSV per campaign:
+
+```
+csv-cache/wlm-ua-monuments.csv     # every parsed monument + its source page's last revision
+```
+
+* **First run** fetches and parses every list page from the wiki (the long pole
+  of a cold run), then writes the CSV plus one cheap revision sweep to tag each
+  page.
+* **Later runs** do only the sweep — an `embeddedin` id + revision query with no
+  page content — diff it against the CSV, refetch and re-parse just the list
+  pages whose revision changed, drop the ones the sweep confirms are gone, and
+  reuse the rest. A run where nothing changed is a few seconds.
+* A short/failed sweep never wipes the cache: deletions are acted on only when
+  the sweep still covers most of the cached pages; any sync error falls back to
+  a full refetch.
+
+| flag                       | effect                                                              |
+|----------------------------|-------------------------------------------------------------------|
+| `--no-csv-cache`           | also disables this cache (shared toggle)                            |
+| `--monument-cache-refresh` | ignore the cached lists this run: refetch every list page and overwrite the CSV (`--csv-cache-refresh` does this too) |
+
 ## Script environment variables
 
 | var         | meaning                                                        |
