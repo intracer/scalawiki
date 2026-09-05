@@ -69,6 +69,7 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
   ): Statistics = {
     val monumentQuery = mock[MonumentQuery]
     monumentQuery.byMonumentTemplate(date = None) returns monuments
+    monumentQuery.listPageRevs(any[String]) returns Future.successful(Nil)
 
     val cfg = StatConfig(
       campaign = campaign,

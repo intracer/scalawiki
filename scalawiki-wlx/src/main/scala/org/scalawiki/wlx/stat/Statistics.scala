@@ -5,11 +5,12 @@ import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.{Image, Site}
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.ImageQuery.PageRevInfo
+import org.scalawiki.wlx.query.MonumentQuery.MonumentListPage
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
 import org.scalawiki.wlx.stat.progress.Progress
 import org.scalawiki.wlx.stat.reports.ReporterRegistry
 import org.scalawiki.util.WriteWatcher
-import org.scalawiki.wlx.{ImageCsvExporter, ImageCsvImporter, ImageDB, MonumentDB}
+import org.scalawiki.wlx.{ImageCsvExporter, ImageCsvImporter, ImageDB, MonumentDB, MonumentDbCache}
 
 import org.slf4j.LoggerFactory
 
@@ -131,11 +132,7 @@ class Statistics(
     *   asynchronously returned contest data
     */
   def gatherData(total: Boolean): Future[ContestStat] = {
-    val monumentDb = Some(
-      Progress.phase("Fetching monument lists")(
-        MonumentDB.getMonumentDb(contest, monumentQuery)
-      )
-    )
+    val monumentDb = Some(gatherMonumentDb())
 
     val byYearLabel =
       if (contests.sizeIs > 1) s"Fetching images ${contests.head.year}-${contests.last.year}"
@@ -224,6 +221,12 @@ class Statistics(
   private val csvRefresh: Boolean = config.csvCacheRefresh && csvAutoCache
   private val csvResync: Boolean = config.csvCacheResync && csvAutoCache && !csvRefresh
 
+  // Monument lists share the CSV cache toggle; `--monument-cache-refresh` (or the
+  // shared `--csv-cache-refresh`) forces a full refetch instead of a revision diff.
+  private val monumentCacheActive: Boolean = csvAutoCache
+  private val monumentRefresh: Boolean =
+    monumentCacheActive && (config.monumentCacheRefresh || config.csvCacheRefresh)
+
   private lazy val liveImageQuery: ImageQuery = ImageQuery.create
 
   /** When the CSV at `path` was last written — the instant the cache was known
@@ -246,6 +249,128 @@ class Statistics(
         case Some(expected) => swept >= expected * 0.9
         case None           => swept >= cachedCount * 0.5
       }
+
+  // -- monument list cache ------------------------------------------------
+
+  private def monumentCachePath: String =
+    MonumentDbCache.filename(contest.campaign, csvDir)
+
+  private def monumentListConfig = contest.uploadConfigs.head.listConfig
+
+  /** Best-effort: a cache-write failure (read-only dir, disk full) must not fail
+    * the run or trigger a full refetch — the wiki data we just built is fine. */
+  private def persistMonumentCache(pages: Iterable[MonumentListPage]): Unit =
+    if (monumentCacheActive)
+      try {
+        MonumentDbCache.write(monumentCachePath, pages)
+        val (np, nm) = (pages.size, pages.iterator.map(_.monuments.size).sum)
+        logger.info(s"[monument-cache] wrote $nm monuments from $np pages to $monumentCachePath")
+      } catch {
+        case NonFatal(e) =>
+          logger.warn(s"[monument-cache] could not write $monumentCachePath: $e")
+      }
+
+  /** The monument DB for `contest`, via the CSV cache when it is enabled:
+    *   - no cache file / `--monument-cache-refresh` / cache off -> full fetch,
+    *     then (best effort) write the cache;
+    *   - otherwise -> a cheap embeddedin id+revision sweep, refetch only the
+    *     list pages whose revision changed, drop the ones the sweep confirms are
+    *     gone, reuse the rest; rewrite the cache. */
+  private def gatherMonumentDb(): MonumentDB = {
+    val path = monumentCachePath
+    val template = monumentQuery.defaultListTemplate
+
+    def fullFetch(): MonumentDB =
+      Progress.phase("Fetching monument lists")(
+        MonumentDB.getMonumentDb(contest, monumentQuery)
+      )
+
+    // After a full fetch the parsed monuments carry only their source page
+    // title; pair each page with its current revision via one cheap sweep so the
+    // next run can diff against it.
+    def writeFullCache(db: MonumentDB): Unit =
+      if (monumentCacheActive)
+        try {
+          val revs = Await
+            .result(monumentQuery.listPageRevs(template), 2.minutes)
+            .map(r => r.title -> r)
+            .toMap
+          persistMonumentCache(db.monuments.groupBy(_.page).toSeq.map { case (title, ms) =>
+            val r = revs.get(title)
+            MonumentListPage(title, r.flatMap(_.revId), r.flatMap(_.timestamp), ms.toSeq)
+          })
+        } catch {
+          case NonFatal(e) =>
+            logger.warn(s"[monument-cache] revision sweep for cache write failed: $e")
+        }
+
+    if (!monumentCacheActive || monumentRefresh || !new File(path).exists()) {
+      val db = fullFetch()
+      writeFullCache(db)
+      db
+    } else
+      try syncMonumentDb(path, template)
+      catch {
+        case NonFatal(e) =>
+          logger.warn(s"[monument-cache] sync failed ($e); refetching in full")
+          val db = fullFetch()
+          writeFullCache(db)
+          db
+      }
+  }
+
+  private def syncMonumentDb(path: String, template: String): MonumentDB = {
+    val listConfig = monumentListConfig
+    val cached = MonumentDbCache.read(path, listConfig)
+    val cachedByTitle = cached.map(p => p.title -> p).toMap
+
+    val live = Progress.phase("Checking monument lists")(
+      Await.result(monumentQuery.listPageRevs(template), 2.minutes)
+    )
+    val liveTitles = live.map(_.title).toSet
+
+    val changedTitles = live.iterator.collect {
+      case r
+          if cachedByTitle
+            .get(r.title)
+            .forall(c => r.revId.isEmpty || c.revId != r.revId) =>
+        r.title
+    }.toSet
+
+    // A truncated sweep must not read as a mass deletion.
+    val sweepComplete =
+      !(live.isEmpty && cached.nonEmpty) && live.size >= cached.size * 0.5
+    val dropTitles: Set[String] =
+      if (sweepComplete) cachedByTitle.keySet -- liveTitles else Set.empty
+
+    val refreshed: Seq[MonumentListPage] =
+      if (changedTitles.isEmpty) Nil
+      else
+        Progress.bar("Fetching changed monument lists", changedTitles.size.toLong) { task =>
+          val pages =
+            Await.result(monumentQuery.monumentsByPages(changedTitles, None), 2.minutes)
+          task.stepTo(pages.size.toLong)
+          pages
+        }
+
+    val reused =
+      (cachedByTitle -- dropTitles -- changedTitles).values.toVector
+    val merged: Seq[MonumentListPage] = reused ++ refreshed
+
+    logger.info(
+      s"[monument-cache] ${cached.size} cached pages: ${changedTitles.size} changed/new, " +
+        s"${dropTitles.size} removed, ${reused.size} reused" +
+        (if (sweepComplete) "" else " (sweep looked short - deletions skipped)")
+    )
+    persistMonumentCache(merged)
+
+    val monuments = merged.flatMap(_.monuments)
+    val filtered =
+      if (contest.country.code == "ru")
+        monuments.filter(_.page.contains("Природные памятники России"))
+      else monuments
+    new MonumentDB(contest, filtered)
+  }
 
   private def yearCsvPath(year: Int): String =
     ImageCsvExporter.filename(contest.campaign, year, isCurrent = false, csvDir)

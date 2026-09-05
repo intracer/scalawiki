@@ -43,6 +43,15 @@ class MonumentQueryApiSpec extends Specification with Mockito {
         template: String,
         date: Option[ZonedDateTime]
     ): Future[Iterable[Monument]] = Future.successful(Nil)
+
+    override def listPageRevs(
+        generatorTemplate: String
+    ): Future[Seq[MonumentQuery.MonumentListRev]] = Future.successful(Nil)
+
+    override def monumentsByPages(
+        titles: Set[String],
+        listTemplate: Option[String]
+    ): Future[Seq[MonumentQuery.MonumentListPage]] = Future.successful(Nil)
   }
 
   "MonumentQuery trait" should {

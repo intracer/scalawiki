@@ -40,6 +40,7 @@ case class StatConfig(
     csvCacheDir: String = "csv-cache",
     csvCacheRefresh: Boolean = false,
     csvCacheResync: Boolean = false,
+    monumentCacheRefresh: Boolean = false,
     verbose: Boolean = false,
     progress: Boolean = true
 ) {
@@ -145,6 +146,8 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
     opt[Boolean](name = "csv-cache-refresh", descr = "Ignore existing image CSV caches this run: refetch from the wiki and overwrite them.")
   val csvCacheResync =
     opt[Boolean](name = "csv-cache-resync", descr = "Re-check cached images (past years + all-images) against the wiki via a cheap id+revision sweep: refetch only rows whose file page changed since caching, drop deleted/de-categorised ones. The current year's cache always does this.")
+  val monumentCacheRefresh =
+    opt[Boolean](name = "monument-cache-refresh", descr = "Ignore the cached monument lists (csv-cache/<campaign>-monuments.csv) this run: refetch every list page from the wiki and overwrite the cache. Without this the cache is kept and only pages whose revision changed are refetched.")
   val verbose =
     opt[Boolean](name = "verbose", descr = "Verbose logging: echo per-request INFO detail to the console and record DEBUG detail in logs/scalawiki.log (default: console WARN+, file INFO).")
   val noProgress =
@@ -199,6 +202,7 @@ object StatParams {
       csvCacheDir = conf.csvCacheDir.getOrElse("csv-cache"),
       csvCacheRefresh = conf.csvCacheRefresh.getOrElse(false),
       csvCacheResync = conf.csvCacheResync.getOrElse(false),
+      monumentCacheRefresh = conf.monumentCacheRefresh.getOrElse(false),
       verbose = conf.verbose.getOrElse(false),
       progress = !conf.noProgress.getOrElse(false)
     )
