@@ -2,6 +2,8 @@ package org.scalawiki.wlx.dto
 
 import org.specs2.mutable.Specification
 
+import java.time.LocalDate
+
 class ContestSpec extends Specification {
 
   "contest type" should {
@@ -55,5 +57,39 @@ class ContestSpec extends Specification {
     c.country.code === "BG"
     c.country.name === "Bulgaria"
     c.contestType === ContestType.WLM
+  }
+
+  "contest dates" should {
+
+    "read the WLM Ukraine upload window and pictured-date limit per year" in {
+      val wlm = Contest.byCampaign("wlm-ua").get
+
+      val d2019 = wlm.dates(2019).get
+      d2019.uploadStart === Some(LocalDate.of(2019, 9, 1))
+      d2019.uploadEnd === Some(LocalDate.of(2019, 9, 30))
+      d2019.latestAllowedPicturedDate === None
+
+      // Ukraine moved to October and added a security cut-off in 2022
+      val d2022 = wlm.dates(2022).get
+      d2022.uploadStart === Some(LocalDate.of(2022, 10, 1))
+      d2022.uploadEnd === Some(LocalDate.of(2022, 10, 31))
+      d2022.latestAllowedPicturedDate === Some(LocalDate.of(2022, 2, 23))
+
+      wlm.dates(2026).get.latestAllowedPicturedDate === Some(LocalDate.of(2026, 8, 31))
+    }
+
+    "read WLE Ukraine dates, including the July shift and cross-year pictured limit" in {
+      val wle = Contest.byCampaign("wle-ua").get
+
+      wle.dates(2016).get.uploadEnd === Some(LocalDate.of(2016, 5, 31))
+      wle.dates(2020).get.uploadEnd === Some(LocalDate.of(2020, 7, 31))
+      wle.dates(2023).get.latestAllowedPicturedDate === Some(LocalDate.of(2022, 2, 23))
+      wle.dates(2024).get.latestAllowedPicturedDate === Some(LocalDate.of(2024, 3, 31))
+    }
+
+    "return None for an unknown year or a config-less contest" in {
+      Contest.byCampaign("wlm-ua").get.dates(1999) === None
+      Contest(ContestType.WLM, Country.Ukraine, 2024).dates() === None
+    }
   }
 }

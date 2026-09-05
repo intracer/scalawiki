@@ -63,6 +63,13 @@ case class Contest(
         country.languageCodes.headOption.map(_ + ".wikipedia.org")
       )
 
+  /** Calendar dates for `forYear` (defaults to this contest's year) from the
+    * `dates.<year>` block of the campaign `.conf`, when present. */
+  def dates(forYear: Int = year): Option[ContestDates] =
+    config
+      .filter(_.hasPath(s"dates.$forYear"))
+      .map(c => ContestDates.fromConfig(c.getConfig(s"dates.$forYear")))
+
 }
 
 object Contest {
