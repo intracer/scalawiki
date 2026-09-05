@@ -163,7 +163,9 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
       there was one(q).imagesWithTemplateByIds(prevContest, Set(2L))
     }
 
-    "with --csv-cache-resync: migrate a row with no revid using the cache-file mtime" in {
+    "with --csv-cache-resync: migrate a row with no revid using the upload-window end" in {
+      // WLE UA 2015 upload window closed 2015-05-31 (dates.2015 in wle_ua.conf),
+      // so that instant is the "changed since" cut-off for the no-revid rows.
       val dir = cacheDir()
       ImageCsvExporter.export(
         new ImageDB(prevContest, Seq(
@@ -171,14 +173,11 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
           img("File:LaterEdit.jpg", 2L)
         ), None),
         campaign, isCurrent = false, dir.toString)
-      // pretend the cache was written at the start of 2020
-      Files.setLastModifiedTime(yearCsv(dir, 2015),
-        java.nio.file.attribute.FileTime.from(ZonedDateTime.parse("2020-01-01T00:00:00Z").toInstant))
 
       val q = newImageQuery()
       q.imageIdsFromCategory(prevContest) returns Future.successful(Seq(
-        rev(1L, 10L, ts = ZonedDateTime.parse("2019-08-01T00:00:00Z")), // before cache write -> keep
-        rev(2L, 20L, ts = ZonedDateTime.parse("2020-06-01T00:00:00Z"))  // after cache write -> refetch
+        rev(1L, 10L, ts = ZonedDateTime.parse("2015-05-15T00:00:00Z")), // during contest -> keep
+        rev(2L, 20L, ts = ZonedDateTime.parse("2015-07-01T00:00:00Z"))  // after window closed -> refetch
       ))
       q.imagesWithTemplateByIds(prevContest, Set(2L)) returns
         Future.successful(Seq(img("File:LaterEdit-v2.jpg", 2L, revId = Some(20L))))

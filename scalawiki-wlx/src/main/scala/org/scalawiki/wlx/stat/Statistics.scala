@@ -287,7 +287,16 @@ class Statistics(
       path: String
   ): Future[ImageDB] = {
     val query = imageQuery.getOrElse(liveImageQuery)
-    val writtenAt = cacheWrittenAt(path)
+    // "changed since" cut-off for pre-last_revid rows: once a past year's upload
+    // window has closed nothing legitimate changes after it, so it is the exact
+    // instant the cache became authoritative. Mid-contest (window end still in
+    // the future) fall back to when the CSV was last written.
+    val now = ZonedDateTime.now(ZoneOffset.UTC)
+    val cutoff = yearContest
+      .dates()
+      .flatMap(_.uploadEndInstant)
+      .filter(_.isBefore(now))
+      .getOrElse(cacheWrittenAt(path))
     for {
       liveRevs <- query.imageIdsFromCategory(yearContest)
       expectedFiles <- query.categoryFileCount(yearContest)
@@ -297,7 +306,7 @@ class Statistics(
         cached,
         writeCsvCache,
         liveRevs,
-        _ => writtenAt,
+        _ => cutoff,
         ids => query.imagesWithTemplateByIds(yearContest, ids),
         sweepComplete =
           sweepLooksComplete(liveRevs.size, cached.count(_.pageId.isDefined), expectedFiles)
