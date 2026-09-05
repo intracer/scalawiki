@@ -9,6 +9,7 @@ import org.scalawiki.query.QueryLibrary
 import org.scalawiki.wlx.WlxTemplateParser
 import org.scalawiki.wlx.dto.lists.OtherTemplateListConfig
 import org.scalawiki.wlx.dto.{Contest, Monument}
+import org.scalawiki.wlx.stat.progress.Progress
 
 import java.time.ZonedDateTime
 import scala.collection.mutable.ArrayBuffer
@@ -93,6 +94,20 @@ class MonumentQueryApi(
       if (generatorTemplate.startsWith("Template")) generatorTemplate
       else "Template:" + generatorTemplate
 
+    // Parsing the wikitext of every list page into Monuments is CPU-bound and
+    // the long pole once the API responses are cached, so show a bar over it.
+    def parseWithProgress(pages: Iterable[Page])(f: Page => Iterable[T]): Iterable[T] = {
+      val seq = pages.toSeq
+      Progress.bar("Parsing monument lists", seq.size.toLong) { task =>
+        seq.flatMap { page =>
+          task.msg(page.title)
+          val parsed = f(page)
+          task.step()
+          parsed
+        }
+      }
+    }
+
     if (date.isEmpty) {
       bot
         .page(title)
@@ -104,7 +119,7 @@ class MonumentQueryApi(
           None,
           "100"
         ) map { pages =>
-        pages.flatMap { page =>
+        parseWithProgress(pages) { page =>
           if (!page.title.contains("новий АТУ"))
             parser(page.title, page.text.getOrElse(""))
           else Nil
@@ -113,9 +128,9 @@ class MonumentQueryApi(
     } else {
       articlesWithTemplate(title).flatMap { ids =>
         Future.traverse(ids)(id => pageRevisions(id, date.get)).map { pages =>
-          pages.flatten.flatMap(page =>
+          parseWithProgress(pages.flatten) { page =>
             parser(page.title, page.text.getOrElse(""))
-          )
+          }
         }
       }
     }
