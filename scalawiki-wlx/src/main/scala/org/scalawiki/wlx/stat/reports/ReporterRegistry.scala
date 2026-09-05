@@ -17,6 +17,7 @@ import org.scalawiki.wlx.{
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
+import scala.util.control.NonFatal
 
 class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
     ec: ExecutionContext
@@ -50,50 +51,72 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
 
   def withArticles: Option[String] = RR.withArticles(monumentDb)
 
+  /** Report steps that threw while building or dispatching their output.
+    * Populated by [[step]]; drained by the CLI to report a partial run. */
+  private val stepErrors = scala.collection.mutable.Buffer.empty[(String, Throwable)]
+
+  /** Run one report step in isolation: a failure in it is recorded and printed
+    * with its stack trace, but never aborts the remaining steps. Only catches
+    * exceptions thrown synchronously — asynchronous edit/upload failures are
+    * tracked separately by [[org.scalawiki.util.WriteWatcher]]. */
+  private def step(name: String)(body: => Unit): Unit = {
+    try {
+      println(s"[report] $name")
+      body
+    } catch {
+      case NonFatal(e) =>
+        stepErrors += (name -> e)
+        println(s"[report] FAILED: $name: $e")
+        e.printStackTrace()
+    }
+  }
+
   /** Outputs current year reports.
     */
   def currentYear(): Unit = {
     val imageDb = currentYearImageDb
-    new RecentlyTaken(stat).updateWiki(commons)
+    step("RecentlyTaken")(new RecentlyTaken(stat).updateWiki(commons))
 
     if (cfg.specialNominations) {
-      new SpecialNominations(stat, imageDb).statistics()
+      step("specialNominations")(new SpecialNominations(stat, imageDb).statistics())
     }
 
     if (cfg.lowRes) {
-      Output.lessThan2MpGallery(contest, imageDb)
+      step("lessThan2MpGallery")(Output.lessThan2MpGallery(contest, imageDb))
     }
 
     monumentDb.foreach { mDb =>
       if (cfg.wrongIds) {
-        Output.wrongIds(imageDb, mDb)
+        step("wrongIds")(Output.wrongIds(imageDb, mDb))
       }
 
       if (cfg.missingIds) {
-        Output.missingIds(imageDb, mDb)
+        step("missingIds")(Output.missingIds(imageDb, mDb))
       }
 
       if (cfg.multipleIds) {
-        Output.multipleIds(imageDb, mDb)
+        step("multipleIds")(Output.multipleIds(imageDb, mDb))
       }
 
       if (cfg.fillLists && cfg.years.size == 1) {
-        ImageFiller.fillLists(mDb, imageDb)
+        step("fillLists")(ImageFiller.fillLists(mDb, imageDb))
       }
 
       if (cfg.missingGallery) {
-        Output.missingGallery(mDb)
+        step("missingGallery")(Output.missingGallery(mDb))
       }
 
       if (cfg.placeDetection) {
-        Output.unknownPlaces(mDb, imageDb)
-        Output.unknownPlaces(mDb)
+        step("placeDetection") {
+          Output.unknownPlaces(mDb, imageDb)
+          Output.unknownPlaces(mDb)
+        }
       }
 
       if (cfg.mostPopularMonuments) {
-        new MostPopularMonuments(stat).updateWiki(
-          MwBot.fromHost(MwBot.commons)
-        )
+        step("mostPopularMonuments") {
+          new MostPopularMonuments(stat).updateWiki(MwBot.fromHost(MwBot.commons))
+        }
       }
     }
   }
@@ -101,56 +124,64 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
   def allYears(): Unit = {
     val imageDb = totalImageDb
     if (cfg.fillLists) {
-      ImageFiller.fillLists(monumentDb.get, imageDb)
-      fillSpecialNominationLists(imageDb)
+      step("fillLists (all years)") {
+        ImageFiller.fillLists(monumentDb.get, imageDb)
+        fillSpecialNominationLists(imageDb)
+      }
     }
 
     if (cfg.fillListsRating) {
-      RatingListFiller.fillLists(stat)
+      step("fillListsRating")(RatingListFiller.fillLists(stat))
     }
 
     if (cfg.regionalStat) {
-      Output.regionalStat(stat)
+      step("regionalStat")(Output.regionalStat(stat))
     }
 
     if (cfg.newMonuments) {
-      Output.newMonuments(stat)
+      step("newMonuments")(Output.newMonuments(stat))
     }
 
     if (cfg.authorsStat) {
-      new AuthorsStat().authorsStat(stat, commons, cfg.gallery)
+      step("authorsStat")(new AuthorsStat().authorsStat(stat, commons, cfg.gallery))
     } else if (cfg.rateInputDistribution) {
-      Rater.create(stat)
+      step("rateInputDistribution")(Rater.create(stat))
     }
 
     if (cfg.regionalGallery) {
-      Output.byRegion(monumentDb.get, imageDb)
+      step("regionalGallery")(Output.byRegion(monumentDb.get, imageDb))
     }
 
     if (cfg.numberOfMonumentsByNumberOfPictures) {
       // new NumberOfMonumentsByNumberOfPictures(stat, imageDb).updateWiki(commons)
-      val mDb = monumentDb.get
-      Gallery.gallery(imageDb, mDb)
+      step("numberOfMonumentsByNumberOfPictures")(Gallery.gallery(imageDb, monumentDb.get))
     }
 
   }
 
-  def output(): Unit = {
+  /** Runs every configured report step. Returns the steps that threw
+    * synchronously; asynchronous wiki-write failures are reported separately by
+    * [[org.scalawiki.util.WriteWatcher]]. */
+  def output(): Seq[(String, Throwable)] = {
+    stepErrors.clear()
     currentYear()
     allYears()
 
     cfg.exportImagesCsv.foreach { dir =>
-      val contestYear = stat.contest.year
-      stat.dbsByYear.foreach { imageDb =>
-        ImageCsvExporter.export(
-          imageDb,
-          stat.contest.campaign,
-          isCurrent = imageDb.contest.year == contestYear,
-          outputDir = dir
-        )
+      step("exportImagesCsv") {
+        val contestYear = stat.contest.year
+        stat.dbsByYear.foreach { imageDb =>
+          ImageCsvExporter.export(
+            imageDb,
+            stat.contest.campaign,
+            isCurrent = imageDb.contest.year == contestYear,
+            outputDir = dir
+          )
+        }
+        ImageCsvExporter.exportTotal(totalImageDb, stat.contest.campaign, outputDir = dir)
       }
-      ImageCsvExporter.exportTotal(totalImageDb, stat.contest.campaign, outputDir = dir)
     }
+    stepErrors.toSeq
   }
 
   /** Special nomination monument lists (e.g. thematic lists like "Музичні пам'ятки в

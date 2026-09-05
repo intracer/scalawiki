@@ -390,7 +390,7 @@ object Output {
 
       val pageName =
         s"Вікіпедія:${imageDb.contest.contestType.name}/$regionName"
-      bot.page(pageName).edit(text).failed.map(println)
+      bot.page(pageName).edit(text)
     }
 
     val byParent = byRegion
@@ -407,7 +407,7 @@ object Output {
         }
         .mkString("\n")
 
-      bot.page(pageName).edit(text).failed.map(println)
+      bot.page(pageName).edit(text)
     }
   }
 
@@ -508,41 +508,38 @@ object Output {
 
   def regionalStat(stat: ContestStat): Unit = {
     val bot = MwBot.fromHost(MwBot.commons)
-    try {
-      val contest = stat.contest
-      val categoryName = contest.contestType.name + " in " + contest.country.name
-      val monumentDb = stat.monumentDb
+    // No local try/catch: the caller (ReporterRegistry.step) isolates and
+    // reports a failure here so it is counted, not just logged and forgotten.
+    val contest = stat.contest
+    val categoryName = contest.contestType.name + " in " + contest.country.name
+    val monumentDb = stat.monumentDb
 
-      val authorsStat = new AuthorsStat()
+    val authorsStat = new AuthorsStat()
 
-      val idsStat = monumentDb
-        .map(_ =>
-          new MonumentsPicturedByRegion(
-            stat,
-            uploadImages = false,
-            gallery = true
-          ).asText
-        )
-        .getOrElse("")
-
-      val authorsContributed = authorsStat.authorsContributed(
-        stat.dbsByYear,
-        stat.totalImageDb,
-        monumentDb
+    val idsStat = monumentDb
+      .map(_ =>
+        new MonumentsPicturedByRegion(
+          stat,
+          uploadImages = false,
+          gallery = true
+        ).asText
       )
+      .getOrElse("")
 
-      val toc = "__TOC__"
-      val category = s"\n[[Category:$categoryName]]"
-      val regionalStat = toc + idsStat + authorsContributed + category
+    val authorsContributed = authorsStat.authorsContributed(
+      stat.dbsByYear,
+      stat.totalImageDb,
+      monumentDb
+    )
 
-      bot
-        .page(s"Commons:$categoryName/Regional statistics")
-        .edit(regionalStat, Some("updating"))
-      authorsStat.authorsContributedPerRegion(stat.totalImageDb, bot)
-    } catch {
-      case ex: Throwable =>
-        bot.log.error("Failed to update regions", ex)
-    }
+    val toc = "__TOC__"
+    val category = s"\n[[Category:$categoryName]]"
+    val regionalStat = toc + idsStat + authorsContributed + category
+
+    bot
+      .page(s"Commons:$categoryName/Regional statistics")
+      .edit(regionalStat, Some("updating"))
+    authorsStat.authorsContributedPerRegion(stat.totalImageDb, bot)
   }
 
   def newMonuments(stat: ContestStat) = {

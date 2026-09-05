@@ -13,6 +13,7 @@ import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
 import org.scalawiki.dto.{MwException, Namespace, Page}
 import org.scalawiki.json.MwReads._
+import org.scalawiki.util.WriteWatcher
 import retry.Success
 
 import scala.concurrent.Future
@@ -210,7 +211,12 @@ class PageQueryImplDsl(
     val policy = retry.FailFast(retry.Backoff()(odelay.Timer.default)) {
       case e: MwException => Edit.conflictCodes.contains(e.code)
     }
-    policy(() => performEdit())
+    // Many callers (contest report generators) fire edits and discard the
+    // future. Route it through WriteWatcher so, when the CLI has enabled it,
+    // the edits are throttled to a safe concurrency, failures are logged
+    // instead of vanishing, and the process can wait for every write to finish
+    // before it exits. When not enabled this runs the edit immediately, as before.
+    WriteWatcher.submit(s"edit ${bot.host} / $page")(() => policy(() => performEdit()))
   }
 
   override def upload(
@@ -236,7 +242,9 @@ class PageQueryImplDsl(
       comment.map("comment" -> _) ++
       (if (ignoreWarnings) Seq("ignorewarnings" -> "true") else Seq.empty)
 
-    bot.postFile(uploadResponseReads, params, "file", filename)
+    WriteWatcher.submit(s"upload ${bot.host} / $page")(() =>
+      bot.postFile(uploadResponseReads, params, "file", filename)
+    )(scala.concurrent.ExecutionContext.Implicits.global)
   }
 
   override def whatTranscludesHere(

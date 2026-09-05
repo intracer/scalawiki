@@ -7,6 +7,7 @@ import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.ImageQuery.PageRevInfo
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
 import org.scalawiki.wlx.stat.reports.ReporterRegistry
+import org.scalawiki.util.WriteWatcher
 import org.scalawiki.wlx.{ImageCsvExporter, ImageCsvImporter, ImageDB, MonumentDB}
 
 import java.io.{File, FileNotFoundException}
@@ -14,8 +15,10 @@ import java.nio.file.{Files, Paths}
 import java.time.{ZoneOffset, ZonedDateTime}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.util.Try
+import scala.util.control.NonFatal
 
 /** Holds fetched contest data
   *
@@ -513,13 +516,47 @@ class Statistics(
   private def imageRevsByTemplate(): Future[Seq[PageRevInfo]] =
     totalImageQuery.imageIdsWithTemplate(contest)
 
-  def init(total: Boolean): Unit = {
-    gatherData(total = total)
-      .map { stat =>
-        new ReporterRegistry(stat, config).output()
+  /** Fetch contest data, run every configured report, and block until every
+    * wiki write has settled.
+    *
+    * Unlike the old fire-and-forget version this waits for the whole pipeline,
+    * isolates each report step (one failing step no longer aborts the rest),
+    * and reports what did not publish.
+    *
+    * @return the number of failures (report steps that threw + wiki writes that
+    *         errored). 0 means a clean run.
+    */
+  def run(total: Boolean): Int = {
+    val stat = Await.result(gatherData(total = total), Duration.Inf)
+
+    val stepErrors = new ReporterRegistry(stat, config).output()
+    val writeFailures = WriteWatcher.awaitQuiescence()
+
+    if (stepErrors.nonEmpty || writeFailures.nonEmpty) {
+      println("\n=== Publish summary: INCOMPLETE ===")
+      if (stepErrors.nonEmpty) {
+        println(s"report steps that failed: ${stepErrors.size}")
+        stepErrors.foreach { case (name, e) => println(s"  - $name: $e") }
       }
-      .failed
-      .map(println)
+      if (writeFailures.nonEmpty) {
+        println(
+          s"wiki writes that errored: ${writeFailures.size} " +
+            "(list-updater edits may have been retried and still landed)"
+        )
+        writeFailures.foreach { case (desc, e) => println(s"  - $desc: $e") }
+      }
+    } else {
+      println(
+        s"\n=== Publish summary: OK (${WriteWatcher.completedCount} wiki writes) ==="
+      )
+    }
+
+    stepErrors.size + writeFailures.size
+  }
+
+  def init(total: Boolean): Unit = {
+    run(total)
+    ()
   }
 
   def articleStatistics(monumentDb: MonumentDB): Unit = {
@@ -568,35 +605,54 @@ object Statistics {
   }
 
   def main(args: Array[String]): Unit = {
-    val cfg = StatParams.parse(args)
-    val contest = getContest(cfg)
+    // Track every wiki edit/upload so failures are logged and `main` can wait
+    // for them all before shutting the process down.
+    WriteWatcher.enable(MwBot.system.log)
 
-    if (cfg.exportCsv.isDefined) {
-      val monumentQuery = MonumentQuery.create(contest)
-      runExport(contest, cfg, monumentQuery)
+    var exitCode = 0
+    try {
+      val cfg = StatParams.parse(args)
+      val contest = getContest(cfg)
+
+      if (cfg.exportCsv.isDefined) {
+        val monumentQuery = MonumentQuery.create(contest)
+        runExport(contest, cfg, monumentQuery)
+      }
+
+      // Run the full statistics pipeline when either:
+      // - no monument CSV export was requested (normal run), or
+      // - image CSV export was requested (needs stats pipeline to populate dbsByYear)
+      if (cfg.exportCsv.isEmpty || cfg.exportImagesCsv.isDefined) {
+        val cacheName = s"${cfg.campaign}-${contest.year}"
+        val imageQueryWiki = ImageQuery.create(
+          new CachedBot(Site.ukWiki, cacheName + "-wiki", true)
+        )
+
+        val stat = new Statistics(
+          contest,
+          startYear = Some(cfg.years.head),
+          monumentQuery = MonumentQuery.create(contest, reportDifferentRegionIds = true),
+          config = Some(cfg),
+          imageQuery = None,
+          imageQueryWiki = Some(imageQueryWiki)
+        )
+
+        // rating fill needs the all-time image DB to know which monuments already
+        // have photos, even when a single year is requested
+        exitCode = stat.run(total = cfg.years.size > 1 || cfg.fillListsRating)
+      }
+    } catch {
+      case NonFatal(e) =>
+        println(s"Statistics run failed: $e")
+        e.printStackTrace()
+        exitCode = 1
+    } finally {
+      // Stop the Pekko ActorSystem so its non-daemon threads no longer keep the
+      // JVM alive; without this the process hangs after all reports are done.
+      try Await.result(MwBot.system.terminate(), 30.seconds)
+      catch { case NonFatal(_) => }
     }
 
-    // Run the full statistics pipeline when either:
-    // - no monument CSV export was requested (normal run), or
-    // - image CSV export was requested (needs stats pipeline to populate dbsByYear)
-    if (cfg.exportCsv.isEmpty || cfg.exportImagesCsv.isDefined) {
-      val cacheName = s"${cfg.campaign}-${contest.year}"
-      val imageQueryWiki = ImageQuery.create(
-        new CachedBot(Site.ukWiki, cacheName + "-wiki", true)
-      )
-
-      val stat = new Statistics(
-        contest,
-        startYear = Some(cfg.years.head),
-        monumentQuery = MonumentQuery.create(contest, reportDifferentRegionIds = true),
-        config = Some(cfg),
-        imageQuery = None,
-        imageQueryWiki = Some(imageQueryWiki)
-      )
-
-      // rating fill needs the all-time image DB to know which monuments already
-      // have photos, even when a single year is requested
-      stat.init(total = cfg.years.size > 1 || cfg.fillListsRating)
-    }
+    System.exit(exitCode)
   }
 }
