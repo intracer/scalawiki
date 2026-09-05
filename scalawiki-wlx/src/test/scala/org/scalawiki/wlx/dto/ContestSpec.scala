@@ -59,6 +59,20 @@ class ContestSpec extends Specification {
     c.contestType === ContestType.WLM
   }
 
+  "by campaign, year and rate config" should {
+    "pin the year and rate config" in {
+      val rc = org.scalawiki.wlx.stat.rating.RateConfig(baseRate = 7)
+      val c = Contest.byCampaign("wlm-ua", 2021, rc)
+      c.year === 2021
+      c.rateConfig === rc
+      c.contestType === ContestType.WLM
+    }
+
+    "throw for an unknown campaign" in {
+      Contest.byCampaign("nope-xx", 2021) must throwAn[IllegalArgumentException]
+    }
+  }
+
   "contest dates" should {
 
     "read the WLM Ukraine upload window and pictured-date limit per year" in {

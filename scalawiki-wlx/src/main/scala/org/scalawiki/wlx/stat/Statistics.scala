@@ -9,7 +9,7 @@ import org.scalawiki.wlx.stat.cache.{ImageDbProvider, MonumentDbProvider}
 import org.scalawiki.wlx.stat.progress.Progress
 import org.scalawiki.wlx.stat.reports.ReportRunner
 import org.scalawiki.util.WriteWatcher
-import org.scalawiki.wlx.{ImageDB, MonumentDB}
+import org.scalawiki.wlx.{ImageDB, MonumentCsvExporter, MonumentDB}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -195,36 +195,6 @@ class Statistics(
 
 object Statistics {
 
-  def defaultCsvFilename(campaign: String): String = {
-    val now = java.time.LocalDateTime.now()
-    val fmt = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm")
-    s"$campaign-${now.format(fmt)}.csv"
-  }
-
-  def runExport(
-      contest: Contest,
-      cfg: StatConfig,
-      monumentQuery: MonumentQuery
-  ): Unit = {
-    import scala.concurrent.Await
-    import scala.concurrent.duration._
-    val path = cfg.exportCsv.filter(_.nonEmpty).getOrElse(defaultCsvFilename(cfg.campaign))
-    val maps = Await.result(monumentQuery.byMonumentTemplateMapsAsync(), 2.minutes)
-    val mapping = org.scalawiki.wlx.UaUkJsonMapping.load("monuments_config/ua_uk.json")
-    org.scalawiki.wlx.MonumentCsvExporter.export(maps, mapping, path)
-  }
-
-  def getContest(cfg: StatConfig): Contest = {
-    val contest = Contest.byCampaign(cfg.campaign).getOrElse {
-      throw new IllegalArgumentException(s"Unknown campaign: ${cfg.campaign}")
-    }
-
-    contest.copy(
-      year = cfg.years.last,
-      rateConfig = cfg.rateConfig
-    )
-  }
-
   def main(args: Array[String]): Unit = {
     // logback reads these system properties when it first initialises (about to
     // happen, on the first LoggerFactory call below). `--verbose` lifts the
@@ -245,11 +215,10 @@ object Statistics {
     var exitCode = 0
     try {
       val cfg = StatParams.parse(args)
-      val contest = getContest(cfg)
+      val contest = Contest.byCampaign(cfg.campaign, cfg.years.last, cfg.rateConfig)
 
       if (cfg.exportCsv.isDefined) {
-        val monumentQuery = MonumentQuery.create(contest)
-        runExport(contest, cfg, monumentQuery)
+        MonumentCsvExporter.exportFromWiki(MonumentQuery.create(contest), cfg.campaign, cfg.exportCsv)
       }
 
       // Run the full statistics pipeline when either:

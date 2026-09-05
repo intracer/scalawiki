@@ -1,10 +1,36 @@
 package org.scalawiki.wlx
 
 import com.github.tototoshi.csv.CSVWriter
+import org.scalawiki.wlx.query.MonumentQuery
 
 import java.io.File
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
 object MonumentCsvExporter {
+
+  /** Default output filename for a monument export: `<campaign>-yyyy-MM-dd-HHmm.csv`. */
+  def defaultFilename(campaign: String): String = {
+    val now = java.time.LocalDateTime.now()
+    val fmt = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm")
+    s"$campaign-${now.format(fmt)}.csv"
+  }
+
+  /** Fetch every monument list for `campaign` from the wiki and write the rows to
+    * `outFile` (or [[defaultFilename]] when it is empty / `None`), applying the
+    * `monuments_config/ua_uk.json` mapping. Writes nothing for an empty list.
+    */
+  def exportFromWiki(
+      monumentQuery: MonumentQuery,
+      campaign: String,
+      outFile: Option[String] = None
+  ): Unit = {
+    val path = outFile.filter(_.nonEmpty).getOrElse(defaultFilename(campaign))
+    val maps = Await.result(monumentQuery.byMonumentTemplateMapsAsync(), 2.minutes)
+    val mapping = UaUkJsonMapping.load("monuments_config/ua_uk.json")
+    export(maps, mapping, path)
+  }
 
   /** Export monument rows to a CSV file.
     *

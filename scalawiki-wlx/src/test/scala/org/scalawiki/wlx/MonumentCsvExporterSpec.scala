@@ -1,12 +1,15 @@
 package org.scalawiki.wlx
 
 import com.github.tototoshi.csv.CSVReader
+import org.scalawiki.wlx.query.MonumentQuery
+import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
 
 import java.io.StringReader
 import java.nio.file.Files
+import scala.concurrent.Future
 
-class MonumentCsvExporterSpec extends Specification {
+class MonumentCsvExporterSpec extends Specification with Mockito {
 
   // Real mapping from ua_uk.json
   lazy val realMapping: UaUkMapping =
@@ -89,6 +92,47 @@ class MonumentCsvExporterSpec extends Specification {
       val content1 = exportToString(rows, realMapping)
       val content2 = exportToString(rows, realMapping)
       parseCsv(content1).head must_== parseCsv(content2).head
+    }
+  }
+
+  // byMonumentTemplateMaps is `final` on the trait — stub the abstract async variant.
+  // exportFromWiki delegates to it via Await.result, exercising the real path.
+  private def buildMonumentQuery(rows: Seq[Map[String, String]]): MonumentQuery = {
+    val q = mock[MonumentQuery]
+    q.byMonumentTemplateMapsAsync() returns Future.successful(rows)
+    q
+  }
+
+  "MonumentCsvExporter.exportFromWiki" should {
+
+    "write CSV to the specified filename" in {
+      val path = Files.createTempFile("monument-export-test", ".csv")
+      Files.deleteIfExists(path)
+      try {
+        val q = buildMonumentQuery(Seq(Map("ID" -> "14-101-0001", "назва" -> "Test")))
+        MonumentCsvExporter.exportFromWiki(q, "wlm-ua", Some(path.toString))
+        Files.exists(path) must beTrue
+        val content = new String(Files.readAllBytes(path), "UTF-8")
+        content must contain("id")
+        content must contain("14-101-0001")
+      } finally Files.deleteIfExists(path)
+    }
+
+    "produce no output file for an empty monument list" in {
+      val path = Files.createTempFile("monument-export-empty", ".csv")
+      Files.deleteIfExists(path)
+      try {
+        MonumentCsvExporter.exportFromWiki(buildMonumentQuery(Seq.empty), "wlm-ua", Some(path.toString))
+        Files.exists(path) must beFalse
+      } finally Files.deleteIfExists(path)
+    }
+  }
+
+  "MonumentCsvExporter.defaultFilename" should {
+    "match the <campaign>-yyyy-MM-dd-HHmm.csv pattern" in {
+      MonumentCsvExporter.defaultFilename("WLM-UA") must beMatching(
+        "WLM-UA-\\d{4}-\\d{2}-\\d{2}-\\d{4}\\.csv"
+      )
     }
   }
 }

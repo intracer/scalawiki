@@ -102,6 +102,15 @@ object Contest {
     load(campaign.replace("-", "_") + ".conf")
   }
 
+  /** The campaign's contest, pinned to `year` and `rateConfig`.
+    *
+    * @throws IllegalArgumentException if `campaign` does not resolve to a contest
+    */
+  def byCampaign(campaign: String, year: Int, rateConfig: RateConfig = RateConfig()): Contest =
+    byCampaign(campaign)
+      .getOrElse(throw new IllegalArgumentException(s"Unknown campaign: $campaign"))
+      .copy(year = year, rateConfig = rateConfig)
+
   def fromConfig(config: Config): Option[Contest] = {
     val (typeStr, countryStr, year) = (
       config.getString("type"),
