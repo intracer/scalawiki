@@ -7,9 +7,13 @@ import org.scalawiki.wlx.stat.rating.{RateSum, Rater}
 import org.scalawiki.wlx.stat.ContestStat
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
+import org.slf4j.LoggerFactory
+
 import scala.concurrent.ExecutionContext
 
 object Output {
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def monumentsByType(
       /*imageDbs: Seq[ImageDB], totalImageDb: ImageDB,*/ monumentDb: MonumentDB
@@ -38,7 +42,7 @@ object Output {
           byReg1 + byReg2
         }
         .mkString(", ")
-      println(s"$typ: ${monumentDb._byType(typ).size}, $regionStat")
+      logger.debug(s"$typ: ${monumentDb._byType(typ).size}, $regionStat")
     }
   }
 

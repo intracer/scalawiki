@@ -33,7 +33,7 @@ lazy val commonSettings = Seq(
   dependencyOverrides ++= Dependencies.overrides,
   initialize := {
     val _ = initialize.value
-    val required = VersionNumber("1.8")
+    val required = VersionNumber("11")
     val curr = VersionNumber(sys.props("java.specification.version"))
     assert(
       CompatibleJavaVersion(curr, required),
@@ -67,6 +67,7 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
   .settings(libraryDependencies ++= {
     Seq(
       Library.Pekko.actor,
+      Library.Pekko.slf4j,
       Library.Pekko.stream,
       Library.Pekko.http,
       Library.Pekko.httpCaching,
@@ -127,7 +128,8 @@ lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
   .settings(
     libraryDependencies ++= Seq(
       "de.sciss" %% "scala-chart" % ScalaChartV,
-      "com.github.tototoshi" %% "scala-csv" % ScalaCsvV
+      "com.github.tototoshi" %% "scala-csv" % ScalaCsvV,
+      "me.tongfei" % "progressbar" % ProgressBarV
     ),
     assembly / mainClass := Some("org.scalawiki.wlx.stat.Statistics")
   )

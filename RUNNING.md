@@ -49,6 +49,25 @@ java \
 No `--add-exports` / `--add-opens` flags are needed — the engine runs on any
 JDK 11+ (including 17, 21) out of the box.
 
+## Console output and logs
+
+The console stays quiet: it shows a short progress line per stage (fetching
+monument lists, fetching images, generating reports, publishing edits) with a
+live bar — items done / total, speed, elapsed, ETA — plus any warnings/errors
+and the final `=== Publish summary ===`.
+
+The full detail (every API request, every page batch, every wiki edit) goes to a
+rolling **`logs/scalawiki.log`** in the working directory (`logs/scalawiki.*.log.gz`
+once it rolls). Nothing to configure — it's created on first run.
+
+| flag           | effect                                                                 |
+|----------------|-----------------------------------------------------------------------|
+| `--verbose`    | also echo the per-request INFO logging to the console (it always goes to the file) |
+| `--no-progress`| turn off the live bar; progress is still written to `logs/scalawiki.log` as periodic lines. Useful when piping output. |
+
+Report text and CSVs are written to **stdout**; progress and logs go to
+**stderr** — so `... > report.txt` captures only the report.
+
 ## Image CSV cache
 
 By default the stats engine keeps a second-tier cache of contest images as CSV

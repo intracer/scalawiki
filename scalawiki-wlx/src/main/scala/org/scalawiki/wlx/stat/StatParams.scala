@@ -39,7 +39,9 @@ case class StatConfig(
     csvCache: Boolean = true,
     csvCacheDir: String = "csv-cache",
     csvCacheRefresh: Boolean = false,
-    csvCacheResync: Boolean = false
+    csvCacheResync: Boolean = false,
+    verbose: Boolean = false,
+    progress: Boolean = true
 ) {
 
   /** Directory holding the automatic image CSV cache. An explicit
@@ -143,6 +145,10 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
     opt[Boolean](name = "csv-cache-refresh", descr = "Ignore existing image CSV caches this run: refetch from the wiki and overwrite them.")
   val csvCacheResync =
     opt[Boolean](name = "csv-cache-resync", descr = "Re-check cached images (past years + all-images) against the wiki via a cheap id+revision sweep: refetch only rows whose file page changed since caching, drop deleted/de-categorised ones. The current year's cache always does this.")
+  val verbose =
+    opt[Boolean](name = "verbose", descr = "Echo the per-request INFO/DEBUG logging to the console (it always goes to logs/scalawiki.log).")
+  val noProgress =
+    opt[Boolean](name = "no-progress", descr = "Disable the live console progress display (progress is still written to logs/scalawiki.log).")
   verify()
 
 }
@@ -192,7 +198,9 @@ object StatParams {
       csvCache = !conf.noCsvCache.getOrElse(false),
       csvCacheDir = conf.csvCacheDir.getOrElse("csv-cache"),
       csvCacheRefresh = conf.csvCacheRefresh.getOrElse(false),
-      csvCacheResync = conf.csvCacheResync.getOrElse(false)
+      csvCacheResync = conf.csvCacheResync.getOrElse(false),
+      verbose = conf.verbose.getOrElse(false),
+      progress = !conf.noProgress.getOrElse(false)
     )
   }
 }

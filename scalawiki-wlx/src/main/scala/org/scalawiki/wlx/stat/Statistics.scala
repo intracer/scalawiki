@@ -6,9 +6,12 @@ import org.scalawiki.dto.{Image, Site}
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.ImageQuery.PageRevInfo
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
+import org.scalawiki.wlx.stat.progress.Progress
 import org.scalawiki.wlx.stat.reports.ReporterRegistry
 import org.scalawiki.util.WriteWatcher
 import org.scalawiki.wlx.{ImageCsvExporter, ImageCsvImporter, ImageDB, MonumentDB}
+
+import org.slf4j.LoggerFactory
 
 import java.io.{File, FileNotFoundException}
 import java.nio.file.{Files, Paths}
@@ -105,6 +108,8 @@ class Statistics(
       config.getOrElse(StatConfig(contest.campaign))
     )
 
+  private val logger = LoggerFactory.getLogger(classOf[Statistics])
+
   private val currentYear = contest.year
 
   private val contests =
@@ -126,15 +131,31 @@ class Statistics(
     *   asynchronously returned contest data
     */
   def gatherData(total: Boolean): Future[ContestStat] = {
-    val monumentDb = Some(MonumentDB.getMonumentDb(contest, monumentQuery))
+    val monumentDb = Some(
+      Progress.phase("Fetching monument lists")(
+        MonumentDB.getMonumentDb(contest, monumentQuery)
+      )
+    )
 
-    val byYearFutures = contests.map(contestImages(monumentDb))
+    val byYearLabel =
+      if (contests.sizeIs > 1) s"Fetching images ${contests.head.year}–${contests.last.year}"
+      else s"Fetching images ${contests.head.year}"
+    val byYearF =
+      Progress.barF(byYearLabel, contests.size.toLong) { task =>
+        Future.sequence(contests.map { yearContest =>
+          contestImages(monumentDb)(yearContest).map { db =>
+            task.step()
+            db
+          }
+        })
+      }
+
     val totalCsvPath =
       if (csvRefresh) None else totalCsvReadPath.filter(new File(_).exists())
     val totalPageRevsFuture =
       if (total && totalCsvPath.isEmpty) imageRevsByTemplate() else Future.successful(Nil)
     for {
-      byYear <- Future.sequence(byYearFutures)
+      byYear <- byYearF
       currentYearImages = byYear.last
       totalPageRevs <- totalPageRevsFuture
       totalImages <-
@@ -364,7 +385,7 @@ class Statistics(
       else {
         val missing = cachedById.keySet -- liveById.keySet
         if (missing.nonEmpty)
-          println(
+          logger.warn(
             s"[csv-cache] ${yearContest.year}: sweep returned ${liveById.size} ids for " +
               s"${cachedById.size} cached rows — treating it as incomplete, keeping " +
               s"${missing.size} unmatched row(s) instead of deleting them"
@@ -395,7 +416,7 @@ class Statistics(
       val missedRefetch = refetch -- fetchedIds
       val staleKept = cached.filter(_.pageId.exists(id => missedRefetch.contains(id) && !newIds.contains(id)))
       if (missedRefetch.nonEmpty)
-        println(
+        logger.warn(
           s"[csv-cache] ${yearContest.year}: refetch returned ${fetchedIds.size}/${refetch.size} " +
             s"images; keeping ${staleKept.size} stale row(s), ${(missedRefetch -- staleKept.flatMap(_.pageId).toSet).size} new id(s) lost this run"
         )
@@ -456,7 +477,7 @@ class Statistics(
       wiki =
         if (wikiFetchTrustworthy) freshWiki
         else {
-          println(
+          logger.warn(
             "[csv-cache] all-images: uk.wiki refetch returned nothing — keeping all cached " +
               "rows and skipping Commons deletion detection this run"
           )
@@ -507,10 +528,12 @@ class Statistics(
   ): Future[ImageDB] = {
     val idsByYear = dbsByYear.flatMap(_.images.flatMap(_.pageId)).toSet
     val missingPageIds = totalPageRevs.map(_.pageId).toSet -- idsByYear
-    for {
-      commons <- totalImageQuery.imagesWithTemplateByIds(contest, missingPageIds)
-      wiki <- imageQueryWiki.map(_.imagesWithTemplate(contest)).getOrElse(Future.successful(Nil))
-    } yield new ImageDB(contest, dbsByYear.flatMap(_.images) ++ commons ++ wiki, monumentDb)
+    Progress.phaseF(s"Fetching all-time images (${missingPageIds.size} files)") {
+      for {
+        commons <- totalImageQuery.imagesWithTemplateByIds(contest, missingPageIds)
+        wiki <- imageQueryWiki.map(_.imagesWithTemplate(contest)).getOrElse(Future.successful(Nil))
+      } yield new ImageDB(contest, dbsByYear.flatMap(_.images) ++ commons ++ wiki, monumentDb)
+    }
   }
 
   private def imageRevsByTemplate(): Future[Seq[PageRevInfo]] =
@@ -527,31 +550,38 @@ class Statistics(
     *         errored). 0 means a clean run.
     */
   def run(total: Boolean): Int = {
-    val stat = Await.result(gatherData(total = total), Duration.Inf)
+    Progress.configure(config.progress)
+    try {
+      val stat = Await.result(gatherData(total = total), Duration.Inf)
 
-    val stepErrors = new ReporterRegistry(stat, config).output()
-    val writeFailures = WriteWatcher.awaitQuiescence()
+      val stepErrors =
+        Progress.bar("Generating reports", 0L) { task =>
+          new ReporterRegistry(stat, config, Some(task)).output()
+        }
+      val writeFailures =
+        Progress.phase("Publishing edits")(WriteWatcher.awaitQuiescence())
 
-    if (stepErrors.nonEmpty || writeFailures.nonEmpty) {
-      println("\n=== Publish summary: INCOMPLETE ===")
-      if (stepErrors.nonEmpty) {
-        println(s"report steps that failed: ${stepErrors.size}")
-        stepErrors.foreach { case (name, e) => println(s"  - $name: $e") }
-      }
-      if (writeFailures.nonEmpty) {
-        println(
-          s"wiki writes that errored: ${writeFailures.size} " +
-            "(edit conflicts the list updater retries are excluded)"
+      if (stepErrors.nonEmpty || writeFailures.nonEmpty) {
+        Progress.note("\n=== Publish summary: INCOMPLETE ===")
+        if (stepErrors.nonEmpty) {
+          Progress.note(s"report steps that failed: ${stepErrors.size}")
+          stepErrors.foreach { case (name, e) => Progress.note(s"  - $name: $e") }
+        }
+        if (writeFailures.nonEmpty) {
+          Progress.note(
+            s"wiki writes that errored: ${writeFailures.size} " +
+              "(edit conflicts the list updater retries are excluded)"
+          )
+          writeFailures.foreach { case (desc, e) => Progress.note(s"  - $desc: $e") }
+        }
+      } else {
+        Progress.note(
+          s"\n=== Publish summary: OK (${WriteWatcher.completedCount} wiki writes) ==="
         )
-        writeFailures.foreach { case (desc, e) => println(s"  - $desc: $e") }
       }
-    } else {
-      println(
-        s"\n=== Publish summary: OK (${WriteWatcher.completedCount} wiki writes) ==="
-      )
-    }
 
-    stepErrors.size + writeFailures.size
+      stepErrors.size + writeFailures.size
+    } finally Progress.close()
   }
 
   def init(total: Boolean): Unit = {
@@ -605,6 +635,15 @@ object Statistics {
   }
 
   def main(args: Array[String]): Unit = {
+    // logback reads this system property when it first initialises (about to
+    // happen, on the first LoggerFactory call below). `--verbose` lifts the
+    // console appender from WARN to INFO so the per-request detail that always
+    // goes to logs/scalawiki.log shows on screen too. Checked directly (not via
+    // StatParams) to run before any logger is created; the flag is also declared
+    // in StatParams for --help.
+    if (args.contains("--verbose") || args.contains("-v"))
+      System.setProperty("sw.console.level", "INFO")
+
     // Track every wiki edit/upload so failures are logged and `main` can wait
     // for them all before shutting the process down.
     WriteWatcher.enable(MwBot.system.log)

@@ -15,15 +15,24 @@ import org.scalawiki.wlx.{
   RatingListFiller
 }
 
+import org.scalawiki.wlx.stat.progress.ProgressTask
+import org.slf4j.LoggerFactory
+
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 import scala.util.control.NonFatal
 
-class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
+class ReporterRegistry(
+    stat: ContestStat,
+    cfg: StatConfig,
+    progress: Option[ProgressTask] = None
+)(implicit
     ec: ExecutionContext
 ) {
 
   import org.scalawiki.wlx.stat.reports.{ReporterRegistry => RR}
+
+  private val logger = LoggerFactory.getLogger(classOf[ReporterRegistry])
 
   private val contest = stat.contest
   private val monumentDb = stat.monumentDb
@@ -61,13 +70,13 @@ class ReporterRegistry(stat: ContestStat, cfg: StatConfig)(implicit
     * tracked separately by [[org.scalawiki.util.WriteWatcher]]. */
   private def step(name: String)(body: => Unit): Unit = {
     try {
-      println(s"[report] $name")
+      logger.info(s"[report] $name")
+      progress.foreach { t => t.step(); t.msg(name) }
       body
     } catch {
       case NonFatal(e) =>
         stepErrors += (name -> e)
-        println(s"[report] FAILED: $name: $e")
-        e.printStackTrace()
+        logger.warn(s"[report] FAILED: $name: $e", e)
     }
   }
 

@@ -23,6 +23,7 @@ object Dependencies {
   val ScalaParserCombinatorsV = "2.4.0"
   val ScalaXmlV = "2.3.0"
   val ScallopV = "5.2.0"
+  val ProgressBarV = "0.10.1"
   val Slf4jV = "2.0.16"
   val SwcEngineV = "3.1.9"
   val TypesafeConfigV = "1.4.3"
@@ -67,6 +68,7 @@ object Dependencies {
       val PekkoHttpV = "1.0.1"
 
       val actor = "org.apache.pekko" %% "pekko-actor" % PekkoV
+      val slf4j = "org.apache.pekko" %% "pekko-slf4j" % PekkoV
       val stream = "org.apache.pekko" %% "pekko-stream" % PekkoV
       val http = "org.apache.pekko" %% "pekko-http" % PekkoHttpV
       val httpCaching = "org.apache.pekko" %% "pekko-http-caching" % PekkoHttpV
