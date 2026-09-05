@@ -2,9 +2,9 @@ package org.scalawiki.wlx.query
 
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list._
-import org.scalawiki.dto.cmd.query.prop.{Prop, Revisions}
+import org.scalawiki.dto.cmd.query.prop.{CategoryInfo, Prop, Revisions}
 import org.scalawiki.dto.cmd.query.prop.rvprop.{RvProp, Ids => RvIds, Timestamp => RvTimestamp}
-import org.scalawiki.dto.cmd.query.{Generator, Query}
+import org.scalawiki.dto.cmd.query.{Generator, Query, TitlesParam}
 import org.scalawiki.dto.{Image, Namespace}
 import org.scalawiki.query.QueryLibrary
 import org.scalawiki.wlx.dto.{Contest, SpecialNomination}
@@ -35,6 +35,14 @@ trait ImageQuery {
     */
   def imageIdsFromCategory(contest: Contest): Future[Seq[PageRevInfo]]
 
+  /** Number of files MediaWiki records for the contest images category
+    * (`categoryinfo.files`), or `None` if the category page is missing / has no
+    * `categoryinfo`. This counter is maintained by the job queue and can lag the
+    * real membership in either direction, so it is only a sanity check on the
+    * completeness of an [[imageIdsFromCategory]] sweep, never an exact count.
+    */
+  def categoryFileCount(contest: Contest): Future[Option[Long]]
+
 }
 
 class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
@@ -63,6 +71,18 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
 
   override def imageIdsFromCategory(contest: Contest): Future[Seq[PageRevInfo]] =
     imageIdsByGenerator(categoryGenerator(contest))
+
+  override def categoryFileCount(contest: Contest): Future[Option[Long]] =
+    bot
+      .run(
+        Action(
+          Query(
+            TitlesParam(Seq(contest.imagesCategory)),
+            Prop(CategoryInfo)
+          )
+        )
+      )
+      .map(_.headOption.flatMap(_.categoryInfo).map(_.files))
 
   override def imagesWithTemplate(contest: Contest): Future[Iterable[Image]] =
     contest.fileTemplate
@@ -117,12 +137,13 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
     )
     bot.run(action).map { pages =>
       pages.flatMap { page =>
-        for {
-          pageId <- page.id
-          rev <- page.revisions.headOption
-          revId <- rev.revId
-          ts <- rev.timestamp
-        } yield PageRevInfo(pageId, revId, ts)
+        // Emit an entry for every page that has a pageId, even when its latest
+        // revision is revision-deleted (no exposed revid/timestamp): otherwise a
+        // still-existing file would look deleted to a CSV-cache diff.
+        page.id.map { pageId =>
+          val rev = page.revisions.headOption
+          PageRevInfo(pageId, rev.flatMap(_.revId), rev.flatMap(_.timestamp))
+        }
       }.toIndexedSeq
     }
   }
@@ -132,9 +153,14 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
 object ImageQuery {
 
   /** Page id + its latest revision (id and timestamp). The cheap change token
-    * used to diff a CSV image cache against the wiki.
+    * used to diff a CSV image cache against the wiki. `revId` / `timestamp` are
+    * empty when the current revision is revision-deleted.
     */
-  case class PageRevInfo(pageId: Long, revId: Long, timestamp: ZonedDateTime)
+  case class PageRevInfo(
+      pageId: Long,
+      revId: Option[Long] = None,
+      timestamp: Option[ZonedDateTime] = None
+  )
 
   def create(implicit bot: ActionBot = MwBot.fromHost(MwBot.commons)): ImageQuery =
     new ImageQueryApi(bot)

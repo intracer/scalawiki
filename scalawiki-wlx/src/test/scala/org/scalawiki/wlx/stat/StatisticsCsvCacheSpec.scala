@@ -36,7 +36,7 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
 
   /** A live-sweep entry; timestamp defaults to inside the contest window. */
   private def rev(id: Long, revId: Long, ts: ZonedDateTime = duringContest): PageRevInfo =
-    PageRevInfo(id, revId, ts)
+    PageRevInfo(id, Some(revId), Some(ts))
 
   private def cacheDir(): Path = Files.createTempDirectory("stats-csv-cache")
 
@@ -51,6 +51,7 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
     // safe defaults so an unexpected sync path doesn't NPE
     q.imageIdsFromCategory(any[Contest]) returns Future.successful(Seq.empty[PageRevInfo])
     q.imageIdsWithTemplate(any[Contest]) returns Future.successful(Seq.empty[PageRevInfo])
+    q.categoryFileCount(any[Contest]) returns Future.successful(None)
     q.imagesFromCategory(any[Contest]) returns Future.successful(Nil)
     q.imagesWithTemplate(any[Contest]) returns Future.successful(Nil)
     q.imagesWithTemplateByIds(any[Contest], any[Set[Long]]) returns Future.successful(Nil)
@@ -162,7 +163,7 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
       there was one(q).imagesWithTemplateByIds(prevContest, Set(2L))
     }
 
-    "with --csv-cache-resync: migrate a row with no revid using the contest-end fallback" in {
+    "with --csv-cache-resync: migrate a row with no revid using the cache-file mtime" in {
       val dir = cacheDir()
       ImageCsvExporter.export(
         new ImageDB(prevContest, Seq(
@@ -170,11 +171,14 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
           img("File:LaterEdit.jpg", 2L)
         ), None),
         campaign, isCurrent = false, dir.toString)
+      // pretend the cache was written at the start of 2020
+      Files.setLastModifiedTime(yearCsv(dir, 2015),
+        java.nio.file.attribute.FileTime.from(ZonedDateTime.parse("2020-01-01T00:00:00Z").toInstant))
 
       val q = newImageQuery()
       q.imageIdsFromCategory(prevContest) returns Future.successful(Seq(
-        rev(1L, 10L, ts = ZonedDateTime.parse("2015-08-01T00:00:00Z")), // before 2015 end -> keep
-        rev(2L, 20L, ts = ZonedDateTime.parse("2016-06-01T00:00:00Z"))  // after 2015 end -> refetch
+        rev(1L, 10L, ts = ZonedDateTime.parse("2019-08-01T00:00:00Z")), // before cache write -> keep
+        rev(2L, 20L, ts = ZonedDateTime.parse("2020-06-01T00:00:00Z"))  // after cache write -> refetch
       ))
       q.imagesWithTemplateByIds(prevContest, Set(2L)) returns
         Future.successful(Seq(img("File:LaterEdit-v2.jpg", 2L, revId = Some(20L))))
@@ -184,9 +188,29 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
 
       data.imageDbByYear(2015).get.images.map(_.title).toSet must_==
         Set("File:Untouched.jpg", "File:LaterEdit-v2.jpg")
+      there was one(q).imagesWithTemplateByIds(prevContest, Set(2L))
       // kept row got its revid backfilled from the sweep
       ImageCsvImporter.imagesFromCsv(yearCsv(dir, 2015).toString)
         .find(_.title == "File:Untouched.jpg").flatMap(_.revId) must beSome(10L)
+    }
+
+    "with --csv-cache-resync: keep cached rows when the category sweep looks truncated" in {
+      val dir = cacheDir()
+      ImageCsvExporter.export(
+        new ImageDB(prevContest, (1 to 10).map(i => img(s"File:P$i.jpg", i.toLong, revId = Some(i.toLong))), None),
+        campaign, isCurrent = false, dir.toString)
+
+      val q = newImageQuery()
+      // only 2 of 10 ids came back, and categoryinfo says there should be 10
+      q.imageIdsFromCategory(prevContest) returns Future.successful(Seq(rev(1L, 1L), rev(2L, 2L)))
+      q.categoryFileCount(prevContest) returns Future.successful(Some(10L))
+
+      val data = stats(dir, q, startYear = Some(2015), csvCacheResync = true)
+        .gatherData(total = false).await
+
+      // nothing dropped, nothing refetched
+      data.imageDbByYear(2015).get.images.map(_.title).toSet must_== (1 to 10).map(i => s"File:P$i.jpg").toSet
+      there was no(q).imagesWithTemplateByIds(any[Contest], any[Set[Long]])
     }
   }
 
@@ -224,6 +248,38 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
 
       data.currentYearImageDb.images.map(_.title).toSeq must_== Seq("File:Fixed.jpg")
       there was one(q).imagesWithTemplateByIds(contest, Set(1L))
+    }
+
+    "keep a cached image whose current revision is revision-deleted (no revid in the sweep)" in {
+      val dir = cacheDir()
+      ImageCsvExporter.export(
+        new ImageDB(contest, Seq(img("File:RevDel.jpg", 1L, revId = Some(5L))), None), campaign,
+        isCurrent = false, dir.toString)
+
+      val q = newImageQuery()
+      q.imageIdsFromCategory(contest) returns Future.successful(Seq(PageRevInfo(1L, None, None)))
+
+      val data = stats(dir, q).gatherData(total = false).await
+
+      data.currentYearImageDb.images.map(_.title).toSeq must_== Seq("File:RevDel.jpg")
+      there was no(q).imagesWithTemplateByIds(any[Contest], any[Set[Long]])
+    }
+
+    "keep cached rows when the sweep is empty but the category is not" in {
+      val dir = cacheDir()
+      ImageCsvExporter.export(
+        new ImageDB(contest, Seq(
+          img("File:A.jpg", 1L, revId = Some(1L)),
+          img("File:B.jpg", 2L, revId = Some(2L))
+        ), None),
+        campaign, isCurrent = false, dir.toString)
+
+      val q = newImageQuery()
+      q.imageIdsFromCategory(contest) returns Future.successful(Seq.empty[PageRevInfo])
+
+      val data = stats(dir, q).gatherData(total = false).await
+
+      data.currentYearImageDb.images.map(_.title).toSet must_== Set("File:A.jpg", "File:B.jpg")
     }
 
     "drop cached images no longer in the category" in {
@@ -287,6 +343,34 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
 
       data.totalImageDb.images.map(_.title).toSet must_==
         Set("File:C-keep.jpg", "File:C-edit-v2.jpg", "File:Wiki.jpg")
+    }
+
+    "with --csv-cache-resync: keep cached uk.wiki rows when the uk.wiki refetch comes back empty" in {
+      val dir = cacheDir()
+      val total = Seq(
+        img("File:C-keep.jpg", 1L, revId = Some(11L)),
+        img("File:Wiki1.jpg", 900L, revId = Some(90L)),
+        img("File:Wiki2.jpg", 901L, revId = Some(91L))
+      )
+      ImageCsvExporter.exportTotal(new ImageDB(contest, total, None), campaign, dir.toString)
+
+      val commons = newImageQuery()
+      commons.imageIdsFromCategory(contest) returns Future.successful(Seq.empty[PageRevInfo])
+      commons.imageIdsWithTemplate(contest) returns Future.successful(Seq(rev(1L, 11L)))
+
+      val wiki = mock[ImageQuery]
+      // transient failure: the fetch resolves but returns nothing
+      wiki.imagesWithTemplate(contest) returns Future.successful(Nil)
+
+      val monumentQuery = mock[MonumentQuery]
+      monumentQuery.byMonumentTemplate(date = None) returns monuments
+      val cfg = StatConfig(campaign = campaign, csvCacheDir = dir.toString, csvCacheResync = true)
+      val st = new Statistics(contest, None, monumentQuery, Some(commons), Some(wiki), mock[MwBot], cfg)
+
+      val data = st.gatherData(total = true).await
+
+      data.totalImageDb.images.map(_.title).toSet must_==
+        Set("File:C-keep.jpg", "File:Wiki1.jpg", "File:Wiki2.jpg")
     }
   }
 
