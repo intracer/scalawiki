@@ -138,7 +138,7 @@ class Statistics(
     )
 
     val byYearLabel =
-      if (contests.sizeIs > 1) s"Fetching images ${contests.head.year}–${contests.last.year}"
+      if (contests.sizeIs > 1) s"Fetching images ${contests.head.year}-${contests.last.year}"
       else s"Fetching images ${contests.head.year}"
     val byYearF =
       Progress.barF(byYearLabel, contests.size.toLong) { task =>
@@ -635,14 +635,17 @@ object Statistics {
   }
 
   def main(args: Array[String]): Unit = {
-    // logback reads this system property when it first initialises (about to
+    // logback reads these system properties when it first initialises (about to
     // happen, on the first LoggerFactory call below). `--verbose` lifts the
-    // console appender from WARN to INFO so the per-request detail that always
-    // goes to logs/scalawiki.log shows on screen too. Checked directly (not via
+    // console appender from WARN to INFO (the per-request detail that always goes
+    // to logs/scalawiki.log now shows on screen too) and the root logger from
+    // INFO to DEBUG (so DEBUG detail reaches the file). Checked directly (not via
     // StatParams) to run before any logger is created; the flag is also declared
     // in StatParams for --help.
-    if (args.contains("--verbose") || args.contains("-v"))
+    if (args.contains("--verbose") || args.contains("-v")) {
       System.setProperty("sw.console.level", "INFO")
+      System.setProperty("sw.root.level", "DEBUG")
+    }
 
     // Track every wiki edit/upload so failures are logged and `main` can wait
     // for them all before shutting the process down.

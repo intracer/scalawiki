@@ -35,11 +35,12 @@ trait ProgressTask {
   *
   *   - interactive terminal, progress enabled -> a live [[me.tongfei.progressbar.ProgressBar]]
   *     on stderr (items done/total, speed, elapsed, ETA);
-  *   - otherwise (output redirected, or `--no-progress`) -> throttled INFO lines
-  *     to the log, no screen output.
+  *   - otherwise (fully redirected/CI, or `--no-progress`) -> throttled INFO
+  *     lines to the log, no screen output.
   *
-  * Rendering is on stderr, so it never mixes with report/wikitext written to
-  * stdout.
+  * Both the bar and the user-facing [[note]] lines render on stderr, so they
+  * never mix with report/wikitext written to stdout (`run-stats.sh > report.txt`
+  * captures only the report).
   */
 object Progress {
 
@@ -47,9 +48,21 @@ object Progress {
 
   @volatile private var enabled: Boolean = true
 
-  /** Whether a real terminal is attached. Cached: `System.console()` doesn't
-    * change over a run. */
-  private lazy val interactive: Boolean = System.console() != null
+  /** Whether a real terminal is attached to stderr, where the bar renders.
+    *
+    * `System.console()` needs *both* stdin and stdout on a tty, so it goes null
+    * under `run-stats.sh > report.txt` even though stderr is still a terminal —
+    * hence the env fallback. In CI / fully-redirected runs none of these hold and
+    * we degrade to log lines. Cached: this doesn't change over a run. */
+  private lazy val interactive: Boolean = {
+    def env(name: String) = Option(System.getenv(name)).exists(_.nonEmpty)
+    val ci = env("CI") || env("GITHUB_ACTIONS") || env("BUILD_NUMBER")
+    !ci && (
+      System.console() != null ||
+        Option(System.getenv("TERM")).exists(t => t.nonEmpty && t != "dumb") ||
+        env("WT_SESSION") // Windows Terminal
+    )
+  }
 
   private val openBars = new ConcurrentLinkedQueue[ProgressBar]()
 
@@ -62,13 +75,13 @@ object Progress {
   // -- important, user-facing lines -----------------------------------------
 
   /** Print a line the user should see regardless of verbosity (phase results,
-    * the publish summary). Goes to stdout so it is captured alongside report
-    * output, and to the log file. */
+    * the publish summary). Goes to stderr — alongside the progress bar and away
+    * from report/wikitext on stdout — and to the log file. */
   def note(line: String): Unit = {
     log.info(line)
     // A newline first so the line doesn't land on top of a live bar.
     if (live) System.err.println()
-    println(line)
+    System.err.println(line)
   }
 
   // -- indeterminate phases ------------------------------------------------
@@ -143,7 +156,7 @@ object Progress {
 
   private def emitStart(label: String): Unit = {
     log.info(s"START $label")
-    if (live) System.err.println(s"▶ $label")
+    if (live) System.err.println(s"[>] $label")
   }
 
   private def emitDone(label: String, startNanos: Long, error: Option[Throwable]): Unit = {
@@ -151,10 +164,10 @@ object Progress {
     error match {
       case None =>
         log.info(f"DONE  $label ($secs%.1fs)")
-        if (live) System.err.println(f"✓ $label ($secs%.1fs)")
+        if (live) System.err.println(f"[OK] $label ($secs%.1fs)")
       case Some(e) =>
         log.warn(f"FAILED $label ($secs%.1fs): $e")
-        if (live) System.err.println(f"✗ $label ($secs%.1fs): ${e.getMessage}")
+        if (live) System.err.println(f"[!!] $label ($secs%.1fs): ${e.getMessage}")
     }
   }
 

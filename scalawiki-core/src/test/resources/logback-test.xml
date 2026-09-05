@@ -13,6 +13,11 @@
         </encoder>
     </appender>
 
+    <!-- Pekko is wired to slf4j in main/resources/application.conf, so MwBot.log
+         (logger org.apache.pekko.actor.ActorSystemImpl) and Pekko internals now
+         reach logback in tests too. Keep the per-request GET/POST chatter off the
+         console, matching the other modules' logback-test.xml. -->
+    <logger name="org.apache.pekko" level="WARN"/>
     <logger name="org.mockserver" level="${mockserver.logLevel:-WARN}"/>
 
     <root level="INFO">

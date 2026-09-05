@@ -62,11 +62,16 @@ once it rolls). Nothing to configure — it's created on first run.
 
 | flag           | effect                                                                 |
 |----------------|-----------------------------------------------------------------------|
-| `--verbose`    | also echo the per-request INFO logging to the console (it always goes to the file) |
+| `--verbose`    | echo the per-request INFO logging to the console (it always goes to the file) and record extra DEBUG detail in `logs/scalawiki.log` |
 | `--no-progress`| turn off the live bar; progress is still written to `logs/scalawiki.log` as periodic lines. Useful when piping output. |
 
-Report text and CSVs are written to **stdout**; progress and logs go to
-**stderr** — so `... > report.txt` captures only the report.
+Report text and CSVs are written to **stdout**; the progress bar, the phase
+lines and the `=== Publish summary ===` all go to **stderr** — so
+`... > report.txt` captures only the report.
+
+The bar is shown when a terminal is attached (even if stdout is redirected). In
+CI or when both streams are redirected it degrades to periodic progress lines in
+`logs/scalawiki.log`.
 
 ## Image CSV cache
 

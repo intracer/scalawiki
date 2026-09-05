@@ -146,7 +146,7 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
   val csvCacheResync =
     opt[Boolean](name = "csv-cache-resync", descr = "Re-check cached images (past years + all-images) against the wiki via a cheap id+revision sweep: refetch only rows whose file page changed since caching, drop deleted/de-categorised ones. The current year's cache always does this.")
   val verbose =
-    opt[Boolean](name = "verbose", descr = "Echo the per-request INFO/DEBUG logging to the console (it always goes to logs/scalawiki.log).")
+    opt[Boolean](name = "verbose", descr = "Verbose logging: echo per-request INFO detail to the console and record DEBUG detail in logs/scalawiki.log (default: console WARN+, file INFO).")
   val noProgress =
     opt[Boolean](name = "no-progress", descr = "Disable the live console progress display (progress is still written to logs/scalawiki.log).")
   verify()
