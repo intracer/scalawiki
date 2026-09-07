@@ -7,6 +7,9 @@ import org.scalawiki.wlx.MonumentDB
 import org.scalawiki.wlx.stat.ContestStat
 import org.scalawiki.wlx.stat.reports.DesnaRegionSpecialNomination
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 import scala.util.Try
 
 /** Describes monument lists for contest special nominations
@@ -65,25 +68,35 @@ object SpecialNomination {
 
   lazy val nominations = load("wlm_ua.conf")
 
+  /** Blocking bridge for the synchronous report pipeline. Prefer
+    * [[getMonumentsMapAsync]] from async code. */
   def getMonumentsMap(
       nominations: Seq[SpecialNomination],
       stat: ContestStat
-  ): Map[SpecialNomination, Seq[Monument]] = {
+  ): Map[SpecialNomination, Seq[Monument]] =
+    Await.result(getMonumentsMapAsync(nominations, stat), Duration.Inf)
+
+  def getMonumentsMapAsync(
+      nominations: Seq[SpecialNomination],
+      stat: ContestStat
+  ): Future[Map[SpecialNomination, Seq[Monument]]] = {
     val contest = stat.contest
     val monumentQuery =
       MonumentQuery.create(contest, reportDifferentRegionIds = false)
-    nominations
-      .filter(_.listTemplate.nonEmpty)
-      .flatMap { nomination =>
-        nomination.listTemplate.map { listTemplate =>
-          val monuments = if (
-            nomination.pages.nonEmpty && nomination.name != "Пам'ятки Подесення"
-          ) {
-            nomination.pages.flatMap { page =>
-              monumentQuery.byPage(page, listTemplate)
-            }
+
+    def byPages(pages: Seq[String], listTemplate: String): Future[Seq[Monument]] =
+      Future
+        .traverse(pages)(page => monumentQuery.byPageAsync(page, listTemplate).map(_.toSeq))
+        .map(_.flatten)
+
+    Future
+      .traverse(nominations.filter(_.listTemplate.nonEmpty)) { nomination =>
+        val listTemplate = nomination.listTemplate.get
+        val monumentsF: Future[Seq[Monument]] =
+          if (nomination.pages.nonEmpty && nomination.name != "Пам'ятки Подесення") {
+            byPages(nomination.pages, listTemplate)
           } else if (nomination.cities.nonEmpty) {
-            monumentsInCities(nomination.cities, stat.monumentDb.get)
+            Future.successful(monumentsInCities(nomination.cities, stat.monumentDb.get))
           } else if (nomination.name == "Пам'ятки Подесення") {
             val desna = DesnaRegionSpecialNomination()
             val placeIds = desna.places.flatMap(desna.getPlace).map(_.code)
@@ -91,20 +104,18 @@ object SpecialNomination {
             val allPlaceIds = (placeIds ++ k2k).toSet
 
             val monumentDb = stat.monumentDb.get
-            monumentDb.allMonuments.filter { monument =>
+            val fromDb = monumentDb.allMonuments.filter { monument =>
               monumentDb.placeByMonumentId
                 .get(monument.id)
                 .exists(allPlaceIds.contains)
-            } ++ nomination.pages.flatMap { page =>
-              monumentQuery.byPage(page, listTemplate)
             }
+            byPages(nomination.pages, listTemplate).map(fromDb ++ _)
           } else {
-            Nil
+            Future.successful(Nil)
           }
-          (nomination, monuments)
-        }
+        monumentsF.map(monuments => nomination -> monuments)
       }
-      .toMap
+      .map(_.toMap)
   }
 
   def monumentsInCities(

@@ -6,7 +6,7 @@ import org.scalawiki.wlx.query.MonumentQuery
 import java.io.File
 
 import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.duration.Duration
 
 object MonumentCsvExporter {
 
@@ -27,7 +27,9 @@ object MonumentCsvExporter {
       outFile: Option[String] = None
   ): Unit = {
     val path = outFile.filter(_.nonEmpty).getOrElse(defaultFilename(campaign))
-    val maps = Await.result(monumentQuery.byMonumentTemplateMapsAsync(), 2.minutes)
+    // CLI-only entry point: this is the one sync/async boundary, so block here
+    // (no arbitrary timeout) rather than propagate a Future through `main`.
+    val maps = Await.result(monumentQuery.byMonumentTemplateMapsAsync(), Duration.Inf)
     val mapping = UaUkJsonMapping.load("monuments_config/ua_uk.json")
     export(maps, mapping, path)
   }

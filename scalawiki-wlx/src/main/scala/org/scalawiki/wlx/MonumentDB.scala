@@ -6,6 +6,10 @@ import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Monument}
 import org.scalawiki.wlx.query.MonumentQuery
 import org.scalawiki.wlx.stat.rating.PerPlaceStat
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
+
 class MonumentDB(
     val contest: Contest,
     val allMonuments: Seq[Monument],
@@ -173,19 +177,28 @@ case class UnknownPlace(
 
 object MonumentDB {
 
+  def getMonumentDbAsync(
+      contest: Contest,
+      monumentQuery: MonumentQuery,
+      date: Option[ZonedDateTime] = None
+  ): Future[MonumentDB] =
+    monumentQuery.byMonumentTemplateAsync(date = date).map { fetched =>
+      val allMonuments =
+        if (contest.country.code == "ru")
+          fetched.filter(_.page.contains("Природные памятники России"))
+        else fetched
+
+      new MonumentDB(contest, allMonuments.toSeq)
+    }
+
+  /** Blocking bridge for standalone CLI entry points and tests. The stats
+    * pipeline uses [[getMonumentDbAsync]] directly. */
   def getMonumentDb(
       contest: Contest,
       monumentQuery: MonumentQuery,
       date: Option[ZonedDateTime] = None
-  ): MonumentDB = {
-    var allMonuments = monumentQuery.byMonumentTemplate(date = date)
-
-    if (contest.country.code == "ru") {
-      allMonuments = allMonuments.filter(_.page.contains("Природные памятники России"))
-    }
-
-    new MonumentDB(contest, allMonuments.toSeq)
-  }
+  ): MonumentDB =
+    Await.result(getMonumentDbAsync(contest, monumentQuery, date), Duration.Inf)
 
   def getMonumentDb(contest: Contest, date: Option[ZonedDateTime]): MonumentDB =
     getMonumentDb(contest, MonumentQuery.create(contest), date)

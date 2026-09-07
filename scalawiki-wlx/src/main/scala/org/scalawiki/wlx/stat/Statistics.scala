@@ -126,25 +126,29 @@ class Statistics(
     *   asynchronously returned contest data
     */
   def gatherData(total: Boolean): Future[ContestStat] = {
-    val monumentDb = Some(monumentProvider.gather())
+    // the monument lists and the cheap all-time page-rev sweep now run
+    // concurrently with the per-year image fetches instead of blocking ahead of them
+    val monumentDbF = monumentProvider.gather().map(Some(_))
 
-    // started before the per-year fetches so the cheap all-time sweep overlaps them
     val totalPageRevsFuture = imageProvider.prefetchTotalPageRevs(total)
 
     val byYearLabel =
       if (contests.sizeIs > 1) s"Fetching images ${contests.head.year}-${contests.last.year}"
       else s"Fetching images ${contests.head.year}"
     val byYearF =
-      Progress.barF(byYearLabel, contests.size.toLong) { task =>
-        Future.sequence(contests.map { yearContest =>
-          imageProvider.perYear(monumentDb)(yearContest).map { db =>
-            task.step()
-            db
-          }
-        })
+      monumentDbF.flatMap { monumentDb =>
+        Progress.barF(byYearLabel, contests.size.toLong) { task =>
+          Future.sequence(contests.map { yearContest =>
+            imageProvider.perYear(monumentDb)(yearContest).map { db =>
+              task.step()
+              db
+            }
+          })
+        }
       }
 
     for {
+      monumentDb <- monumentDbF
       byYear <- byYearF
       totalPageRevs <- totalPageRevsFuture
       totalImages <- imageProvider.total(monumentDb, byYear, totalPageRevs, total)
@@ -170,6 +174,9 @@ class Statistics(
   def run(total: Boolean): Int = {
     Progress.configure(config.progress)
     try {
+      // the one sync/async boundary of a stats run: data gathering is fully
+      // async, the report pipeline that consumes it is synchronous. No arbitrary
+      // timeout — a stuck fetch is the HTTP layer's problem, not ours.
       val stat = Await.result(gatherData(total = total), Duration.Inf)
       new ReportRunner(stat, config).run()
     } finally Progress.close()

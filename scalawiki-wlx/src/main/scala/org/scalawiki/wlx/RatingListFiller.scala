@@ -4,6 +4,8 @@ import org.scalawiki.wlx.dto.Monument
 import org.scalawiki.wlx.stat.ContestStat
 import org.scalawiki.wlx.stat.rating.{RateSum, Rater}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.util.Try
 
 /** Fills the "rating" field of WLM/WLE monument list rows with the number of points
@@ -58,15 +60,17 @@ object RatingListFiller {
     }
   }
 
-  def fillLists(stat: ContestStat): Unit = {
+  def fillLists(stat: ContestStat): Future[Unit] = {
     val monumentDb = stat.monumentDb.getOrElse {
       throw new IllegalStateException("RatingListFiller needs a monument database")
     }
     val updater =
       new RatingUpdater(ratings(monumentDb, Rater.create(stat)), paramName(stat))
-    ListUpdater.updateLists(monumentDb, updater)
-    // thematic nominations live on their own list pages, like ImageFiller does
-    ListUpdater.updateSpecialNominationLists(stat, updater)
+    for {
+      _ <- ListUpdater.updateLists(monumentDb, updater)
+      // thematic nominations live on their own list pages, like ImageFiller does
+      _ <- ListUpdater.updateSpecialNominationLists(stat, updater)
+    } yield ()
   }
 }
 

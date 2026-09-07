@@ -18,7 +18,8 @@ import org.scalawiki.wlx.{
 import org.scalawiki.wlx.stat.progress.ProgressTask
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Try
 import scala.util.control.NonFatal
 
@@ -68,11 +69,17 @@ class ReporterRegistry(
     * with its stack trace, but never aborts the remaining steps. Only catches
     * exceptions thrown synchronously — asynchronous edit/upload failures are
     * tracked separately by [[org.scalawiki.util.WriteWatcher]]. */
-  private def step(name: String)(body: => Unit): Unit = {
+  private def step(name: String)(body: => Any): Unit = {
     try {
       logger.info(s"[report] $name")
       progress.foreach { t => t.step(); t.msg(name) }
-      body
+      // a step that returns a Future is awaited here so its failure is recorded
+      // like a synchronous one; the individual wiki writes it fired are still
+      // tracked (and waited on) separately by WriteWatcher.
+      body match {
+        case f: Future[_] => Await.result(f, Duration.Inf)
+        case _            => ()
+      }
     } catch {
       case NonFatal(e) =>
         stepErrors += (name -> e)
@@ -134,8 +141,10 @@ class ReporterRegistry(
     val imageDb = totalImageDb
     if (cfg.fillLists) {
       step("fillLists (all years)") {
-        ImageFiller.fillLists(monumentDb.get, imageDb)
-        fillSpecialNominationLists(imageDb)
+        for {
+          _ <- ImageFiller.fillLists(monumentDb.get, imageDb)
+          _ <- fillSpecialNominationLists(imageDb)
+        } yield ()
       }
     }
 
@@ -198,7 +207,7 @@ class ReporterRegistry(
     * lists that `monumentDb` is built from, so `ImageFiller.fillLists` never visits
     * them. Fill each nomination's own list pages too, reusing the same image data.
     */
-  private def fillSpecialNominationLists(imageDb: ImageDB): Unit =
+  private def fillSpecialNominationLists(imageDb: ImageDB): Future[Unit] =
     ListUpdater.updateSpecialNominationLists(
       stat,
       new ImageFillerUpdater(imageDb.copy(ignoreRecentlyTaken = true))

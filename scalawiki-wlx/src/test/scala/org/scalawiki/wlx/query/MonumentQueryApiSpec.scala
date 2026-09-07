@@ -12,7 +12,6 @@ import scala.concurrent.duration._
 class MonumentQueryApiSpec extends Specification with Mockito {
 
   // A minimal concrete MonumentQuery that overrides only byMonumentTemplateMapsAsync.
-  // Used to test that the final sync wrapper delegates to the async method for real.
   private class StubMonumentQuery(
       asyncResult: Iterable[Map[String, String]]
   ) extends MonumentQuery {
@@ -56,31 +55,29 @@ class MonumentQueryApiSpec extends Specification with Mockito {
 
   "MonumentQuery trait" should {
 
-    "byMonumentTemplateMaps delegates to byMonumentTemplateMapsAsync" in {
-      // Use a concrete stub so the final sync method runs for real and
-      // delegates to byMonumentTemplateMapsAsync (not intercepted by Mockito).
+    "byMonumentTemplateMapsAsync returns the rows the implementation produces" in {
       val query = new StubMonumentQuery(
         Seq(Map("ID" -> "14-101-0001", "назва" -> "Test"))
       )
-      val result = query.byMonumentTemplateMaps()
+      val result = Await.result(query.byMonumentTemplateMapsAsync(), 5.seconds)
       result must haveSize(1)
       result.head must havePair("ID" -> "14-101-0001")
     }
 
-    "return Map[String,String] rows with raw template parameter names" in {
+    "byMonumentTemplateMapsAsync rows carry raw template parameter names" in {
       val query = mock[MonumentQuery]
       val rawRow = Map("ID" -> "01-001-0001", "назва" -> "Церква", "район" -> "Центральний")
-      query.byMonumentTemplateMaps() returns Seq(rawRow)
-      val result = query.byMonumentTemplateMaps().toSeq
+      query.byMonumentTemplateMapsAsync() returns Future.successful(Seq(rawRow))
+      val result = Await.result(query.byMonumentTemplateMapsAsync(), 5.seconds).toSeq
       result must haveSize(1)
       result.head must_== rawRow
     }
 
-    "byMonumentTemplate still returns Monument objects (existing interface unchanged)" in {
+    "byMonumentTemplateAsync returns Monument objects" in {
       val query = mock[MonumentQuery]
       val monument = Monument(id = "14-101-0001", name = "Test")
-      query.byMonumentTemplate() returns Seq(monument)
-      val result = query.byMonumentTemplate()
+      query.byMonumentTemplateAsync() returns Future.successful(Seq(monument))
+      val result = Await.result(query.byMonumentTemplateAsync(), 5.seconds)
       result must haveSize(1)
       result.head.id must_== "14-101-0001"
     }

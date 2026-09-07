@@ -14,11 +14,9 @@ import org.scalawiki.wlx.stat.progress.Progress
 import java.time.ZonedDateTime
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Future, _}
+import scala.concurrent.Future
 
 trait MonumentQuery {
-  val Timeout = 2.minutes
 
   def contest: Contest
 
@@ -36,34 +34,11 @@ trait MonumentQuery {
       listTemplate: Option[String] = None
   ): Future[Iterable[Map[String, String]]]
 
-  final def byMonumentTemplateMaps(
-      generatorTemplate: String = defaultListTemplate,
-      date: Option[ZonedDateTime] = None,
-      listTemplate: Option[String] = None
-  ): Iterable[Map[String, String]] =
-    Await.result(
-      byMonumentTemplateMapsAsync(generatorTemplate, date, listTemplate),
-      Timeout
-    )
-
   def byPageAsync(
       page: String,
       template: String,
       date: Option[ZonedDateTime] = None
   ): Future[Iterable[Monument]]
-
-  final def byMonumentTemplate(
-      generatorTemplate: String = defaultListTemplate,
-      date: Option[ZonedDateTime] = None,
-      listTemplate: Option[String] = None
-  ): Iterable[Monument] =
-    Await.result(
-      byMonumentTemplateAsync(generatorTemplate, date, listTemplate),
-      Timeout
-    )
-
-  final def byPage(page: String, template: String): Iterable[Monument] =
-    Await.result(byPageAsync(page, template), Timeout)
 
   /** Cheap sweep of the pages that currently embed the list template, with each
     * one's latest revision id + timestamp and no page content. The change token
@@ -247,16 +222,15 @@ class MonumentQueryApi(
         }
         monuments
       }
-    ).map { monuments =>
+    ).flatMap { monuments =>
       if (date.isEmpty && reportDifferentRegionIds) {
-        Await.result(
-          bot
-            .page(s"Вікіпедія:${contest.name}/differentRegionIds")
-            .edit(differentRegionIds.sorted.mkString("\n")),
-          10.seconds
-        )
+        bot
+          .page(s"Вікіпедія:${contest.name}/differentRegionIds")
+          .edit(differentRegionIds.sorted.mkString("\n"))
+          .map(_ => monuments)
+      } else {
+        Future.successful(monuments)
       }
-      monuments
     }
   }
 

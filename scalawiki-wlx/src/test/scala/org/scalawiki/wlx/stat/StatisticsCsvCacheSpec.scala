@@ -68,7 +68,7 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
       imagesFromCsv: Option[String] = None
   ): Statistics = {
     val monumentQuery = mock[MonumentQuery]
-    monumentQuery.byMonumentTemplate(date = None) returns monuments
+    monumentQuery.byMonumentTemplateAsync(date = None) returns Future.successful(monuments)
     monumentQuery.listPageRevs(any[String]) returns Future.successful(Nil)
 
     val cfg = StatConfig(
@@ -335,7 +335,7 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
       wiki.imagesWithTemplate(contest) returns Future.successful(Seq(img("File:Wiki.jpg", 900L)))
 
       val monumentQuery = mock[MonumentQuery]
-      monumentQuery.byMonumentTemplate(date = None) returns monuments
+      monumentQuery.byMonumentTemplateAsync(date = None) returns Future.successful(monuments)
       val cfg = StatConfig(campaign = campaign, csvCacheDir = dir.toString, csvCacheResync = true)
       val st = new Statistics(contest, None, monumentQuery, Some(commons), Some(wiki), mock[MwBot], cfg)
 
@@ -363,7 +363,7 @@ class StatisticsCsvCacheSpec(implicit ee: ExecutionEnv)
       wiki.imagesWithTemplate(contest) returns Future.successful(Nil)
 
       val monumentQuery = mock[MonumentQuery]
-      monumentQuery.byMonumentTemplate(date = None) returns monuments
+      monumentQuery.byMonumentTemplateAsync(date = None) returns Future.successful(monuments)
       val cfg = StatConfig(campaign = campaign, csvCacheDir = dir.toString, csvCacheResync = true)
       val st = new Statistics(contest, None, monumentQuery, Some(commons), Some(wiki), mock[MwBot], cfg)
 

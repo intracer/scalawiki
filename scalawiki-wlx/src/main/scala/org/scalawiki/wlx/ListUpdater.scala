@@ -10,18 +10,21 @@ import org.sweble.wikitext.engine.config.WikiConfig
 import org.sweble.wikitext.engine.utils.DefaultConfigEnWp
 import org.sweble.wikitext.parser.nodes.WtTemplate
 
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 object ListUpdater {
 
-  def updateLists(monumentDb: MonumentDB, monumentUpdater: MonumentUpdater): Unit = {
+  /** Update every list page for `monumentDb`. [[PageUpdater]] processes the pages
+    * serially; callers chain the returned future so one list pass finishes before
+    * the next starts. */
+  def updateLists(
+      monumentDb: MonumentDB,
+      monumentUpdater: MonumentUpdater
+  ): Future[Unit] = {
     val task = new ListUpdaterTask(MwBot.ukWiki, monumentDb, monumentUpdater)
     val updater = new PageUpdater(task)
-    // block until the whole batch is done: PageUpdater processes pages serially,
-    // and the callers (RatingListFiller, ImageFiller, updateSpecialNominationLists)
-    // expect one list pass to finish before the next starts.
-    Await.result(updater.update(), Duration.Inf)
+    updater.update().map(_ => ())
   }
 
   /** Run `monumentUpdater` over the separate wiki pages that hold special
@@ -32,26 +35,30 @@ object ListUpdater {
   def updateSpecialNominationLists(
       stat: ContestStat,
       monumentUpdater: MonumentUpdater
-  ): Unit = {
+  ): Future[Unit] = {
     val nominations = SpecialNomination.nominations.filter(_.listTemplate.nonEmpty)
-    val monumentsMap = SpecialNomination.getMonumentsMap(nominations, stat)
 
-    for {
-      nomination <- nominations
-      listTemplate <- nomination.listTemplate
-      monuments = monumentsMap.getOrElse(nomination, Nil)
-      if monuments.nonEmpty
-    } {
-      val nominationContest = stat.contest.copy(
-        uploadConfigs = stat.contest.uploadConfigs match {
-          case head +: tail => head.copy(listTemplate = listTemplate) +: tail
-          case empty        => empty
-        }
-      )
-      updateLists(
-        new MonumentDB(nominationContest, monuments.toSeq),
-        monumentUpdater
-      )
+    SpecialNomination.getMonumentsMapAsync(nominations, stat).flatMap { monumentsMap =>
+      val passes = for {
+        nomination <- nominations
+        listTemplate <- nomination.listTemplate
+        monuments = monumentsMap.getOrElse(nomination, Nil)
+        if monuments.nonEmpty
+      } yield { () =>
+        val nominationContest = stat.contest.copy(
+          uploadConfigs = stat.contest.uploadConfigs match {
+            case head +: tail => head.copy(listTemplate = listTemplate) +: tail
+            case empty        => empty
+          }
+        )
+        updateLists(
+          new MonumentDB(nominationContest, monuments.toSeq),
+          monumentUpdater
+        )
+      }
+
+      // one nomination's list pass at a time, mirroring the old serial loop
+      passes.foldLeft(Future.unit)((acc, run) => acc.flatMap(_ => run()))
     }
   }
 }
