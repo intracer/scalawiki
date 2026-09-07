@@ -52,8 +52,6 @@ class ReporterRegistry(
   def authorsContributed: String =
     RR.authorsContributed(stat.dbsByYear, totalImageDb, monumentDb)
 
-  def specialNominations(): String = RR.specialNominations(stat)
-
   def mostPopularMonuments: String = new MostPopularMonuments(stat).asText
 
   def monumentsPictured: String =
@@ -254,9 +252,6 @@ object ReporterRegistry {
       totalImageDb: ImageDB,
       monumentDb: Option[MonumentDB]
   ): String = new AuthorsStat().authorsContributed(imageDbs, totalImageDb, monumentDb)
-
-  def specialNominations(stat: ContestStat): String =
-    new SpecialNominations(stat, stat.currentYearImageDb).specialNomination()
 
   def withArticles(monumentDb: Option[MonumentDB]): Option[String] =
     monumentDb.map(db => Stats.withArticles(db).asWiki("").asWiki)

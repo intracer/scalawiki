@@ -29,7 +29,7 @@ object MonumentCsvExporter {
     val path = outFile.filter(_.nonEmpty).getOrElse(defaultFilename(campaign))
     // CLI-only entry point: this is the one sync/async boundary, so block here
     // (no arbitrary timeout) rather than propagate a Future through `main`.
-    val maps = Await.result(monumentQuery.byMonumentTemplateMapsAsync(), Duration.Inf)
+    val maps = Await.result(monumentQuery.byMonumentTemplateMaps(), Duration.Inf)
     val mapping = UaUkJsonMapping.load("monuments_config/ua_uk.json")
     export(maps, mapping, path)
   }

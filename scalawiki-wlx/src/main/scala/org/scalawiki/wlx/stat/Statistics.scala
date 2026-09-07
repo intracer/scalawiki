@@ -126,8 +126,9 @@ class Statistics(
     *   asynchronously returned contest data
     */
   def gatherData(total: Boolean): Future[ContestStat] = {
-    // the monument lists and the cheap all-time page-rev sweep now run
-    // concurrently with the per-year image fetches instead of blocking ahead of them
+    // the monument-list fetch and the cheap all-time page-rev sweep now overlap
+    // (both start here); the per-year image fetches still wait for the monument
+    // DB since perYear needs it as input
     val monumentDbF = monumentProvider.gather().map(Some(_))
 
     val totalPageRevsFuture = imageProvider.prefetchTotalPageRevs(total)

@@ -177,12 +177,12 @@ case class UnknownPlace(
 
 object MonumentDB {
 
-  def getMonumentDbAsync(
+  def getMonumentDb(
       contest: Contest,
       monumentQuery: MonumentQuery,
       date: Option[ZonedDateTime] = None
   ): Future[MonumentDB] =
-    monumentQuery.byMonumentTemplateAsync(date = date).map { fetched =>
+    monumentQuery.byMonumentTemplate(date = date).map { fetched =>
       val allMonuments =
         if (contest.country.code == "ru")
           fetched.filter(_.page.contains("Природные памятники России"))
@@ -192,15 +192,15 @@ object MonumentDB {
     }
 
   /** Blocking bridge for standalone CLI entry points and tests. The stats
-    * pipeline uses [[getMonumentDbAsync]] directly. */
-  def getMonumentDb(
+    * pipeline uses [[getMonumentDb]] directly. */
+  def getMonumentDbBlocking(
       contest: Contest,
       monumentQuery: MonumentQuery,
       date: Option[ZonedDateTime] = None
   ): MonumentDB =
-    Await.result(getMonumentDbAsync(contest, monumentQuery, date), Duration.Inf)
+    Await.result(getMonumentDb(contest, monumentQuery, date), Duration.Inf)
 
-  def getMonumentDb(contest: Contest, date: Option[ZonedDateTime]): MonumentDB =
-    getMonumentDb(contest, MonumentQuery.create(contest), date)
+  def getMonumentDbBlocking(contest: Contest, date: Option[ZonedDateTime]): MonumentDB =
+    getMonumentDbBlocking(contest, MonumentQuery.create(contest), date)
 
 }

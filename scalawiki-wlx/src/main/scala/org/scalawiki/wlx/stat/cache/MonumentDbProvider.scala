@@ -71,7 +71,7 @@ class MonumentDbProvider(
 
     def fullFetch(): Future[MonumentDB] =
       Progress.phaseF("Fetching monument lists")(
-        MonumentDB.getMonumentDbAsync(contest, monumentQuery)
+        MonumentDB.getMonumentDb(contest, monumentQuery)
       )
 
     // After a full fetch the parsed monuments carry only their source page
@@ -99,10 +99,16 @@ class MonumentDbProvider(
     if (!cacheActive || refresh || !new File(path).exists())
       fetchAndCache()
     else
-      syncMonumentDb(path, template).recoverWith { case NonFatal(e) =>
-        logger.warn(s"[monument-cache] sync failed ($e); refetching in full")
-        fetchAndCache()
-      }
+      // syncMonumentDb starts with a synchronous prefix (reading + parsing the
+      // CSV); run it inside the Future so a corrupt/format-changed cache file
+      // falls back to a full fetch instead of throwing out of gather().
+      Future
+        .unit
+        .flatMap(_ => syncMonumentDb(path, template))
+        .recoverWith { case NonFatal(e) =>
+          logger.warn(s"[monument-cache] sync failed ($e); refetching in full")
+          fetchAndCache()
+        }
   }
 
   private def syncMonumentDb(path: String, template: String): Future[MonumentDB] = {

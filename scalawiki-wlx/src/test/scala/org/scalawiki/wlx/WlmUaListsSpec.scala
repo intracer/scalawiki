@@ -19,7 +19,7 @@ class WlmUaListsSpec extends Specification {
   val bot =
     new CachedBot(Site.ukWiki, cacheName + "-wiki", true)
   val monumentQuery = MonumentQuery.create(contest)(bot)
-  val monumentDb = MonumentDB.getMonumentDb(contest, monumentQuery)
+  val monumentDb = MonumentDB.getMonumentDbBlocking(contest, monumentQuery)
   val all = monumentDb.allMonuments
 
   "places" should {

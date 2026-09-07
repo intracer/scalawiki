@@ -49,7 +49,7 @@ object KatotthMonumentListCreator {
     val ukWiki = MwBot.fromHost(MwBot.ukWiki)
     val contest = Contest.WLMUkraine(2021)
     val query = MonumentQuery.create(contest)
-    val monumentDB = MonumentDB.getMonumentDb(contest, query)
+    val monumentDB = MonumentDB.getMonumentDbBlocking(contest, query)
     val sequence: Seq[Koatuu2Katotth] = getMapping(monumentDB)
 
     val (mapped, unmapped) = sequence.partition(_.katotth.nonEmpty)

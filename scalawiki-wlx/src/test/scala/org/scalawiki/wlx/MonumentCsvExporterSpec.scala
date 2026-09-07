@@ -95,11 +95,11 @@ class MonumentCsvExporterSpec extends Specification with Mockito {
     }
   }
 
-  // byMonumentTemplateMaps is `final` on the trait — stub the abstract async variant.
-  // exportFromWiki delegates to it via Await.result, exercising the real path.
+  // exportFromWiki blocks on byMonumentTemplateMaps via Await.result at its one
+  // sync/async boundary, exercising the real path.
   private def buildMonumentQuery(rows: Seq[Map[String, String]]): MonumentQuery = {
     val q = mock[MonumentQuery]
-    q.byMonumentTemplateMapsAsync() returns Future.successful(rows)
+    q.byMonumentTemplateMaps() returns Future.successful(rows)
     q
   }
 

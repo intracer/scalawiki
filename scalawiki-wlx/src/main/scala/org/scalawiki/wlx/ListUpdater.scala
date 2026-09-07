@@ -38,7 +38,7 @@ object ListUpdater {
   ): Future[Unit] = {
     val nominations = SpecialNomination.nominations.filter(_.listTemplate.nonEmpty)
 
-    SpecialNomination.getMonumentsMapAsync(nominations, stat).flatMap { monumentsMap =>
+    SpecialNomination.getMonumentsMap(nominations, stat).flatMap { monumentsMap =>
       val passes = for {
         nomination <- nominations
         listTemplate <- nomination.listTemplate

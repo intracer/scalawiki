@@ -22,19 +22,19 @@ trait MonumentQuery {
 
   def defaultListTemplate: String = contest.uploadConfigs.head.listTemplate
 
-  def byMonumentTemplateAsync(
+  def byMonumentTemplate(
       generatorTemplate: String = defaultListTemplate,
       date: Option[ZonedDateTime] = None,
       listTemplate: Option[String] = None
   ): Future[Iterable[Monument]]
 
-  def byMonumentTemplateMapsAsync(
+  def byMonumentTemplateMaps(
       generatorTemplate: String = defaultListTemplate,
       date: Option[ZonedDateTime] = None,
       listTemplate: Option[String] = None
   ): Future[Iterable[Map[String, String]]]
 
-  def byPageAsync(
+  def byPage(
       page: String,
       template: String,
       date: Option[ZonedDateTime] = None
@@ -76,7 +76,7 @@ class MonumentQueryApi(
   private val listNamespaces = Set(Namespace.PROJECT, Namespace.MAIN)
 
   /** Parse one list page's wikitext into Monuments, applying the same
-    * "новий АТУ" skip and list-config resolution as [[byMonumentTemplateAsync]]. */
+    * "новий АТУ" skip and list-config resolution as [[byMonumentTemplate]]. */
   private def parseListPage(
       pageTitle: String,
       text: String,
@@ -139,7 +139,7 @@ class MonumentQueryApi(
         }
 
   /** Shared page-fetching logic for both Monument parsing and raw-map extraction.
-    * Does NOT include reportDifferentRegionIds side-effects — those stay in byMonumentTemplateAsync.
+    * Does NOT include reportDifferentRegionIds side-effects — those stay in byMonumentTemplate.
     *
     * @param parser (pageName, wikiText) => Iterable[T] — applied per page
     */
@@ -195,7 +195,7 @@ class MonumentQueryApi(
     }
   }
 
-  override def byMonumentTemplateAsync(
+  override def byMonumentTemplate(
       generatorTemplate: String,
       date: Option[ZonedDateTime] = None,
       listTemplate: Option[String] = None
@@ -234,7 +234,7 @@ class MonumentQueryApi(
     }
   }
 
-  override def byMonumentTemplateMapsAsync(
+  override def byMonumentTemplateMaps(
       generatorTemplate: String,
       date: Option[ZonedDateTime] = None,
       listTemplate: Option[String] = None
@@ -250,7 +250,7 @@ class MonumentQueryApi(
     )
   }
 
-  override def byPageAsync(
+  override def byPage(
       page: String,
       template: String,
       date: Option[ZonedDateTime] = None
@@ -279,7 +279,7 @@ class MonumentQueryApi(
             .getOrElse(Seq.empty)
         }
     } else {
-      byMonumentTemplateAsync(page, date, Some(template))
+      byMonumentTemplate(page, date, Some(template))
     }
   }
 

@@ -8,8 +8,7 @@ import org.scalawiki.wlx.stat.ContestStat
 import org.scalawiki.wlx.stat.reports.DesnaRegionSpecialNomination
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.util.Try
 
 /** Describes monument lists for contest special nominations
@@ -68,15 +67,7 @@ object SpecialNomination {
 
   lazy val nominations = load("wlm_ua.conf")
 
-  /** Blocking bridge for the synchronous report pipeline. Prefer
-    * [[getMonumentsMapAsync]] from async code. */
   def getMonumentsMap(
-      nominations: Seq[SpecialNomination],
-      stat: ContestStat
-  ): Map[SpecialNomination, Seq[Monument]] =
-    Await.result(getMonumentsMapAsync(nominations, stat), Duration.Inf)
-
-  def getMonumentsMapAsync(
       nominations: Seq[SpecialNomination],
       stat: ContestStat
   ): Future[Map[SpecialNomination, Seq[Monument]]] = {
@@ -86,7 +77,7 @@ object SpecialNomination {
 
     def byPages(pages: Seq[String], listTemplate: String): Future[Seq[Monument]] =
       Future
-        .traverse(pages)(page => monumentQuery.byPageAsync(page, listTemplate).map(_.toSeq))
+        .traverse(pages)(page => monumentQuery.byPage(page, listTemplate).map(_.toSeq))
         .map(_.flatten)
 
     Future

@@ -11,7 +11,7 @@ import scala.concurrent.duration._
 
 class MonumentQueryApiSpec extends Specification with Mockito {
 
-  // A minimal concrete MonumentQuery that overrides only byMonumentTemplateMapsAsync.
+  // A minimal concrete MonumentQuery with stub implementations of the abstract methods.
   private class StubMonumentQuery(
       asyncResult: Iterable[Map[String, String]]
   ) extends MonumentQuery {
@@ -24,20 +24,20 @@ class MonumentQueryApiSpec extends Specification with Mockito {
     override val contest: Contest =
       Contest(ContestType.WLM, Country.Ukraine, 2025, uploadConfigs = Seq(uploadConfig))
 
-    override def byMonumentTemplateMapsAsync(
+    override def byMonumentTemplateMaps(
         generatorTemplate: String,
         date: Option[ZonedDateTime],
         listTemplate: Option[String]
     ): Future[Iterable[Map[String, String]]] =
       Future.successful(asyncResult)
 
-    override def byMonumentTemplateAsync(
+    override def byMonumentTemplate(
         generatorTemplate: String,
         date: Option[ZonedDateTime],
         listTemplate: Option[String]
     ): Future[Iterable[Monument]] = Future.successful(Nil)
 
-    override def byPageAsync(
+    override def byPage(
         page: String,
         template: String,
         date: Option[ZonedDateTime]
@@ -55,38 +55,38 @@ class MonumentQueryApiSpec extends Specification with Mockito {
 
   "MonumentQuery trait" should {
 
-    "byMonumentTemplateMapsAsync returns the rows the implementation produces" in {
+    "byMonumentTemplateMaps returns the rows the implementation produces" in {
       val query = new StubMonumentQuery(
         Seq(Map("ID" -> "14-101-0001", "назва" -> "Test"))
       )
-      val result = Await.result(query.byMonumentTemplateMapsAsync(), 5.seconds)
+      val result = Await.result(query.byMonumentTemplateMaps(), 5.seconds)
       result must haveSize(1)
       result.head must havePair("ID" -> "14-101-0001")
     }
 
-    "byMonumentTemplateMapsAsync rows carry raw template parameter names" in {
+    "byMonumentTemplateMaps rows carry raw template parameter names" in {
       val query = mock[MonumentQuery]
       val rawRow = Map("ID" -> "01-001-0001", "назва" -> "Церква", "район" -> "Центральний")
-      query.byMonumentTemplateMapsAsync() returns Future.successful(Seq(rawRow))
-      val result = Await.result(query.byMonumentTemplateMapsAsync(), 5.seconds).toSeq
+      query.byMonumentTemplateMaps() returns Future.successful(Seq(rawRow))
+      val result = Await.result(query.byMonumentTemplateMaps(), 5.seconds).toSeq
       result must haveSize(1)
       result.head must_== rawRow
     }
 
-    "byMonumentTemplateAsync returns Monument objects" in {
+    "byMonumentTemplate returns Monument objects" in {
       val query = mock[MonumentQuery]
       val monument = Monument(id = "14-101-0001", name = "Test")
-      query.byMonumentTemplateAsync() returns Future.successful(Seq(monument))
-      val result = Await.result(query.byMonumentTemplateAsync(), 5.seconds)
+      query.byMonumentTemplate() returns Future.successful(Seq(monument))
+      val result = Await.result(query.byMonumentTemplate(), 5.seconds)
       result must haveSize(1)
       result.head.id must_== "14-101-0001"
     }
 
-    "byMonumentTemplateMapsAsync is an abstract method on MonumentQuery trait" in {
+    "byMonumentTemplateMaps is an abstract method on MonumentQuery trait" in {
       val query = mock[MonumentQuery]
       val rows = Seq(Map("ID" -> "14-101-0001", "назва" -> "Test"))
-      query.byMonumentTemplateMapsAsync() returns Future.successful(rows)
-      val result = Await.result(query.byMonumentTemplateMapsAsync(), 5.seconds)
+      query.byMonumentTemplateMaps() returns Future.successful(rows)
+      val result = Await.result(query.byMonumentTemplateMaps(), 5.seconds)
       result must haveSize(1)
       result.head must havePair("ID" -> "14-101-0001")
     }
