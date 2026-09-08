@@ -3,10 +3,13 @@ package org.scalawiki.wlx
 import org.scalawiki.dto.Image
 import org.scalawiki.wlx.dto.Monument
 
+import scala.concurrent.Future
+
 object ImageFiller {
 
-  def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Unit = {
-    ListUpdater.updateLists(monumentDb, new ImageFillerUpdater(imageDb))
+  def fillLists(monumentDb: MonumentDB, imageDb: ImageDB): Future[Unit] = {
+    val fillListsDb = imageDb.copy(ignoreRecentlyTaken = true)
+    ListUpdater.updateLists(monumentDb, new ImageFillerUpdater(fillListsDb))
   }
 
   def bestImage(images: Seq[Image]): Image =

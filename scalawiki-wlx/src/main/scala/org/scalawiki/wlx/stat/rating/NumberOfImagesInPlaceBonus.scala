@@ -15,8 +15,7 @@ case class NumberOfImagesInPlaceBonus(
   val oldImagesDb = new ImageDB(stat.contest, oldImages, stat.monumentDb)
   val perPlaceStat = PerPlaceStat(oldImagesDb)
   val unknownPlaceMonumentsByAuthor = mutable.Map[String, Set[String]]()
-  val authorsByMonument: Map[String, Set[String]] = oldImages
-    .groupBy(_.monumentId.getOrElse(""))
+  val authorsByMonument: Map[String, Set[String]] = oldImagesByMonumentId
     .mapValues { images =>
       images.map(_.author.getOrElse("")).toSet
     }
@@ -82,4 +81,6 @@ case class NumberOfImagesInPlaceBonus(
         }
     }
   }
+
+  override def label: String = "images <br> bonus"
 }

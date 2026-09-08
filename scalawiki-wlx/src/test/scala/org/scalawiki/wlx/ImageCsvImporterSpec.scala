@@ -1,0 +1,125 @@
+package org.scalawiki.wlx
+
+import org.scalawiki.dto.{Image, ImageMetadata}
+import org.scalawiki.wlx.dto.Contest
+import org.specs2.mutable.Specification
+
+import java.nio.file.Files
+import java.time.ZonedDateTime
+
+class ImageCsvImporterSpec extends Specification {
+
+  val prevContest: Contest = Contest.WLMUkraine(2022)
+
+  val sampleDate: ZonedDateTime = ZonedDateTime.parse("2022-09-15T10:30:00Z")
+
+  val fullImage: Image = Image(
+    title = "File:Test.jpg",
+    author = Some("AuthorName"),
+    date = Some(sampleDate),
+    monumentIds = Seq("14-101-0001", "14-101-0002"),
+    pageId = Some(123456L),
+    url = Some("https://upload.wikimedia.org/test.jpg"),
+    pageUrl = Some("https://commons.wikimedia.org/wiki/File:Test.jpg"),
+    width = Some(3000),
+    height = Some(2000),
+    size = Some(1048576L),
+    mime = Some("image/jpeg"),
+    metadata = Some(
+      ImageMetadata(
+        Map("Model" -> "Canon EOS 5D", "DateTimeOriginal" -> "2022:09:15 10:30:00")
+      )
+    ),
+    categories = Set("WLM 2022", "Kyiv"),
+    specialNominations = Set("WLM2022-UA-interior")
+  )
+
+  val minimalImage: Image = Image("File:Minimal.jpg")
+
+  def roundTrip(images: Seq[Image]): Seq[Image] = {
+    val dir = Files.createTempDirectory("image-csv-import-spec")
+    val imageDb = new ImageDB(prevContest, images, None)
+    ImageCsvExporter.export(imageDb, prevContest.campaign, isCurrent = false, dir.toString)
+    val path = ImageCsvExporter.filename(prevContest.campaign, prevContest.year, isCurrent = false, dir.toString)
+    ImageCsvImporter.imagesFromCsv(path)
+  }
+
+  "ImageCsvImporter.imagesFromCsv" should {
+
+    "round-trip a fully populated image" in {
+      val imported = roundTrip(Seq(fullImage))
+      imported must_== Seq(fullImage)
+    }
+
+    "round-trip an image with only optional fields absent" in {
+      val imported = roundTrip(Seq(minimalImage))
+      imported must_== Seq(minimalImage)
+    }
+
+    "round-trip the last revision id and timestamp" in {
+      val withRev = fullImage.copy(
+        revId = Some(987654321L),
+        revTs = Some(ZonedDateTime.parse("2024-01-02T03:04:05Z"))
+      )
+      val imported = roundTrip(Seq(withRev))
+      imported must_== Seq(withRev)
+      imported.head.revId must beSome(987654321L)
+      imported.head.revTs must beSome(ZonedDateTime.parse("2024-01-02T03:04:05Z"))
+    }
+
+    "leave revId / revTs empty for a CSV without those columns" in {
+      // a header row from before the columns existed
+      val dir = Files.createTempDirectory("image-csv-legacy")
+      val path = dir.resolve("legacy.csv").toString
+      val w = new java.io.PrintWriter(path)
+      try {
+        w.println("title,page_id,monument_id")
+        w.println("File:Legacy.jpg,42,14-101-0001")
+      } finally w.close()
+      val imported = ImageCsvImporter.imagesFromCsv(path)
+      imported.map(_.title) must_== Seq("File:Legacy.jpg")
+      imported.head.revId must beNone
+      imported.head.revTs must beNone
+    }
+
+    "round-trip metadata with only camera present" in {
+      val cameraOnly = fullImage.copy(metadata = Some(ImageMetadata(Map("Model" -> "Nikon D850"))))
+      val imported = roundTrip(Seq(cameraOnly))
+      imported must_== Seq(cameraOnly)
+    }
+
+    "preserve monument id and category order/membership" in {
+      val imported = roundTrip(Seq(fullImage))
+      imported.head.monumentIds must_== Seq("14-101-0001", "14-101-0002")
+      imported.head.categories must_== Set("WLM 2022", "Kyiv")
+      imported.head.specialNominations must_== Set("WLM2022-UA-interior")
+    }
+
+    "return an empty sequence when the file does not exist" in {
+      ImageCsvImporter.imagesFromCsv("does-not-exist-anywhere.csv") must beEmpty
+    }
+
+    "round-trip non-ASCII (Cyrillic) title, author, categories and monument ids" in {
+      val cyrillic = fullImage.copy(
+        title = "File:Пам'ятний знак.jpg",
+        author = Some("Користувач:Іван Франко"),
+        categories = Set("Вікі любить пам'ятки 2022", "Київ"),
+        specialNominations = Set("WLM2022-UA-інтер'єр"),
+        monumentIds = Seq("14-101-0001")
+      )
+      val imported = roundTrip(Seq(cyrillic))
+      imported must_== Seq(cyrillic)
+    }
+  }
+
+  "ImageCsvExporter.exportTotal / ImageCsvImporter" should {
+
+    "round-trip images written via the campaign-scoped total filename" in {
+      val dir = Files.createTempDirectory("image-csv-total-spec")
+      val imageDb = new ImageDB(prevContest, Seq(fullImage), None)
+      ImageCsvExporter.exportTotal(imageDb, prevContest.campaign, dir.toString)
+      val path = ImageCsvExporter.totalFilename(prevContest.campaign, dir.toString)
+      ImageCsvImporter.imagesFromCsv(path) must_== Seq(fullImage)
+    }
+  }
+}

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Test logging: console only, INFO. Overrides the main logback.xml (which would
+  otherwise send test output to logs/scalawiki.log) so `sbt test` output stays
+  on the console and no logs/ directory is created.
+-->
+<configuration>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.out</target>
+        <encoder>
+            <pattern>%date{MM/dd HH:mm:ss} %-5level[%.15thread] %logger{1} %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org.apache.pekko" level="WARN"/>
+    <logger name="org.mockserver" level="${mockserver.logLevel:-WARN}"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

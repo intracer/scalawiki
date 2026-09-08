@@ -5,11 +5,16 @@ import org.scalawiki.cache.CachedBot
 import org.scalawiki.dto.{Image, Site}
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
-import org.scalawiki.wlx.stat.reports.ReporterRegistry
-import org.scalawiki.wlx.{ImageDB, MonumentDB}
+import org.scalawiki.wlx.stat.cache.{ImageDbProvider, MonumentDbProvider}
+import org.scalawiki.wlx.stat.progress.Progress
+import org.scalawiki.wlx.stat.reports.ReportRunner
+import org.scalawiki.util.WriteWatcher
+import org.scalawiki.wlx.{ImageDB, MonumentCsvExporter, MonumentDB}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+import scala.util.control.NonFatal
 
 /** Holds fetched contest data
   *
@@ -54,7 +59,12 @@ case class ContestStat(
     } yield f(imageDb)
 }
 
-/** Coordinates fetching contest statistics and creating reports/galleries etc. Needs refactoring.
+/** Coordinates fetching contest statistics and creating reports/galleries etc.
+  *
+  * The heavy lifting lives in focused collaborators:
+  *   - [[MonumentDbProvider]] — the monument DB and its CSV cache / revision sync
+  *   - [[ImageDbProvider]] — the per-year and all-time image DBs and their CSV cache
+  *   - [[ReportRunner]] — running reports and waiting for wiki writes to settle
   *
   * @param contest
   *   contest: contest type (WLM/WLE), country, year, etc.
@@ -101,12 +111,11 @@ class Statistics(
   private val contests =
     (startYear.getOrElse(currentYear) to currentYear).map(y => contest.copy(year = y))
 
-  private lazy val totalImageQuery: ImageQuery = imageQuery.getOrElse(getImageQuery())
+  private lazy val monumentProvider =
+    new MonumentDbProvider(contest, monumentQuery, config)
 
-  def getImageQuery(year: Option[Int] = None): ImageQuery = {
-    val cacheName = s"${contest.campaign}-${year.getOrElse("all")}"
-    ImageQuery.create(new CachedBot(Site.commons, cacheName, true))
-  }
+  private lazy val imageProvider =
+    new ImageDbProvider(contest, imageQuery, imageQueryWiki, config)
 
   /** Fetches contest data
     *
@@ -117,23 +126,39 @@ class Statistics(
     *   asynchronously returned contest data
     */
   def gatherData(total: Boolean): Future[ContestStat] = {
-    val monumentDb = Some(MonumentDB.getMonumentDb(contest, monumentQuery))
+    // the monument-list fetch and the cheap all-time page-rev sweep now overlap
+    // (both start here); the per-year image fetches still wait for the monument
+    // DB since perYear needs it as input
+    val monumentDbF = monumentProvider.gather().map(Some(_))
 
-    val byYearFutures = contests.map(contestImages(monumentDb))
-    val totalPageIdsFuture = if (total) imageIdsByTemplate() else Future.successful(Nil)
+    val totalPageRevsFuture = imageProvider.prefetchTotalPageRevs(total)
+
+    val byYearLabel =
+      if (contests.sizeIs > 1) s"Fetching images ${contests.head.year}-${contests.last.year}"
+      else s"Fetching images ${contests.head.year}"
+    val byYearF =
+      monumentDbF.flatMap { monumentDb =>
+        Progress.barF(byYearLabel, contests.size.toLong) { task =>
+          Future.sequence(contests.map { yearContest =>
+            imageProvider.perYear(monumentDb)(yearContest).map { db =>
+              task.step()
+              db
+            }
+          })
+        }
+      }
+
     for {
-      byYear <- Future.sequence(byYearFutures)
-      currentYearImages = byYear.last
-      totalPageIds <- totalPageIdsFuture
-      totalImages <-
-        if (total) imagesByTemplate(monumentDb, byYear, totalPageIds)
-        else Future.successful(currentYearImages)
+      monumentDb <- monumentDbF
+      byYear <- byYearF
+      totalPageRevs <- totalPageRevsFuture
+      totalImages <- imageProvider.total(monumentDb, byYear, totalPageRevs, total)
     } yield {
       ContestStat(
         contest,
         startYear.getOrElse(contest.year),
         monumentDb,
-        currentYearImages,
+        byYear.last,
         totalImages,
         byYear,
         Some(config)
@@ -141,37 +166,26 @@ class Statistics(
     }
   }
 
-  private def contestImages(monumentDb: Some[MonumentDB])(contest: Contest) =
-    ImageDB.create(
-      contest,
-      imageQuery.getOrElse(getImageQuery(Some(contest.year))),
-      monumentDb,
-      config.minMpx
-    )
-
-  private def imagesByTemplate(
-      monumentDb: Some[MonumentDB],
-      dbsByYear: Seq[ImageDB],
-      totalPageIds: Iterable[Long]
-  ): Future[ImageDB] = {
-    val idsByYear = dbsByYear.flatMap(_.images.flatMap(_.pageId)).toSet
-    val missingPageIds = totalPageIds.toSet -- idsByYear
-    for {
-      commons <- totalImageQuery.imagesWithTemplateByIds(contest, missingPageIds)
-      wiki <- imageQueryWiki.map(_.imagesWithTemplate(contest)).getOrElse(Future.successful(Nil))
-    } yield new ImageDB(contest, dbsByYear.flatMap(_.images) ++ commons ++ wiki, monumentDb)
+  /** Fetch contest data, run every configured report, and block until every
+    * wiki write has settled.
+    *
+    * @return the number of failures (report steps that threw + wiki writes that
+    *         errored). 0 means a clean run.
+    */
+  def run(total: Boolean): Int = {
+    Progress.configure(config.progress)
+    try {
+      // the one sync/async boundary of a stats run: data gathering is fully
+      // async, the report pipeline that consumes it is synchronous. No arbitrary
+      // timeout — a stuck fetch is the HTTP layer's problem, not ours.
+      val stat = Await.result(gatherData(total = total), Duration.Inf)
+      new ReportRunner(stat, config).run()
+    } finally Progress.close()
   }
 
-  private def imageIdsByTemplate(): Future[Iterable[Long]] =
-    totalImageQuery.imageIdsWithTemplate(contest)
-
   def init(total: Boolean): Unit = {
-    gatherData(total = total)
-      .map { stat =>
-        new ReporterRegistry(stat, config).output()
-      }
-      .failed
-      .map(println)
+    run(total)
+    ()
   }
 
   def articleStatistics(monumentDb: MonumentDB): Unit = {
@@ -189,35 +203,66 @@ class Statistics(
 
 object Statistics {
 
-  def getContest(cfg: StatConfig): Contest = {
-    val contest = Contest.byCampaign(cfg.campaign).getOrElse {
-      throw new IllegalArgumentException(s"Unknown campaign: ${cfg.campaign}")
+  def main(args: Array[String]): Unit = {
+    // logback reads these system properties when it first initialises (about to
+    // happen, on the first LoggerFactory call below). `--verbose` lifts the
+    // console appender from WARN to INFO (the per-request detail that always goes
+    // to logs/scalawiki.log now shows on screen too) and the root logger from
+    // INFO to DEBUG (so DEBUG detail reaches the file). Checked directly (not via
+    // StatParams) to run before any logger is created; the flag is also declared
+    // in StatParams for --help.
+    if (args.contains("--verbose") || args.contains("-v")) {
+      System.setProperty("sw.console.level", "INFO")
+      System.setProperty("sw.root.level", "DEBUG")
     }
 
-    contest.copy(
-      year = cfg.years.last,
-      rateConfig = cfg.rateConfig
-    )
-  }
+    // Track every wiki edit/upload so failures are logged and `main` can wait
+    // for them all before shutting the process down.
+    WriteWatcher.enable(MwBot.system.log)
 
-  def main(args: Array[String]): Unit = {
-    val cfg = StatParams.parse(args)
-    val contest = getContest(cfg)
+    var exitCode = 0
+    try {
+      val cfg = StatParams.parse(args)
+      val contest = Contest.byCampaign(cfg.campaign, cfg.years.last, cfg.rateConfig)
 
-    val cacheName = s"${cfg.campaign}-${contest.year}"
-    val imageQueryWiki = ImageQuery.create(
-      new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 100)
-    )
+      if (cfg.exportCsv.isDefined) {
+        MonumentCsvExporter.exportFromWiki(MonumentQuery.create(contest), cfg.campaign, cfg.exportCsv)
+      }
 
-    val stat = new Statistics(
-      contest,
-      startYear = Some(cfg.years.head),
-      monumentQuery = MonumentQuery.create(contest, reportDifferentRegionIds = true),
-      config = Some(cfg),
-      imageQuery = None,
-      imageQueryWiki = Some(imageQueryWiki)
-    )
+      // Run the full statistics pipeline when either:
+      // - no monument CSV export was requested (normal run), or
+      // - image CSV export was requested (needs stats pipeline to populate dbsByYear)
+      if (cfg.exportCsv.isEmpty || cfg.exportImagesCsv.isDefined) {
+        val cacheName = s"${cfg.campaign}-${contest.year}"
+        val imageQueryWiki = ImageQuery.create(
+          new CachedBot(Site.ukWiki, cacheName + "-wiki", true)
+        )
 
-    stat.init(total = cfg.years.size > 1)
+        val stat = new Statistics(
+          contest,
+          startYear = Some(cfg.years.head),
+          monumentQuery = MonumentQuery.create(contest, reportDifferentRegionIds = true),
+          config = Some(cfg),
+          imageQuery = None,
+          imageQueryWiki = Some(imageQueryWiki)
+        )
+
+        // rating fill needs the all-time image DB to know which monuments already
+        // have photos, even when a single year is requested
+        exitCode = stat.run(total = cfg.years.size > 1 || cfg.fillListsRating)
+      }
+    } catch {
+      case NonFatal(e) =>
+        println(s"Statistics run failed: $e")
+        e.printStackTrace()
+        exitCode = 1
+    } finally {
+      // Stop the Pekko ActorSystem so its non-daemon threads no longer keep the
+      // JVM alive; without this the process hangs after all reports are done.
+      try Await.result(MwBot.system.terminate(), 30.seconds)
+      catch { case NonFatal(_) => }
+    }
+
+    System.exit(exitCode)
   }
 }

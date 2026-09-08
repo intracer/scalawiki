@@ -63,6 +63,18 @@ case class Contest(
         country.languageCodes.headOption.map(_ + ".wikipedia.org")
       )
 
+  /** Calendar dates for `forYear` (defaults to this contest's year) from the
+    * `dates.<year>` block of the campaign `.conf`, when present. Dates are
+    * end-of-day in `dates.timezone` (per-year `timezone` overrides it; UTC when
+    * neither is set). */
+  def dates(forYear: Int = year): Option[ContestDates] =
+    config
+      .filter(_.hasPath(s"dates.$forYear"))
+      .map { c =>
+        val campaignZone = ContestDates.zoneOf(c.getConfig("dates"))
+        ContestDates.fromConfig(c.getConfig(s"dates.$forYear"), campaignZone)
+      }
+
 }
 
 object Contest {
@@ -89,6 +101,15 @@ object Contest {
   def byCampaign(campaign: String): Option[Contest] = {
     load(campaign.replace("-", "_") + ".conf")
   }
+
+  /** The campaign's contest, pinned to `year` and `rateConfig`.
+    *
+    * @throws IllegalArgumentException if `campaign` does not resolve to a contest
+    */
+  def byCampaign(campaign: String, year: Int, rateConfig: RateConfig = RateConfig()): Contest =
+    byCampaign(campaign)
+      .getOrElse(throw new IllegalArgumentException(s"Unknown campaign: $campaign"))
+      .copy(year = year, rateConfig = rateConfig)
 
   def fromConfig(config: Config): Option[Contest] = {
     val (typeStr, countryStr, year) = (

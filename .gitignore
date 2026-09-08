@@ -3,6 +3,7 @@
 # For Scala Metals
 .metals
 .bloop
+.bsp
 
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
@@ -72,3 +73,13 @@ hs_err_pid*
 .vagrant
 .temp
 native
+
+# WLX stats image CSV cache (see Statistics.scala)
+/csv-cache/
+
+# Runtime logs (see scalawiki-core/src/main/resources/logback.xml)
+/logs/
+
+# CachedBot filesystem request cache (see cache/CachedBot.scala) -- also lands
+# under a module dir (scalawiki-wlx/) when a forked test builds one
+http-cache/

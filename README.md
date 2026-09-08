@@ -1,14 +1,11 @@
 # scalawiki
-<img src="https://github.com/intracer/scalawiki/blob/master/resources/scalawiki.png?raw=true"  align="right" width="100" />
+<img src="https://github.com/UkrainianWiki/scalawiki/blob/master/resources/scalawiki.png?raw=true"  align="right" width="100" />
 scalawiki is an experimental MediaWiki client in Scala on early stages of development.
 
 
 
-[![Build Status](https://travis-ci.com/intracer/scalawiki.svg?branch=master)](https://travis-ci.com/intracer/scalawiki?branch=master)
-[![Build status](https://ci.appveyor.com/api/projects/status/21ow3gsesrduiuc6/branch/master?svg=true)](https://ci.appveyor.com/project/intracer/scalawiki/branch/master)
-[![codecov.io](http://codecov.io/github/intracer/scalawiki/coverage.svg?branch=master)](http://codecov.io/github/intracer/scalawiki?branch=master)
-[![Join the chat at https://gitter.im/intracer/scalawiki](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/intracer/scalawiki?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[ ![Download](https://api.bintray.com/packages/intracer/maven/scalawiki/images/download.svg) ](https://bintray.com/intracer/maven/scalawiki/_latestVersion)
+[![CI](https://github.com/UkrainianWiki/scalawiki/actions/workflows/ci.yml/badge.svg)](https://github.com/UkrainianWiki/scalawiki/actions/workflows/ci.yml)
+[![codecov.io](https://codecov.io/github/UkrainianWiki/scalawiki/coverage.svg?branch=master)](https://codecov.io/github/UkrainianWiki/scalawiki?branch=master)
 
 
 Why [another client library for MediaWiki](https://www.mediawiki.org/wiki/API:Client_code)?

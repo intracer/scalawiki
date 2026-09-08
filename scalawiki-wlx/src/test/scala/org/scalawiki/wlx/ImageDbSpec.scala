@@ -1,6 +1,6 @@
 package org.scalawiki.wlx
 
-import org.scalawiki.dto.{Image, User}
+import org.scalawiki.dto.{Image, ImageMetadata, User}
 import org.scalawiki.wlx.dto._
 import org.scalawiki.wlx.dto.lists.ListConfig
 import org.specs2.mutable.Specification
@@ -187,5 +187,61 @@ class ImageDbSpec extends Specification {
       )
     }
 
+  }
+
+  "recently taken filter" should {
+    // WLM UA 2025: photos must be created on/before 2025-08-31 (Регламент 2025 п. 9.1,
+    // wired via dates.2025.latest-allowed-pictured-date)
+    val recentlyTakenContest = Contest.WLMUkraine(2025)
+
+    def imageTaken(date: String) = new Image(
+      "File:Recent.jpg",
+      width = Some(4000),
+      height = Some(3000),
+      monumentIds = List("32-204-0093"),
+      metadata = Some(ImageMetadata(Map("DateTimeOriginal" -> date))),
+      pageId = Some(1L)
+    )
+
+    val monumentDb = Some(
+      new MonumentDB(
+        recentlyTakenContest,
+        Seq(
+          Monument(
+            id = "32-204-0093",
+            name = "monument",
+            listConfig = Some(ListConfig.WlmUa)
+          )
+        )
+      )
+    )
+
+    "mark an image taken after the configured pictured-date limit as ineligible" in {
+      val imageDb =
+        ImageDB(recentlyTakenContest, Seq(imageTaken("2025:09:15 10:17:47")), monumentDb)
+
+      imageDb.sansIneligible must beEmpty
+      imageDb.containsId("32-204-0093") must beFalse
+    }
+
+    "keep an image taken before the configured limit (2025: after 30 June is still eligible)" in {
+      val imageDb =
+        ImageDB(recentlyTakenContest, Seq(imageTaken("2025:07:27 10:17:47")), monumentDb)
+
+      imageDb.containsId("32-204-0093") must beTrue
+    }
+
+    "not mark a late image ineligible when ignoreRecentlyTaken is set" in {
+      val late = imageTaken("2025:09:15 10:17:47")
+      val imageDb = ImageDB(
+        recentlyTakenContest,
+        Seq(late),
+        monumentDb,
+        ignoreRecentlyTaken = true
+      )
+
+      imageDb.sansIneligible must contain(late)
+      imageDb.containsId("32-204-0093") must beTrue
+    }
   }
 }

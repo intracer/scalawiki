@@ -296,7 +296,7 @@ object Country {
         val langs = locales.toSeq.flatMap { locale =>
           Option(locale.getLanguage)
             .filter(_.nonEmpty)
-        }
+        }.distinct
         countryCode -> langs
       }
   }

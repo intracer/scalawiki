@@ -1,51 +1,123 @@
 package org.scalawiki.cache
 
-import java.io.File
+import java.io.{File, IOException}
+import java.nio.charset.StandardCharsets
+import java.nio.file.{
+  AtomicMoveNotSupportedException,
+  FileSystemException,
+  Files,
+  StandardCopyOption
+}
+import java.security.MessageDigest
 
-import net.openhft.chronicle.map.{ChronicleMap, ChronicleMapBuilder}
 import org.rogach.scallop.ScallopConf
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.{MwBot, MwBotImpl}
 import org.scalawiki.dto.{MwException, Page, Site}
 import org.scalawiki.http.HttpClient
 
+import scala.collection.concurrent.TrieMap
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class Caller(fn: String => String)
-    extends java.util.function.Function[String, String] {
-  override def apply(t: String): String = {
-    fn.apply(t)
-  }
+object Cache {
+
+  /** Root directory for all persistent caches, relative to the working dir. */
+  val defaultRoot: File = new File("http-cache")
 }
 
-class Cache(
-    name: String,
-    entries: Int = 12 * 1024,
-    valueSize: Int = 128 * 1024,
-    persistent: Boolean = true
-) {
+/** A plain filesystem key -> file cache.
+  *
+  * Each entry is one file under `<root>/<name>/` (root defaults to `http-cache/`),
+  * named by the SHA-256 hex of the key, holding the response body verbatim
+  * (UTF-8). This replaced a ChronicleMap-backed store: the file cache is smaller,
+  * faster to read, plain text, and needs no `--add-opens` / `--add-exports` JVM
+  * flags to run on JDK 17+.
+  *
+  * Writes go through a temp file + atomic rename, so a reader never sees a
+  * half-written entry; per-key locking keeps a key's value function to a single
+  * run per process. Concurrent processes may still both compute a cold key, but
+  * the rename makes that safe.
+  */
+class Cache(name: String, persistent: Boolean = true, root: File = Cache.defaultRoot) {
 
-  private val builder: ChronicleMapBuilder[String, String] = ChronicleMap
-    .of(classOf[String], classOf[String])
-    .averageKeySize(1024)
-    .averageValueSize(valueSize)
-    .entries(entries)
-    .name(name)
+  private val dir: File = new File(root, name)
 
-  val cache = if (persistent) {
-    builder.createPersistedTo(new File(name))
-  } else {
-    builder.create()
+  private val memory: TrieMap[String, String] = TrieMap.empty[String, String]
+
+  /** Per-key locks so a given key's value function runs at most once per
+    * process, the way `ChronicleMap.computeIfAbsent` used to guarantee.
+    * (Across processes the atomic rename below still keeps readers consistent.)
+    */
+  private val locks: TrieMap[String, AnyRef] = TrieMap.empty[String, AnyRef]
+
+  if (persistent) dir.mkdirs()
+
+  private def lockFor(key: String): AnyRef =
+    locks.getOrElseUpdate(key, new Object)
+
+  private def fileFor(key: String): File = {
+    val digest = MessageDigest.getInstance("SHA-256").digest(key.getBytes(StandardCharsets.UTF_8))
+    new File(dir, digest.map("%02x".format(_)).mkString)
   }
 
-  def containsKey(key: String): Boolean = cache.containsKey(key)
+  def containsKey(key: String): Boolean =
+    if (persistent) fileFor(key).isFile else memory.contains(key)
 
-  def remove(key: String): String = cache.remove(key)
+  def remove(key: String): Unit = lockFor(key).synchronized {
+    if (persistent) Files.deleteIfExists(fileFor(key).toPath)
+    else memory.remove(key)
+  }
 
   def computeIfAbsent(key: String, fn: String => String): String =
-    cache.computeIfAbsent(key, new Caller(fn))
+    lockFor(key).synchronized {
+      if (!persistent) memory.getOrElseUpdate(key, fn(key))
+      else {
+        val target = fileFor(key)
+        readFile(target).getOrElse {
+          val value = fn(key)
+          writeAtomically(target, value)
+          value
+        }
+      }
+    }
+
+  /** An existing cache file's content, or `None` if it is absent or could not
+    * be read — e.g. a concurrent eviction deleted it between the check and the
+    * read; the caller then simply recomputes. */
+  private def readFile(target: File): Option[String] =
+    try {
+      if (target.isFile)
+        Some(new String(Files.readAllBytes(target.toPath), StandardCharsets.UTF_8))
+      else None
+    } catch {
+      case _: IOException => None
+    }
+
+  private def writeAtomically(target: File, value: String): Unit = {
+    val tmp = File.createTempFile(target.getName, ".tmp", dir)
+    try {
+      Files.write(tmp.toPath, value.getBytes(StandardCharsets.UTF_8))
+      try {
+        Files.move(
+          tmp.toPath,
+          target.toPath,
+          StandardCopyOption.REPLACE_EXISTING,
+          StandardCopyOption.ATOMIC_MOVE
+        )
+      } catch {
+        case _: AtomicMoveNotSupportedException =>
+          Files.move(tmp.toPath, target.toPath, StandardCopyOption.REPLACE_EXISTING)
+        case _: FileSystemException if target.isFile =>
+        // Another process wrote an equivalent entry first (and on Windows may
+        // still hold it open, blocking the replace). Its content will do.
+      }
+    } finally {
+      // No-op after a successful move; cleans up if write/move threw.
+      Files.deleteIfExists(tmp.toPath)
+    }
+  }
 
 }
 
@@ -54,12 +126,10 @@ class CachedBot(
     site: Site,
     name: String,
     persistent: Boolean,
-    http: HttpClient = HttpClient.get(MwBot.system),
-    entries: Int = 12 * 1024,
-    valueSize: Int = 128 * 1024
+    http: HttpClient = HttpClient.get(MwBot.system)
 ) extends MwBotImpl(site) {
 
-  val cache = new Cache(name + ".cache", entries, valueSize, persistent)
+  val cache = new Cache(name, persistent)
 
   override def run(
       action: Action,
@@ -89,6 +159,15 @@ class CachedBot(
       val fn = (_: String) => Await.result(super.post(params), 30.minutes)
       val value = cache.computeIfAbsent(key, fn)
 
+      // computeIfAbsent may return a previously cached error/rate-limit body (not
+      // valid JSON) just as easily as a freshly fetched one. Don't let a non-JSON
+      // response linger in the persistent cache: evict it so the next attempt
+      // (this retry included) re-fetches from the network instead of replaying
+      // the same failure forever.
+      if (!CachedBot.looksLikeJson(value)) {
+        cache.remove(key)
+      }
+
       Future.successful(value)
     } catch {
       case t: Throwable =>
@@ -99,26 +178,30 @@ class CachedBot(
 
 object CachedBot {
 
-  import scala.collection.JavaConverters._
+  def looksLikeJson(body: String): Boolean = {
+    val trimmed = body.trim
+    trimmed.startsWith("{") || trimmed.startsWith("[")
+  }
 
   class CachedArgs(arguments: Seq[String]) extends ScallopConf(arguments) {
-    val cache = opt[String](descr = "cache file")
+    val cache = opt[String](descr = "cache directory")
     verify()
   }
 
   def main(args: Array[String]): Unit = {
     val parsed = new CachedArgs(args)
 
-    val cacheFile = parsed.cache()
-    val file = new File(cacheFile)
-    if (!file.exists()) {
-      throw new IllegalArgumentException(s"File $cacheFile is absent")
+    val cacheDir = parsed.cache()
+    val dir = new File(cacheDir)
+    if (!dir.isDirectory) {
+      throw new IllegalArgumentException(s"Cache directory $cacheDir is absent")
     }
-    val cache = new Cache(cacheFile)
-    val keys = cache.cache.keySet().asScala.toSeq.sorted
-    val valueSizes = cache.cache.values().asScala.map(_.length).toSeq
+    val entries = Option(dir.listFiles())
+      .getOrElse(Array.empty[File])
+      .filter(f => f.isFile && !f.getName.endsWith(".tmp"))
+    val valueSizes = entries.map(_.length()).toSeq
 
-    println("keys: " + keys.size)
+    println("entries: " + entries.length)
     if (valueSizes.nonEmpty) {
       println(
         s"values: total size: ${valueSizes.sum / (1024 * 1024)} MB, avg size: ${valueSizes.sum / (valueSizes.size * 1024)} KB"

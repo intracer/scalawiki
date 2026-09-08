@@ -7,7 +7,6 @@ import org.scalawiki.wlx.query.MonumentQuery
 import org.specs2.mutable.Specification
 
 class WlmUaListsSpec extends Specification {
-  sys.props.put("jna.nosys", "true")
 
   sequential
 
@@ -18,9 +17,9 @@ class WlmUaListsSpec extends Specification {
   val country = contest.country
 
   val bot =
-    new CachedBot(Site.ukWiki, cacheName + "-wiki", true, entries = 1000)
+    new CachedBot(Site.ukWiki, cacheName + "-wiki", true)
   val monumentQuery = MonumentQuery.create(contest)(bot)
-  val monumentDb = MonumentDB.getMonumentDb(contest, monumentQuery)
+  val monumentDb = MonumentDB.getMonumentDbBlocking(contest, monumentQuery)
   val all = monumentDb.allMonuments
 
   "places" should {

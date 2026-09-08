@@ -2,9 +2,11 @@ package org.scalawiki.wlx
 
 import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Monument}
 
+import scala.concurrent.Future
+
 object RegionFixer {
 
-  def fixLists(monumentDb: MonumentDB): Unit = {
+  def fixLists(monumentDb: MonumentDB): Future[Unit] = {
     ListUpdater.updateLists(monumentDb, new RegionFixerUpdater(monumentDb))
   }
 }

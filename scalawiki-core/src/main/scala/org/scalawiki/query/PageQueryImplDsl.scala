@@ -3,14 +3,17 @@ package org.scalawiki.query
 import java.nio.file.{Files, Paths}
 
 import org.scalawiki.MwBot
+import java.time.ZonedDateTime
+
 import org.scalawiki.dto.cmd._
 import org.scalawiki.dto.cmd.edit._
 import org.scalawiki.dto.cmd.query._
 import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.cmd.query.prop._
 import org.scalawiki.dto.cmd.query.prop.rvprop.RvProp
-import org.scalawiki.dto.{Namespace, Page}
+import org.scalawiki.dto.{MwException, Namespace, Page}
 import org.scalawiki.json.MwReads._
+import org.scalawiki.util.WriteWatcher
 import retry.Success
 
 import scala.concurrent.Future
@@ -28,7 +31,8 @@ class PageQueryImplDsl(
   override def revisions(
       namespaces: Set[Int],
       props: Set[String],
-      continueParam: Option[(String, String)]
+      continueParam: Option[(String, String)],
+      limit: Option[String]
   ): Future[Iterable[Page]] = {
 
     import org.scalawiki.dto.cmd.query.prop.rvprop._
@@ -38,20 +42,24 @@ class PageQueryImplDsl(
       titles => TitlesParam(titles.toSeq)
     )
 
+    // `limit == None` means "current revision only": omit `rvlimit` (MediaWiki
+    // then returns just the latest revision and no `rvcontinue`) and cap
+    // DslQuery at the number of pages asked for, so it cannot page backwards
+    // through the whole history with content even if a continuation appears.
+    val revisionParams: Seq[RvParam] =
+      RvProp(RvPropArgs.byNames(props.toSeq): _*) +: limit.map(RvLimit(_)).toSeq
+
     val action = Action(
       Query(
         pages,
-        Prop(
-          Info(),
-          Revisions(
-            RvProp(RvPropArgs.byNames(props.toSeq): _*),
-            RvLimit("max")
-          )
-        )
+        Prop(Info(), Revisions(revisionParams: _*))
       )
     )
 
-    bot.run(action, context)
+    val runLimit =
+      if (limit.isEmpty) Some(query.fold(_.size, _.size).toLong) else None
+
+    bot.run(action, context, runLimit)
   }
 
   override def revisionsByGenerator(
@@ -135,7 +143,10 @@ class PageQueryImplDsl(
       summary: Option[String] = None,
       section: Option[String] = None,
       token: Option[String] = None,
-      multi: Boolean = false
+      multi: Boolean = false,
+      basetimestamp: Option[ZonedDateTime] = None,
+      baseRevId: Option[Long] = None,
+      startTimestamp: Option[ZonedDateTime] = None
   ) = {
 
     val page = query.fold(
@@ -143,40 +154,76 @@ class PageQueryImplDsl(
       titles => Title(titles.head)
     )
 
-    val action = Action(
-      Edit(
-        page,
-        Text(text),
-        Token(token.fold(bot.token)(identity))
-      )
-    )
+    // `basetimestamp` / `baserevid` make MediaWiki reject the edit with an
+    // `editconflict` error if the page's current revision has moved past the one
+    // we read, instead of silently clobbering the intervening edit;
+    // `starttimestamp` catches the page being deleted meanwhile (`pagedeleted`).
+    val conflictParams: Seq[EditParam[Any]] =
+      basetimestamp.map(BaseTimestamp(_)).toSeq ++
+        baseRevId.map(BaseRevId(_)).toSeq ++
+        startTimestamp.map(StartTimestamp(_)).toSeq
 
-    val params = action.pairs.toMap ++
+    val action = Action(Edit(Seq[EditParam[Any]](page, Text(text)) ++ conflictParams: _*))
+
+    val baseParams = action.pairs.toMap ++
       Map(
         "action" -> "edit",
         "format" -> "json",
         "utf8" -> "",
         "bot" -> "x",
-        "assert" -> "user",
         "assert" -> "bot"
       ) ++ section
         .map(s => "section" -> s)
         .toSeq ++ summary.map(s => "summary" -> s).toSeq
 
     import scala.concurrent.ExecutionContext.Implicits.global
+
+    // The CSRF token is resolved per attempt, not captured once: over a long
+    // batch run MediaWiki's edit token expires, and every later edit then fails
+    // with `badtoken`. On that error drop the bot's cached token so the retry
+    // (and every page after it) fetches a fresh one.
     def performEdit(): Future[String] = {
+      val editToken = token.getOrElse(bot.token)
+      val params = baseParams + ("token" -> editToken)
       bot.log.info(s"Request ${bot.host} edit page: $page, summary: $summary")
-      if (multi)
-        bot.postMultiPart(editResponseReads, params)
-      else
-        bot.post(editResponseReads, params)
-    }.map { s =>
-      bot.log.info(s"Response ${bot.host} edit page: $page: $s")
-      s
+      val response =
+        if (multi) bot.postMultiPart(editResponseReads, params)
+        else bot.post(editResponseReads, params)
+      response
+        .map { s =>
+          bot.log.info(s"Response ${bot.host} edit page: $page: $s")
+          s
+        }
+        .recoverWith {
+          case e: MwException if e.code == "badtoken" && token.isEmpty =>
+            bot.log.warning(
+              s"${bot.host} edit page: $page: stale CSRF token, refreshing"
+            )
+            bot.invalidateToken()
+            Future.failed(e)
+        }
     }
 
     implicit def stringSuccess: Success[String] = Success(_ == "Success")
-    retry.Backoff()(odelay.Timer.default)(() => performEdit())
+    // Don't burn the whole backoff budget replaying an edit that lost a race:
+    // an edit-conflict error won't clear until the page is re-read and the edit
+    // rebuilt, which is the caller's job (see PageUpdater).
+    val isConflict: PartialFunction[Throwable, Boolean] = {
+      case e: MwException => e.conflict
+      case _              => false
+    }
+    val policy = retry.FailFast(retry.Backoff()(odelay.Timer.default))(isConflict)
+    // Many callers (contest report generators) fire edits and discard the
+    // future. Route it through WriteWatcher so, when the CLI has enabled it,
+    // the edits are throttled to a safe concurrency, failures are logged
+    // instead of vanishing, and the process can wait for every write to finish
+    // before it exits. When not enabled this runs the edit immediately, as before.
+    // Edit conflicts are `benign` here: FailFast surfaces them on purpose so the
+    // caller (PageUpdater) can re-read and retry, so they must not be counted as
+    // dropped writes.
+    WriteWatcher.submit(s"edit ${bot.host} / $page", isConflict)(() =>
+      policy(() => performEdit())
+    )
   }
 
   override def upload(
@@ -202,7 +249,9 @@ class PageQueryImplDsl(
       comment.map("comment" -> _) ++
       (if (ignoreWarnings) Seq("ignorewarnings" -> "true") else Seq.empty)
 
-    bot.postFile(uploadResponseReads, params, "file", filename)
+    WriteWatcher.submit(s"upload ${bot.host} / $page")(() =>
+      bot.postFile(uploadResponseReads, params, "file", filename)
+    )(scala.concurrent.ExecutionContext.Implicits.global)
   }
 
   override def whatTranscludesHere(

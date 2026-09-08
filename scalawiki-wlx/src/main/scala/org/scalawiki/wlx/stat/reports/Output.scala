@@ -7,9 +7,13 @@ import org.scalawiki.wlx.stat.rating.{RateSum, Rater}
 import org.scalawiki.wlx.stat.ContestStat
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
+import org.slf4j.LoggerFactory
+
 import scala.concurrent.ExecutionContext
 
 object Output {
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def monumentsByType(
       /*imageDbs: Seq[ImageDB], totalImageDb: ImageDB,*/ monumentDb: MonumentDB
@@ -38,7 +42,7 @@ object Output {
           byReg1 + byReg2
         }
         .mkString(", ")
-      println(s"$typ: ${monumentDb._byType(typ).size}, $regionStat")
+      logger.debug(s"$typ: ${monumentDb._byType(typ).size}, $regionStat")
     }
   }
 
@@ -64,13 +68,13 @@ object Output {
         Some(oldImageDb.subSet(_.author.contains(author)))
       else None
 
-    val rateConfig = contest.rateConfig
-    val tableHeader = "{| class=\"wikitable\"\n! rate !! base " +
-      (if (rateConfig.numberOfAuthorsBonus || rater.withRating)
-         "!! authors <br> bonus "
-       else "") +
-      (if (rateConfig.numberOfImagesBonus) "!! images <br> bonus " else "") +
-      "!! objects !! ids \n|-\n"
+    val rateColumns = rater match {
+      case rateSum: RateSum => rateSum.raters.map(_.label)
+      case single           => Seq(single.label)
+    }
+    val tableHeader = "{| class=\"wikitable\"\n! rate !! " +
+      (rateColumns :+ "objects" :+ "ids").mkString(" !! ") +
+      " \n|-\n"
 
     val tableTotal = rater match {
       case rateSum: RateSum =>
@@ -390,7 +394,7 @@ object Output {
 
       val pageName =
         s"Вікіпедія:${imageDb.contest.contestType.name}/$regionName"
-      bot.page(pageName).edit(text).failed.map(println)
+      bot.page(pageName).edit(text)
     }
 
     val byParent = byRegion
@@ -407,7 +411,7 @@ object Output {
         }
         .mkString("\n")
 
-      bot.page(pageName).edit(text).failed.map(println)
+      bot.page(pageName).edit(text)
     }
   }
 
@@ -508,7 +512,8 @@ object Output {
 
   def regionalStat(stat: ContestStat): Unit = {
     val bot = MwBot.fromHost(MwBot.commons)
-
+    // No local try/catch: the caller (ReporterRegistry.step) isolates and
+    // reports a failure here so it is counted, not just logged and forgotten.
     val contest = stat.contest
     val categoryName = contest.contestType.name + " in " + contest.country.name
     val monumentDb = stat.monumentDb

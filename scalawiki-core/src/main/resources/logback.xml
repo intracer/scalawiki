@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Default logging for any scalawiki entry point (wlx stats CLI, bots).
+
+  FILE    : full detail at INFO (DEBUG when -Dsw.root.level=DEBUG, which the
+            "verbose" CLI flag sets) into logs/scalawiki.log, rolling.
+  CONSOLE : WARN and above only by default, so a run is not flooded with the
+            per-request GET/POST lines. The "verbose" flag lowers it to INFO
+            via -Dsw.console.level=INFO.
+
+  Tests are unaffected: every module with tests ships a logback-test.xml
+  (console only, INFO) that logback prefers over this file.
+-->
+<configuration>
+
+    <property name="LOG_DIR" value="${sw.log.dir:-logs}"/>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/scalawiki.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/scalawiki.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>200MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- stderr, so report/CSV text written to stdout stays clean even with
+         -Dsw.console.level=INFO (the "verbose" flag). -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.err</target>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${sw.console.level:-WARN}</level>
+        </filter>
+        <encoder>
+            <pattern>%-5level %logger{0} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Third-party chatter: keep out of the file unless it actually matters.
+         Pekko stays at INFO so the file still records the request/pool activity
+         the console logger used to show. -->
+    <logger name="io.netty" level="WARN"/>
+    <logger name="org.mockserver" level="WARN"/>
+
+    <root level="${sw.root.level:-INFO}">
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

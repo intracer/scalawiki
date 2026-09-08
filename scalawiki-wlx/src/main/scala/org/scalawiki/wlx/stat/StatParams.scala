@@ -14,6 +14,7 @@ case class StatConfig(
     rateConfig: RateConfig = RateConfig(),
     gallery: Boolean = false,
     fillLists: Boolean = false,
+    fillListsRating: Boolean = false,
     wrongIds: Boolean = false,
     missingIds: Boolean = false,
     multipleIds: Boolean = false,
@@ -31,8 +32,25 @@ case class StatConfig(
     minMpx: Option[Float] = None,
     previousYearsGallery: Boolean = false,
     numberOfMonumentsByNumberOfPictures: Boolean = false,
-    recentlyTakenFiles: Option[String] = None
-)
+    recentlyTakenFiles: Option[String] = None,
+    exportCsv: Option[String] = None,
+    exportImagesCsv: Option[String] = None,
+    imagesFromCsv: Option[String] = None,
+    csvCache: Boolean = true,
+    csvCacheDir: String = "csv-cache",
+    csvCacheRefresh: Boolean = false,
+    csvCacheResync: Boolean = false,
+    monumentCacheRefresh: Boolean = false,
+    verbose: Boolean = false,
+    progress: Boolean = true
+) {
+
+  /** Directory holding the automatic image CSV cache. An explicit
+    * `--images-from-csv` dir wins (and keeps its strict "must exist" semantics);
+    * otherwise the `csv-cache/` subdir of the working directory.
+    */
+  def effectiveCsvCacheDir: String = imagesFromCsv.getOrElse(csvCacheDir)
+}
 
 import org.rogach.scallop._
 
@@ -68,6 +86,11 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
   val baseRate = opt[Double](name = "base-rate", descr = "base rate")
   val gallery = opt[Boolean](name = "gallery", descr = "gallery")
   val fillLists = opt[Boolean](name = "fill-lists", descr = "fill lists")
+  val fillListsRating = opt[Boolean](
+    name = "fill-lists-rating",
+    descr =
+      "fill the rating (бали) field in monument lists with the points a new photo would score; run with a year range"
+  )
   val wrongIds = opt[Boolean](name = "wrong-ids", descr = "report wrong ids")
   val missingIds =
     opt[Boolean](name = "missing-ids", descr = "report missing ids")
@@ -109,6 +132,26 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
 
   val recentlyTakenFiles =
     opt[String](name = "recently-taken-files", descr = "recently taken files")
+  val exportCsv =
+    opt[String](name = "export-csv", descr = "Export monuments to CSV. Optional filename; defaults to <campaign>-YYYY-MM-DD-HHmm.csv")
+  val exportImagesCsv =
+    opt[String](name = "export-images-csv", descr = "Export images to CSV files per year. Argument is output directory (default: current dir).")
+  val imagesFromCsv =
+    opt[String](name = "images-from-csv", descr = "Read past years' images from CSV files instead of querying/caching from the wiki. Argument is the directory containing <campaign>-<year>-images.csv / <campaign>-all-images.csv files produced by --export-images-csv.")
+  val noCsvCache =
+    opt[Boolean](name = "no-csv-cache", descr = "Disable the automatic image CSV cache (csv-cache/ dir); always fetch/parse from the wiki (the http-cache/ request cache still applies).")
+  val csvCacheDir =
+    opt[String](name = "csv-cache-dir", descr = "Directory for the automatic image CSV cache (default: csv-cache).")
+  val csvCacheRefresh =
+    opt[Boolean](name = "csv-cache-refresh", descr = "Ignore existing image CSV caches this run: refetch from the wiki and overwrite them.")
+  val csvCacheResync =
+    opt[Boolean](name = "csv-cache-resync", descr = "Re-check cached images (past years + all-images) against the wiki via a cheap id+revision sweep: refetch only rows whose file page changed since caching, drop deleted/de-categorised ones. The current year's cache always does this.")
+  val monumentCacheRefresh =
+    opt[Boolean](name = "monument-cache-refresh", descr = "Ignore the cached monument lists (csv-cache/<campaign>-monuments.csv) this run: refetch every list page from the wiki and overwrite the cache. Without this the cache is kept and only pages whose revision changed are refetched.")
+  val verbose =
+    opt[Boolean](name = "verbose", descr = "Verbose logging: echo per-request INFO detail to the console and record DEBUG detail in logs/scalawiki.log (default: console WARN+, file INFO).")
+  val noProgress =
+    opt[Boolean](name = "no-progress", descr = "Disable the live console progress display (progress is still written to logs/scalawiki.log).")
   verify()
 
 }
@@ -134,6 +177,7 @@ object StatParams {
       rateConfig = rating.RateConfig(conf),
       gallery = conf.gallery.getOrElse(false),
       fillLists = conf.fillLists.getOrElse(false),
+      fillListsRating = conf.fillListsRating.getOrElse(false),
       wrongIds = conf.wrongIds.getOrElse(false),
       missingIds = conf.missingIds.getOrElse(false),
       multipleIds = conf.multipleIds.getOrElse(false),
@@ -150,7 +194,17 @@ object StatParams {
       mostPopularMonuments = conf.mostPopularMonuments.getOrElse(false),
       minMpx = conf.minMpx.toOption,
       previousYearsGallery = conf.previousYearsGallery.getOrElse(false),
-      recentlyTakenFiles = conf.recentlyTakenFiles.toOption
+      recentlyTakenFiles = conf.recentlyTakenFiles.toOption,
+      exportCsv = conf.exportCsv.toOption,
+      exportImagesCsv = conf.exportImagesCsv.toOption,
+      imagesFromCsv = conf.imagesFromCsv.toOption,
+      csvCache = !conf.noCsvCache.getOrElse(false),
+      csvCacheDir = conf.csvCacheDir.getOrElse("csv-cache"),
+      csvCacheRefresh = conf.csvCacheRefresh.getOrElse(false),
+      csvCacheResync = conf.csvCacheResync.getOrElse(false),
+      monumentCacheRefresh = conf.monumentCacheRefresh.getOrElse(false),
+      verbose = conf.verbose.getOrElse(false),
+      progress = !conf.noProgress.getOrElse(false)
     )
   }
 }

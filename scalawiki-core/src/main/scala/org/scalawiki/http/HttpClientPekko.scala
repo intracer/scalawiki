@@ -26,7 +26,14 @@ class HttpClientPekko(val system: ActorSystem = MwBot.system)
 
   implicit val sys: ActorSystem = system
 
-  val userAgent = "ScalaWiki/0.5"
+  // https://www.mediawiki.org/wiki/API:Etiquette requires a descriptive User-Agent
+  // with contact info; Wikimedia wikis enforce this and throttle/block requests
+  // that look anonymous. Override with SCALAWIKI_USER_AGENT to identify a specific
+  // bot/contact, e.g. "MyBot/1.0 (https://example.org/MyBot; bot@example.org)".
+  val userAgent = scala.sys.env.getOrElse(
+    "SCALAWIKI_USER_AGENT",
+    "ScalaWiki/0.7 (https://github.com/UkrainianWiki/scalawiki; ukwikidev@wikimedia.org.ua)"
+  )
 
   import system.dispatcher
 

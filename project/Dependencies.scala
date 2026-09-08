@@ -5,7 +5,6 @@ object Dependencies {
   val AaltoXmlV = "1.3.3"
   val BetterFilesV = "3.9.2"
   val BlameApiV = "15.10.15"
-  val ChronicleMapV = "3.22.9"
   val ChronoScalaV = "1.0.0"
   val FicusV = "1.5.2"
   val GuavaV = "33.4.0-jre"
@@ -24,6 +23,7 @@ object Dependencies {
   val ScalaParserCombinatorsV = "2.4.0"
   val ScalaXmlV = "2.3.0"
   val ScallopV = "5.2.0"
+  val ProgressBarV = "0.10.1"
   val Slf4jV = "2.0.16"
   val SwcEngineV = "3.1.9"
   val TypesafeConfigV = "1.4.3"
@@ -68,6 +68,7 @@ object Dependencies {
       val PekkoHttpV = "1.0.1"
 
       val actor = "org.apache.pekko" %% "pekko-actor" % PekkoV
+      val slf4j = "org.apache.pekko" %% "pekko-slf4j" % PekkoV
       val stream = "org.apache.pekko" %% "pekko-stream" % PekkoV
       val http = "org.apache.pekko" %% "pekko-http" % PekkoHttpV
       val httpCaching = "org.apache.pekko" %% "pekko-http-caching" % PekkoHttpV

@@ -45,7 +45,9 @@ case class Image(
     metadata: Option[ImageMetadata] = None,
     categories: Set[String] = Set.empty,
     specialNominations: Set[String] = Set.empty,
-    mime: Option[String] = None
+    mime: Option[String] = None,
+    revId: Option[Long] = None,
+    revTs: Option[ZonedDateTime] = None
 ) extends Ordered[Image] {
 
   def compare(that: Image): Int = title.compareTo(that.title)
@@ -118,7 +120,9 @@ object Image {
         monumentIds = ids,
         pageId = page.id,
         categories = categories,
-        specialNominations = specialNominations
+        specialNominations = specialNominations,
+        revId = revision.revId,
+        revTs = revision.timestamp
       )
     }
   }
@@ -139,7 +143,9 @@ object Image {
       monumentIds = fromRev.monumentIds,
       author = renamedAuthor,
       categories = fromRev.categories,
-      specialNominations = fromRev.specialNominations
+      specialNominations = fromRev.specialNominations,
+      revId = fromRev.revId,
+      revTs = fromRev.revTs
     )
 
   def getAuthorFromPage(content: String): String =

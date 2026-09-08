@@ -3,6 +3,13 @@ import Dependencies._
 
 ThisBuild / Test / fork := true
 
+// UTF-8 stdout/stderr so Cyrillic in reports/tests isn't mangled to '?'.
+ThisBuild / Test / javaOptions ++= Seq(
+  "-Dfile.encoding=UTF-8",
+  "-Dsun.stdout.encoding=UTF-8",
+  "-Dsun.stderr.encoding=UTF-8"
+)
+
 lazy val isScala213 = settingKey[Boolean]("Is the scala version 2.13.")
 
 lazy val commonSettings = Seq(
@@ -26,7 +33,7 @@ lazy val commonSettings = Seq(
   dependencyOverrides ++= Dependencies.overrides,
   initialize := {
     val _ = initialize.value
-    val required = VersionNumber("1.8")
+    val required = VersionNumber("11")
     val curr = VersionNumber(sys.props("java.specification.version"))
     assert(
       CompatibleJavaVersion(curr, required),
@@ -39,6 +46,11 @@ lazy val commonSettings = Seq(
   assembly / test := {},
   assembly / assemblyMergeStrategy := {
     case PathList("org", "xmlpull", "v1", xs @ _*) => MergeStrategy.first
+    // JPMS module descriptors from multiple deps collide and are irrelevant on the classpath
+    case "module-info.class"                       => MergeStrategy.discard
+    case x if x.endsWith("/module-info.class")     => MergeStrategy.discard
+    case PathList("META-INF", "versions", _, "module-info.class") =>
+      MergeStrategy.discard
     case x =>
       val oldStrategy = (assembly / assemblyMergeStrategy).value
       oldStrategy(x)
@@ -55,6 +67,7 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
   .settings(libraryDependencies ++= {
     Seq(
       Library.Pekko.actor,
+      Library.Pekko.slf4j,
       Library.Pekko.stream,
       Library.Pekko.http,
       Library.Pekko.httpCaching,
@@ -72,7 +85,6 @@ lazy val core = Project("scalawiki-core", file("scalawiki-core"))
       Library.Commons.codec,
       "org.jsoup" % "jsoup" % JSoupV,
       "com.softwaremill.retry" %% "retry" % RetryV,
-      "net.openhft" % "chronicle-map" % ChronicleMapV,
       "org.rogach" %% "scallop" % ScallopV
     )
   })
@@ -116,7 +128,8 @@ lazy val wlx = Project("scalawiki-wlx", file("scalawiki-wlx"))
   .settings(
     libraryDependencies ++= Seq(
       "de.sciss" %% "scala-chart" % ScalaChartV,
-      "com.github.tototoshi" %% "scala-csv" % ScalaCsvV
+      "com.github.tototoshi" %% "scala-csv" % ScalaCsvV,
+      "me.tongfei" % "progressbar" % ProgressBarV
     ),
     assembly / mainClass := Some("org.scalawiki.wlx.stat.Statistics")
   )

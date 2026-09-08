@@ -4,17 +4,62 @@ import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.SwTemplate
 import org.scalawiki.edit.{PageUpdateTask, PageUpdater}
 import org.scalawiki.wikitext.SwebleParser
-import org.scalawiki.wlx.dto.Monument
+import org.scalawiki.wlx.dto.{Monument, SpecialNomination}
+import org.scalawiki.wlx.stat.ContestStat
 import org.sweble.wikitext.engine.config.WikiConfig
 import org.sweble.wikitext.engine.utils.DefaultConfigEnWp
 import org.sweble.wikitext.parser.nodes.WtTemplate
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 object ListUpdater {
 
-  def updateLists(monumentDb: MonumentDB, monumentUpdater: MonumentUpdater) {
+  /** Update every list page for `monumentDb`. [[PageUpdater]] processes the pages
+    * serially; callers chain the returned future so one list pass finishes before
+    * the next starts. */
+  def updateLists(
+      monumentDb: MonumentDB,
+      monumentUpdater: MonumentUpdater
+  ): Future[Unit] = {
     val task = new ListUpdaterTask(MwBot.ukWiki, monumentDb, monumentUpdater)
     val updater = new PageUpdater(task)
-    updater.update()
+    updater.update().map(_ => ())
+  }
+
+  /** Run `monumentUpdater` over the separate wiki pages that hold special
+    * nomination (thematic) monument lists. [[updateLists]] never visits them
+    * because they are not part of the per-region `monumentDb`. Mirrors
+    * `ReporterRegistry.fillSpecialNominationLists`.
+    */
+  def updateSpecialNominationLists(
+      stat: ContestStat,
+      monumentUpdater: MonumentUpdater
+  ): Future[Unit] = {
+    val nominations = SpecialNomination.nominations.filter(_.listTemplate.nonEmpty)
+
+    SpecialNomination.getMonumentsMap(nominations, stat).flatMap { monumentsMap =>
+      val passes = for {
+        nomination <- nominations
+        listTemplate <- nomination.listTemplate
+        monuments = monumentsMap.getOrElse(nomination, Nil)
+        if monuments.nonEmpty
+      } yield { () =>
+        val nominationContest = stat.contest.copy(
+          uploadConfigs = stat.contest.uploadConfigs match {
+            case head +: tail => head.copy(listTemplate = listTemplate) +: tail
+            case empty        => empty
+          }
+        )
+        updateLists(
+          new MonumentDB(nominationContest, monuments.toSeq),
+          monumentUpdater
+        )
+      }
+
+      // one nomination's list pass at a time, mirroring the old serial loop
+      passes.foldLeft(Future.unit)((acc, run) => acc.flatMap(_ => run()))
+    }
   }
 }
 

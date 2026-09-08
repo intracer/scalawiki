@@ -6,6 +6,10 @@ import org.scalawiki.wlx.dto.{AdmDivision, Contest, Country, Monument}
 import org.scalawiki.wlx.query.MonumentQuery
 import org.scalawiki.wlx.stat.rating.PerPlaceStat
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
+
 class MonumentDB(
     val contest: Contest,
     val allMonuments: Seq[Monument],
@@ -177,17 +181,26 @@ object MonumentDB {
       contest: Contest,
       monumentQuery: MonumentQuery,
       date: Option[ZonedDateTime] = None
-  ): MonumentDB = {
-    var allMonuments = monumentQuery.byMonumentTemplate(date = date)
+  ): Future[MonumentDB] =
+    monumentQuery.byMonumentTemplate(date = date).map { fetched =>
+      val allMonuments =
+        if (contest.country.code == "ru")
+          fetched.filter(_.page.contains("Природные памятники России"))
+        else fetched
 
-    if (contest.country.code == "ru") {
-      allMonuments = allMonuments.filter(_.page.contains("Природные памятники России"))
+      new MonumentDB(contest, allMonuments.toSeq)
     }
 
-    new MonumentDB(contest, allMonuments.toSeq)
-  }
+  /** Blocking bridge for standalone CLI entry points and tests. The stats
+    * pipeline uses [[getMonumentDb]] directly. */
+  def getMonumentDbBlocking(
+      contest: Contest,
+      monumentQuery: MonumentQuery,
+      date: Option[ZonedDateTime] = None
+  ): MonumentDB =
+    Await.result(getMonumentDb(contest, monumentQuery, date), Duration.Inf)
 
-  def getMonumentDb(contest: Contest, date: Option[ZonedDateTime]): MonumentDB =
-    getMonumentDb(contest, MonumentQuery.create(contest), date)
+  def getMonumentDbBlocking(contest: Contest, date: Option[ZonedDateTime]): MonumentDB =
+    getMonumentDbBlocking(contest, MonumentQuery.create(contest), date)
 
 }

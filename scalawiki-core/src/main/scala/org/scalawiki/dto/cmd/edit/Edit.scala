@@ -84,6 +84,14 @@ case class BaseTimestamp(override val arg: ZonedDateTime)
     )
     with EditParam[ZonedDateTime]
 
+case class BaseRevId(override val arg: Long)
+    extends IdParameter(
+      "baserevid",
+      "Revision ID of the base revision (obtained through prop=revisions&rvprop=ids). " +
+        "Used to detect edit conflicts; leave unset to ignore conflicts"
+    )
+    with EditParam[Long]
+
 case class StartTimestamp(override val arg: ZonedDateTime)
     extends DateTimeParameter(
       "starttimestamp",

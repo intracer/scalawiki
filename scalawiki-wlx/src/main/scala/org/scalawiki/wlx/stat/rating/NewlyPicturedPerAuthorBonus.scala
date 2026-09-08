@@ -49,4 +49,6 @@ case class NewlyPicturedPerAuthorBonus(
     Set("Петро Халява", "SnizhokAM").contains(author) &&
     oldMonumentIdsByAuthor.getOrElse(author, Set.empty).contains(monumentId)
   }
+
+  override def label: String = "newly pictured <br> bonus"
 }

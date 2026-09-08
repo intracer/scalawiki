@@ -1,0 +1,226 @@
+{
+    "country": "ua",
+    "lang": "uk",
+    "description": "Monuments in Ukraine in Ukrainian",
+    "project": "wikipedia",
+    "namespaces": [
+        4
+    ],
+    "table": "monuments_ua_(uk)",
+    "truncate": false,
+    "primkey": "id",
+    "headerTemplate": "WLM-шапка",
+    "rowTemplate": "ВЛП-рядок",
+    "commonsTemplate": "Monument Ukraine",
+    "commonsTrackerCategory": "Cultural heritage monuments in Ukraine with known IDs",
+    "commonsCategoryBase": "Cultural heritage monuments in Ukraine",
+    "unusedImagesPage": "User:ErfgoedBot/Unused images of Cultural heritage monuments",
+    "imagesWithoutIdPage": "User:ErfgoedBot/Images of Cultural heritage monuments without ID",
+    "fields": [
+        {
+            "dest": "id",
+            "source": "ID",
+            "type": "varchar(25)"
+        },
+        {
+            "dest": "name",
+            "source": "назва"
+        },
+        {
+            "dest": "address",
+            "source": "адреса"
+        },
+        {
+            "dest": "municipality",
+            "source": "нас_пункт"
+        },
+        {
+            "dest": "lat",
+            "source": "широта",
+            "check": "checkLat"
+        },
+        {
+            "dest": "lon",
+            "source": "довгота",
+            "check": "checkLon"
+        },
+        {
+            "dest": "image",
+            "source": "фото"
+        },
+        {
+            "dest": "commonscat",
+            "source": "галерея"
+        },
+        {
+            "dest": "year_of_construction",
+            "source": "рік"
+        },
+        {
+            "dest": "registrant_id",
+            "source": "охоронний номер"
+        },
+        {
+            "dest": "type",
+            "source": "тип"
+        },
+        {
+            "dest": "gallery",
+            "source": "галерея"
+        },
+        {
+            "dest": "iso_oblast",
+            "source": "iso"
+        },
+        {
+            "dest": "rayon",
+            "source": "район"
+        },
+        {
+            "dest": "monument_article",
+            "source": "назва",
+            "conv": "extractWikilink"
+        },
+        {
+            "dest": "",
+            "source": "ref-address"
+        },
+        {
+            "dest": "",
+            "source": "ref-name"
+        },
+        {
+            "dest": "",
+            "source": "ref-number"
+        },
+        {
+            "dest": "",
+            "source": "ref-place"
+        },
+        {
+            "dest": "",
+            "source": "ref-type"
+        },
+        {
+            "dest": "",
+            "source": "ref-year"
+        },
+        {
+            "dest": "wd_item",
+            "source": "wikidata",
+            "check": "checkWD"
+        },
+        {
+            "dest": "",
+            "source": "виключена"
+        },
+        {
+            "dest": "",
+            "source": "виключений"
+        },
+        {
+            "dest": "",
+            "source": "документ"
+        },
+        {
+            "dest": "",
+            "source": "комплекс"
+        },
+        {
+            "dest": "",
+            "source": "координати"
+        },
+        {
+            "dest": "",
+            "source": "назва-уточн"
+        },
+        {
+            "dest": "",
+            "source": "наказ"
+        },
+        {
+            "dest": "",
+            "source": "паспорт"
+        },
+        {
+            "dest": "",
+            "source": "сорт-адреса"
+        },
+        {
+            "dest": "",
+            "source": "тип-нп"
+        }
+    ],
+    "sql_lang": "Ukrainian",
+    "sql_country": "Ukraine",
+    "sql_data": {
+        "country": {
+            "value": "ua",
+            "type": "Text"
+        },
+        "lang": {
+            "value": "uk",
+            "type": "Text"
+        },
+        "id": {
+            "value": "id",
+            "type": "Field"
+        },
+        "adm0": {
+            "value": "ua",
+            "type": "Text"
+        },
+        "adm1": {
+            "value": "LOWER(`iso_oblast`)",
+            "type": "Raw"
+        },
+        "adm2": {
+            "value": "rayon",
+            "type": "Field"
+        },
+        "name": {
+            "value": "name",
+            "type": "Field"
+        },
+        "address": {
+            "value": "address",
+            "type": "Field"
+        },
+        "municipality": {
+            "value": "municipality",
+            "type": "Field"
+        },
+        "lat": {
+            "value": "lat",
+            "type": "Field"
+        },
+        "lon": {
+            "value": "lon",
+            "type": "Field"
+        },
+        "image": {
+            "value": "image",
+            "type": "Field"
+        },
+        "commonscat": {
+            "value": "commonscat",
+            "type": "Field"
+        },
+        "source": {
+            "value": "source",
+            "type": "Field"
+        },
+        "changed": {
+            "value": "changed",
+            "type": "Field"
+        },
+        "monument_article": {
+            "value": "monument_article",
+            "type": "Field"
+        },
+        "wd_item": {
+            "value": "wd_item",
+            "type": "Field"
+        }
+    }
+}

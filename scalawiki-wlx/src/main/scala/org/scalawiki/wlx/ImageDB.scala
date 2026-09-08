@@ -13,7 +13,8 @@ case class ImageDB(
     images: Iterable[Image],
     monumentDb: Option[MonumentDB],
     minMpx: Option[Float] = None,
-    recentlyTakenFiles: Option[String] = None
+    recentlyTakenFiles: Option[String] = None,
+    ignoreRecentlyTaken: Boolean = false
 ) {
 
   def this(contest: Contest, images: Seq[Image]) = this(contest, images, None)
@@ -33,15 +34,23 @@ case class ImageDB(
   lazy val sansIneligible: Seq[Image] =
     withCorrectIds.filterNot(_.pageId.exists(ineligibleIds.contains))
 
-  private val jun30 = ZonedDateTime.parse(s"${contest.year}-06-30T23:59:59Z")
+  // Photos created after this instant count as "recently taken" and are ineligible
+  // for the main nominations (a wartime security rule; see
+  // `dates.<year>.latest-allowed-pictured-date` in the campaign .conf). Years with
+  // no configured date keep the historical default of 30 June of the contest year.
+  private val latestAllowedPictured: ZonedDateTime =
+    contest
+      .dates()
+      .flatMap(_.latestAllowedPicturedInstant)
+      .getOrElse(ZonedDateTime.parse(s"${contest.year}-06-30T23:59:59Z"))
 
   val filesList = recentlyTakenFiles
     .toList
     .flatMap(file => scala.io.Source.fromFile(file).getLines.toList)
 
   lazy val ineligible: Seq[Image] = withCorrectIds.filter { i =>
-    val after30 = //false
-      i.metadata.exists(_.date.exists(_.isAfter(jun30))) &&
+    val after30 = !ignoreRecentlyTaken &&
+      i.metadata.exists(_.date.exists(_.isAfter(latestAllowedPictured))) &&
         !i.specialNominations.contains(s"WLM${contest.year}-UA-interior") &&
         (filesList.isEmpty || filesList.contains(i.title))
 
