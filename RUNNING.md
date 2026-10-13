@@ -235,9 +235,10 @@ Override with `JAVA_OPTS="-Dscalawiki.write.maxConcurrent=8"` if needed.
 report kept up to date in one run: regional statistics (with the hromada
 breakdown), special nominations, RecentlyTaken, objects pictured by uploader,
 most photographed objects, and the bad / missing ids pages of every year.
-Past years are re-checked against the wiki once a week
-(`--csv-cache-resync --csv-cache-resync-interval 7`), which picks up ids fixed
-in older files; the current year on every run. Before October it
+The daily job syncs the current year on every run. Historical resync runs
+separately through `scripts/server/wlx-resync.sh`, using `--resync-only`:
+it updates caches but skips all reports and wiki writes. Its failure leaves the
+daily publisher able to use existing historical data. Before October the daily job
 reports on the previous year's contest. It runs one job at a time (`flock`),
 lets the kernel kill it first if memory runs out, keeps a dated log under
 `logs/`, and prints only on failure, so cron's mail reports just the failures.
@@ -248,6 +249,7 @@ Setup, in a directory of its own (e.g. `~/scalawiki`):
 scalawiki/
   run-stats.sh          # from the repo root
   wlx-daily.sh          # from scripts/server
+  wlx-resync.sh         # from scripts/server, separate cache-only maintenance
   scalawiki-wlx.jar     # sbt scalawiki-wlx/assembly, renamed
   secrets.env           # SCALAWIKI_LOGIN=IlyaBot@<bot password name>
                         # SCALAWIKI_PASSWORD=<bot password>      (chmod 600)
@@ -263,10 +265,30 @@ the edit grants, so it can be revoked without touching other setups. Try it with
 MAILTO=you@example.org
 # cron uses the server's zone: on a Europe/Berlin server 23:00 = 00:00 Kyiv
 0 23 * * * $HOME/scalawiki/wlx-daily.sh
+# Historical cache maintenance, Mondays at 04:00 Kyiv (03:00 Berlin)
+0 3 * * 1 $HOME/scalawiki/wlx-resync.sh
 ```
 
 The script itself runs on Kyiv time (`TZ=Europe/Kyiv`), so the contest year,
 the weekly resync date and the log names follow Kyiv's calendar day.
+
+Both scripts share `wlx-daily.lock` and must not overlap. Maintenance logs have
+unique `logs/resync-<date>-<time>.txt` names. To retry a failed maintenance run,
+run `./wlx-resync.sh`; successful years are reused on the next attempt. An
+incomplete sweep or missing refetched images produces a nonzero maintenance
+exit and does not advance `<campaign>-resync.date`. Cached rows are preserved
+when deletions cannot be trusted, and failed refetches keep their old revisions.
+
+Image metadata queries share a two-batch concurrency limit across query
+instances. Network-backed year builds run one at a time; historical images stay
+slim after their full CSV is written. Image and monument CSVs and resync dates
+are written to a temporary file in the same directory and replaced atomically
+only after the write closes successfully. A failed write leaves the old file
+intact (atomic replacement is required from the cache filesystem).
+
+Before deploying a new jar, test cache maintenance against a copy of the cache:
+`./wlx-resync.sh --csv-cache-dir /path/to/cache-copy`. `--dry-run` prevents wiki
+writes but still updates local caches, so it does not replace using a cache copy.
 
 `JAVA_OPTS` defaults to `-Xmx1g` there (about 1.5 GB of RAM for the process),
 and the JVM exits on an `OutOfMemoryError` so the run fails visibly. Check the

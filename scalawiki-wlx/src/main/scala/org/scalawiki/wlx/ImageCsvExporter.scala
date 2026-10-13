@@ -2,6 +2,7 @@ package org.scalawiki.wlx
 
 import com.github.tototoshi.csv.CSVWriter
 import org.scalawiki.dto.Image
+import org.scalawiki.util.AtomicFile
 
 import java.io.File
 import java.time.LocalDateTime
@@ -105,15 +106,15 @@ object ImageCsvExporter {
       // several per-year exports create the cache dir concurrently without racing
       java.nio.file.Files.createDirectories(dir.toPath)
     }
-    val writer = CSVWriter.open(file, "UTF-8")
-    try {
-      writer.writeRow(columns)
-      images.foreach { image =>
-        val row = imageToRow(image)
-        writer.writeRow(columns.map(c => row.getOrElse(c, "")))
-      }
-    } finally {
-      writer.close()
+    AtomicFile.write(file.toPath) { temporary =>
+      val writer = CSVWriter.open(temporary.toFile, "UTF-8")
+      try {
+        writer.writeRow(columns)
+        images.foreach { image =>
+          val row = imageToRow(image)
+          writer.writeRow(columns.map(c => row.getOrElse(c, "")))
+        }
+      } finally writer.close()
     }
   }
 }

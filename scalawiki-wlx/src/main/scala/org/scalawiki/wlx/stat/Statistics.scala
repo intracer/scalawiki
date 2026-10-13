@@ -180,7 +180,12 @@ class Statistics(
       // async, the report pipeline that consumes it is synchronous. No arbitrary
       // timeout — a stuck fetch is the HTTP layer's problem, not ours.
       val stat = Await.result(gatherData(total = total), Duration.Inf)
-      new ReportRunner(stat, config).run()
+      val failures = if (config.resyncOnly) 0 else new ReportRunner(stat, config).run()
+      val incomplete = config.csvCacheResync && !imageProvider.resyncSuccessful
+      if (config.resyncOnly)
+        Progress.note(if (incomplete) "\n=== Cache resync: INCOMPLETE (retry required) ==="
+          else "\n=== Cache resync: OK (no reports published) ===")
+      failures + (if (incomplete) 1 else 0)
     } finally Progress.close()
   }
 
@@ -236,7 +241,7 @@ object Statistics {
       // rules that a later year's already replace would overwrite every list's
       // бали with outdated points.
       val refusal =
-        if (cfg.fillListsRating)
+        if (cfg.fillListsRating && !cfg.resyncOnly)
           org.scalawiki.wlx.RatingListFiller.pastYearRatingError(contest, cfg.allowPastYearRating)
         else None
       refusal.foreach { error =>
@@ -268,7 +273,7 @@ object Statistics {
 
         // rating fill needs the all-time image DB to know which monuments already
         // have photos, even when a single year is requested
-        exitCode = stat.run(total = cfg.years.size > 1 || cfg.fillListsRating)
+        exitCode = stat.run(total = cfg.resyncOnly || cfg.years.size > 1 || cfg.fillListsRating)
       }
     } catch {
       case NonFatal(e) =>

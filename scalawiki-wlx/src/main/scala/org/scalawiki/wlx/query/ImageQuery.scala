@@ -10,6 +10,7 @@ import org.scalawiki.query.QueryLibrary
 import org.scalawiki.wlx.dto.{Contest, SpecialNomination}
 import org.scalawiki.wlx.query.ImageQuery.PageRevInfo
 import org.scalawiki.{ActionBot, MwBot}
+import org.scalawiki.util.AsyncGate
 
 import java.time.ZonedDateTime
 import java.util.concurrent.atomic.AtomicInteger
@@ -45,7 +46,7 @@ trait ImageQuery {
 
 }
 
-class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
+class ImageQueryApi(bot: ActionBot, batchGate: AsyncGate = ImageQuery.batchGate) extends ImageQuery with QueryLibrary {
 
   /** File templates of every special nomination, regardless of contest year.
     *
@@ -106,17 +107,23 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
     val blockSize = 50
     val fetched = new AtomicInteger(0)
     val specialNominationTemplates = allSpecialNominationTemplates
-    Future
-      .sequence(pageIds.toSeq.sorted.grouped(blockSize).map { idsSlice =>
-        for (pages <- bot.run(imagesByIds(idsSlice, withMetadata = true, withMediaType = true)))
-          yield {
+    // Start only a small window, and share the budget with every other image
+    // query. A limit per year alone multiplies when several years sync together.
+    val windows = pageIds.toSeq.sorted.grouped(blockSize).grouped(2)
+    def next(acc: Vector[Image]): Future[Vector[Image]] =
+      if (!windows.hasNext) Future.successful(acc)
+      else {
+        val batch = windows.next().toVector
+        Future.traverse(batch) { idsSlice =>
+          batchGate.submit {
+            bot.run(imagesByIds(idsSlice, withMetadata = true, withMediaType = true))
+          }.map { pages =>
             bot.log.info(s"Fetched ${fetched.addAndGet(pages.size)} of ${pageIds.size}")
-            pages.flatMap(
-              Image.fromPage(contest.fileTemplate, specialNominationTemplates)
-            )
+            pages.flatMap(Image.fromPage(contest.fileTemplate, specialNominationTemplates))
           }
-      })
-      .map(_.flatten.toIndexedSeq)
+        }.flatMap(results => next(acc ++ results.flatten))
+      }
+    next(Vector.empty)
   }
 
   private def imagesByGenerator(contest: Contest, generator: Generator): Future[Iterable[Image]] = {
@@ -150,6 +157,9 @@ class ImageQueryApi(bot: ActionBot) extends ImageQuery with QueryLibrary {
 }
 
 object ImageQuery {
+
+  // Process-wide: CachedBot and live queries share the same Commons pool.
+  private[query] val batchGate = new AsyncGate(2)
 
   /** Page id + its latest revision (id and timestamp). The cheap change token
     * used to diff a CSV image cache against the wiki. `revId` / `timestamp` are

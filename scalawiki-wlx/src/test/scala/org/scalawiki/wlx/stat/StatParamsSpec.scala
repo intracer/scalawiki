@@ -10,6 +10,19 @@ class StatParamsSpec extends Specification {
   "statistics" should {
     val thisYear = ZonedDateTime.now.getYear
 
+    "make resync-only imply cache resync" in {
+      val cfg = StatParams.parse(Seq("--campaign", "wlm-ua", "--resync-only"))
+      cfg.resyncOnly must beTrue
+      cfg.csvCacheResync must beTrue
+    }
+
+    "refuse resync-only with disabled or user-managed caches" in {
+      StatParams.parse(Seq("--campaign", "wlm-ua", "--resync-only", "--no-csv-cache")) must
+        throwA[IllegalArgumentException]
+      StatParams.parse(Seq("--campaign", "wlm-ua", "--resync-only", "--images-from-csv", "input")) must
+        throwA[IllegalArgumentException]
+    }
+
     "parse campaign" in {
       val cfg = StatParams.parse(Seq("--campaign", "wlm-ua"))
       cfg === StatConfig("wlm-ua", Seq(thisYear))

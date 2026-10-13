@@ -46,7 +46,8 @@ case class StatConfig(
     progress: Boolean = true,
     dryRun: Boolean = false,
     dryRunDir: String = "dry-run",
-    allowPastYearRating: Boolean = false
+    allowPastYearRating: Boolean = false,
+    resyncOnly: Boolean = false
 ) {
 
   /** Directory holding the automatic image CSV cache. An explicit
@@ -158,6 +159,8 @@ class StatParams(arguments: Seq[String]) extends ScallopConf(arguments) {
     opt[Boolean](name = "csv-cache-resync", descr = "Re-check cached images (past years + all-images) against the wiki via a cheap id+revision sweep: refetch only rows whose file page changed since caching, drop deleted/de-categorised ones. The current year's cache always does this.")
   val csvCacheResyncInterval =
     opt[Int](name = "csv-cache-resync-interval", descr = "With --csv-cache-resync: skip the past-year resync when the last one that completed was less than this many days ago (dates kept in <csv-cache-dir>/<campaign>-resync.date). The current year is synced on every run regardless.")
+  val resyncOnly =
+    opt[Boolean](name = "resync-only", descr = "Resync image CSV caches only, including all-time images; implies --csv-cache-resync. Skip every report, export and wiki write. For a separate maintenance job.")
   val monumentCacheRefresh =
     opt[Boolean](name = "monument-cache-refresh", descr = "Ignore the cached monument lists (csv-cache/<campaign>-monuments.csv) this run: refetch every list page from the wiki and overwrite the cache. Without this the cache is kept and only pages whose revision changed are refetched.")
   val verbose =
@@ -177,6 +180,11 @@ object StatParams {
   def parse(args: Seq[String]): StatConfig = {
 
     val conf = new StatParams(args)
+    val only = conf.resyncOnly.getOrElse(false)
+    require(!only || (!conf.noCsvCache.getOrElse(false) && conf.imagesFromCsv.toOption.isEmpty &&
+      !conf.csvCacheRefresh.getOrElse(false) && conf.exportCsv.toOption.isEmpty && conf.exportImagesCsv.toOption.isEmpty),
+      "--resync-only requires the automatic CSV cache and cannot be combined with refresh or export options")
+    require(conf.csvCacheResyncInterval.toOption.forall(_ > 0), "--csv-cache-resync-interval must be positive")
 
     val year = conf.years.getOrElse(List(ZonedDateTime.now.getYear)).sorted
     val startYear = conf.startYear.getOrElse(year.head)
@@ -217,14 +225,15 @@ object StatParams {
       csvCache = !conf.noCsvCache.getOrElse(false),
       csvCacheDir = conf.csvCacheDir.getOrElse("csv-cache"),
       csvCacheRefresh = conf.csvCacheRefresh.getOrElse(false),
-      csvCacheResync = conf.csvCacheResync.getOrElse(false),
+      csvCacheResync = conf.csvCacheResync.getOrElse(false) || only,
       csvCacheResyncIntervalDays = conf.csvCacheResyncInterval.toOption,
       monumentCacheRefresh = conf.monumentCacheRefresh.getOrElse(false),
       verbose = conf.verbose.getOrElse(false),
       progress = !conf.noProgress.getOrElse(false),
       dryRun = conf.dryRun.getOrElse(false),
       dryRunDir = conf.dryRunDir.getOrElse("dry-run"),
-      allowPastYearRating = conf.allowPastYearRating.getOrElse(false)
+      allowPastYearRating = conf.allowPastYearRating.getOrElse(false),
+      resyncOnly = only
     )
   }
 }

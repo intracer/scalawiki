@@ -112,13 +112,15 @@ object MonumentDbCache {
     Option(file.getParentFile).foreach(dir =>
       java.nio.file.Files.createDirectories(dir.toPath)
     )
-    val writer = CSVWriter.open(file, "UTF-8")
-    try {
-      writer.writeRow(columns)
-      pages.foreach { page =>
-        page.monuments.foreach(m => writer.writeRow(monumentToRow(page, m)))
-      }
-    } finally writer.close()
+    org.scalawiki.util.AtomicFile.write(file.toPath) { temporary =>
+      val writer = CSVWriter.open(temporary.toFile, "UTF-8")
+      try {
+        writer.writeRow(columns)
+        pages.foreach { page =>
+          page.monuments.foreach(m => writer.writeRow(monumentToRow(page, m)))
+        }
+      } finally writer.close()
+    }
   }
 
   /** Read the cache back as one [[MonumentListPage]] per source page (order of

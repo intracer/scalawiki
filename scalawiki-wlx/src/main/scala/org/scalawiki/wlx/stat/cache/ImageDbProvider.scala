@@ -10,11 +10,13 @@ import org.scalawiki.wlx.stat.progress.Progress
 import org.scalawiki.wlx.ImageCsvImporter.CachedRevision
 import org.scalawiki.wlx.{ImageCsvExporter, ImageCsvImporter, ImageDB, MonumentDB}
 import org.slf4j.LoggerFactory
+import org.scalawiki.util.AtomicFile
 
 import java.io.{File, FileNotFoundException}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 import java.time.{LocalDate, ZoneOffset, ZonedDateTime}
+import java.util.concurrent.atomic.AtomicBoolean
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -111,14 +113,25 @@ class ImageDbProvider(
   private val csvResync: Boolean =
     config.csvCacheResync && csvAutoCache && !csvRefresh && resyncDue
 
+  private val incompleteSync = new AtomicBoolean(false)
+  def resyncSuccessful: Boolean = !incompleteSync.get()
+
   /** Record that this run's resync completed, so `--csv-cache-resync-interval`
     * counts from today. Call once every image DB has been built. */
   def resyncCompleted(): Unit =
-    if (csvResync)
-      Try {
-        Files.createDirectories(resyncDateFile.getParent)
-        Files.write(resyncDateFile, today.toString.getBytes(StandardCharsets.UTF_8))
-      }.failed.foreach(e => logger.warn(s"[csv-cache] could not record the resync date in $resyncDateFile: $e"))
+    if (csvResync) {
+      if (!resyncSuccessful)
+        logger.warn("[csv-cache] resync incomplete; preserving the previous completion date for a retry")
+      else
+        Try {
+          AtomicFile.write(resyncDateFile) { temporary =>
+            Files.write(temporary, today.toString.getBytes(StandardCharsets.UTF_8))
+          }
+        }.failed.foreach { e =>
+          incompleteSync.set(true)
+          logger.warn(s"[csv-cache] could not record the resync date in $resyncDateFile: $e")
+        }
+    }
 
   /** Shared by every CSV read this run, so a value repeated across files (an
     * author, a category) is held once. */
@@ -273,7 +286,7 @@ class ImageDbProvider(
             path
           )
       case None =>
-        oneFullFetchAtATime {
+        oneYearFetchAtATime {
           fetchImageDb(yearContest, monumentDb).map { db =>
             writeCsvCache(db)
             if (slimPastYears) db.copy(images = db.images.map(ImageCsvImporter.slim(_, valuePool)).toVector)
@@ -292,7 +305,7 @@ class ImageDbProvider(
       // category is still growing, and a cached response (e.g. the empty listing
       // from before the first upload) would be replayed forever - an empty DB
       // writes no CSV, so the next run would come straight back here.
-      oneFullFetchAtATime {
+      oneYearFetchAtATime {
         fetchImageDb(yearContest, monumentDb, Some(imageQuery.getOrElse(liveImageQuery))).map { db =>
           writeCsvCache(db)
           db
@@ -309,7 +322,7 @@ class ImageDbProvider(
       cached: Seq[Image],
       path: String,
       slimRows: Option[SlimRows] = None
-  ): Future[ImageDB] = {
+  ): Future[ImageDB] = oneYearFetchAtATime {
     val query = imageQuery.getOrElse(liveImageQuery)
     // "changed since" cut-off for pre-last_revid rows: once a past year's upload
     // window has closed nothing legitimate changes after it, so it is the exact
@@ -373,6 +386,7 @@ class ImageDbProvider(
       sweepComplete: Boolean = true,
       slimRows: Option[SlimRows] = None
   ): Future[ImageDB] = {
+    if (!sweepComplete) incompleteSync.set(true)
     val liveById = liveRevs.iterator.map(r => r.pageId -> r).toMap
     val cachedRevs: Map[Long, CachedRevision] = slimRows
       .map(_.revisions)
@@ -438,11 +452,13 @@ class ImageDbProvider(
         // drop a row we still know about: fall back to the stale cached copy.
         val missedRefetch = refetch -- fetchedIds
         val staleKept = rows.filter(_.pageId.exists(id => missedRefetch.contains(id) && !newIds.contains(id)))
-        if (missedRefetch.nonEmpty)
+        if (missedRefetch.nonEmpty) {
+          incompleteSync.set(true)
           logger.warn(
             s"[csv-cache] ${yearContest.year}: refetch returned ${fetchedIds.size}/${refetch.size} " +
               s"images; keeping ${staleKept.size} stale row(s), ${(missedRefetch -- staleKept.flatMap(_.pageId).toSet).size} new id(s) lost this run"
           )
+        }
 
         val db = new ImageDB(
           yearContest,
@@ -523,16 +539,13 @@ class ImageDbProvider(
     } yield new ImageDB(contest, dbsByYear.flatMap(_.images) ++ extras.images, monumentDb, config.minMpx)
   }
 
-  /** The last full year fetch queued by [[oneFullFetchAtATime]]. */
+  /** The last full fetch or incremental year sync. */
   private var lastFullFetch: Future[Any] = Future.unit
 
-  /** Run a full year fetch (no usable CSV) only after the previous one has
-    * finished, failed or not. The per-year DBs are built in parallel, and when
-    * several years have no CSV (a fresh server, a deleted cache, a new CSV
-    * column) fetching them all at once holds every year's full images and
-    * parsed responses together - more than a 1 GB heap. One at a time, a fetch
-    * holds one year's, which is slimmed before the next starts. */
-  private def oneFullFetchAtATime[T](fetch: => Future[T]): Future[T] = synchronized {
+  /** Serialize network-backed year builds, including resyncs. CSV-only reads
+    * remain cheap; changed years hold full rows only while rewriting their CSV,
+    * then return slim rows before the next year starts. */
+  private def oneYearFetchAtATime[T](fetch: => Future[T]): Future[T] = synchronized {
     val result = lastFullFetch.transformWith(_ => fetch)
     lastFullFetch = result
     result
