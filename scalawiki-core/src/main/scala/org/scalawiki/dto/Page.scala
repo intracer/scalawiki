@@ -38,6 +38,7 @@ case class Page(
 
   def appendLists(other: Page): Page = copy(
     revisions = this.revisions ++ other.revisions,
+    images = this.images ++ other.images,
     langLinks = this.langLinks ++ other.langLinks,
     links = this.links ++ other.links
   )
