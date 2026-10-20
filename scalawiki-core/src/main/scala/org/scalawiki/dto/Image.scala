@@ -9,6 +9,7 @@ import org.scalawiki.wikitext.TemplateParser
 import org.sweble.wikitext.engine.nodes.EngPage
 
 import scala.util.Try
+import scala.util.matching.Regex
 
 case class ImageMetadata(data: Map[String, String]) {
 
@@ -123,7 +124,8 @@ object Image {
       val specialNominations =
         TemplateParser.collectTemplateNames(parsedPage, specialNominationTemplates)
 
-      val author = getAuthorFromPage(parsedPage)
+      // none when the page names no author, or names them as `Я`: the caller looks up the uploader
+      val author = authorValue(parsedPage).filterNot(selfAuthors.contains).map(parseUser)
 
       // TODO category maps
       val categories = categoryRegex
@@ -134,7 +136,7 @@ object Image {
 
       new Image(
         page.title,
-        author = Some(author),
+        author = author,
         date = revision.timestamp,
         monumentIds = ids,
         pageId = page.id,
@@ -157,18 +159,17 @@ object Image {
         monumentIdTemplate,
         specialNominationTemplates
       )
-      // no author here (or `Я`): the caller looks up the original uploader, see authorFromUploader
-      author = fromRev.author.filterNot(a => a.isBlank || selfAuthors.contains(a))
     } yield fromImage.copy(
       monumentIds = fromRev.monumentIds,
-      author = author.map(renamed),
+      // none: the caller looks up the original uploader, see authorFromUploader
+      author = fromRev.author.map(renamed),
       categories = fromRev.categories,
       specialNominations = fromRev.specialNominations,
       revId = fromRev.revId,
       revTs = fromRev.revTs
     )
 
-  private def renamed(author: String): String = AuthorsMap.renames.getOrElse(author, author)
+  private[scalawiki] def renamed(author: String): String = AuthorsMap.renames.getOrElse(author, author)
 
   /** The author of a file whose page names none, from its ORIGINAL uploader (the first version's): a later version
     * may be someone's retouch or a bot's resize. Not a bot: a bot uploads other people's photos (e.g. a museum's),
@@ -189,44 +190,60 @@ object Image {
   )
 
   def getAuthorFromPage(parsedPage: EngPage): String =
+    authorValue(parsedPage).map(parseUser).getOrElse("")
+
+  private def authorValue(parsedPage: EngPage): Option[String] =
     authorTemplates.iterator
       .flatMap { case (name, params) =>
-        TemplateParser.getTemplate(parsedPage, Some(name)).flatMap(t => params.flatMap(t.getParamOpt).find(_.nonEmpty))
+        TemplateParser
+          .getTemplate(parsedPage, Some(name))
+          .flatMap(t => params.flatMap(t.getParamOpt).map(_.trim).find(_.nonEmpty))
       }
       .nextOption()
-      .map(parseUser)
-      .getOrElse("")
-
-  // user namespace prefixes: English, then uk.wikipedia's and ru.wikipedia's
-  private val userPrefix = "(?iu)(?:user|користувач|користувачка|участник|участница):".r
 
   /** An author that stands for the uploader: uk.wikipedia's `Автор = Я` ("me"). */
   private val selfAuthors = Set("Я", "я")
 
-  def parseUser(authorValue: String): String = {
-    val userLink = userPrefix.findFirstMatchIn(authorValue)
+  /** A link to a user page in any user namespace and project (`[[:uk:Користувач:Name|…]]`, `{{User:Name/author}}`), or
+    * a user template (`{{U|Name}}`, `{{user at project|Name|wikipedia|uk}}`). The name ends where the link's target
+    * does, or at a subpage.
+    */
+  private val userRef =
+    ("(?iu)(?<!\\p{L})(?:user|користувач|користувачка|участник|участница|wikipedysta):([^|\\[\\]{}/#]+)" +
+      "|\\{\\{\\s*(?:u|user|ut|user at project|original uploader)\\s*\\|\\s*([^|{}]+)").r
 
-    if (userLink.isDefined) {
-      val start = userLink.get.end
-      val pipe = authorValue.indexOf("|", start)
-      val end =
-        if (pipe >= 0)
-          pipe
-        else authorValue.length
-      authorValue.substring(start, end)
-    } else if (authorValue.contains('[')) {
-      val extLinkStart = authorValue.indexOf('[')
-      val wikiLinkStart = authorValue.indexOf("[[")
-      val linkSpace = authorValue.indexOf(' ', extLinkStart)
-      val extLinkEnd = authorValue.indexOf(']', linkSpace)
-      if (extLinkStart != wikiLinkStart && linkSpace >= 0 && extLinkEnd >= 0) {
-        authorValue.substring(linkSpace, extLinkEnd).trim
-      } else {
-        authorValue
+  /** `{{Unknown|author}}` and the like: nobody to credit, not even the uploader. */
+  private val unknownAuthor = "(?iu)^\\{\\{\\s*(?:unknown|anonymous|author\\s*\\|\\s*unknown|creator:\\?)".r
+
+  /** A photographer's credit template (`{{Yuriy Kvach}}`), the whole author value: its page links to their user page. */
+  private val creditTemplateRef = "^\\{\\{([^{}|]+)\\}\\}$".r
+
+  private val langTemplate = "(?iu)\\{\\{\\s*lang\\s*\\|[^|{}]*\\|([^{}]*)\\}\\}".r
+  private val pipedWikiLink = "\\[\\[[^\\[\\]|]*\\|([^\\[\\]]*)\\]\\]".r
+  // the target, without the leading colon and interwiki prefixes of `[[:uk:Name]]`
+  private val wikiLink = "\\[\\[:?(?:(?:w|[a-z]{2,3}):)*([^\\[\\]|]*)\\]\\]".r
+  private val extLink = "\\[(?:https?:)?//\\S+\\s+([^\\]]*)\\]".r
+
+  /** The first user named in `text`, see [[userRef]]. */
+  def userIn(text: String): Option[String] =
+    userRef.findFirstMatchIn(text).map(m => Option(m.group(1)).getOrElse(m.group(2)).trim).filter(_.nonEmpty)
+
+  /** The template of [[creditTemplateRef]], if that is the whole `author`. */
+  def creditTemplate(author: String): Option[String] =
+    creditTemplateRef.findFirstMatchIn(author.trim).map(_.group(1).trim)
+
+  /** The author named by an author parameter's wikitext: the user it links to, or else its text without markup.
+    * Empty for an unknown author; a credit template is left as it is, see [[creditTemplate]].
+    */
+  def parseUser(authorValue: String): String = {
+    val value = authorValue.trim
+    if (unknownAuthor.findFirstIn(value).isDefined) ""
+    else
+      userIn(value).getOrElse {
+        Seq(langTemplate, pipedWikiLink, wikiLink, extLink)
+          .foldLeft(value)((text, markup) => markup.replaceAllIn(text, m => Regex.quoteReplacement(m.group(1))))
+          .trim
       }
-    } else {
-      authorValue
-    }
   }
 
   def basic(

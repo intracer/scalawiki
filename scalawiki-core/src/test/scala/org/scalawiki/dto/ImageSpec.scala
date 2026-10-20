@@ -42,6 +42,62 @@ class ImageSpec extends Specification {
     }
   }
 
+  "parseUser" should {
+    "end a user link without a pipe at its brackets" in {
+      Image.parseUser("[[User:Markv]].") === "Markv"
+      Image.parseUser("[[User:Noebu]]) (Норберт Епли, Швейцария)") === "Noebu"
+      Image.parseUser("[[User:Sergey.rastafara]] original image; [[User:Kbh3rd]] retouched") === "Sergey.rastafara"
+    }
+
+    "take the user from a user subpage" in {
+      Image.parseUser("{{User:Raymond/author}}") === "Raymond"
+      Image.parseUser("{{User:Szater/Signature}}") === "Szater"
+    }
+
+    "take the user from a link to another project" in {
+      Image.parseUser("[[:uk:Користувач:KuRaG|Користувач:KuRaG]]") === "KuRaG"
+      Image.parseUser("[[w:ru:Участник:Urum|urum]]") === "Urum"
+      Image.parseUser("[[:pl:Wikipedysta:Lestat|Lestat]] (Jan Mehlich)") === "Lestat"
+      Image.parseUser("{{lang|ru|[[:ru:Участник:Artemka|© Артёмка]]}}") === "Artemka"
+      Image.parseUser("*скульптор: Ніколаєв\n*фото: [[:uk:Користувач:Turzh|Користувач:Turzh]]") === "Turzh"
+    }
+
+    "take the user from a user template" in {
+      Image.parseUser("{{U|Rbrechko}}") === "Rbrechko"
+      Image.parseUser("{{U|Slava0576|В'ячеслав Ол}}") === "Slava0576"
+      Image.parseUser("{{Ut|Ионова Тамара}}") === "Ионова Тамара"
+      Image.parseUser("{{user at project|Visem|wikipedia|uk}}") === "Visem"
+      Image.parseUser("{{original uploader|Irpen|wikipedia|en}}") === "Irpen"
+      Image.parseUser("Oksana Makarenko ({{U|UA-Lora}})") === "UA-Lora"
+    }
+
+    "take the text of other links" in {
+      Image.parseUser("[[:uk:Олег Кікта|Олег Кікта]]") === "Олег Кікта"
+      Image.parseUser("[[Невідомий автор поч. ХХ ст.]]") === "Невідомий автор поч. ХХ ст."
+      Image.parseUser("Оксана Іванець / [[:uk:АрміяInform|АрміяInform]]") === "Оксана Іванець / АрміяInform"
+      Image.parseUser("{{lang|en|Flickr: BBM Explorer / Rob}}") === "Flickr: BBM Explorer / Rob"
+    }
+
+    "trim the author" in {
+      Image.parseUser(" AlyonaKokshyna ") === "AlyonaKokshyna"
+      Image.parseUser("[[User: Vsvg1|Vsvg1]]") === "Vsvg1"
+    }
+
+    "credit nobody for an unknown author" in {
+      Image.parseUser("{{unknown|author}}") === ""
+      Image.parseUser("{{Unknown|Author}}") === ""
+      Image.parseUser("{{author|unknown}}") === ""
+      Image.parseUser("{{Creator:?}}") === ""
+    }
+
+    "leave a credit template to be looked up" in {
+      Image.parseUser("{{Yuriy Kvach}}") === "{{Yuriy Kvach}}"
+      Image.creditTemplate("{{Yuriy Kvach}}") === Some("Yuriy Kvach")
+      Image.creditTemplate("{{U|Rbrechko}}") === None
+      Image.creditTemplate("Yuriy Kvach") === None
+    }
+  }
+
   "fromPage" should {
     def page(wiki: String, uploader: String) =
       Page("File:Image.jpg").copy(
@@ -58,6 +114,10 @@ class ImageSpec extends Specification {
       // the latest uploader may be a retouch or a bot's resize: ImageQuery looks up the original one
       Image.fromPage(None)(page("{{User:Butko/Info|location=Kyiv}}", "Butko")).get.author === None
       Image.fromPage(None)(page(zobrazhennya("Автор", "Я"), "Andrew J.Kurbiko")).get.author === None
+    }
+
+    "not leave an unknown author to the uploader" in {
+      Image.fromPage(None)(page(makeTemplate("{{unknown|author}}"), "VileGecko")).get.author === Some("")
     }
   }
 

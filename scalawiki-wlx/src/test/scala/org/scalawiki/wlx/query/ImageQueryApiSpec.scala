@@ -68,23 +68,28 @@ class ImageQueryApiSpec extends Specification {
     }
   }
 
+  def version(uploader: String) = Image.basic("File:Театр.jpg", None, Some(uploader), None, None, None, None, None, Some(1L))
+
+  // the image query sees only the latest version; the history query lists all of them, newest first
+  class HistoryBot(text: String, history: Seq[String], templates: Map[String, String] = Map.empty) extends ActionBot {
+    val historyRequests = new AtomicInteger()
+    override def log = NoLogging
+    override def run(action: Action, context: Map[String, String], limit: Option[Long]): Future[Iterable[Page]] =
+      Future.successful {
+        val titles = action.pairs.toMap.get("titles")
+        if (titles.isDefined)
+          titles.get.split("\\|").toSeq.flatMap { title =>
+            templates.get(title).map(content => Page(Some(2L), Some(10), title, Seq(Revision.one(content))))
+          }
+        else if (action.pairs.toMap.get("iilimit").contains("max")) {
+          historyRequests.incrementAndGet()
+          Seq(Page(Some(1L), Some(6), "File:Театр.jpg", images = history.map(version)))
+        } else
+          Seq(Page(Some(1L), Some(6), "File:Театр.jpg", Seq(Revision.one(text)), Seq(version(history.head))))
+      }
+  }
+
   "a file whose page names no author" should {
-    def version(uploader: String) = Image.basic("File:Театр.jpg", None, Some(uploader), None, None, None, None, None, Some(1L))
-
-    // the image query sees only the latest version; the history query lists all of them, newest first
-    class HistoryBot(text: String, history: Seq[String]) extends ActionBot {
-      val historyRequests = new AtomicInteger()
-      override def log = NoLogging
-      override def run(action: Action, context: Map[String, String], limit: Option[Long]): Future[Iterable[Page]] =
-        Future.successful {
-          if (action.pairs.toMap.get("iilimit").contains("max")) {
-            historyRequests.incrementAndGet()
-            Seq(Page(Some(1L), Some(6), "File:Театр.jpg", images = history.map(version)))
-          } else
-            Seq(Page(Some(1L), Some(6), "File:Театр.jpg", Seq(Revision.one(text)), Seq(version(history.head))))
-        }
-    }
-
     def author(bot: ActionBot) =
       Await.result(new ImageQueryApi(bot).imagesWithTemplateByIds(Contest.WLMUkraine(2012), Set(1L)), 5.seconds).head.author
 
@@ -100,6 +105,31 @@ class ImageQueryApiSpec extends Specification {
       val bot = new HistoryBot("{{Зображення|Автор=[[Користувач:Бахтін|Бахтін]]}}", Seq("Andrew J.Kurbiko"))
       author(bot) === Some("Бахтін")
       bot.historyRequests.get === 0
+    }
+
+    "not be credited to the uploader when the author is unknown" in {
+      author(new HistoryBot("{{Information|author={{unknown|author}}}}", Seq("VileGecko"))) === Some("")
+    }
+  }
+
+  "a file credited with a photographer's template" should {
+    def author(text: String, templates: Map[String, String]) = {
+      val bot = new HistoryBot(text, Seq("MaksWiki"), templates)
+      Await.result(new ImageQueryApi(bot).imagesWithTemplateByIds(Contest.WLMUkraine(2012), Set(1L)), 5.seconds).head.author
+    }
+
+    "be credited to the user the template links to" in {
+      author("{{Information|author={{MO}}}}", Map("Template:MO" -> "[[User:Максим Огородник|Максим Огородник]]")) ===
+        Some("Максим Огородник")
+    }
+
+    "follow a template that redirects to the user's subpage" in {
+      author("{{Information|author={{Yuriy Kvach}}}}", Map("Template:Yuriy Kvach" -> "#REDIRECT [[User:Ykvach/template]]")) ===
+        Some("Ykvach")
+    }
+
+    "be credited to the uploader when the template links to nobody" in {
+      author("{{Information|author={{Own}}}}", Map("Template:Own" -> "Own work")) === Some("MaksWiki")
     }
   }
 }

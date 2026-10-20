@@ -4,7 +4,7 @@ import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list._
 import org.scalawiki.dto.cmd.query.prop.{CategoryInfo, IiLimit, ImageInfo, Prop, Revisions}
 import org.scalawiki.dto.cmd.query.prop.iiprop.{IiProp, User => IiUser}
-import org.scalawiki.dto.cmd.query.prop.rvprop.{RvProp, Ids => RvIds, Timestamp => RvTimestamp}
+import org.scalawiki.dto.cmd.query.prop.rvprop.{RvProp, Content => RvContent, Ids => RvIds, Timestamp => RvTimestamp}
 import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query, TitlesParam}
 import org.scalawiki.dto.{Image, Namespace}
 import org.scalawiki.query.QueryLibrary
@@ -124,15 +124,45 @@ class ImageQueryApi(bot: ActionBot, batchGate: AsyncGate = ImageQuery.batchGate)
           }
         }.flatMap(results => next(acc ++ results.flatten))
       }
-    next(Vector.empty).flatMap(withOriginalUploaders)
+    next(Vector.empty).flatMap(withAuthors)
   }
 
   private def imagesByGenerator(contest: Contest, generator: Generator): Future[Iterable[Image]] = {
     val specialNominationTemplates = allSpecialNominationTemplates
     for {
       pages <- bot.run(imagesByGenerator(generator, withMetadata = true, withMediaType = true))
-      images <- withOriginalUploaders(pages.flatMap(Image.fromPage(contest.fileTemplate, specialNominationTemplates)).toSeq)
+      images <- withAuthors(pages.flatMap(Image.fromPage(contest.fileTemplate, specialNominationTemplates)).toSeq)
     } yield images
+  }
+
+  private def withAuthors(images: Seq[Image]): Future[Seq[Image]] =
+    withCreditTemplateAuthors(images).flatMap(withOriginalUploaders)
+
+  /** Credits a file whose author is a photographer's credit template (`{{Yuriy Kvach}}`) to the user its page links to:
+    * one more request per 50 such templates. A template that links to nobody leaves the file to its uploader.
+    */
+  private def withCreditTemplateAuthors(images: Seq[Image]): Future[Seq[Image]] = {
+    def normalized(name: String) = name.replace('_', ' ').capitalize
+    val templates = images.flatMap(_.author).flatMap(Image.creditTemplate).map(normalized).distinct
+    if (templates.isEmpty) Future.successful(images)
+    else
+      Future
+        .traverse(templates.grouped(50).toSeq) { slice =>
+          batchGate.submit {
+            bot.run(Action(Query(TitlesParam(slice.map("Template:" + _)), Prop(Revisions(RvProp(RvContent))))))
+          }
+        }
+        .map { results =>
+          // a redirect's text links to its target, which is the user's page all the same
+          val userOf = results.flatten.flatMap { page =>
+            page.revisions.headOption.flatMap(_.content).flatMap(Image.userIn).map(page.title.stripPrefix("Template:") -> _)
+          }.toMap
+          images.map { image =>
+            image.author.flatMap(Image.creditTemplate).map(normalized).fold(image) { template =>
+              image.copy(author = userOf.get(template).map(Image.renamed))
+            }
+          }
+        }
   }
 
   /** Credits a file whose page names no author (or names them as `Я`, "me") to its original uploader, see
@@ -140,7 +170,7 @@ class ImageQueryApi(bot: ActionBot, batchGate: AsyncGate = ImageQuery.batchGate)
     * fetch: one more request per 50 such files, usually none.
     */
   private def withOriginalUploaders(images: Seq[Image]): Future[Seq[Image]] = {
-    val unauthored = images.filter(_.author.forall(_.isBlank)).flatMap(_.pageId)
+    val unauthored = images.filter(_.author.isEmpty).flatMap(_.pageId)
     if (unauthored.isEmpty) Future.successful(images)
     else
       Future
@@ -156,7 +186,7 @@ class ImageQueryApi(bot: ActionBot, batchGate: AsyncGate = ImageQuery.batchGate)
           }.toMap
           images.map { image =>
             val author =
-              if (image.author.exists(!_.isBlank)) None
+              if (image.author.isDefined) None
               else image.pageId.flatMap(originalUploader.get).flatMap(Image.authorFromUploader)
             author.fold(image)(a => image.copy(author = Some(a)))
           }
