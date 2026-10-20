@@ -118,6 +118,21 @@ class AuthorsContributedSpec extends Specification {
       )
     }
 
+    "link the all-time count to the year-less author list page" in {
+      val monumentDb = new MonumentDB(contest, monuments(1, "05", "Podillya"))
+      val images = Seq(Image("File:Img51.jpg", monumentIds = List("05-xxx-0001"), author = Some("FromPodillya")))
+
+      val table = new AuthorsStat().authorsContributedTable(
+        Seq.empty,
+        new ImageDB(contest, images, monumentDb),
+        Some(monumentDb)
+      )
+
+      val listPage = "Commons:Wiki Loves Monuments in Ukraine/Автори Вінницька область"
+      AuthorsStat.authorsListPage(contest, "Вінницька область") === listPage
+      table.data.head === Seq("Вінницька область", s"[[$listPage|1]]")
+    }
+
     "work with images 2 years" in {
       val output = new AuthorsStat
 

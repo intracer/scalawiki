@@ -4,6 +4,7 @@ import org.jfree.data.category.DefaultCategoryDataset
 import org.scalawiki.MwBot
 import org.scalawiki.dto.Image
 import org.scalawiki.dto.markup.Table
+import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.stat.ContestStat
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
@@ -42,8 +43,7 @@ class AuthorsStat(val uploadImages: Boolean = false) {
             .sorted
             .map(_.replace("Участник:", ""))
             .filterNot(_.isBlank)
-        val listPage =
-          s"Commons:${imageDb.contest.name}/Автори " + regionName
+        val listPage = AuthorsStat.authorsListPage(imageDb.contest, regionName)
         val text = authors
           .map(author => s"# {{#target:User_talk:$author|}}")
           .mkString("\n")
@@ -98,8 +98,7 @@ class AuthorsStat(val uploadImages: Boolean = false) {
           Seq {
             val count = totalImageDb.authorsByRegion(regionId).size.toString
             if (listAuthors) {
-              val listPage =
-                "Commons:Wiki Loves Monuments in Ukraine/Автори " + regionName
+              val listPage = AuthorsStat.authorsListPage(contest, regionName)
               s"[[$listPage|$count]]"
             } else count
           } ++
@@ -202,4 +201,13 @@ class AuthorsStat(val uploadImages: Boolean = false) {
     }
     images
   }
+}
+
+object AuthorsStat {
+
+  /** The page listing a region's all-time authors. It has no year in its title: Regional statistics links its
+    * all-time author count here, so writing to a per-year title left the linked page stale.
+    */
+  def authorsListPage(contest: Contest, regionName: String): String =
+    s"Commons:${contest.contestType.name} in ${contest.country.name}/Автори $regionName"
 }
