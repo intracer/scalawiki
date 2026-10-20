@@ -1,12 +1,18 @@
 package org.scalawiki.wlx.stat.reports
 
 import org.jfree.data.category.DefaultCategoryDataset
-import org.scalawiki.MwBot
-import org.scalawiki.dto.Image
+import org.scalawiki.{ActionBot, MwBot}
+import org.scalawiki.dto.{Image, User}
+import org.scalawiki.dto.cmd.Action
+import org.scalawiki.dto.cmd.query.Query
+import org.scalawiki.dto.cmd.query.list.{ListParam, Users, UsUsers}
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.stat.ContestStat
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class AuthorsStat(val uploadImages: Boolean = false) {
 
@@ -31,11 +37,10 @@ class AuthorsStat(val uploadImages: Boolean = false) {
     header + table.asWiki + userImages.getOrElse("")
   }
 
-  def authorsContributedPerRegion(imageDb: ImageDB, bot: MwBot) = {
-    imageDb.monumentDb.map { monumentDb =>
-      monumentDb.regionIds.map { regionId =>
-        val country = monumentDb.contest.country
-        val regionName = country.regionName(regionId)
+  def authorsContributedPerRegion(imageDb: ImageDB, bot: MwBot): Future[Unit] =
+    imageDb.monumentDb.fold(Future.unit) { monumentDb =>
+      val authorsByRegion = monumentDb.regionIds.map { regionId =>
+        val regionName = monumentDb.contest.country.regionName(regionId)
         val authors =
           imageDb
             .authorsByRegion(regionId)
@@ -43,14 +48,16 @@ class AuthorsStat(val uploadImages: Boolean = false) {
             .sorted
             .map(_.replace("Участник:", ""))
             .filterNot(_.isBlank)
-        val listPage = AuthorsStat.authorsListPage(imageDb.contest, regionName)
-        val text = authors
-          .map(author => s"# {{#target:User_talk:$author|}}")
-          .mkString("\n")
-        bot.page(listPage).edit(text)
+        regionName -> authors
+      }
+      AuthorsStat.accounts(bot, authorsByRegion.flatMap(_._2).distinct).flatMap { accounts =>
+        Future
+          .traverse(authorsByRegion) { case (regionName, authors) =>
+            bot.page(AuthorsStat.authorsListPage(imageDb.contest, regionName)).edit(AuthorsStat.authorsList(authors, accounts))
+          }
+          .map(_ => ())
       }
     }
-  }
 
   // a file whose page names no author groups under "", which is nobody to count
   private def named(authors: Set[String]): Set[String] = authors.filterNot(_.isBlank)
@@ -213,4 +220,26 @@ object AuthorsStat {
     */
   def authorsListPage(contest: Contest, regionName: String): String =
     s"Commons:${contest.contestType.name} in ${contest.country.name}/Автори $regionName"
+
+  /** The authors list, a MassMessage target list. An author with no Commons account (a Panoramio or Flickr name, a
+    * name written out) is listed as plain text: it is still counted, but there is no talk page to message.
+    */
+  def authorsList(authors: Seq[String], accounts: Set[String]): String =
+    authors
+      .map(author => if (accounts.contains(userName(author))) s"# {{#target:User_talk:$author|}}" else s"# $author")
+      .mkString("\n")
+
+  /** Which of `authors` are Commons accounts, by their [[userName]]: one request per 50 authors, one at a time. */
+  def accounts(bot: ActionBot, authors: Seq[String]): Future[Set[String]] =
+    authors.map(userName).distinct.grouped(50).foldLeft(Future.successful(Set.empty[String])) { (acc, names) =>
+      acc.flatMap { found =>
+        bot.run(Action(Query(ListParam(Users(UsUsers(names)))))).map { pages =>
+          // a missing user comes back without an id, and so does an invalid name
+          found ++ pages.flatMap(_.lastRevisionUser).collect { case user: User if user.id.isDefined => user.login }.flatten
+        }
+      }
+    }
+
+  /** The name as MediaWiki stores it: spaces for underscores, the first letter capitalized. */
+  def userName(author: String): String = author.replace('_', ' ').trim.capitalize
 }

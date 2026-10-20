@@ -1,11 +1,18 @@
 package org.scalawiki.wlx.stat
 
-import org.scalawiki.dto.Image
+import org.apache.pekko.event.NoLogging
+import org.scalawiki.ActionBot
+import org.scalawiki.dto.{Image, Namespace, Page, Revision, User}
+import org.scalawiki.dto.cmd.Action
 import org.scalawiki.wlx.dto.lists.ListConfig.WlmUa
 import org.scalawiki.wlx.dto.{Contest, Monument}
 import org.scalawiki.wlx.stat.reports.AuthorsStat
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 import org.specs2.mutable.Specification
+
+import java.util.concurrent.atomic.AtomicInteger
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
 class AuthorsContributedSpec extends Specification {
 
@@ -131,6 +138,34 @@ class AuthorsContributedSpec extends Specification {
       val listPage = "Commons:Wiki Loves Monuments in Ukraine/Автори Вінницька область"
       AuthorsStat.authorsListPage(contest, "Вінницька область") === listPage
       table.data.head === Seq("Вінницька область", s"[[$listPage|1]]")
+    }
+
+    "message only the authors that have a Commons account, and list the others as text" in {
+      AuthorsStat.authorsList(Seq("Ykvach", "roma.wem", "Микола Василечко"), Set("Ykvach", "Микола Василечко")) ===
+        """# {{#target:User_talk:Ykvach|}}
+          |# roma.wem
+          |# {{#target:User_talk:Микола Василечко|}}""".stripMargin
+    }
+
+    "find the authors that have a Commons account" in {
+      val bot = new ActionBot {
+        val requests = new AtomicInteger()
+        override def log = NoLogging
+        override def run(action: Action, context: Map[String, String], limit: Option[Long]): Future[Iterable[Page]] = {
+          requests.incrementAndGet()
+          val names = action.pairs.toMap.apply("ususers").split("\\|").toSeq
+          Future.successful(names.map { name =>
+            // a missing user and an invalid name come back without an id
+            val id = if (name.startsWith("Missing") || name.contains("#")) None else Some(1L)
+            Page(None, Some(Namespace.USER), name, Seq(Revision(user = Some(User(id, Some(name))))))
+          })
+        }
+      }
+      val existing = (1 to 60).map(i => s"Author_$i")
+      val accounts = Await.result(AuthorsStat.accounts(bot, existing ++ Seq("Missing one", "bad#name", "roma.wem")), 5.seconds)
+
+      accounts === (existing.map(_.replace('_', ' ')) :+ "Roma.wem").toSet
+      bot.requests.get === 2
     }
 
     "not count a file with no author as an author" in {

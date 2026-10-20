@@ -9,7 +9,7 @@ import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 object Output {
 
@@ -463,7 +463,7 @@ object Output {
       .edit(text, Some("updating"))
   }
 
-  def regionalStat(stat: ContestStat): Unit = {
+  def regionalStat(stat: ContestStat): Future[Unit] = {
     val bot = MwBot.fromHost(MwBot.commons)
     // No local try/catch: the caller (ReporterRegistry.step) isolates and
     // reports a failure here so it is counted, not just logged and forgotten.
