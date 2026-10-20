@@ -9,6 +9,7 @@ import org.scalawiki.wlx.{ImageDB, MonumentDB}
 
 import org.slf4j.LoggerFactory
 
+import java.nio.file.Path
 import scala.concurrent.{ExecutionContext, Future}
 
 object Output {
@@ -463,15 +464,13 @@ object Output {
       .edit(text, Some("updating"))
   }
 
-  def regionalStat(stat: ContestStat): Future[Unit] = {
+  def regionalStat(stat: ContestStat, accountsCache: Option[Path] = None)(implicit ec: ExecutionContext): Future[Unit] = {
     val bot = MwBot.fromHost(MwBot.commons)
     // No local try/catch: the caller (ReporterRegistry.step) isolates and
     // reports a failure here so it is counted, not just logged and forgotten.
     val contest = stat.contest
     val categoryName = contest.contestType.name + " in " + contest.country.name
     val monumentDb = stat.monumentDb
-
-    val authorsStat = new AuthorsStat()
 
     val idsStat = monumentDb
       .map(_ =>
@@ -483,20 +482,27 @@ object Output {
       )
       .getOrElse("")
 
-    val authorsContributed = authorsStat.authorsContributed(
-      stat.dbsByYear,
-      stat.totalImageDb,
-      monumentDb
-    )
+    val authors = AuthorsStat.authorsByRegion(stat.totalImageDb).flatMap(_._2).distinct
+    // the table counts authors by account, as the author lists it links to name them
+    AuthorsStat.accounts(bot, authors, accountsCache).flatMap { accounts =>
+      val authorsStat = new AuthorsStat(accountOf = AuthorsStat.accountOf(accounts))
 
-    val toc = "__TOC__"
-    val category = s"\n[[Category:$categoryName]]"
-    val regionalStat = toc + idsStat + authorsContributed + category
+      val authorsContributed = authorsStat.authorsContributed(
+        stat.dbsByYear,
+        stat.totalImageDb,
+        monumentDb
+      )
 
-    bot
-      .page(s"Commons:$categoryName/Regional statistics")
-      .edit(regionalStat, Some("updating"))
-    authorsStat.authorsContributedPerRegion(stat.totalImageDb, bot)
+      val toc = "__TOC__"
+      val category = s"\n[[Category:$categoryName]]"
+      val regionalStat = toc + idsStat + authorsContributed + category
+
+      val statPage = bot
+        .page(s"Commons:$categoryName/Regional statistics")
+        .edit(regionalStat, Some("updating"))
+      val lists = authorsStat.authorsContributedPerRegion(stat.totalImageDb, bot, accounts)
+      statPage.zip(lists).map(_ => ())
+    }
   }
 
   def newMonuments(stat: ContestStat) = {
