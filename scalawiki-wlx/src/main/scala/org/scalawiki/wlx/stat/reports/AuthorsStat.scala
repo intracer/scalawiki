@@ -52,6 +52,9 @@ class AuthorsStat(val uploadImages: Boolean = false) {
     }
   }
 
+  // a file whose page names no author groups under "", which is nobody to count
+  private def named(authors: Set[String]): Set[String] = authors.filterNot(_.isBlank)
+
   def authorsContributedTable(
       imageDbs: Seq[ImageDB],
       totalImageDb: ImageDB,
@@ -88,7 +91,7 @@ class AuthorsStat(val uploadImages: Boolean = false) {
 
         yearDbs.zipWithIndex.foreach { case (yearDb, i) =>
           dataset.addValue(
-            yearDb.authorsByRegion(regionId).size,
+            named(yearDb.authorsByRegion(regionId)).size,
             yearSeq(i),
             shortRegionName
           )
@@ -96,23 +99,23 @@ class AuthorsStat(val uploadImages: Boolean = false) {
 
         Seq(regionName) ++
           Seq {
-            val count = totalImageDb.authorsByRegion(regionId).size.toString
+            val count = named(totalImageDb.authorsByRegion(regionId)).size.toString
             if (listAuthors) {
               val listPage = AuthorsStat.authorsListPage(contest, regionName)
               s"[[$listPage|$count]]"
             } else count
           } ++
-          yearDbs.map(_.authorsByRegion(regionId).size.toString)
+          yearDbs.map(yearDb => named(yearDb.authorsByRegion(regionId)).size.toString)
       }
     }
 
-    val totalData = Seq("Total") ++ dbs.map(_.authors.size.toString)
+    val totalData = Seq("Total") ++ dbs.map(db => named(db.authors).size.toString)
 
     val rows = perRegion ++ Seq(totalData)
 
     val filenamePrefix = contest.name.replace("_", "")
 
-    val ids = yearSeq.map(year => imageDbsByYear(year).head.authors)
+    val ids = yearSeq.map(year => named(imageDbsByYear(year).head.authors))
     val idsSize = ids.map(_.size)
 
     userImages = Some(

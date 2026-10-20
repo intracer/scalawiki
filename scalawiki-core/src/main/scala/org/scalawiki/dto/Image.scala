@@ -157,42 +157,63 @@ object Image {
         monumentIdTemplate,
         specialNominationTemplates
       )
-      renamedAuthor = fromRev.author.map(author => AuthorsMap.renames.getOrElse(author, author))
+      // no author here (or `Я`): the caller looks up the original uploader, see authorFromUploader
+      author = fromRev.author.filterNot(a => a.isBlank || selfAuthors.contains(a))
     } yield fromImage.copy(
       monumentIds = fromRev.monumentIds,
-      author = renamedAuthor,
+      author = author.map(renamed),
       categories = fromRev.categories,
       specialNominations = fromRev.specialNominations,
       revId = fromRev.revId,
       revTs = fromRev.revTs
     )
 
+  private def renamed(author: String): String = AuthorsMap.renames.getOrElse(author, author)
+
+  /** The author of a file whose page names none, from its ORIGINAL uploader (the first version's): a later version
+    * may be someone's retouch or a bot's resize. Not a bot: a bot uploads other people's photos (e.g. a museum's),
+    * so it is never their author.
+    */
+  def authorFromUploader(originalUploader: String): Option[String] =
+    Some(originalUploader).filterNot(login => login.isBlank || login.toLowerCase.endsWith("bot")).map(renamed)
+
   def getAuthorFromPage(content: String): String =
     getAuthorFromPage(TemplateParser.parsePage(content))
 
-  def getAuthorFromPage(parsedPage: EngPage): String = {
-    val template = TemplateParser.getTemplate(parsedPage, Some("Information"))
-    val authorValue = template
-      .flatMap { t =>
-        t.getParamOpt("author").orElse(t.getParamOpt("Author"))
+  /** File description templates and their author parameters, tried in order: Commons' {{Information}}, then
+    * uk.wikipedia's {{Зображення}} (files copied there from Commons keep the English parameter names).
+    */
+  val authorTemplates: Seq[(String, Seq[String])] = Seq(
+    "Information" -> Seq("author", "Author"),
+    "Зображення" -> Seq("Автор", "автор", "author", "Author")
+  )
+
+  def getAuthorFromPage(parsedPage: EngPage): String =
+    authorTemplates.iterator
+      .flatMap { case (name, params) =>
+        TemplateParser.getTemplate(parsedPage, Some(name)).flatMap(t => params.flatMap(t.getParamOpt).find(_.nonEmpty))
       }
+      .nextOption()
+      .map(parseUser)
       .getOrElse("")
 
-    parseUser(authorValue)
-  }
+  // user namespace prefixes: English, then uk.wikipedia's and ru.wikipedia's
+  private val userPrefix = "(?iu)(?:user|користувач|користувачка|участник|участница):".r
+
+  /** An author that stands for the uploader: uk.wikipedia's `Автор = Я` ("me"). */
+  private val selfAuthors = Set("Я", "я")
 
   def parseUser(authorValue: String): String = {
-    val i1: Int = authorValue.indexOf("User:")
-    val i2: Int = authorValue.indexOf("user:")
-    val start = Seq(i1, i2, Int.MaxValue).filter(_ >= 0).min
+    val userLink = userPrefix.findFirstMatchIn(authorValue)
 
-    if (start < Int.MaxValue) {
+    if (userLink.isDefined) {
+      val start = userLink.get.end
       val pipe = authorValue.indexOf("|", start)
       val end =
         if (pipe >= 0)
           pipe
         else authorValue.length
-      authorValue.substring(start + "user:".length, end)
+      authorValue.substring(start, end)
     } else if (authorValue.contains('[')) {
       val extLinkStart = authorValue.indexOf('[')
       val wikiLinkStart = authorValue.indexOf("[[")

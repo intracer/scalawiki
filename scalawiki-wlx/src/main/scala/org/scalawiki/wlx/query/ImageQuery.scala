@@ -2,9 +2,10 @@ package org.scalawiki.wlx.query
 
 import org.scalawiki.dto.cmd.Action
 import org.scalawiki.dto.cmd.query.list._
-import org.scalawiki.dto.cmd.query.prop.{CategoryInfo, Prop, Revisions}
+import org.scalawiki.dto.cmd.query.prop.{CategoryInfo, IiLimit, ImageInfo, Prop, Revisions}
+import org.scalawiki.dto.cmd.query.prop.iiprop.{IiProp, User => IiUser}
 import org.scalawiki.dto.cmd.query.prop.rvprop.{RvProp, Ids => RvIds, Timestamp => RvTimestamp}
-import org.scalawiki.dto.cmd.query.{Generator, Query, TitlesParam}
+import org.scalawiki.dto.cmd.query.{Generator, PageIdsParam, Query, TitlesParam}
 import org.scalawiki.dto.{Image, Namespace}
 import org.scalawiki.query.QueryLibrary
 import org.scalawiki.wlx.dto.{Contest, SpecialNomination}
@@ -123,15 +124,43 @@ class ImageQueryApi(bot: ActionBot, batchGate: AsyncGate = ImageQuery.batchGate)
           }
         }.flatMap(results => next(acc ++ results.flatten))
       }
-    next(Vector.empty)
+    next(Vector.empty).flatMap(withOriginalUploaders)
   }
 
   private def imagesByGenerator(contest: Contest, generator: Generator): Future[Iterable[Image]] = {
     val specialNominationTemplates = allSpecialNominationTemplates
-    for (pages <- bot.run(imagesByGenerator(generator, withMetadata = true, withMediaType = true)))
-      yield pages.flatMap(
-        Image.fromPage(contest.fileTemplate, specialNominationTemplates)
-      )
+    for {
+      pages <- bot.run(imagesByGenerator(generator, withMetadata = true, withMediaType = true))
+      images <- withOriginalUploaders(pages.flatMap(Image.fromPage(contest.fileTemplate, specialNominationTemplates)).toSeq)
+    } yield images
+  }
+
+  /** Credits a file whose page names no author (or names them as `Я`, "me") to its original uploader, see
+    * [[Image.authorFromUploader]]. That needs the file's whole upload history, which the image queries above don't
+    * fetch: one more request per 50 such files, usually none.
+    */
+  private def withOriginalUploaders(images: Seq[Image]): Future[Seq[Image]] = {
+    val unauthored = images.filter(_.author.forall(_.isBlank)).flatMap(_.pageId)
+    if (unauthored.isEmpty) Future.successful(images)
+    else
+      Future
+        .traverse(unauthored.grouped(50).toSeq) { slice =>
+          batchGate.submit {
+            bot.run(Action(Query(PageIdsParam(slice), Prop(ImageInfo(IiProp(IiUser), IiLimit("max"))))))
+          }
+        }
+        .map { results =>
+          // imageinfo lists the versions newest first
+          val originalUploader = results.flatten.flatMap { page =>
+            page.id.zip(page.images.lastOption.flatMap(_.uploader).flatMap(_.login))
+          }.toMap
+          images.map { image =>
+            val author =
+              if (image.author.exists(!_.isBlank)) None
+              else image.pageId.flatMap(originalUploader.get).flatMap(Image.authorFromUploader)
+            author.fold(image)(a => image.copy(author = Some(a)))
+          }
+        }
   }
 
   private def imageIdsByGenerator(generator: Generator): Future[Seq[PageRevInfo]] = {

@@ -24,6 +24,57 @@ class ImageSpec extends Specification {
       Image.getAuthorFromPage(wiki) === "Alexander Savitsky"
     }
 
+    "get author from uk.wikipedia's {{Зображення}}" in {
+      Image.getAuthorFromPage(zobrazhennya("Автор", "[[Користувач:Kamelot|Kamelot]]")) === "Kamelot"
+    }
+
+    "get author from {{Зображення}} with English parameters, copied from Commons" in {
+      Image.getAuthorFromPage(zobrazhennya("Author", " [[User:Roman Zacharij|Roman Zacharij]]")) === "Roman Zacharij"
+    }
+
+    "prefer {{Information}}, but skip its empty author" in {
+      Image.getAuthorFromPage(makeTemplate("[[User:A|A]]") + zobrazhennya("Автор", "[[Користувач:B|B]]")) === "A"
+      Image.getAuthorFromPage(makeTemplate("") + zobrazhennya("Автор", "[[Користувач:B|B]]")) === "B"
+    }
+
+    "get no author from a page without a description template" in {
+      Image.getAuthorFromPage("{{Art Photo|artist=|institution=Museum}}") === ""
+    }
+  }
+
+  "fromPage" should {
+    def page(wiki: String, uploader: String) =
+      Page("File:Image.jpg").copy(
+        revisions = Seq(Revision.one(wiki)),
+        images = Seq(Image.basic("File:Image.jpg", None, Some(uploader), None, None, None, None, None, None))
+      )
+
+    "take the author from the page over the uploader" in {
+      Image.fromPage(None)(page(zobrazhennya("Автор", "[[Користувач:Kiyanka|Kiyanka]]"), "AMY 81-412")).get.author ===
+        Some("Kiyanka")
+    }
+
+    "leave the author to the caller when the page names none, or names them as Я" in {
+      // the latest uploader may be a retouch or a bot's resize: ImageQuery looks up the original one
+      Image.fromPage(None)(page("{{User:Butko/Info|location=Kyiv}}", "Butko")).get.author === None
+      Image.fromPage(None)(page(zobrazhennya("Автор", "Я"), "Andrew J.Kurbiko")).get.author === None
+    }
+  }
+
+  "authorFromUploader" should {
+    "credit the original uploader" in {
+      Image.authorFromUploader("Бахтін") === Some("Бахтін")
+    }
+
+    "not credit a bot" in {
+      Image.authorFromUploader("ImageResizerBot") === None
+      Image.authorFromUploader("BArchBot") === None
+      Image.authorFromUploader("AHbot") === None
+    }
+
+    "apply the author renames" in {
+      Image.authorFromUploader("ЯдвигаВереск") === Some("Wereskowa")
+    }
   }
 
   "isVideo" should {
@@ -151,6 +202,17 @@ object ImageSpec {
         "other versions" -> ""
       )
     ).text
+
+  // uk.wikipedia's file description template, as its upload form writes it
+  def zobrazhennya(authorParam: String, author: String): String =
+    s"""{{Зображення
+       ||Опис=Пам'ятник{{Monument Ukraine|44-141-0001}}
+       ||Джерело=власне фото
+       ||Час створення=2009
+       ||$authorParam=$author
+       ||Ліцензія={{PD-self}}
+       |}}
+       |""".stripMargin
 
   private val withCategories =
     """=={{int:filedesc}}==

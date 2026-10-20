@@ -133,6 +133,24 @@ class AuthorsContributedSpec extends Specification {
       table.data.head === Seq("Вінницька область", s"[[$listPage|1]]")
     }
 
+    "not count a file with no author as an author" in {
+      val monumentDb = new MonumentDB(contest, monuments(1, "05", "Podillya"))
+      val images = Seq(
+        Image("File:Img51.jpg", monumentIds = List("05-xxx-0001"), author = Some("FromPodillya")),
+        Image("File:Img52.jpg", monumentIds = List("05-xxx-0001"), author = None),
+        Image("File:Img53.jpg", monumentIds = List("05-xxx-0001"), author = Some(""))
+      )
+
+      val table = new AuthorsStat().authorsContributedTable(
+        Seq(new ImageDB(contest, images, monumentDb)),
+        new ImageDB(contest, images, monumentDb),
+        Some(monumentDb),
+        listAuthors = false
+      )
+
+      table.data === Seq(Seq("Вінницька область", "1", "1"), Seq("Total", "1", "1"))
+    }
+
     "work with images 2 years" in {
       val output = new AuthorsStat
 
