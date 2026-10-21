@@ -18,7 +18,6 @@ import org.scalawiki.wlx.{
 import org.scalawiki.wlx.stat.progress.ProgressTask
 import org.slf4j.LoggerFactory
 
-import java.nio.file.Paths
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -145,9 +144,7 @@ class ReporterRegistry(
     }
 
     if (cfg.regionalStat) {
-      // beside the image CSVs, and off with them
-      val accountsCache = Option.when(cfg.csvCache)(Paths.get(cfg.csvCacheDir, "commons-accounts.txt"))
-      step("regionalStat")(Output.regionalStat(stat, accountsCache))
+      step("regionalStat")(Output.regionalStat(stat, AuthorsStat.accountsCache(cfg)))
     }
 
     if ((cfg.wrongIds || cfg.missingIds) && monumentDb.isDefined) {

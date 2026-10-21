@@ -207,16 +207,36 @@ class AuthorsContributedSpec extends Specification {
         Image("File:Before.jpg", monumentIds = List("05-xxx-0001"), author = Some("Artemka")),
         Image("File:After.jpg", monumentIds = List("05-xxx-0001"), author = Some("Artemco"))
       )
-      val accounts = Map("Artemka" -> "Artemco", "Artemco" -> "Artemco")
+      val db = new ImageDB(contest, images, monumentDb)
+      val stat = ContestStat(contest, contest.year, Some(monumentDb), db, db, Seq(db))
+        .withAccounts(Map("Artemka" -> "Artemco", "Artemco" -> "Artemco"))
 
-      val table = new AuthorsStat(accountOf = AuthorsStat.accountOf(accounts)).authorsContributedTable(
-        Seq(new ImageDB(contest, images, monumentDb)),
-        new ImageDB(contest, images, monumentDb),
-        Some(monumentDb),
-        listAuthors = false
-      )
+      val table = new AuthorsStat().authorsContributedTable(stat.dbsByYear, stat.totalImageDb, Some(monumentDb),
+        listAuthors = false)
 
       table.data === Seq(Seq("Вінницька область", "1", "1"), Seq("Total", "1", "1"))
+    }
+
+    "put every report's authors under their current accounts" in {
+      val monumentDb = new MonumentDB(contest, monuments(1, "05", "Podillya"))
+      val images = Seq(
+        Image("File:Old.jpg", monumentIds = List("05-xxx-0001"), author = Some("Artemka")),
+        Image("File:Panoramio.jpg", monumentIds = List("05-xxx-0001"), author = Some("roma.wem")),
+        Image("File:Unknown.jpg", monumentIds = List("05-xxx-0001"), author = Some(""))
+      )
+      val db = new ImageDB(contest, images, monumentDb)
+      val stat = ContestStat(contest, contest.year, Some(monumentDb), db, db, Seq(db))
+      stat.authors.toSet === Set("Artemka", "roma.wem")
+
+      // the lookup finds only the name it was asked about, the old one
+      val renamed = stat.withAccounts(Map("Artemka" -> "Artemco"))
+
+      (renamed.currentYearImageDb eq renamed.dbsByYear.last) must beTrue
+      Seq(renamed.currentYearImageDb, renamed.totalImageDb).map(_.authors) must contain(
+        be_===(Set("Artemco", "roma.wem", ""))).forall
+      AuthorsStat.authorsList(AuthorsStat.authorsByRegion(renamed.totalImageDb).flatMap(_._2), renamed.accounts.get) ===
+        """# {{#target:User_talk:Artemco|}}
+          |# roma.wem""".stripMargin
     }
 
     "look up again only the authors not cached as accounts" in {

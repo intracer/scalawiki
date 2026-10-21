@@ -7,9 +7,10 @@ import org.scalawiki.wlx.dto.Contest
 import org.scalawiki.wlx.query.{ImageQuery, MonumentQuery}
 import org.scalawiki.wlx.stat.cache.{ImageDbProvider, MonumentDbProvider}
 import org.scalawiki.wlx.stat.progress.Progress
-import org.scalawiki.wlx.stat.reports.ReportRunner
+import org.scalawiki.wlx.stat.reports.{AuthorsStat, ReportRunner}
 import org.scalawiki.util.WriteWatcher
 import org.scalawiki.wlx.{ImageDB, MonumentCsvExporter, MonumentDB}
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -39,8 +40,36 @@ case class ContestStat(
     currentYearImageDb: ImageDB,
     totalImageDb: ImageDB,
     dbsByYear: Seq[ImageDB] = Nil,
-    config: Option[StatConfig] = None
+    config: Option[StatConfig] = None,
+    accounts: Option[Map[String, String]] = None
 ) {
+
+  /** Everyone named as an author of an image, in any year. */
+  def authors: Seq[String] =
+    (totalImageDb.images.iterator ++ dbsByYear.iterator.flatMap(_.images)).flatMap(_.author).filterNot(_.isBlank)
+      .toSet.toSeq
+
+  /** The images of every author under their current Commons account ([[AuthorsStat.accounts]]), so that every report
+    * counts an author renamed since once. Keeps `found` as [[accounts]], each account also mapping to itself, for the
+    * author lists that look up the names they hold.
+    */
+  def withAccounts(found: Map[String, String]): ContestStat = {
+    val accountOf = AuthorsStat.accountOf(found) _
+    def renamed(db: ImageDB): ImageDB =
+      db.copy(images = db.images.map { image =>
+        image.author.map(accountOf).filterNot(image.author.contains).fold(image)(a => image.copy(author = Some(a)))
+      })
+    val byYear = dbsByYear.map(renamed)
+    copy(
+      currentYearImageDb = dbsByYear.indexWhere(_ eq currentYearImageDb) match {
+        case -1 => renamed(currentYearImageDb)
+        case i  => byYear(i)
+      },
+      totalImageDb = renamed(totalImageDb),
+      dbsByYear = byYear,
+      accounts = Some(found ++ found.values.map(account => account -> account))
+    )
+  }
 
   val imageDbsByYear: Map[Int, Seq[ImageDB]] = dbsByYear.groupBy(_.contest.year)
   val yearSeq: Seq[Int] = imageDbsByYear.keys.toSeq.sorted
@@ -105,6 +134,8 @@ class Statistics(
       bot,
       config.getOrElse(StatConfig(contest.campaign))
     )
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   private val currentYear = contest.year
 
@@ -179,7 +210,7 @@ class Statistics(
       // the one sync/async boundary of a stats run: data gathering is fully
       // async, the report pipeline that consumes it is synchronous. No arbitrary
       // timeout — a stuck fetch is the HTTP layer's problem, not ours.
-      val stat = Await.result(gatherData(total = total), Duration.Inf)
+      val stat = Await.result(gatherData(total = total).flatMap(withAccounts), Duration.Inf)
       val failures = if (config.resyncOnly) 0 else new ReportRunner(stat, config).run()
       val incomplete = config.csvCacheResync && !imageProvider.resyncSuccessful
       if (config.resyncOnly)
@@ -188,6 +219,20 @@ class Statistics(
       failures + (if (incomplete) 1 else 0)
     } finally Progress.close()
   }
+
+  /** The gathered data with the authors under their current accounts, for the reports. When the accounts can't be
+    * looked up, the authors stay as written: the report that has to have them, regionalStat, tries again.
+    */
+  private def withAccounts(stat: ContestStat): Future[ContestStat] =
+    if (config.resyncOnly) Future.successful(stat)
+    else
+      AuthorsStat
+        .accounts(bot, stat.authors, AuthorsStat.accountsCache(config))
+        .map(stat.withAccounts)
+        .recover { case NonFatal(e) =>
+          logger.warn(s"[accounts] could not look up the authors' accounts, counting them as written: $e")
+          stat
+        }
 
   def init(total: Boolean): Unit = {
     run(total)

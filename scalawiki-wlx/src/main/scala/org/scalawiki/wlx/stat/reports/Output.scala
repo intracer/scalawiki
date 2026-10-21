@@ -472,20 +472,24 @@ object Output {
     val categoryName = contest.contestType.name + " in " + contest.country.name
     val monumentDb = stat.monumentDb
 
-    val idsStat = monumentDb
-      .map(_ =>
-        new MonumentsPicturedByRegion(
-          stat,
-          uploadImages = false,
-          gallery = true
-        ).asText
-      )
-      .getOrElse("")
+    // the table counts authors by account, as the author lists it links to name them; the run has put the authors
+    // under their accounts unless it could not look them up
+    val withAccounts = stat.accounts.fold(AuthorsStat.accounts(bot, stat.authors, accountsCache).map(stat.withAccounts))(
+      _ => Future.successful(stat)
+    )
+    withAccounts.flatMap { stat =>
+      val accounts = stat.accounts.getOrElse(Map.empty)
+      val authorsStat = new AuthorsStat()
 
-    val authors = AuthorsStat.authorsByRegion(stat.totalImageDb).flatMap(_._2).distinct
-    // the table counts authors by account, as the author lists it links to name them
-    AuthorsStat.accounts(bot, authors, accountsCache).flatMap { accounts =>
-      val authorsStat = new AuthorsStat(accountOf = AuthorsStat.accountOf(accounts))
+      val idsStat = monumentDb
+        .map(_ =>
+          new MonumentsPicturedByRegion(
+            stat,
+            uploadImages = false,
+            gallery = true
+          ).asText
+        )
+        .getOrElse("")
 
       val authorsContributed = authorsStat.authorsContributed(
         stat.dbsByYear,

@@ -10,19 +10,18 @@ import org.scalawiki.dto.cmd.query.prop.{Prop, Revisions}
 import org.scalawiki.dto.cmd.query.prop.rvprop.{Content, RvProp}
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.dto.Contest
-import org.scalawiki.wlx.stat.ContestStat
+import org.scalawiki.wlx.stat.{ContestStat, StatConfig}
 import org.scalawiki.wlx.{ImageDB, MonumentDB}
 import org.slf4j.LoggerFactory
 
 import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Path, StandardCopyOption}
+import java.nio.file.{Files, Path, Paths, StandardCopyOption}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
 import scala.util.Try
 
-/** @param accountOf the name an author is counted under: their current Commons account, see [[AuthorsStat.accounts]] */
-class AuthorsStat(val uploadImages: Boolean = false, accountOf: String => String = identity) {
+class AuthorsStat(val uploadImages: Boolean = false) {
 
   var userImages: Option[String] = None
 
@@ -53,7 +52,7 @@ class AuthorsStat(val uploadImages: Boolean = false, accountOf: String => String
       .map(_ => ())
 
   // a file whose page names no author groups under "", which is nobody to count
-  private def named(authors: Set[String]): Set[String] = authors.filterNot(_.isBlank).map(accountOf)
+  private def named(authors: Set[String]): Set[String] = authors.filterNot(_.isBlank)
 
   def authorsContributedTable(
       imageDbs: Seq[ImageDB],
@@ -241,6 +240,10 @@ object AuthorsStat {
   def accountOf(accounts: Map[String, String])(author: String): String = accounts.getOrElse(userName(author), author)
 
   private val logger = LoggerFactory.getLogger(classOf[AuthorsStat])
+
+  /** Where [[accounts]] keeps the accounts it found: beside the image CSVs, and off with them. */
+  def accountsCache(config: StatConfig): Option[Path] =
+    Option.when(config.csvCache)(Paths.get(config.csvCacheDir, "commons-accounts.txt"))
 
   /** The current Commons account of each of `authors` that has one, by their [[userName]]: their own, or the one it was
     * renamed to. Commons never deletes an account, so these are kept in `cacheFile` and not looked up again. A name with
