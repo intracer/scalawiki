@@ -133,7 +133,14 @@ class MwBotImpl(
     log.info(s"$host login user: $user")
 
     tryLogin(user, password).flatMap { loginResponse =>
-      tryLogin(user, password, loginResponse.token).map(_.result)
+      tryLogin(user, password, loginResponse.token).map { response =>
+        if (response.result != "Success")
+          log.warning(
+            s"$host login of $user failed: ${response.result}" +
+              response.reason.fold("")(r => s" ($r)")
+          )
+        response.result
+      }
     }
   }
 
@@ -348,8 +355,15 @@ object MwBot {
   ): MwBot = {
     val bot = new MwBotImpl(site, http)
 
+    // A failed login must stop the caller: carrying on anonymously only fails
+    // every edit later (assertbotfailed), and each new bot retries the login.
     loginInfo.foreach { info =>
-      bot.await(bot.login(info.login, info.password))
+      val result = bot.await(bot.login(info.login, info.password))
+      if (result != "Success")
+        throw MwException(
+          s"login-$result",
+          s"${site.domain}: login of ${info.login} failed: $result"
+        )
     }
     bot
   }

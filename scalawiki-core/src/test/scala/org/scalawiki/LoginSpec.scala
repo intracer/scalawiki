@@ -1,8 +1,8 @@
 package org.scalawiki
 
 import org.apache.pekko.http.scaladsl.model.{ContentType, HttpCharsets, MediaTypes}
-import org.scalawiki.dto.MwException
-import org.scalawiki.util.{HttpStub, MockBotSpec, TestUtils}
+import org.scalawiki.dto.{MwException, Site}
+import org.scalawiki.util.{HttpStub, MockBotSpec, TestHttpClient, TestUtils}
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.matcher.ThrownExpectations
 import org.specs2.mutable.Specification
@@ -84,6 +84,22 @@ class LoginSpec(implicit ee: ExecutionEnv)
       )
 
       bot.login(user, password).map(_ === "Throttled").awaitFor(timeout)
+    }
+
+    "refuse to create a bot whose login failed" >> {
+      val http = new TestHttpClient(
+        host,
+        Seq(
+          HttpStub(loginAction, needToken),
+          HttpStub(loginAction ++ Map("lgtoken" -> "token-value+\\"), wrongPass)
+        )
+      )
+
+      MwBot.create(
+        Site.host(host),
+        Some(LoginInfoValue(user, password)),
+        http
+      ) must throwA[MwException]("login of userName failed: WrongPass")
     }
 
     "err503" >> {

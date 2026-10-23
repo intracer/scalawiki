@@ -16,7 +16,8 @@ object MwReads {
       (__ \ "login" \ "lguserid").readNullable[Int] and
       (__ \ "login" \ "lgusername").readNullable[String] and
       (__ \ "login" \ "cookieprefix").readNullable[String] and
-      (__ \ "login" \ "sessionid").readNullable[String]
+      (__ \ "login" \ "sessionid").readNullable[String] and
+      (__ \ "login" \ "reason").readNullable[String]
   )(LoginResponse.apply _)
 
   def tokenReads: Reads[String] =
