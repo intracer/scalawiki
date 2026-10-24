@@ -94,10 +94,23 @@ object SpecialNomination {
 
   lazy val nominations = load("wlm_ua.conf")
 
+  /** A nomination's monuments: the rows of its own lists, and those it takes
+    * from the main monument lists (by city, or by place for "Пам'ятки
+    * Подесення"). */
+  case class NominationMonuments(fromLists: Seq[Monument], fromMonumentDb: Seq[Monument] = Nil) {
+    def all: Seq[Monument] = fromMonumentDb ++ fromLists
+  }
+
   def getMonumentsMap(
       nominations: Seq[SpecialNomination],
       stat: ContestStat
-  ): Future[Map[SpecialNomination, Seq[Monument]]] = {
+  ): Future[Map[SpecialNomination, Seq[Monument]]] =
+    getNominationMonuments(nominations, stat).map(_.map { case (nomination, m) => nomination -> m.all })
+
+  def getNominationMonuments(
+      nominations: Seq[SpecialNomination],
+      stat: ContestStat
+  ): Future[Map[SpecialNomination, NominationMonuments]] = {
     val contest = stat.contest
     val monumentQuery =
       MonumentQuery.create(contest, reportDifferentRegionIds = false)
@@ -110,11 +123,11 @@ object SpecialNomination {
     Future
       .traverse(nominations.filter(_.listTemplate.nonEmpty)) { nomination =>
         val listTemplate = nomination.listTemplate.get
-        val monumentsF: Future[Seq[Monument]] =
+        val monumentsF: Future[NominationMonuments] =
           if (nomination.pages.nonEmpty && nomination.name != "Пам'ятки Подесення") {
-            byPages(nomination.pages, listTemplate)
+            byPages(nomination.pages, listTemplate).map(NominationMonuments(_))
           } else if (nomination.cities.nonEmpty) {
-            Future.successful(monumentsInCities(nomination.cities, stat.monumentDb.get))
+            Future.successful(NominationMonuments(Nil, monumentsInCities(nomination.cities, stat.monumentDb.get)))
           } else if (nomination.name == "Пам'ятки Подесення") {
             val desna = DesnaRegionSpecialNomination()
             val placeIds = desna.places.flatMap(desna.getPlace).map(_.code)
@@ -127,9 +140,9 @@ object SpecialNomination {
                 .get(monument.id)
                 .exists(allPlaceIds.contains)
             }
-            byPages(nomination.pages, listTemplate).map(fromDb ++ _)
+            byPages(nomination.pages, listTemplate).map(NominationMonuments(_, fromDb))
           } else {
-            Future.successful(Nil)
+            Future.successful(NominationMonuments(Nil))
           }
         monumentsF.map(monuments => nomination -> monuments)
       }
