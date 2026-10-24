@@ -222,9 +222,11 @@ object SpecialNominations {
 
   private val listsPrefix = "Вікіпедія:Вікі любить пам'ятки/"
 
-  /** The duplicated ids page: a section per nomination that has any, a table
-    * row per id with every row that carries it. Monument names and list pages
-    * come from uk.wikipedia, so their links get the `:uk:` interwiki prefix.
+  /** The duplicated ids page: a section per nomination that has any, split
+    * into ids repeated within one list and ids spread over several. Each list
+    * is linked once per id, with how many of its rows carry the id, and
+    * identical names are shown once. Monument names and list pages come from
+    * uk.wikipedia, so their links get the `:uk:` interwiki prefix.
     */
   def duplicatedIdsText(byNomination: Seq[(String, Seq[(String, Seq[Monument])])], contestName: String): String = {
     val withDuplicates = byNomination.filter(_._2.nonEmpty)
@@ -232,20 +234,38 @@ object SpecialNominations {
       "Ids given to more than one row of the same special nomination's own lists. " +
         "A monument listed both in a nomination and in the main monument lists, " +
         "or in two different nominations, is not counted here.\n"
+
+    def name(m: Monument) = m.name.replace("[[", "[[:uk:").split("\\s+").filter(_.nonEmpty).mkString(" ")
+
+    def lists(monuments: Seq[Monument]): String =
+      monuments
+        .groupBy(_.page)
+        .toSeq
+        .sortBy { case (page, _) => monuments.indexWhere(_.page == page) }
+        .map { case (page, rows) =>
+          val link = if (page.nonEmpty) s"[[:uk:$page|${page.stripPrefix(listsPrefix)}]]" else "(no list page)"
+          if (rows.size > 1) s"$link ×${rows.size}" else link
+        }
+        .mkString("<br>")
+
+    def table(title: String, duplicates: Seq[(String, Seq[Monument])], listsColumn: String): String =
+      if (duplicates.isEmpty) ""
+      else {
+        val rows = duplicates.map { case (id, monuments) =>
+          Seq(id, monuments.size.toString, lists(monuments), monuments.map(name).distinct.mkString("<br>"))
+        }
+        s"\n=== $title (${duplicates.size}) ===\n" +
+          Table(Seq("ID", "rows", listsColumn, "names"), rows).asWiki + "\n"
+      }
+
     val sections =
       if (withDuplicates.isEmpty) "\nNo duplicated ids.\n"
       else
         withDuplicates.map { case (nomination, duplicates) =>
-          val rows = duplicates.map { case (id, monuments) =>
-            val occurrences = monuments.map { m =>
-              val name = m.name.replace("[[", "[[:uk:").split("\\s+").filter(_.nonEmpty).mkString(" ")
-              val page =
-                if (m.page.nonEmpty) s" — [[:uk:${m.page}|${m.page.stripPrefix(listsPrefix)}]]" else ""
-              s"$name$page"
-            }
-            Seq(id, monuments.size.toString, occurrences.mkString("<br>"))
-          }
-          s"\n== $nomination ==\n" + Table(Seq("ID", "rows", "rows with this id"), rows).asWiki + "\n"
+          val (sameList, severalLists) = duplicates.partition(_._2.map(_.page).distinct.size == 1)
+          s"\n== $nomination ==\n" +
+            table("Repeated within one list", sameList, "list") +
+            table("In different lists", severalLists, "lists")
         }.mkString
 
     intro + sections + s"\n[[Category:$contestName]]"

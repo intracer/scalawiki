@@ -70,6 +70,24 @@ class SpecialNominationsDuplicatesSpec extends Specification {
       text must contain("Кладовище <br/> старе")
     }
 
+    "put ids on several lists under their own heading" in {
+      text must contain("=== In different lists (1) ===")
+      text must not(contain("=== Repeated within one list"))
+    }
+
+    "link a list once for an id repeated in it, with its count, and show a repeated name once" in {
+      val page = "Пам'ятки дерев'яної архітектури України/Івано-Франківська область/1"
+      val sameList = SpecialNominations.duplicatedIds(
+        Seq(monument("26-212-0355", page, "Гуцульська ґражда"), monument("26-212-0355", page, "Гуцульська ґражда"))
+      )
+      val t = SpecialNominations.duplicatedIdsText(Seq("Дерев'яна архітектура" -> sameList), "WLM")
+      t must contain("=== Repeated within one list (1) ===")
+      t must not(contain("=== In different lists"))
+      s"\\[\\[:uk:${java.util.regex.Pattern.quote(lists + page)}\\|".r.findAllIn(t).size === 1
+      t must contain("×2")
+      "Гуцульська ґражда".r.findAllIn(t).size === 1
+    }
+
     "say so when no nomination has duplicates" in {
       SpecialNominations.duplicatedIdsText(Seq("Бібліотеки" -> Nil), "WLM") must contain("No duplicated ids.")
     }
