@@ -3,7 +3,7 @@ package org.scalawiki.wlx.stat.reports
 import org.scalawiki.MwBot
 import org.scalawiki.dto.markup.Table
 import org.scalawiki.wlx.ImageDB
-import org.scalawiki.wlx.dto.{Contest, Country, SpecialNomination}
+import org.scalawiki.wlx.dto.{Contest, Country, Monument, SpecialNomination}
 import org.scalawiki.wlx.stat.ContestStat
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -64,14 +64,15 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
         galleryByRegion(imagesPage + " by region", imageDb)
         galleryByAuthor(imagesPage + " by author", imageDb)
 
+        val monumentCounts = monumentsMap.get(nomination).map { monuments =>
+          SpecialNominations.monumentCounts(monuments, contest.country.regionIds)
+        }
+
         Seq(
           nomination.name,
           imageDb.authors.size.toString,
-          monumentsMap.get(nomination).map(_.size.toString).getOrElse(""),
-          monumentsMap
-            .get(nomination)
-            .map(_.map(_.id).count(isSpecialNominationMonument).toString)
-            .getOrElse(""),
+          monumentCounts.map(_._1.toString).getOrElse(""),
+          monumentCounts.map(_._2.toString).getOrElse(""),
           imageDb.ids.size.toString,
           imageDb.ids.count(isSpecialNominationMonument).toString,
           newlyPicturedText(imagesPage, imageDb, imageDb.ids.diff(oldMonumentIds)),
@@ -102,10 +103,8 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
     newlyPicturedText
   }
 
-  private def isSpecialNominationMonument(id: String): Boolean = {
-    val regionId = id.split("-").headOption.getOrElse("")
-    !contest.country.regionIds.contains(regionId)
-  }
+  private def isSpecialNominationMonument(id: String): Boolean =
+    SpecialNominations.isSpecialNominationId(id, contest.country.regionIds)
 
   private def galleryByRegion(regionsPage: String, imageDb: ImageDB): Unit = {
 
@@ -175,4 +174,23 @@ class SpecialNominations(stat: ContestStat, imageDb: ImageDB) {
       .page(imagesPage)
       .edit(imagesText, Some("updating"))
   }
+}
+
+object SpecialNominations {
+
+  /** A nomination's monument count and how many of those carry its own
+    * special-nomination ids, both over distinct ids: a nomination's lists can
+    * list one monument more than once (e.g. wooden architecture had an old and
+    * a new set of oblast pages, both embedding the nomination's template), and
+    * counting rows would count it every time.
+    */
+  def monumentCounts(monuments: Seq[Monument], regionIds: Set[String]): (Int, Int) = {
+    val ids = monuments.map(_.id).toSet
+    (ids.size, ids.count(isSpecialNominationId(_, regionIds)))
+  }
+
+  /** An id that doesn't start with a region code, i.e. one assigned by a
+    * special nomination's own list rather than the main monument lists. */
+  def isSpecialNominationId(id: String, regionIds: Set[String]): Boolean =
+    !regionIds.contains(id.split("-").headOption.getOrElse(""))
 }
